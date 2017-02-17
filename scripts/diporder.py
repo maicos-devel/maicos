@@ -42,11 +42,14 @@ parser.add_argument('-shift', dest='membrane_shift', action='store_const',
 parser.add_argument('-com', dest='com', action='store_const',
                    const=True, default=False,
                    help='shift system such that the water COM is centered')
+parser.add_argument('-bin', dest='binmethod', type=str,
+                   default='COM',
+                   help='binning method: center of Mass (COM), center of charge (COC) or oxygen position (OXY)')
 
 def output():
-    avL = Lz/frame
+    avL = Lz/frame/10
 
-    z = np.linspace(0,avL, len(diporder))/10
+    z = np.linspace(0,avL, len(diporder)) + avL/nbins/2
 
     outdata = np.hstack([ z[:,np.newaxis], diporder/framecount[:,np.newaxis] ])
 
@@ -63,6 +66,7 @@ args = parser.parse_args()
 
 u = MDAnalysis.Universe(args.topology, args.trajectory)
 sol = u.select_atoms(args.sel)
+atomsPerMolecule = sol.n_atoms // sol.n_residues
 
 dim = args.dim
 xydims = np.roll(np.arange(3),-dim)[1:] # Assume a threedimensional universe...
@@ -119,18 +123,25 @@ for ts in u.trajectory[startframe:endframe:args.skipframes]:
     A = np.prod(ts.dimensions[xydims])
     dz_frame = ts.dimensions[dim]/nbins
 
-    # Calculate the centers of the objects ( i.e. Molecules )
-    atomsPerMolecule = sol.n_atoms // sol.n_residues
-    masses = np.sum( sol.atoms.masses[i::atomsPerMolecule] for i in range(atomsPerMolecule) )
-    masspos = sol.atoms.positions * sol.atoms.masses[:,np.newaxis]
-    coms = np.sum( masspos[i::atomsPerMolecule] for i in range(atomsPerMolecule) ) / masses[:,np.newaxis]
-
-    #chargepos = (sol.atoms.positions-np.repeat(coms, atomsPerMolecule, axis=0))*sol.atoms.charges[:,np.newaxis]
     chargepos = sol.atoms.positions*sol.atoms.charges[:,np.newaxis]
     dipoles = np.sum( chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule) ) / 10 # convert to e nm
 
-    bins=(coms[:,dim]/dz_frame).astype(int)
-    #bins=(sol.atoms.positions[::3,dim]/dz_frame).astype(int)
+    if args.binmethod == 'COM':
+        # Calculate the centers of the objects ( i.e. Molecules )
+        masses = np.sum( sol.atoms.masses[i::atomsPerMolecule] for i in range(atomsPerMolecule) )
+        masspos = sol.atoms.positions * sol.atoms.masses[:,np.newaxis]
+        coms = np.sum( masspos[i::atomsPerMolecule] for i in range(atomsPerMolecule) ) / masses[:,np.newaxis]
+        bins=(coms[:,dim]/dz_frame).astype(int)
+    elif args.binmethod == 'COC':
+        abschargepos = sol.atoms.positions*np.abs(sol.atoms.charges)[:,np.newaxis]
+        charges = np.sum( np.abs(sol.atoms.charges)[i::atomsPerMolecule] for i in range(atomsPerMolecule) )
+        cocs = np.sum( abschargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule) ) / charges[:,np.newaxis]
+        bins=(cocs[:,dim]/dz_frame).astype(int)
+    elif args.binmethod == 'OXY':
+        bins=(sol.atoms.positions[::3,dim]/dz_frame).astype(int)
+    else:
+        raise ValueError('Unknown binning method: %s' % args.binmethod)
+
     bincount = np.bincount(bins, minlength=nbins)
 
     diporder[:,0] += np.histogram(bins, bins=np.arange(nbins+1),
