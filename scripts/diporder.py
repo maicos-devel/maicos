@@ -49,7 +49,7 @@ parser.add_argument('-bin', dest='binmethod', type=str,
 def output():
     avL = Lz/frame/10
 
-    z = np.linspace(0,avL, len(diporder)) + avL/nbins/2
+    z = np.linspace(-avL/2,avL/2, len(diporder), endpoint=False) + avL/nbins/2
 
     outdata = np.hstack([ z[:,np.newaxis], diporder/framecount[:,np.newaxis] ])
 
