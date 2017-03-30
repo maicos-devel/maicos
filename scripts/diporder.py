@@ -51,7 +51,7 @@ def output():
 
     z = np.linspace(-avL/2,avL/2, len(diporder), endpoint=False) + avL/nbins/2
 
-    outdata = np.hstack([ z[:,np.newaxis], diporder/framecount[:,np.newaxis] ])
+    outdata = np.vstack([ z, diporder[:,0]/frame, diporder[:,1]/framecount, diporder[:,2]/frame ]).T
 
     if (args.bsym):
         for i in range(len(outdata)-1):
