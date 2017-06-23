@@ -51,7 +51,7 @@ def output():
 
     z = np.linspace(-avL/2,avL/2, len(diporder), endpoint=False) + avL/nbins/2
 
-    outdata = np.vstack([ z, diporder[:,0]/frame, diporder[:,1]/framecount, diporder[:,2]/frame ]).T
+    outdata = np.vstack([ z, diporder[:,0]/frame, diporder[:,1]/frame, diporder[:,2]/frame ]).T
 
     if (args.bsym):
         for i in range(len(outdata)-1):
@@ -89,7 +89,6 @@ data structure:
 '''
 
 diporder = np.zeros((nbins,3))
-framecount = np.zeros((nbins)) # only count frames when there was a water!
 
 Lz = 0
 
@@ -150,7 +149,6 @@ for ts in u.trajectory[startframe:endframe:args.skipframes]:
         diporder[:,1] += np.nan_to_num(np.histogram(bins, bins=np.arange(nbins+1), 
             weights=np.dot(dipoles/np.linalg.norm(dipoles,axis=1)[:,np.newaxis],unit))[0] / bincount)
     diporder[:,2] += bincount / (A*dz_frame/1e3)
-    framecount += bincount>0
 
     Lz += ts.dimensions[dim]
 
