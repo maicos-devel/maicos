@@ -24,7 +24,7 @@ parser.add_argument('-dt',  dest='skipframes',  type=int,   default=1,          
 parser.add_argument('-o',   dest='output',      type=str,   default='density',              help='Prefix for output filenames')
 parser.add_argument('-dout',dest='outfreq',     type=float, default='1000',                 help='Default time after which output files are refreshed (1000 ps).')
 parser.add_argument('-d',   dest='dim',         type=int,   default=2,                      help='dimension for binning (0=X, 1=Y, 2=Z)', )
-parser.add_argument('-dz',  dest='binwidth',    type=float, default=1,                      help='binwidth (Angstrom)')
+parser.add_argument('-dz',  dest='binwidth',    type=float, default=1,                      help='binwidth (nanometer)')
 parser.add_argument('-muo', dest='muout',       type=str,   default='dens',                 help='Prefix for output filename for chemical potential')
 parser.add_argument('-temp',dest='temperature', type=float, default=300,                    help='temperature (K) for chemical potential')
 parser.add_argument('-zpos',dest='zpos',        type=float, default=None,                   help='position at which the chemical potential will be computed. By default average over box.')
@@ -70,12 +70,12 @@ def output():
 
     # save density profile
     np.savetxt(args.output+'.dat',
-        np.hstack(((z[:,np.newaxis])/10,dens_mean,dens_err)),
+        np.hstack(((z[:,np.newaxis]),dens_mean,dens_err)),
         header=columns)
 
     # save chemcial potential
     if (args.zpos != None):
-        this = (args.zpos / av_box_length*nbins).astype(int)
+        this = (args.zpos / (av_box_length/frames)*nbins).astype(int)
         np.savetxt(args.muout+'.dat',
             np.hstack((mu(dens_mean[this]), dmu(dens_mean[this], dens_err[this])))[None])
     else:
@@ -133,7 +133,7 @@ if begin > end:
     sys.exit("Start time is larger than end time!")
 
 ngroups = len(args.groups)
-nbins = int(np.ceil(u.dimensions[dim]/args.binwidth))
+nbins = int(np.ceil(u.dimensions[dim]/10/args.binwidth))
 
 density_mean = np.zeros(( nbins, ngroups ))
 density_mean_sq = np.zeros(( nbins, ngroups ))
@@ -153,7 +153,7 @@ print('\nUsing', nbins, 'bins.')
 #============================
 for ts in u.trajectory[begin:end+1:args.skipframes]:
     curV = u.dimensions[:3].prod()/1000
-    av_box_length += u.dimensions[dim]
+    av_box_length += u.dimensions[dim] / 10
 
     for index,selection in enumerate(sel):
         bins = ( selection.atoms.positions[:,dim] / (u.dimensions[dim]/nbins) ).astype(int)%nbins
