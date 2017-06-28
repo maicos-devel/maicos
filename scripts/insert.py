@@ -6,7 +6,7 @@ import numpy as np
 import MDAnalysis
 import copy
 import sys, getopt, os
-import moleculeInsertion
+import mdanahelper.moleculeInsertion
 
 def main(argv=None):
   if argv is None:
@@ -44,7 +44,7 @@ def main(argv=None):
   print ("Inserting", Nw, "water molecules bewteen z=", zmin, "and z=", zmax)
   water = MDAnalysis.Universe('/home/aschlaich/repos/dielectric/resources/watermolecule.gro')
   for i in range(Nw):
-    u = moleculeInsertion.box(u,water,zmax=zmax,zmin=zmin,distance=distance)
+    u = mdanahelper.moleculeInsertion.box(u,water,zmax=zmax,zmin=zmin,distance=distance)
     print("%i of %i watermolecules placed." % (i,Nw), end="\r")
     sys.stdout.flush()
     if (i+1)%250 == 0:
