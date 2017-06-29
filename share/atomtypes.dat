@@ -1,0 +1,106 @@
+  O             O
+  OM            O
+  OA            O
+  OE            O
+  OW            O
+   N            N
+  NT            NH2
+  NL            NH3
+  NR            N
+  NZ            NH2
+  NE            NH1
+   C           C
+CH0            C
+CH1            CH1
+CH2            CH2
+CH3            CH3
+CH4            CH4
+CH2r           CH2
+CR1            CH1
+  HC           CH1
+   H           H
+ DUM           DUM
+   S           S
+CU1+           CU1+
+CU2+           CU1+
+  FE           FE
+ZN2+           ZN2+
+MG2+           MG2+
+CA2+           CA2+
+   P           P
+  AR           AR
+   F           FE
+  CL           CL
+  BR           BR
+CMET           CH3
+OMET           O
+ NA+           NA1+
+ CL-           CL1-
+ CCHL          C
+Br             BR
+C              C
+CA             C
+CB             C
+CC             C
+CK             C
+CM             C
+CN             C
+CQ             C
+CR             C
+CT             C
+CV             C
+CW             C
+C*              C
+C0             CA
+F              FE
+H               H
+HC              H
+H1              H
+H2              H
+H3            H
+HA            H
+H4            H
+H5            H
+HO            H
+HS            H
+HW            H
+HP            H
+I             I
+Cl            CL1-
+Na            NA1+
+IB            NA1+
+MG            MG
+N             N
+NA            N
+NB            N
+NC            N
+N2            N
+N3            N
+N*            N
+O             O
+OW            O
+OH            O
+OS            O
+O2            O
+P             P
+S             S
+SH            SI
+CU            CU
+FE            FE
+K             K
+Rb            RB
+Cs            CS
+OW_spc        O
+HW_spc        H
+Li            Li
+Zn            ZN2+
+HW_tip4pew    H
+OW_tip4pew    O
+HW_tip4p      H
+OW_tip4p      O
+HW_tip5p      H
+OW_tip5p      O
+MW            DUM
+MCH3          DUM
+MNH3          DUM
+OW_tip4p2005  O

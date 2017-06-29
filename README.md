@@ -7,15 +7,29 @@ Usually these scripts offer more flexibility and/or are faster than the original
 
 ### density
 
-- compute partial densities across the box
+Computes partial densities across the box.
 
 
 ### insert
 
-- inserts molecules randomly in a slab geometry
+Inserts molecules at random positions wir random orientations in a slab geometry.
 
-Before using ist you have to update the necessary submodules using
+Before using it you have to update the necessary submodules using
 
 ```bash
 git submodule update --init --recursive
 ```
+
+### SAXS
+
+Computes the scattering intensities.
+
+Before using it you have to compile the underlying library using
+
+```python
+python2 setup-sfactor.py build_ext --inplace
+```
+
+The default compiler is `gcc-7`. You can adjust the compiler by changing the value of
+`os.environ["CC"]` in the `setup-sfactor.py` file. If you want to use the default compiler of your
+system just comment this line out.
