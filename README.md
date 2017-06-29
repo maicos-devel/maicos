@@ -8,3 +8,14 @@ Usually these scripts offer more flexibility and/or are faster than the original
 ### density
 
 - compute partial densities across the box
+
+
+### insert
+
+- inserts molecules randomly in a slab geometry
+
+Before using ist you have to update the necessary submodules using
+
+```bash
+git submodule update --init --recursive
+```
