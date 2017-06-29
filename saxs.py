@@ -13,7 +13,7 @@ from sfactor import sfactor #is this fails build the sfactor libaray with 'pytho
 #========== PARSER ===========
 #=============================
 parser = argparse.ArgumentParser(description="""
-    Computes SAXS structure or scattering factors for all atom types from the given trajectory.
+    Computes SAXS scattering intensities for all atom types from the given trajectory.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
@@ -30,7 +30,6 @@ parser.add_argument('-sq',    dest='output',      type=str,   default='./sq',   
 parser.add_argument('-startq',dest='startq',      type=float, default=0,                      help='Starting q (1/nm)')
 parser.add_argument('-endq',  dest='endq',        type=float, default=60,                     help='Ending q (1/nm)')
 parser.add_argument('-dq',    dest='dq',          type=float, default=0.05,                   help='binwidth (1/nm)')
-parser.add_argument('-scat',  dest='scat',        action='store_true',                        help='If set only the structure factor is calculated.')
 
 args = parser.parse_args()
 
@@ -43,7 +42,7 @@ def output():
     scat_factor = struct_factor[nonzeros]
     wave_vectors = q[nonzeros]
 
-    scat_factor = scat_factor.sum(axis=1)/(frames*sel.atoms.n_atoms)
+    scat_factor = scat_factor.sum(axis=1)/frames
 
     np.savetxt(args.output+'.dat',
         np.vstack([wave_vectors,scat_factor]).T,
@@ -55,19 +54,19 @@ def compute_form_factor(q,atom_type):
     element = type_dict[atom_type]
 
     if   element == "CH1":
-        form_factor = (compute_form_factor(q,"C") +   compute_form_factor(q,"H"))/2
+        form_factor = compute_form_factor(q,"C") +   compute_form_factor(q,"H")
     elif element == "CH2":
-        form_factor = (compute_form_factor(q,"C")+  2*compute_form_factor(q,"H"))/3
+        form_factor = compute_form_factor(q,"C")+  2*compute_form_factor(q,"H")
     elif element == "CH3":
-        form_factor = (compute_form_factor(q,"C")+  3*compute_form_factor(q,"H"))/4
+        form_factor = compute_form_factor(q,"C")+  3*compute_form_factor(q,"H")
     elif element == "CH4":
-        form_factor = (compute_form_factor(q,"C")+  4*compute_form_factor(q,"H"))/5
+        form_factor = compute_form_factor(q,"C")+  4*compute_form_factor(q,"H")
     elif element == "NH1":
-        form_factor = (compute_form_factor(q,"N")+    compute_form_factor(q,"H"))/2
+        form_factor = compute_form_factor(q,"N")+    compute_form_factor(q,"H")
     elif element == "NH2":
-        form_factor = (compute_form_factor(q,"N")+  2*compute_form_factor(q,"H"))/3
+        form_factor = compute_form_factor(q,"N")+  2*compute_form_factor(q,"H")
     elif element == "NH3":
-        form_factor = (compute_form_factor(q,"N")+  3*compute_form_factor(q,"H"))/4
+        form_factor = compute_form_factor(q,"N")+  3*compute_form_factor(q,"H")
     else:
         form_factor = CM_parameters[element].c
         q2 = (q/(4*np.pi*10))**2 # factor of 10 to convert from 1/nm to 1/Angstroms
@@ -155,8 +154,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
         q_ts = q_ts[nonzeros]
         S_ts = S_ts[nonzeros]
 
-        if not args.scat:
-            S_ts *= compute_form_factor(q_ts,atom_types[i])**2
+        S_ts *= compute_form_factor(q_ts,atom_types[i])**2
 
         struct_ts = binned_statistic(q_ts,S_ts,bins=nbins,range=(args.startq,args.endq))[0]
         struct_factor[:,i] += np.nan_to_num(struct_ts)
