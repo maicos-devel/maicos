@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 import MDAnalysis as mda
 import numpy as np
 from scipy.stats import binned_statistic
 import sys
 import argparse
 import os
-from sfactor import sfactor #is this fails build the sfactor libaray with 'python2 setup-sfactor.py build_ext --inplace'
+from sfactor import sfactor #is this fails build the sfactor libaray with 'python setup-sfactor.py build_ext --inplace'
+
+
 
 #========== PARSER ===========
 #=============================
@@ -38,42 +39,15 @@ args = parser.parse_args()
 
 def output():
     """Saves the current profiles to a file."""
-    nonzeros = np.where(struct_factor[:,0] != 0)[0]
+    nonzeros = np.where(struct_factor != 0)[0]
     scat_factor = struct_factor[nonzeros]
     wave_vectors = q[nonzeros]
 
-    scat_factor = scat_factor.sum(axis=1)/frames
+    scat_factor = scat_factor/frames
 
     np.savetxt(args.output+'.dat',
         np.vstack([wave_vectors,scat_factor]).T,
         header="q (1/nm)\tS(q)_tot (arb. units)",fmt='%.8e')
-
-
-def compute_form_factor(q,atom_type):
-    """Calculates the form factor for the given element. Correctly handles united atom types like CH4 etc..."""
-    element = type_dict[atom_type]
-
-    if   element == "CH1":
-        form_factor = compute_form_factor(q,"C") +   compute_form_factor(q,"H")
-    elif element == "CH2":
-        form_factor = compute_form_factor(q,"C")+  2*compute_form_factor(q,"H")
-    elif element == "CH3":
-        form_factor = compute_form_factor(q,"C")+  3*compute_form_factor(q,"H")
-    elif element == "CH4":
-        form_factor = compute_form_factor(q,"C")+  4*compute_form_factor(q,"H")
-    elif element == "NH1":
-        form_factor = compute_form_factor(q,"N")+    compute_form_factor(q,"H")
-    elif element == "NH2":
-        form_factor = compute_form_factor(q,"N")+  2*compute_form_factor(q,"H")
-    elif element == "NH3":
-        form_factor = compute_form_factor(q,"N")+  3*compute_form_factor(q,"H")
-    else:
-        form_factor = CM_parameters[element].c
-        q2 = (q/(4*np.pi*10))**2 # factor of 10 to convert from 1/nm to 1/Angstroms
-        for i in range(4):
-            form_factor +=  CM_parameters[element].a[i] * np.exp(-CM_parameters[element].b[i]*q2)
-
-    return form_factor
 
 def get_base_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -85,16 +59,12 @@ with open("{}/share/atomtypes.dat".format(get_base_path())) as f:
             elements = line.split()
             type_dict[elements[0]] = elements[1]
 
-CM_parameters = {}
+CM_parameters = {};
 with open("{}/share/sfactor.dat".format(get_base_path())) as f:
     for line in f:
         if line[0] != '#':
-            elements = line.split()
-            CM_parameters[elements[0]] = type('CM_parameter', (object,), {})()
-            CM_parameters[elements[0]].a = np.array(elements[2:6],dtype=np.double)
-            CM_parameters[elements[0]].b = np.array(elements[6:10],dtype=np.double)
-            CM_parameters[elements[0]].c = float(elements[10])
-
+            elements = line.split();
+            CM_parameters[elements[0]] = np.array(elements[2:11], dtype=np.double);
 
 #======= PREPERATIONS =======
 #============================
@@ -103,23 +73,29 @@ print('Command line was: %s\n' % ' '.join(sys.argv))
 print("Loading trajectory...\n")
 u = mda.Universe(args.topology,args.trajectory)
 sel = u.select_atoms(args.sel)
+sel = sel.atoms.select_atoms("not name 'DUM'")
+n_atoms = sel.atoms.n_atoms
 
-groups = []
-atom_types = []
-print("\nMap the following atomtypes:")
-for atom_type in np.unique(sel.atoms.types).astype(str):
+types = np.unique(sel.types.astype(str))
+CMFP = np.zeros((len(types),9), dtype=np.double)
+nh = np.zeros(len(types), dtype=np.int32) #number of hydrogens for united atom force fields
+
+for i,atom_type in enumerate(types):
     try:
         element = type_dict[atom_type]
     except KeyError:
         sys.exit("No suitable element for '{0}' found. You can add '{0}' together with a suitable element to 'share/atomtypes.dat'.".format(atom_type))
+    if element != "DUM":
+        if element in ["CH1","CH2","CH3","CH4","NH","NH2","NH3"]:
+            CMFP[i] = CM_parameters[element[0]]
+            nh[i] = element[-1]
+        else:
+            CMFP[i] = CM_parameters[element]
 
-    if element == "DUM":
-        continue
-    groups.append(u.select_atoms("type {}*".format(atom_type)))
-    atom_types.append(atom_type)
-    print("{:>14} --> {:>5}".format(atom_type,element))
+indices = np.zeros(n_atoms, dtype=np.int32)
+for i,atom_type in enumerate(sel.types.astype(str)):
+    indices[i] = np.where(atom_type == types)[0][0]
 
-print("\n")
 dt = u.trajectory.dt
 
 begin=int(args.begin // dt)
@@ -133,31 +109,34 @@ if begin > end:
 
 nbins = int(np.ceil((args.endq - args.startq)/args.dq))
 q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
-struct_factor = np.zeros([nbins,len(groups)])
+struct_factor = np.zeros(nbins)
 frames = 0
 
 #======== MAIN LOOP =========
 #============================
+import time
 for ts in u.trajectory[begin:end+1:args.skipframes]:
-    for i,t in enumerate(groups):
 
-        #convert everything to cartesian coordinates
-        box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
-        positions = t.atoms.positions - box*np.round(t.atoms.positions/box) # minimum image
+    box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
 
-        q_ts, S_ts = sfactor.compute_structure_factor(np.double(positions/10),np.double(box/10),args.startq,args.endq)
+    begin = time.time()
+    q_ts, S_ts = sfactor.compute_scattering_intensity(
+                                    np.double(sel.atoms.positions/10), n_atoms,
+                                    indices, CMFP, nh,
+                                    np.double(box/10),
+                                    args.startq, args.endq)
+    end = time.time()
+    print(end-begin)
 
-        q_ts = np.asarray(q_ts).flatten()
-        S_ts = np.asarray(S_ts).flatten()
-        nonzeros = np.where(S_ts != 0)[0]
+    q_ts = np.asarray(q_ts).flatten()
+    S_ts = np.asarray(S_ts).flatten()
+    nonzeros = np.where(S_ts != 0)[0]
 
-        q_ts = q_ts[nonzeros]
-        S_ts = S_ts[nonzeros]
+    q_ts = q_ts[nonzeros]
+    S_ts = S_ts[nonzeros]
 
-        S_ts *= compute_form_factor(q_ts,atom_types[i])**2
-
-        struct_ts = binned_statistic(q_ts,S_ts,bins=nbins,range=(args.startq,args.endq))[0]
-        struct_factor[:,i] += np.nan_to_num(struct_ts)
+    struct_ts = binned_statistic(q_ts,S_ts,bins=nbins,range=(args.startq,args.endq))[0]
+    struct_factor[:] += np.nan_to_num(struct_ts)
 
     frames += 1
     if (frames < 100):
