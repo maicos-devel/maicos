@@ -3,7 +3,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from libc cimport math
-from cython.parallel cimport parallel, prange
+from cython.parallel cimport prange
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -20,37 +20,34 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
     cdef double[:] q_factor = np.empty(3,dtype=np.double);
 
     n_atoms = positions.shape[0];
-    for i in range(boxdimensions.shape[0]):
+    for i in range(3):
         q_factor[i] = 2*np.pi/boxdimensions[i];
-
-    for i in range(maxn.shape[0]):
         maxn[i] = <int>math.ceil(end_q/<float>q_factor[i]);
 
     cdef double[:,:,:] S_array = np.zeros(maxn, dtype=np.double);
     cdef double[:,:,:] q_array = np.zeros(maxn, dtype=np.double);
 
-    with nogil,parallel():
-        for i in prange(<int>maxn[0]):
-            qx = i * q_factor[0];
+    for i in prange(<int>maxn[0],nogil=True):
+        qx = i * q_factor[0];
 
-            for j in range(maxn[1]):
-                qy = j * q_factor[1];
+        for j in range(maxn[1]):
+            qy = j * q_factor[1];
 
-                for k in range(maxn[2]):
-                    if (i + j + k != 0):
-                        qz = k * q_factor[2];
-                        qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
+            for k in range(maxn[2]):
+                if (i + j + k != 0):
+                    qz = k * q_factor[2];
+                    qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
 
-                        if (qrr >= start_q and qrr <= end_q):
-                            q_array[i,j,k] = qrr;
+                    if (qrr >= start_q and qrr <= end_q):
+                        q_array[i,j,k] = qrr;
 
-                            sin = 0;
-                            cos = 0;
-                            for l in range(n_atoms):
-                                qdotr = positions[l,0]*qx + positions[l,1]*qy + positions[l,2]*qz;
-                                sin += math.sin(qdotr);
-                                cos += math.cos(qdotr);
+                        sin = 0;
+                        cos = 0;
+                        for l in range(n_atoms):
+                            qdotr = positions[l,0]*qx + positions[l,1]*qy + positions[l,2]*qz;
+                            sin += math.sin(qdotr);
+                            cos += math.cos(qdotr);
 
-                            S_array[i,j,k] += sin*sin + cos*cos;
+                        S_array[i,j,k] += sin*sin + cos*cos;
 
     return (q_array,S_array);
