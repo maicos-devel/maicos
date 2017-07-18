@@ -22,12 +22,16 @@ git submodule update --init --recursive
 
 ### SAXS
 
-Computes the scattering intensities.
+Computes the scattering intensities using the Debye scattering equation
+(see https://en.wikipedia.org/wiki/Structure_factor for details). The
+atomic form factors according to a Cromer-Mann fit.
+(see International Tables for Crystallography,
+  Volume C: Mathematical, Physical and Chemical Tables page 554.)
 
 Before using it you have to compile the underlying library using
 
 ```python
-python2 setup-sfactor.py build_ext --inplace
+python3 setup-sfactor.py build_ext --inplace
 ```
 
 The default compiler is `gcc-7`. You can adjust the compiler by changing the value of

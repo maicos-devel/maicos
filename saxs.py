@@ -15,7 +15,8 @@ from sfactor import sfactor #is this fails build the sfactor libaray with 'pytho
 #========== PARSER ===========
 #=============================
 parser = argparse.ArgumentParser(description="""
-    Computes SAXS scattering intensities for all atom types from the given trajectory.
+    Computes SAXS scattering intensities according to the Debye scattering equation
+    for all atom types from the given trajectory.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
