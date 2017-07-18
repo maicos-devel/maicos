@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function, division
 import MDAnalysis as mda
@@ -7,7 +7,8 @@ from scipy.stats import binned_statistic
 import sys
 import argparse
 import os
-from sfactor import sfactor #is this fails build the sfactor libaray with 'python setup-sfactor.py build_ext --inplace'
+import multiprocessing
+from sfactor import sfactor #is this fails build the sfactor libaray with 'python3 setup-sfactor.py build_ext --inplace'
 
 
 
@@ -31,6 +32,7 @@ parser.add_argument('-sq',    dest='output',      type=str,   default='./sq',   
 parser.add_argument('-startq',dest='startq',      type=float, default=0,                      help='Starting q (1/nm)')
 parser.add_argument('-endq',  dest='endq',        type=float, default=60,                     help='Ending q (1/nm)')
 parser.add_argument('-dq',    dest='dq',          type=float, default=0.05,                   help='binwidth (1/nm)')
+parser.add_argument('-nt',    dest='nt',          type=int,   default=0,                   help='Total number of threads to start (0 is guess)')
 
 args = parser.parse_args()
 
@@ -107,6 +109,8 @@ else:
 if begin > end:
     print("Start time is larger than end time!")
 
+if args.nt == 0: args.nt = multiprocessing.cpu_count()
+
 nbins = int(np.ceil((args.endq - args.startq)/args.dq))
 q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
 struct_factor = np.zeros(nbins)
@@ -122,7 +126,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
                                     np.double(sel.atoms.positions/10), n_atoms,
                                     indices, CMFP, nh,
                                     np.double(box/10),
-                                    args.startq, args.endq)
+                                    args.startq, args.endq, args.nt)
 
     q_ts = np.asarray(q_ts).flatten()
     S_ts = np.asarray(S_ts).flatten()

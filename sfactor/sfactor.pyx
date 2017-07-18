@@ -8,21 +8,20 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from libc cimport math
-from libc cimport stdio
 from cython.parallel cimport prange
 
 cdef double[:] CMFP_H = np.array((0.493,0.323,0.14,0.041,10.511,26.126,3.142,57.8,0.003),dtype=np.double);
 
 cdef void distance_matrix( double[:,:] positions, int n_atoms,
                                   double[:] boxdimensions,
-                                  double[:,:] dist_mat) nogil:
+                                  double[:,:] dist_mat, int nt) nogil:
   """Calculates the upper triangle of the Euclidean distance matrix
   using the minimum image convention for rectengular box."""
 
   cdef int i, j;
   cdef double xr, yr, zr;
 
-  for i in prange(<int>n_atoms):
+  for i in prange(<int>n_atoms, schedule="dynamic", num_threads=nt):
 
     for j in range(i+1,n_atoms):
         xr = positions[i,0] - positions[j,0];
@@ -50,7 +49,7 @@ cdef double CMSF(double q, int nh, double[:] CMFP) nogil:
       for i in range(4):
           form_factor =  form_factor + CMFP[i] * math.exp(-1*CMFP[i+4]*q2)
 
-  return form_factor
+  return form_factor;
 
 cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
                           int n_atoms, int[:] nh,
@@ -68,15 +67,15 @@ cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
   for i in range(n_atoms):
 
     for j in range(i+1,n_atoms):
-        qr = qrr*dist_mat[i,j]
-        scat_int = scat_int + 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]]
+        qr = qrr*dist_mat[i,j];
+        scat_int = scat_int + 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]];
 
   return scat_int
 
 cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
                         int[:] indices, double [:,:] CMFP, int[:] nh,
                         double[:] boxdimensions,
-                        double start_q, double end_q):
+                        double start_q, double end_q, int nt):
     """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
 
     assert(boxdimensions.shape[0]==3);
@@ -84,7 +83,7 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
     assert(positions.shape[1]==3);
 
     cdef int i, j, k;
-    cdef double qx, qy, qr, qz, qrr;
+    cdef double qx, qy, qz, qrr;
 
     cdef int[:]        maxn = np.empty(3, dtype=np.int32);
     cdef double[:] q_factor = np.empty(3, dtype=np.double);
@@ -98,25 +97,21 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
     cdef double[:,:,:] q_array  = np.zeros(maxn, dtype=np.double);
     cdef double[:,:,:] S_array  = np.zeros(maxn, dtype=np.double);
 
-    distance_matrix(positions, n_atoms, boxdimensions, dist_mat);
+    distance_matrix(positions, n_atoms, boxdimensions, dist_mat, nt);
 
-    with nogil:
-      stdio.printf("\n")
-      for i in range(maxn[0]):
-        stdio.printf("\rdone %3.1f%%     ", (100.0*(i+1))/maxn[0]);
-        stdio.fflush(stdio.stdout)
-        qx = i * q_factor[0];
+    for i in prange(<int>maxn[0], nogil=True, schedule="dynamic", num_threads=nt):
+      qx = i * q_factor[0];
 
-        for j in range(maxn[1]):
-            qy = j * q_factor[1];
+      for j in range(maxn[1]):
+          qy = j * q_factor[1];
 
-            for k in range(maxn[2]):
-                if (i + j + k != 0):
-                    qz = k * q_factor[2];
-                    qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
+          for k in range(maxn[2]):
+              if (i + j + k != 0):
+                  qz = k * q_factor[2];
+                  qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
 
-                    if (qrr >= start_q and qrr <= end_q):
-                        q_array[i,j,k] = qrr
-                        S_array[i,j,k] = debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors)
+                  if (qrr >= start_q and qrr <= end_q):
+                      q_array[i,j,k] = qrr;
+                      S_array[i,j,k] = debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors);
 
     return (q_array,S_array);
