@@ -8,6 +8,8 @@ import copy
 import sys, getopt, os
 import mdanahelper.moleculeInsertion
 
+insertscriptpath = os.path.dirname(__file__)
+
 def main(argv=None):
   if argv is None:
     argv = sys.argv
@@ -42,7 +44,7 @@ def main(argv=None):
 
 
   print ("Inserting", Nw, "water molecules bewteen z=", zmin, "and z=", zmax)
-  water = MDAnalysis.Universe('/home/aschlaich/repos/dielectric/resources/watermolecule.gro')
+  water = MDAnalysis.Universe(insertscriptpath + '/share/watermolecule.gro')
   for i in range(Nw):
     u = mdanahelper.moleculeInsertion.box(u,water,zmax=zmax,zmin=zmin,distance=distance)
     print("%i of %i watermolecules placed." % (i,Nw), end="\r")
