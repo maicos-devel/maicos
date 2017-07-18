@@ -8,6 +8,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from libc cimport math
+from libc cimport stdio
 from cython.parallel cimport prange
 
 cdef double[:] CMFP_H = np.array((0.493,0.323,0.14,0.041,10.511,26.126,3.142,57.8,0.003),dtype=np.double);
@@ -21,10 +22,9 @@ cdef void distance_matrix( double[:,:] positions, int n_atoms,
   cdef int i, j;
   cdef double xr, yr, zr;
 
-  for i in prange(<int>n_atoms,nogil=True):
+  for i in prange(<int>n_atoms):
 
-    for j in range(n_atoms):
-      if (j > i):
+    for j in range(i+1,n_atoms):
         xr = positions[i,0] - positions[j,0];
         yr = positions[i,1] - positions[j,1];
         zr = positions[i,2] - positions[j,2];
@@ -36,11 +36,11 @@ cdef void distance_matrix( double[:,:] positions, int n_atoms,
 
         dist_mat[i,j] = math.sqrt(xr*xr+yr*yr+zr*zr);
 
-cdef inline double CMSF(double q, int nh, double[:] CMFP) nogil:
+cdef double CMSF(double q, int nh, double[:] CMFP) nogil:
   """Calculates the form factor for the given Cromer-Mann scattering parameters."""
 
   cdef double q2, form_factor;
-  cdef Py_ssize_t i;
+  cdef int i;
 
   if nh > 0:
       form_factor = CMSF(q,0,CMFP) + nh*CMSF(q,0,CMFP_H)
@@ -62,15 +62,14 @@ cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
   cdef int i, j
 
   #calculate form factors for given qrr
-  for i in range(<int>CMFP.shape[0]):
+  for i in range(form_factors.shape[0]):
     form_factors[i] = CMSF(qrr, nh[i], CMFP[i,:])
 
   for i in range(n_atoms):
 
-    for j in range(n_atoms):
-      if (j > i):
+    for j in range(i+1,n_atoms):
         qr = qrr*dist_mat[i,j]
-        scat_int += 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]]
+        scat_int = scat_int + 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]]
 
   return scat_int
 
@@ -102,7 +101,10 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
     distance_matrix(positions, n_atoms, boxdimensions, dist_mat);
 
     with nogil:
+      stdio.printf("\n")
       for i in range(maxn[0]):
+        stdio.printf("\rdone %3.1f%%     ", (100.0*(i+1))/maxn[0]);
+        stdio.fflush(stdio.stdout)
         qx = i * q_factor[0];
 
         for j in range(maxn[1]):
@@ -114,8 +116,7 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
                     qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
 
                     if (qrr >= start_q and qrr <= end_q):
-                        q_array[i,j,k] = qrr;
-                        debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors)
-                        S_array[i,j,k] = <double>
+                        q_array[i,j,k] = qrr
+                        S_array[i,j,k] = debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors)
 
     return (q_array,S_array);

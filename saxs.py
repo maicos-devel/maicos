@@ -114,19 +114,15 @@ frames = 0
 
 #======== MAIN LOOP =========
 #============================
-import time
 for ts in u.trajectory[begin:end+1:args.skipframes]:
 
     box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
 
-    begin = time.time()
     q_ts, S_ts = sfactor.compute_scattering_intensity(
                                     np.double(sel.atoms.positions/10), n_atoms,
                                     indices, CMFP, nh,
                                     np.double(box/10),
                                     args.startq, args.endq)
-    end = time.time()
-    print(end-begin)
 
     q_ts = np.asarray(q_ts).flatten()
     S_ts = np.asarray(S_ts).flatten()
