@@ -1,9 +1,9 @@
 #cython: boundscheck=False
 #cython: wraparound=False
+#cython: cdivision=True
 
 #Import python packages
 import numpy as np
-
 #Import C derivates for speed up
 cimport numpy as np
 cimport cython
@@ -18,7 +18,7 @@ cdef void distance_matrix( double[:,:] positions, int n_atoms,
   """Calculates the upper triangle of the Euclidean distance matrix
   using the minimum image convention for rectengular box."""
 
-  cdef Py_ssize_t i, j;
+  cdef int i, j;
   cdef double xr, yr, zr;
 
   for i in prange(<int>n_atoms,nogil=True):
@@ -59,19 +59,18 @@ cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
   for the given Cromer-Mann scattering parameters."""
 
   cdef double qr, scat_int = 0
-  cdef Py_ssize_t i, j
+  cdef int i, j
 
   #calculate form factors for given qrr
-  for i in range(CMFP.shape[0]):
+  for i in range(<int>CMFP.shape[0]):
     form_factors[i] = CMSF(qrr, nh[i], CMFP[i,:])
 
-  #for i in prange(<int>n_atoms,nogil=True):
   for i in range(n_atoms):
 
     for j in range(n_atoms):
       if (j > i):
         qr = qrr*dist_mat[i,j]
-        scat_int = scat_int + math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]]
+        scat_int += 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]]
 
   return scat_int
 
@@ -85,8 +84,8 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
     assert(positions.shape[0]==n_atoms);
     assert(positions.shape[1]==3);
 
-    cdef Py_ssize_t i, j, k;
-    cdef double qx, qy, qr, qz, qrr, tmp;
+    cdef int i, j, k;
+    cdef double qx, qy, qr, qz, qrr;
 
     cdef int[:]        maxn = np.empty(3, dtype=np.int32);
     cdef double[:] q_factor = np.empty(3, dtype=np.double);
@@ -97,8 +96,8 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
 
     cdef double[:,:]  dist_mat  = np.zeros((n_atoms, n_atoms), dtype=np.double);
     cdef double[:] form_factors = np.zeros(len(CMFP), dtype=np.double);
-    cdef double[:,:,:] S_array  = np.zeros(maxn, dtype=np.float);
     cdef double[:,:,:] q_array  = np.zeros(maxn, dtype=np.double);
+    cdef double[:,:,:] S_array  = np.zeros(maxn, dtype=np.double);
 
     distance_matrix(positions, n_atoms, boxdimensions, dist_mat);
 
@@ -116,7 +115,7 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
 
                     if (qrr >= start_q and qrr <= end_q):
                         q_array[i,j,k] = qrr;
-                        tmp = debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors)
-                        S_array[i,j,k] = tmp#-3334104.480804384
+                        debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors)
+                        S_array[i,j,k] = <double>
 
     return (q_array,S_array);
