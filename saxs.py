@@ -83,8 +83,9 @@ types = np.unique(sel.types.astype(str))
 CMFP = np.zeros((len(types),9), dtype=np.float32)
 nh = np.zeros(len(types), dtype=np.int32) #number of hydrogens for united atom force fields
 
-#initialize arrays for later calculation in the cython code
-dist_mat = np.zeros((n_atoms, n_atoms), dtype=np.float32);
+# allocate memory for arrays used in the cython code
+# dist_mat is a 1D representation of triangular matrix without diagonal
+dist_mat = np.zeros(n_atoms*(n_atoms - 1)//2, dtype=np.float32);
 form_factors = np.zeros(len(types), dtype=np.float32);
 
 for i,atom_type in enumerate(types):
