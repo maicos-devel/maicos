@@ -10,18 +10,18 @@ cimport cython
 from libc cimport math
 from cython.parallel cimport prange
 
-cdef double[:] CMFP_H = np.array((0.493,0.323,0.14,0.041,10.511,26.126,3.142,57.8,0.003),dtype=np.double);
+cdef float[:] CMFP_H = np.array((0.493,0.323,0.14,0.041,10.511,26.126,3.142,57.8,0.003),dtype=np.float32);
 
-cdef void distance_matrix( double[:,:] positions, int n_atoms,
-                                  double[:] boxdimensions,
-                                  double[:,:] dist_mat, int nt) nogil:
+cdef void distance_matrix( float[:,:] positions, int n_atoms,
+                                  float[:] boxdimensions,
+                                  float[:,:] dist_mat, int nt) nogil:
   """Calculates the upper triangle of the Euclidean distance matrix
   using the minimum image convention for rectengular box."""
 
   cdef int i, j;
-  cdef double xr, yr, zr;
+  cdef float xr, yr, zr;
 
-  for i in prange(<int>n_atoms, schedule="dynamic", num_threads=nt):
+  for i in prange(n_atoms, schedule="dynamic", num_threads=nt):
 
     for j in range(i+1,n_atoms):
         xr = positions[i,0] - positions[j,0];
@@ -35,10 +35,10 @@ cdef void distance_matrix( double[:,:] positions, int n_atoms,
 
         dist_mat[i,j] = math.sqrt(xr*xr+yr*yr+zr*zr);
 
-cdef double CMSF(double q, int nh, double[:] CMFP) nogil:
+cdef float CMSF(float q, int nh, float[:] CMFP) nogil:
   """Calculates the form factor for the given Cromer-Mann scattering parameters."""
 
-  cdef double q2, form_factor;
+  cdef float q2, form_factor;
   cdef int i;
 
   if nh > 0:
@@ -51,13 +51,13 @@ cdef double CMSF(double q, int nh, double[:] CMFP) nogil:
 
   return form_factor;
 
-cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
+cdef float debye(float qrr, int[:] indices, float[:,:] dist_mat,
                           int n_atoms, int[:] nh,
-                          double[:,:] CMFP, double[:] form_factors) nogil:
+                          float[:,:] CMFP, float[:] form_factors) nogil:
   """Calculates the scattering intensity according to the Debye formula
   for the given Cromer-Mann scattering parameters."""
 
-  cdef double qr, scat_int = 0
+  cdef float qr, scat_int = 0
   cdef int i, j
 
   #calculate form factors for given qrr
@@ -72,10 +72,11 @@ cdef double debye(double qrr, int[:] indices, double[:,:] dist_mat,
 
   return scat_int
 
-cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
-                        int[:] indices, double [:,:] CMFP, int[:] nh,
-                        double[:] boxdimensions,
-                        double start_q, double end_q, int nt):
+cpdef tuple compute_scattering_intensity(float[:,:] positions, int n_atoms,
+                        int[:] indices, float [:,:] CMFP, int[:] nh,
+                        float[:] boxdimensions, float[:,:] dist_mat,
+                        float [:] form_factors,
+                        float start_q, float end_q, int nt):
     """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
 
     assert(boxdimensions.shape[0]==3);
@@ -83,19 +84,17 @@ cpdef tuple compute_scattering_intensity(double[:,:] positions, int n_atoms,
     assert(positions.shape[1]==3);
 
     cdef int i, j, k;
-    cdef double qx, qy, qz, qrr;
+    cdef float qx, qy, qz, qrr;
 
     cdef int[:]        maxn = np.empty(3, dtype=np.int32);
-    cdef double[:] q_factor = np.empty(3, dtype=np.double);
+    cdef float[:] q_factor = np.empty(3, dtype=np.float32);
 
     for i in range(3):
         q_factor[i] = 2*math.pi/boxdimensions[i];
         maxn[i] = <int>math.ceil(end_q/<float>q_factor[i]);
 
-    cdef double[:,:]  dist_mat  = np.zeros((n_atoms, n_atoms), dtype=np.double);
-    cdef double[:] form_factors = np.zeros(len(CMFP), dtype=np.double);
-    cdef double[:,:,:] q_array  = np.zeros(maxn, dtype=np.double);
-    cdef double[:,:,:] S_array  = np.zeros(maxn, dtype=np.double);
+    cdef float[:,:,:] q_array  = np.zeros(maxn, dtype=np.float32);
+    cdef float[:,:,:] S_array  = np.zeros(maxn, dtype=np.float32);
 
     distance_matrix(positions, n_atoms, boxdimensions, dist_mat, nt);
 

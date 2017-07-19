@@ -80,8 +80,12 @@ sel = sel.atoms.select_atoms("not name 'DUM'")
 n_atoms = sel.atoms.n_atoms
 
 types = np.unique(sel.types.astype(str))
-CMFP = np.zeros((len(types),9), dtype=np.double)
+CMFP = np.zeros((len(types),9), dtype=np.float32)
 nh = np.zeros(len(types), dtype=np.int32) #number of hydrogens for united atom force fields
+
+#initialize arrays for later calculation in the cython code
+dist_mat = np.zeros((n_atoms, n_atoms), dtype=np.float32);
+form_factors = np.zeros(len(types), dtype=np.float32);
 
 for i,atom_type in enumerate(types):
     try:
@@ -124,9 +128,9 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
 
     q_ts, S_ts = sfactor.compute_scattering_intensity(
-                                    np.double(sel.atoms.positions/10), n_atoms,
-                                    indices, CMFP, nh,
-                                    np.double(box/10),
+                                    sel.atoms.positions/10, n_atoms,
+                                    indices, CMFP, nh, box/10,
+                                    dist_mat, form_factors,
                                     args.startq, args.endq, args.nt)
 
     q_ts = np.asarray(q_ts).flatten()
