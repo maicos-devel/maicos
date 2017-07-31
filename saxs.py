@@ -42,14 +42,14 @@ args = parser.parse_args()
 
 def output():
     """Saves the current profiles to a file."""
-    nonzeros = np.where(struct_factor != 0)[0]
-    scat_factor = struct_factor[nonzeros]
-    wave_vectors = q[nonzeros]
+    nonzeros = np.where(scat_intensity != 0)[0]
+    scat_intensity_out = scat_intensity[nonzeros]
+    q_out = q[nonzeros]
 
-    scat_factor = scat_factor/frames
+    scat_intensity_out = scat_intensity_out/frames
 
     np.savetxt(args.output+'.dat',
-        np.vstack([wave_vectors,scat_factor]).T,
+        np.vstack([q_out,scat_intensity_out]).T,
         header="q (1/nm)\tS(q)_tot (arb. units)",fmt='%.8e')
 
 def get_base_path():
@@ -119,7 +119,7 @@ if args.nt == 0: args.nt = multiprocessing.cpu_count()
 
 nbins = int(np.ceil((args.endq - args.startq)/args.dq))
 q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
-struct_factor = np.zeros(nbins)
+scat_intensity = np.zeros(nbins)
 frames = 0
 
 #======== MAIN LOOP =========
@@ -128,21 +128,13 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
 
     box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
 
-    q_ts, S_ts = sfactor.compute_scattering_intensity(
+    scat_intensity += sfactor.compute_scattering_intensity(
                                     sel.atoms.positions/10, n_atoms,
                                     indices, CMFP, nh, box/10,
                                     dist_mat, form_factors,
-                                    args.startq, args.endq, args.nt)
+                                    args.startq, args.dq, nbins,
+                                    args.nt)
 
-    q_ts = np.asarray(q_ts).flatten()
-    S_ts = np.asarray(S_ts).flatten()
-    nonzeros = np.where(S_ts != 0)[0]
-
-    q_ts = q_ts[nonzeros]
-    S_ts = S_ts[nonzeros]
-
-    struct_ts = binned_statistic(q_ts,S_ts,bins=nbins,range=(args.startq,args.endq))[0]
-    struct_factor[:] += np.nan_to_num(struct_ts)
 
     frames += 1
     if (frames < 100):

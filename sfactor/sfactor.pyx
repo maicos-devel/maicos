@@ -58,66 +58,62 @@ cdef float CMSF(float q, int nh, float[:] CMFP) nogil:
 
   return form_factor;
 
-cdef double debye(float qrr, int[:] indices, float[:] dist_mat,
+cdef double debye(float q, int[:] indices, float[:] dist_mat,
                           int n_atoms, int[:] nh,
-                          float[:,:] CMFP, float[:] form_factors) nogil:
+                          float[:,:] CMFP, float[:] form_factors, float r_max) nogil:
   """Calculates the scattering intensity according to the Debye formula
   for the given Cromer-Mann scattering parameters."""
 
-  cdef double qr, scat_int = 0
+  cdef double r, norm = 0, scat_int = 0
   cdef int i, j
 
-  #calculate form factors for given qrr
+  #calculate form factors for given q
   for i in range(form_factors.shape[0]):
-    form_factors[i] = CMSF(qrr, nh[i], CMFP[i,:])
+    form_factors[i] = CMSF(q, nh[i], CMFP[i,:])
 
+  #Debye eq: sum_i f[i]*f[i] + sum_i sum_{j>i} 2 *f _i * f_j * sin(q * r_ij) / ( q * r_ij )
   for i in range(n_atoms):
-
+    scat_int = scat_int + form_factors[indices[i]] * form_factors[indices[i]];
     for j in range(i+1,n_atoms):
-        qr = qrr*dist_mat[Trag_noeq(i, j, n_atoms)];
-        scat_int = scat_int + 2*math.sin(qr)/qr*form_factors[indices[i]]*form_factors[indices[j]];
+        r = dist_mat[Trag_noeq(i, j, n_atoms)];
+        #damp_factor = math.sin(math.pi*r/r_max) / (math.pi*r/r_max)
+        scat_int = scat_int + 2 * math.sin( q * r ) / ( q * r ) \
+                             * form_factors[indices[i]] * form_factors[indices[j]];
+
+  #normalization: sum_i f_i**2
+  for i in range(n_atoms):
+    norm = norm + form_factors[indices[i]]*form_factors[indices[i]]
+
+  scat_int = scat_int/norm
 
   return scat_int
 
-cpdef tuple compute_scattering_intensity(float[:,:] positions, int n_atoms,
+cpdef double[:] compute_scattering_intensity(float[:,:] positions, int n_atoms,
                         int[:] indices, float [:,:] CMFP, int[:] nh,
                         float[:] boxdimensions, float[:] dist_mat,
                         float [:] form_factors,
-                        float start_q, float end_q, int nt):
+                        float start_q, float dq, int nbins,
+                        int nt):
   """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
 
   assert(boxdimensions.shape[0]==3);
   assert(positions.shape[0]==n_atoms);
   assert(positions.shape[1]==3);
 
-  cdef int i, j, k;
-  cdef float qx, qy, qz, qrr;
+  cdef int i;
+  cdef float r_max, q;
 
-  cdef int[:]        maxn = np.empty(3, dtype=np.int32);
-  cdef float[:] q_factor = np.empty(3, dtype=np.float32);
+  r_max = max(boxdimensions[0], boxdimensions[1]);
+  r_max = max(boxdimensions[2], r_max) / 2.0;
+  ref_q = math.pi / r_max;
 
-  for i in range(3):
-      q_factor[i] = 2*math.pi/boxdimensions[i];
-      maxn[i] = <int>math.ceil(end_q/<float>q_factor[i]);
-
-  cdef float[:,:,:] q_array  = np.zeros(maxn, dtype=np.float32);
-  cdef double[:,:,:] S_array  = np.zeros(maxn, dtype=np.double);
+  cdef double[:] S_array  = np.zeros(nbins, dtype=np.double);
 
   distance_matrix(positions, n_atoms, boxdimensions, dist_mat, nt);
 
-  for i in prange(<int>maxn[0], nogil=True, schedule="dynamic", num_threads=nt):
-    qx = i * q_factor[0];
+  for i in prange(nbins, nogil=True, schedule="dynamic", num_threads=nt):
+    q = start_q + (i + 0.5) * dq
+    if q > ref_q:
+        S_array[i] = debye(q, indices, dist_mat, n_atoms, nh, CMFP, form_factors, r_max);
 
-    for j in range(maxn[1]):
-        qy = j * q_factor[1];
-
-        for k in range(maxn[2]):
-            if (i + j + k != 0):
-                qz = k * q_factor[2];
-                qrr = math.sqrt(qx*qx+qy*qy+qz*qz);
-
-                if (qrr >= start_q and qrr <= end_q):
-                    q_array[i,j,k] = qrr;
-                    S_array[i,j,k] = debye(qrr, indices, dist_mat, n_atoms, nh, CMFP, form_factors);
-
-  return (q_array,S_array);
+  return S_array;
