@@ -3,7 +3,6 @@
 from __future__ import print_function, division
 import MDAnalysis as mda
 import numpy as np
-from scipy.stats import binned_statistic
 import sys
 import argparse
 import os

@@ -4,20 +4,20 @@
   OE            O
   OW            O
    N            N
-  NT            NH2
-  NL            NH3
+  NT            N
+  NL            N
   NR            N
-  NZ            NH2
-  NE            NH1
+  NZ            N
+  NE            N
    C           C
 CH0            C
-CH1            CH1
-CH2            CH2
-CH3            CH3
-CH4            CH4
-CH2r           CH2
-CR1            CH1
-  HC           CH1
+CH1            C
+CH2            C
+CH3            C
+CH4            C
+CH2r           C
+CR1            C
+  HC           C
    H           H
  DUM           DUM
    S           S
