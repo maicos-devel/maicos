@@ -12,6 +12,12 @@ from cython.parallel cimport prange
 
 cdef float[:] CMFP_H = np.array((0.493,0.323,0.14,0.041,10.511,26.126,3.142,57.8,0.003),dtype=np.float32);
 
+cdef inline tuple maxmin(a,b):
+  if (a > b):
+    return a,b
+  else:
+    return b,a
+
 cdef inline int Trag_noeq(int row, int col, int N) nogil:
   """Returns the index of a 1D array representation from a upper triangular
   matrix without diagonal with size N. Taken from:
@@ -60,11 +66,12 @@ cdef float CMSF(float q, int nh, float[:] CMFP) nogil:
 
 cdef double debye(float q, int[:] indices, float[:] dist_mat,
                           int n_atoms, int[:] nh,
-                          float[:,:] CMFP, float[:] form_factors, float r_max) nogil:
+                          float[:,:] CMFP, float[:] form_factors,
+                          float r_min, float volume ) nogil:
   """Calculates the scattering intensity according to the Debye formula
   for the given Cromer-Mann scattering parameters."""
 
-  cdef double r, norm = 0, scat_int = 0
+  cdef double r, qc, norm = 0, scat_int = 0
   cdef int i, j
 
   #calculate form factors for given q
@@ -76,7 +83,7 @@ cdef double debye(float q, int[:] indices, float[:] dist_mat,
     scat_int = scat_int + form_factors[indices[i]] * form_factors[indices[i]];
     for j in range(i+1,n_atoms):
         r = dist_mat[Trag_noeq(i, j, n_atoms)];
-        #damp_factor = math.sin(math.pi*r/r_max) / (math.pi*r/r_max)
+        if r > r_min: continue
         scat_int = scat_int + 2 * math.sin( q * r ) / ( q * r ) \
                              * form_factors[indices[i]] * form_factors[indices[j]];
 
@@ -85,6 +92,11 @@ cdef double debye(float q, int[:] indices, float[:] dist_mat,
     norm = norm + form_factors[indices[i]]*form_factors[indices[i]]
 
   scat_int = scat_int/norm
+
+  #cut-off correction
+  qc = q*r_min
+  scat_int = scat_int + 4 * math.pi * n_atoms / ( volume * q * q) * ( \
+                                   r_min * math.cos(qc) - math.sin(qc) / q);
 
   return scat_int
 
@@ -101,10 +113,13 @@ cpdef double[:] compute_scattering_intensity(float[:,:] positions, int n_atoms,
   assert(positions.shape[1]==3);
 
   cdef int i;
-  cdef float r_max, q;
+  cdef float r_max, r_min, volume, q;
 
-  r_max = max(boxdimensions[0], boxdimensions[1]);
-  r_max = max(boxdimensions[2], r_max) / 2.0;
+  volume = boxdimensions[0]*boxdimensions[1]*boxdimensions[2]
+  r_max,r_min = maxmin(boxdimensions[0], boxdimensions[1]);
+  r_max = maxmin(boxdimensions[2], r_max)[0] / 2.0;
+  r_min = maxmin(boxdimensions[2], r_min)[1] / 2.0;
+
   ref_q = math.pi / r_max;
 
   cdef double[:] S_array  = np.zeros(nbins, dtype=np.double);
@@ -114,6 +129,7 @@ cpdef double[:] compute_scattering_intensity(float[:,:] positions, int n_atoms,
   for i in prange(nbins, nogil=True, schedule="dynamic", num_threads=nt):
     q = start_q + (i + 0.5) * dq
     if q > ref_q:
-        S_array[i] = debye(q, indices, dist_mat, n_atoms, nh, CMFP, form_factors, r_max);
+        S_array[i] = debye(q, indices, dist_mat, n_atoms, nh, \
+                            CMFP, form_factors, r_min, volume);
 
   return S_array;
