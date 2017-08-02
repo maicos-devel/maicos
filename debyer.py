@@ -16,18 +16,19 @@ parser = argparse.ArgumentParser(description="""
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
     http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s',     dest='topology',    type=str,   default='topol.tpr',            help='the topolgy file')
-parser.add_argument('-f',     dest='trajectory',  type=str,   default=['traj.xtc'],nargs='+', help='A single or multiple trajectory files.')
-parser.add_argument('-sel',   dest='sel',         type=str,   default='all',                  help='Atoms for which to compute the profile', )
-parser.add_argument('-b',     dest='begin',       type=float, default=0,                      help='First frame (ps) to read from trajectory')
-parser.add_argument('-e',     dest='end',         type=float, default=None,                   help='Last frame (ps) to read from trajectory')
-parser.add_argument('-skip',  dest='skipframes',  type=int,   default=1,                      help='Evaluate every Nth frames')
-parser.add_argument('-dout',  dest='outfreq',     type=float, default='100',                  help='Number of frames after which the output is updated.')
-parser.add_argument('-sq',    dest='output',      type=str,   default='./sq',                 help='Prefix/Path for output file')
-parser.add_argument('-startq',dest='startq',      type=float, default=0,                      help='Starting q (1/A)')
-parser.add_argument('-endq',  dest='endq',        type=float, default=60,                     help='Ending q (1/A)')
-parser.add_argument('-dq',    dest='dq',          type=float, default=0.02,                   help='binwidth (1/A)')
-parser.add_argument('-d',     dest='debyer',      type=str,   default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
+parser.add_argument('-s',     dest='topology',    type=str,     default='topol.tpr',            help='the topolgy file')
+parser.add_argument('-f',     dest='trajectory',  type=str,     default=['traj.xtc'],nargs='+', help='A single or multiple trajectory files.')
+parser.add_argument('-sel',   dest='sel',         type=str,     default='all',                  help='Atoms for which to compute the profile', )
+parser.add_argument('-b',     dest='begin',       type=float,   default=0,                      help='First frame (ps) to read from trajectory')
+parser.add_argument('-e',     dest='end',         type=float,   default=None,                   help='Last frame (ps) to read from trajectory')
+parser.add_argument('-skip',  dest='skipframes',  type=int,     default=1,                      help='Evaluate every Nth frames')
+parser.add_argument('-dout',  dest='outfreq',     type=float,   default='100',                  help='Number of frames after which the output is updated.')
+parser.add_argument('-sq',    dest='output',      type=str,     default='./sq',                 help='Prefix/Path for output file')
+parser.add_argument('-startq',dest='startq',      type=float,   default=0,                      help='Starting q (1/A)')
+parser.add_argument('-endq',  dest='endq',        type=float,   default=60,                     help='Ending q (1/A)')
+parser.add_argument('-dq',    dest='dq',          type=float,   default=0.02,                   help='binwidth (1/A)')
+parser.add_argument('-d',     dest='debyer',      type=str,     default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
+parser.add_argument('-v',     dest='verbose',     action='store_true',                          help='Be loud and noisy.')
 
 
 args = parser.parse_args()
@@ -52,9 +53,9 @@ def cleanup():
 
     if frames > args.outfreq:
         s_tmp[:,1] *= len(datfiles)
-        s_tmp[:,1] += (frames-len(datfiles))*np.loadtxt("tmp/{}".format(f))[:,1]
+        s_tmp[:,1] += (frames-len(datfiles))*np.loadtxt("{}.dat".format(args.output))[:,1]
+        s_tmp[:,1] /= frames
 
-    s_tmp /= frames
     np.savetxt(args.output+'.dat',s_tmp,header="q (1/A)\tS(q)_tot (arb. units)",fmt='%.8e')
 
 def get_base_path():
@@ -100,6 +101,11 @@ except OSError as e:
     if e.errno == 17: #pass if directory exist
         pass
 
+if args.verbose:
+  FNULL = None
+else:
+  FNULL = open(os.devnull, 'w')
+
 frames = 0
 for ts in u.trajectory[begin:end+1:args.skipframes]:
 
@@ -113,9 +119,8 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     if ref_q > args.startq: startq = ref_q
 
     command = "-x -f {0} -t {1} -s {2} -o tmp/{3}.dat tmp/{3}.xyz".format(
-                                              startq, args.endq,args.dq,frames)
+                                              round(startq,3), args.endq,args.dq,frames)
 
-    FNULL = open(os.devnull, 'w')
     subprocess.run("{} {}".format(args.debyer,command),stdout=FNULL, stderr=FNULL,shell=True)
 
     frames += 1
