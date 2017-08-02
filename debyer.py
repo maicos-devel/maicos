@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 import MDAnalysis as mda
 import numpy as np
+from scipy.stats import binned_statistic
 import argparse
 import os
 import sys
@@ -45,19 +46,24 @@ def cleanup():
         if i == 0:
             s_tmp = np.loadtxt(path)
         else:
-            s_tmp[:,1] += np.loadtxt(path)[:,1]
+            s_tmp = np.vstack([s_tmp, np.loadtxt(path)])
 
         os.remove(path)
         os.remove("{}/{}".format(tmp,xyzfiles[i]))
 
-    s_tmp[:,1] /= len(datfiles)
-
     if frames > args.outfreq:
-        s_tmp[:,1] *= len(datfiles)
-        s_tmp[:,1] += (frames-len(datfiles))*np.loadtxt("{}.dat".format(args.output))[:,1]
-        s_tmp[:,1] /= frames
+        s_prev = np.loadtxt("{}.dat".format(args.output))
+        s_prev[:,1] *= (frames-len(datfiles)) #weighting for average
+        s_tmp = np.vstack([s_tmp, s_prev])
 
-    np.savetxt(args.output+'.dat',s_tmp,header="q (1/A)\tS(q)_tot (arb. units)",fmt='%.8e')
+    s_out = binned_statistic(s_tmp[:,0],s_tmp[:,1],bins=nbins,range=(args.startq,args.endq))[0]
+    s_out = np.nan_to_num(s_out)
+
+    nonzeros = np.where(s_out != 0)[0]
+
+    np.savetxt(args.output+'.dat',
+          np.vstack([q[nonzeros],s_out[nonzeros]]).T,
+          header="q (1/A)\tS(q)_tot (arb. units)",fmt='%.8e')
 
 def get_base_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -102,6 +108,9 @@ if args.verbose:
   FNULL = None
 else:
   FNULL = open(os.devnull, 'w')
+
+nbins = int(np.ceil((args.endq - args.startq)/args.dq))
+q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
 
 frames = 0
 for ts in u.trajectory[begin:end+1:args.skipframes]:
