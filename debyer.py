@@ -115,7 +115,8 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     command = "-x -f {0} -t {1} -s {2} -o tmp/{3}.dat tmp/{3}.xyz".format(
                                               startq, args.endq,args.dq,frames)
 
-    subprocess.run("{} {}".format(args.debyer,command),shell=True)
+    FNULL = open(os.devnull, 'w')
+    subprocess.run("{} {}".format(args.debyer,command),stdout=FNULL, stderr=FNULL,shell=True)
 
     frames += 1
     if (frames < 100):
