@@ -132,7 +132,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
 
 cleanup()
 try:
-    os.mkdir("tmp")
+    os.rmdir("tmp")
 except OSError as e:
     if e.errno == 66: #pass if directory is not empty
         pass
