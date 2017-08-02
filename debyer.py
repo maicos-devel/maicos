@@ -7,6 +7,7 @@ import argparse
 import os
 import sys
 import subprocess
+import tempfile
 
 
 #========== PARSER ===========
@@ -36,18 +37,18 @@ args = parser.parse_args()
 
 def cleanup():
     """averages over all dat file and removes them"""
-    datfiles = [f for f in os.listdir("tmp") if f.endswith(".dat")]
-    xyzfiles = [f for f in os.listdir("tmp") if f.endswith(".xyz")]
+    datfiles = [f for f in os.listdir(tmp) if f.endswith(".dat")]
+    xyzfiles = [f for f in os.listdir(tmp) if f.endswith(".xyz")]
 
     for i, f in enumerate(datfiles):
-        path = "tmp/{}".format(f)
+        path = "{}/{}".format(tmp,f)
         if i == 0:
             s_tmp = np.loadtxt(path)
         else:
             s_tmp[:,1] += np.loadtxt(path)[:,1]
 
         os.remove(path)
-        os.remove("tmp/{}".format(xyzfiles[i]))
+        os.remove("{}/{}".format(tmp,xyzfiles[i]))
 
     s_tmp[:,1] /= len(datfiles)
 
@@ -95,11 +96,7 @@ if begin > end:
     print("Start time is larger than end time!")
 
 #create tmp directory for saving datafiles
-try:
-    os.mkdir("tmp")
-except OSError as e:
-    if e.errno == 17: #pass if directory exist
-        pass
+tmp = tempfile.mkdtemp()
 
 if args.verbose:
   FNULL = None
@@ -113,13 +110,13 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     sel.atoms.positions = sel.atoms.positions \
                             - box*np.round(sel.atoms.positions/box) # minimum image
 
-    sel.atoms.write("tmp/{}.xyz".format(frames))
+    sel.atoms.write("{}/{}.xyz".format(tmp,frames))
 
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
 
-    command = "-x -f {0} -t {1} -s {2} -o tmp/{3}.dat tmp/{3}.xyz".format(
-                                              round(startq,3), args.endq,args.dq,frames)
+    command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat {3}/{4}.xyz".format(
+                                              round(startq,3), args.endq, args.dq, tmp, frames)
 
     subprocess.run("{} {}".format(args.debyer,command),stdout=FNULL, stderr=FNULL,shell=True)
 
@@ -136,9 +133,5 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     sys.stdout.flush()
 
 cleanup()
-try:
-    os.rmdir("tmp")
-except OSError as e:
-    if e.errno == 66: #pass if directory is not empty
-        pass
+os.rmdir(tmp)
 print("\n")
