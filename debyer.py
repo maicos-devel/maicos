@@ -82,12 +82,13 @@ print('Command line was: %s\n' % ' '.join(sys.argv))
 print("Loading trajectory...\n")
 u = mda.Universe(args.topology,args.trajectory)
 sel = u.select_atoms(args.sel)
-sel = sel.atoms.select_atoms("not name 'DUM'")
-n_atoms = sel.atoms.n_atoms
 
 for i, atom_type in enumerate(sel.types.astype(str)):
     atom = sel.atoms[i]
     atom.name = type_dict[atom_type]
+
+sel = sel.atoms.select_atoms("not name 'DUM'")
+n_atoms = sel.atoms.n_atoms
 
 startq = args.startq
 dt = u.trajectory.dt
