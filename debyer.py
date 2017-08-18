@@ -78,6 +78,16 @@ with open("{}/share/atomtypes.dat".format(get_base_path())) as f:
             elements = line.split()
             type_dict[elements[0]] = elements[1]
 
+def writeXYZ(filename, obj, atom_names):
+    """Writes the positions of the given MDAnalysis object to the given file"""
+    write = mda.coordinates.XYZ.XYZWriter(filename,
+                                          n_atoms=len(atom_names),
+                                          atoms=atom_names)
+
+    ts = obj.universe.trajectory.ts.copy_slice(obj.indices)
+    write.write_next_timestep(ts)
+    write.close()
+
 #======= PREPERATIONS =======
 #============================
 print('Command line was: %s\n' % ' '.join(sys.argv))
@@ -86,12 +96,30 @@ print("Loading trajectory...\n")
 u = mda.Universe(args.topology,args.trajectory)
 sel = u.select_atoms(args.sel)
 
-for i, atom_type in enumerate(sel.types.astype(str)):
-    atom = sel.atoms[i]
-    atom.name = type_dict[atom_type]
+# Create an extra list for the atom names.
+# This is necessary since it is not possible to efficently add axtra atoms to
+# a MDAnalysis universe, necessary for the hydrogens in united atom forcefields.
 
-sel = sel.atoms.select_atoms("not name 'DUM'")
-n_atoms = sel.atoms.n_atoms
+atom_names = sel.n_atoms*['']
+
+for i, atom_type in enumerate(sel.types.astype(str)):
+    element = type_dict[atom_type]
+
+    if element is not "DUM":
+        # add hydrogens in the case of united atom forcefields
+        if element in ["CH1","CH2","CH3","CH4","NH","NH2","NH3"]:
+            atom_names[i] = element[0]
+            for i in range(int(element[-1])):
+                atom_names.append("H")
+                # add a extra atom to universe. It got the wrong type but we only
+                # need the position, since we maintain our own atom type list.
+                sel += sel.atoms[i]
+        else:
+            atom_names[i] = element
+
+
+#sel = sel.atoms.select_atoms("not name 'DUM'")
+atom_names *= args.nbox[0]*args.nbox[1]*args.nbox[2]
 
 startq = args.startq
 dt = u.trajectory.dt
@@ -129,7 +157,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     # replicate system (inspired by the gromacs tool genconv)
     tra = mda.Merge(sel.atoms)
     org = mda.Merge(sel.atoms)
-    for k in range(3): # loop over all gridpositions
+    for k in range(args.nbox[2]): # loop over all gridpositions
         shift[2] = k * box[2]
 
         for j in range(args.nbox[1]):
@@ -143,7 +171,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
                     org = mda.Merge(org.atoms,tra.atoms)
                     tra.atoms.translate(-shift)
 
-    org.atoms.write("{}/{}.xyz".format(tmp,frames))
+    writeXYZ("{}/{}.xyz".format(tmp,frames), org.atoms, atom_names)
 
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
