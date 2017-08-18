@@ -16,7 +16,9 @@ import tempfile
 parser = argparse.ArgumentParser(description="""
     An interface to the Deyer library. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
-    http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
+    http://www.mdanalysis.org/docs/documentation_pages/selections.html
+    The system can be replicated with the -nbox option. The system is than stacked multiplie times on itself. No
+    replication is done be default.""",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-s',     dest='topology',    type=str,     default='topol.tpr',            help='the topolgy file')
 parser.add_argument('-f',     dest='trajectory',  type=str,     default=['traj.xtc'],nargs='+', help='A single or multiple trajectory files.')
@@ -30,6 +32,7 @@ parser.add_argument('-startq',dest='startq',      type=float,   default=0,      
 parser.add_argument('-endq',  dest='endq',        type=float,   default=60,                     help='Ending q (1/A)')
 parser.add_argument('-dq',    dest='dq',          type=float,   default=0.02,                   help='binwidth (1/A)')
 parser.add_argument('-d',     dest='debyer',      type=str,     default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
+parser.add_argument('-nbox',  dest='nbox',        type=int,     default=[1,1,1], nargs="+",     help='Number of boxes')
 parser.add_argument('-v',     dest='verbose',     action='store_true',                          help='Be loud and noisy.')
 
 
@@ -107,20 +110,40 @@ tmp = tempfile.mkdtemp()
 
 if args.verbose:
   FNULL = None
+  print("{} is the tempory directory for all files.".format(tmp))
 else:
   FNULL = open(os.devnull, 'w')
 
 nbins = int(np.ceil((args.endq - args.startq)/args.dq))
 q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
+shift = np.zeros(3)
 
 frames = 0
 for ts in u.trajectory[begin:end+1:args.skipframes]:
 
+    # convert coordinates in a rectengular box
     box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
     sel.atoms.positions = sel.atoms.positions \
                             - box*np.round(sel.atoms.positions/box) # minimum image
 
-    sel.atoms.write("{}/{}.xyz".format(tmp,frames))
+    # replicate system (inspired by the gromacs tool genconv)
+    tra = mda.Merge(sel.atoms)
+    org = mda.Merge(sel.atoms)
+    for k in range(3): # loop over all gridpositions
+        shift[2] = k * box[2]
+
+        for j in range(args.nbox[1]):
+            shift[1] = j * box[1]
+
+            for i in range(args.nbox[0]):
+                if i+j+k > 0:
+                    shift[0] = i * box[0]
+
+                    tra.atoms.translate(shift)
+                    org = mda.Merge(org.atoms,tra.atoms)
+                    tra.atoms.translate(-shift)
+
+    org.atoms.write("{}/{}.xyz".format(tmp,frames))
 
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
