@@ -109,7 +109,7 @@ for i, atom_type in enumerate(sel.types.astype(str)):
         # add hydrogens in the case of united atom forcefields
         if element in ["CH1","CH2","CH3","CH4","NH","NH2","NH3"]:
             atom_names[i] = element[0]
-            for i in range(int(element[-1])):
+            for h in range(int(element[-1])):
                 atom_names.append("H")
                 # add a extra atom to universe. It got the wrong type but we only
                 # need the position, since we maintain our own atom type list.
