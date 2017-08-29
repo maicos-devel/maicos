@@ -32,7 +32,6 @@ parser.add_argument('-startq',dest='startq',      type=float,   default=0,      
 parser.add_argument('-endq',  dest='endq',        type=float,   default=60,                     help='Ending q (1/A)')
 parser.add_argument('-dq',    dest='dq',          type=float,   default=0.02,                   help='binwidth (1/A)')
 parser.add_argument('-d',     dest='debyer',      type=str,     default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
-parser.add_argument('-nbox',  dest='nbox',        type=int,     default=[1,1,1], nargs="+",     help='Number of boxes')
 parser.add_argument('-v',     dest='verbose',     action='store_true',                          help='Be loud and noisy.')
 
 
@@ -118,7 +117,6 @@ for i, atom_type in enumerate(sel.types.astype(str)):
 
 
 #sel = sel.atoms.select_atoms("not name 'DUM'")
-atom_names *= args.nbox[0]*args.nbox[1]*args.nbox[2]
 
 startq = args.startq
 dt = u.trajectory.dt
@@ -153,24 +151,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     sel.atoms.positions = sel.atoms.positions \
                             - box*np.round(sel.atoms.positions/box) # minimum image
 
-    # replicate system (inspired by the gromacs tool genconv)
-    tra = mda.Merge(sel.atoms)
-    org = mda.Merge(sel.atoms)
-    for k in range(args.nbox[2]): # loop over all gridpositions
-        shift[2] = k * box[2]
-
-        for j in range(args.nbox[1]):
-            shift[1] = j * box[1]
-
-            for i in range(args.nbox[0]):
-                if i+j+k > 0:
-                    shift[0] = i * box[0]
-
-                    tra.atoms.translate(shift)
-                    org = mda.Merge(org.atoms,tra.atoms)
-                    tra.atoms.translate(-shift)
-
-    writeXYZ("{}/{}.xyz".format(tmp,frames), org.atoms, atom_names)
+    writeXYZ("{}/{}.xyz".format(tmp,frames), sel.atoms, atom_names)
 
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
