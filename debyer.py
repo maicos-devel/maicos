@@ -95,11 +95,11 @@ print("Loading trajectory...\n")
 u = mda.Universe(args.topology,args.trajectory)
 sel = u.select_atoms(args.sel)
 
-# Create an extra list with atomnames.
-# This is necessary since it is not possible to eficently add axtra atoms to
-# a universe...
+# Create an extra list for the atom names.
+# This is necessary since it is not possible to efficently add axtra atoms to
+# a MDAnalysis universe, necessary for the hydrogens in united atom forcefields.
 
-atom_names = []
+atom_names = sel.n_atoms*['']
 
 for i, atom_type in enumerate(sel.types.astype(str)):
     element = type_dict[atom_type]
@@ -107,14 +107,14 @@ for i, atom_type in enumerate(sel.types.astype(str)):
     if element is not "DUM":
         # add hydrogens in the case of united atom forcefields
         if element in ["CH1","CH2","CH3","CH4","NH","NH2","NH3"]:
-            atom_names.append(element[0])
-            for i in range(int(element[-1])):
+            atom_names[i] = element[0]
+            for h in range(int(element[-1])):
                 atom_names.append("H")
-                # add extra atom to universe
+                # add a extra atom to universe. It got the wrong type but we only
+                # need the position, since we maintain our own atom type list.
                 sel += sel.atoms[i]
         else:
-            atom_names.append(element)
-
+            atom_names[i] = element
 
 #sel = sel.atoms.select_atoms("not name 'DUM'")
 
