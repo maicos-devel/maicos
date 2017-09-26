@@ -156,8 +156,9 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
 
-    command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat {3}/{4}.xyz".format(
-                                              round(startq,3), args.endq, args.dq, tmp, frames)
+    command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
+                                              round(startq,3), args.endq, args.dq, tmp, frames,
+                                              box[0],box[1],box[2],np.min(box)/2)
 
     subprocess.run("{} {}".format(args.debyer,command),stdout=FNULL, stderr=FNULL,shell=True)
 
