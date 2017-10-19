@@ -16,40 +16,20 @@ parser = argparse.ArgumentParser(description="""
     found here:
     https://pythonhosted.org/MDAnalysis/documentation_pages/selections.html""",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s', dest='topology', type=str,
-    default='topol.tpr',help="the topolgy file")
-parser.add_argument('-f', dest='trajectory', type=str, nargs='+',
-        default=['traj.xtc'], help="A single or multiple trajectory files.")
-
-parser.add_argument('-b', dest='begin', type=float,
-    default=0, help='start time (ps) for evaluation')
-parser.add_argument('-e', dest='end', type=float,
-    default=None, help='end time (ps) for evaluation')
-parser.add_argument('-dt', dest='skipframes', type=int,
-    default=1, help='skip every N frames')
-parser.add_argument('-o', dest='output', type=str,
-    default='density', help='Prefix for output filenames')
-parser.add_argument('-dout', dest='outfreq', type=float,\
-        default='1000', help='Default time after which output files are refreshed (1000 ps).')
-
-
-parser.add_argument('-d', dest='dim', type=int,\
-    help='dimension for binning (0=X, 1=Y, 2=Z)', default=2)
-
-parser.add_argument('-dz', dest='binwidth', type=float,\
-    default=1, help='binwidth (Angstrom)')
-
-parser.add_argument('-muo', dest='muout', type=str,\
-    default='dens', help='Prefix for output filename for chemical potential')
-parser.add_argument('-temp', dest='temperature', type=float,\
-        default=300, help='temperature (K) for chemical potential')
-parser.add_argument('-zpos', dest='zpos', type=float,
-    default=None, help='position at which the chemical potential will be computed. By default average over box.')
-
-parser.add_argument('-dens', dest='density', type=str,
-                   help='Density: mass, number, charge, temp', default='mass')
-parser.add_argument('-gr', dest='groups', type=str, nargs='+',
-                   help='Atoms for which to compute the density profile', default=['resname SOL'])
+parser.add_argument('-s',   dest='topology',    type=str,   default='topol.tpr',            help="the topolgy file")
+parser.add_argument('-f',   dest='trajectory',  type=str,   default=['traj.xtc'],nargs='+', help="A single or multiple trajectory files.")
+parser.add_argument('-b',   dest='begin',       type=float, default=0,                      help='start time (ps) for evaluation')
+parser.add_argument('-e',   dest='end',         type=float, default=None,                   help='end time (ps) for evaluation')
+parser.add_argument('-dt',  dest='skipframes',  type=int,   default=1,                      help='skip every N frames')
+parser.add_argument('-o',   dest='output',      type=str,   default='density',              help='Prefix for output filenames')
+parser.add_argument('-dout',dest='outfreq',     type=float, default='1000',                 help='Default time after which output files are refreshed (1000 ps).')
+parser.add_argument('-d',   dest='dim',         type=int,   default=2,                      help='dimension for binning (0=X, 1=Y, 2=Z)', )
+parser.add_argument('-dz',  dest='binwidth',    type=float, default=1,                      help='binwidth (nanometer)')
+parser.add_argument('-muo', dest='muout',       type=str,   default='dens',                 help='Prefix for output filename for chemical potential')
+parser.add_argument('-temp',dest='temperature', type=float, default=300,                    help='temperature (K) for chemical potential')
+parser.add_argument('-zpos',dest='zpos',        type=float, default=None,                   help='position at which the chemical potential will be computed. By default average over box.')
+parser.add_argument('-dens',dest='density',     type=str,   default='mass',                 help='Density: mass, number, charge, temp' )
+parser.add_argument('-gr',  dest='groups',      type=str,   default=['all'],nargs='+',      help='Atoms for which to compute the density profile', )
 
 #======== DEFINITIONS ========
 #=============================
@@ -90,12 +70,12 @@ def output():
 
     # save density profile
     np.savetxt(args.output+'.dat',
-        np.hstack(((z[:,np.newaxis])/10,dens_mean,dens_err)),
+        np.hstack(((z[:,np.newaxis]),dens_mean,dens_err)),
         header=columns)
 
     # save chemcial potential
     if (args.zpos != None):
-        this = (args.zpos / av_box_size*nbins).astype(int)
+        this = (args.zpos / (av_box_length/frames)*nbins).astype(int)
         np.savetxt(args.muout+'.dat',
             np.hstack((mu(dens_mean[this]), dmu(dens_mean[this], dens_err[this])))[None])
     else:
@@ -153,7 +133,7 @@ if begin > end:
     sys.exit("Start time is larger than end time!")
 
 ngroups = len(args.groups)
-nbins = int(np.ceil(u.dimensions[dim]/args.binwidth))
+nbins = int(np.ceil(u.dimensions[dim]/10/args.binwidth))
 
 density_mean = np.zeros(( nbins, ngroups ))
 density_mean_sq = np.zeros(( nbins, ngroups ))
@@ -173,7 +153,7 @@ print('\nUsing', nbins, 'bins.')
 #============================
 for ts in u.trajectory[begin:end+1:args.skipframes]:
     curV = u.dimensions[:3].prod()/1000
-    av_box_length += u.dimensions[dim]
+    av_box_length += u.dimensions[dim] / 10
 
     for index,selection in enumerate(sel):
         bins = ( selection.atoms.positions[:,dim] / (u.dimensions[dim]/nbins) ).astype(int)%nbins
