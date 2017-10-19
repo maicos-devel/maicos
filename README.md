@@ -1,5 +1,10 @@
 # MDANA
-A collection of useful tools and snipplets for trajectory analysis in MDAnalysis
+A collection of useful tools and snipplets for trajectory analysis in MDAnalysis. To use the repositry clone the 
+repository and __submodules__
+
+```bash
+git clone --recursive https://gitlabph.physik.fu-berlin.de/ag-netz/mdana.git
+```
 
 ## Useful replacements for standard analysis
 
@@ -14,13 +19,8 @@ Computes partial densities across the box.
 
 Inserts molecules at random positions wir random orientations in a slab geometry.
 
-Before using it you have to update the necessary submodules using
 
-```bash
-git submodule update --init --recursive
-```
-
-### SAXS
+### SAXS using debyer library
 
 Computes the scattering intensities using the Debye scattering equation
 (see https://en.wikipedia.org/wiki/Structure_factor for details). The
@@ -28,7 +28,7 @@ atomic form factors according to a Cromer-Mann fit.
 (see International Tables for Crystallography,
   Volume C: Mathematical, Physical and Chemical Tables page 554.)
 
-Before using it you have to compile the underlying library using
+Before using it you have to compile the underlying debyer library see 
 
 ```python
 python3 setup-sfactor.py build_ext --inplace
