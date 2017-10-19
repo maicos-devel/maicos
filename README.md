@@ -38,11 +38,4 @@ atomic form factors according to a Cromer-Mann fit.
   Volume C: Mathematical, Physical and Chemical Tables page 554.)
 
 Before using it you have to compile the underlying debyer library see 
-
-```python
-python3 setup-sfactor.py build_ext --inplace
-```
-
-The default compiler is `gcc-7`. You can adjust the compiler by changing the value of
-`os.environ["CC"]` in the `setup-sfactor.py` file. If you want to use the default compiler of your
-system just comment this line out.
+https://github.com/wojdyr/debyer
