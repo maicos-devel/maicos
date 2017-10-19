@@ -14,6 +14,15 @@ Usually these scripts offer more flexibility and/or are faster than the original
 
 Computes partial densities across the box.
 
+### diporder
+
+Computes the orientation of water molecules with respect to the
+normal of the box. The program determines the average cosine of the angle
+between the dipole moment of water and an axis of the box, the partial density
+and the average of cosine x density. 
+Each watermolecule is assigned to a slice, per time frame, based on the position
+of the oxygen / center of mass / center of charge.
+
 
 ### insert
 
