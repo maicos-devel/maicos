@@ -45,6 +45,10 @@ parser.add_argument('-com', dest='com', action='store_const',
 parser.add_argument('-bin', dest='binmethod', type=str,
                    default='COM',
                    help='binning method: center of Mass (COM), center of charge (COC) or oxygen position (OXY)')
+parser.add_argument('-box', dest='box', type=float, nargs="+",
+                   default=None,
+                   help='Sets the box dimensions x y z [alpha beta gamma] (in Angstrom!).\
+                   If None dimensions from the trajectory will be used.')
 
 def output():
     avL = Lz/frame/10
@@ -65,6 +69,15 @@ def output():
 args = parser.parse_args()
 
 u = MDAnalysis.Universe(args.topology, args.trajectory)
+
+if args.box != None:
+    assert (len(args.box) == 6 or len(args.box) == 3),\
+    'The boxdimensions must contain 3 entries for the box vectors and possibly 3 more for the angles.'
+    if len(args.box) == 6:
+        u.dimensions = np.array(args.box)
+    else:
+        u.dimensions[:2] = np.array(args.box)
+
 sol = u.select_atoms(args.sel)
 atomsPerMolecule = sol.n_atoms // sol.n_residues
 
@@ -146,7 +159,7 @@ for ts in u.trajectory[startframe:endframe:args.skipframes]:
     diporder[:,0] += np.histogram(bins, bins=np.arange(nbins+1),
             weights = np.dot(dipoles, unit))[0] / (A*dz_frame/1e3)
     with np.errstate(divide='ignore', invalid='ignore'):
-        diporder[:,1] += np.nan_to_num(np.histogram(bins, bins=np.arange(nbins+1), 
+        diporder[:,1] += np.nan_to_num(np.histogram(bins, bins=np.arange(nbins+1),
             weights=np.dot(dipoles/np.linalg.norm(dipoles,axis=1)[:,np.newaxis],unit))[0] / bincount)
     diporder[:,2] += bincount / (A*dz_frame/1e3)
 
