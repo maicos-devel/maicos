@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 from __future__ import print_function, division
 import MDAnalysis as mda
 import numpy as np
 from scipy.stats import binned_statistic
-import argparse
-import os
-import sys
-import subprocess
-import tempfile
+import argparse, os, sys, subprocess, tempfile
 
 
 #========== PARSER ===========
@@ -51,14 +47,14 @@ def cleanup():
             s_tmp = np.vstack([s_tmp, np.loadtxt(path)])
 
         os.remove(path)
-        os.remove("{}/{}".format(tmp,xyzfiles[i]))
+        os.remove("{}/{}".format(tmp, xyzfiles[i]))
 
     if frames > args.outfreq:
         s_prev = np.loadtxt("{}.dat".format(args.output))
         s_prev[:,1] *= (frames-len(datfiles)) #weighting for average
         s_tmp = np.vstack([s_tmp, s_prev])
 
-    s_out = binned_statistic(s_tmp[:,0],s_tmp[:,1],bins=nbins,range=(args.startq,args.endq))[0]
+    s_out = binned_statistic(s_tmp[:,0], s_tmp[:,1], bins=nbins, range=(args.startq,args.endq))[0]
     s_out = np.nan_to_num(s_out)
 
     nonzeros = np.where(s_out != 0)[0]
@@ -95,6 +91,9 @@ print("Loading trajectory...\n")
 u = mda.Universe(args.topology,args.trajectory)
 sel = u.select_atoms(args.sel)
 
+if sel.n_atoms == 0:
+  sys.exit("Exiting since selection does not contain any atoms.")
+
 # Create an extra list for the atom names.
 # This is necessary since it is not possible to efficently add axtra atoms to
 # a MDAnalysis universe, necessary for the hydrogens in united atom forcefields.
@@ -130,6 +129,13 @@ else:
 if begin > end:
     print("Start time is larger than end time!")
 
+maxnframes = -begin 
+if begin > 0:
+  maxnframes += end
+
+maxnframes /= args.skipframes
+
+
 #create tmp directory for saving datafiles
 tmp = tempfile.mkdtemp()
 
@@ -139,8 +145,8 @@ if args.verbose:
 else:
   FNULL = open(os.devnull, 'w')
 
-nbins = int(np.ceil((args.endq - args.startq)/args.dq))
-q = np.arange(args.startq,args.endq,args.dq) + 0.5*args.dq
+nbins = int(np.ceil((args.endq - args.startq) / args.dq))
+q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
 shift = np.zeros(3)
 
 frames = 0
@@ -149,18 +155,18 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     # convert coordinates in a rectengular box
     box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
     sel.atoms.positions = sel.atoms.positions \
-                            - box*np.round(sel.atoms.positions/box) # minimum image
+                            - box * np.round(sel.atoms.positions / box) # minimum image
 
-    writeXYZ("{}/{}.xyz".format(tmp,frames), sel.atoms, atom_names)
+    writeXYZ("{}/{}.xyz".format(tmp, frames), sel.atoms, atom_names)
 
     ref_q = 4*np.pi/np.min(box)
     if ref_q > args.startq: startq = ref_q
 
     command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
                                               round(startq,3), args.endq, args.dq, tmp, frames,
-                                              box[0],box[1],box[2],np.min(box)/2)
+                                              box[0], box[1], box[2], np.min(box)/2)
 
-    subprocess.run("{} {}".format(args.debyer,command),stdout=FNULL, stderr=FNULL,shell=True)
+    subprocess.call("{} {}".format(args.debyer, command), stdout=FNULL, stderr=FNULL, shell=True)
 
     frames += 1
     if (frames < 100):
@@ -170,7 +176,7 @@ for ts in u.trajectory[begin:end+1:args.skipframes]:
     elif (frames % 250 == 1):
         print ("\rEvaluating frame: {:>12} time: {:>12} ps".format(frames, round(ts.time)), end="")
     # call for output
-    if ( frames % args.outfreq == 0 ):
+    if (frames % args.outfreq == 0) and frames < maxnframes:
         cleanup()
     sys.stdout.flush()
 
