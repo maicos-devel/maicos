@@ -9,7 +9,7 @@ You'll need [Python](https://www.python.org) and a C-compiler to build the
 underlying libraries. To install the package  
 for all users type
 ```
-git clone https://gitlabph.physik.fu-berlin.de/ag-netz/mdbana.git
+git clone https://gitlabph.physik.fu-berlin.de/ag-netz/mdtools.git
 cd mdana
 sudo python setup.py install
 ```
