@@ -1,0 +1,7 @@
+*.so
+/*.egg-info
+*.pyc
+__pycache__
+/build
+/dist
+*.DS_store

@@ -10,13 +10,14 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from mdanahelper import pbctools
+import pbctools
 
 parser = argparse.ArgumentParser(
     description="""
           Computes the dipole moment flcutuations and from this the
           dielectric constant. The selection uses the MDAnalysis selection commands found here:
-          http://www.mdanalysis.org/docs/documentation_pages/selections.html""", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+          http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
+          prog = "mdtools epsilon_bulk", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-s',           dest='topology',    type=str,
                     default='topol.tpr',            help='the topolgy file')
 parser.add_argument('-f',           dest='trajectory',  type=str,     default=[
@@ -79,47 +80,51 @@ def output(M, M2, V, verbose=False):
                fmt='%1.2f', header='eps\teps_x\teps_y\teps_z')
 
 
-args = parser.parse_args()
-print('\nCommand line was: %s\n' % ' '.join(sys.argv))
+def main(firstarg=2):
+    args = parser.parse_args(args=sys.argv[firstarg:])
+    print('\nCommand line was: %s\n' % ' '.join(sys.argv))
 
-u = MDAnalysis.Universe(args.topology, args.trajectory)
-s = u.select_atoms(args.sel)
-print("There are {} atoms in the selection '{}'.".format(s.atoms.n_atoms, args.sel))
+    u = MDAnalysis.Universe(args.topology, args.trajectory)
+    s = u.select_atoms(args.sel)
+    print("There are {} atoms in the selection '{}'.".format(s.atoms.n_atoms, args.sel))
 
-M = np.zeros(3)
-M2 = np.zeros(3)
-V = 0
+    M = np.zeros(3)
+    M2 = np.zeros(3)
+    V = 0
 
-if args.begin < 0:
-    args.begin += u.trajectory.totaltime
-startframe = int(args.begin // u.trajectory.dt)
+    if args.begin < 0:
+        args.begin += u.trajectory.totaltime
+    startframe = int(args.begin // u.trajectory.dt)
 
-if (args.end != None):
-    endframe = int(args.end // u.trajectory.dt)
-else:
-    endframe = int(u.trajectory.n_frames)
+    if (args.end != None):
+        endframe = int(args.end // u.trajectory.dt)
+    else:
+        endframe = int(u.trajectory.n_frames)
 
-frame = 0
-print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-    frame, round(u.trajectory.time)), end="")
+    frame = 0
+    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+        frame, round(u.trajectory.time)), end="")
 
-for ts in u.trajectory[startframe:endframe:args.skipframes]:
+    for ts in u.trajectory[startframe:endframe:args.skipframes]:
 
-    if args.bpbc:
-        pbctools.repairMolecules(u)
+        if args.bpbc:
+            pbctools.repairMolecules(u)
 
-    M_ts = np.dot(s.atoms.charges, s.atoms.positions)
-    M += M_ts
-    M2 += M_ts * M_ts
-    V += ts.volume
+        M_ts = np.dot(s.atoms.charges, s.atoms.positions)
+        M += M_ts
+        M2 += M_ts * M_ts
+        V += ts.volume
 
-    if (ts.frame % 100 == 1):
-        print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-            frame, round(ts.time)), end="")
-        sys.stdout.flush()
-    if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-        output(M / frame, M2 / frame, V / frame)
-    frame += 1
+        if (ts.frame % 100 == 1):
+            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+                frame, round(ts.time)), end="")
+            sys.stdout.flush()
+        if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
+            output(M / frame, M2 / frame, V / frame)
+        frame += 1
 
-print("\n")
-output(M / frame, M2 / frame, V / frame, verbose=True)
+    print("\n")
+    output(M / frame, M2 / frame, V / frame, verbose=True)
+
+if __name__ == "__main__":
+    main(firstarg=1)
