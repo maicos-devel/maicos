@@ -38,6 +38,7 @@ if __name__ == "__main__":
           include_package_data=True,
           zip_safe=False,
           requires=['numpy (>=1.10.4)', 'MDAnalysis (>=0.17.0)', 'Cython(>=0.27.3)'],
+          build_requires=['numpy (>=1.10.4)', 'Cython(>=0.27.3)'],
           install_requires=['numpy>=1.10.4', 'MDAnalysis>=0.17.0', 'Cython>=0.27.3'],
           entry_points={
                'console_scripts': ['mdtools=mdtools.__main__:main', ],
