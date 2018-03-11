@@ -6,7 +6,8 @@ import sys
 
 build_apps = ["carbonstructure", "insert"]
 
-ana_apps = ["debyer", "density", "diporder", "epsilon_bulk", "saxs"]
+ana_apps = ["debyer", "density", "diporder", "epsilon_bulk", "epsilon_cylinder",
+            "epsilon_planar", "saxs"]
 
 apps = build_apps + ana_apps
 apps.sort()

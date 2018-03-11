@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description="""
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
     http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
-    prog = "mdtools epsilon_bulk", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    prog = "mdtools saxs", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-s',     dest='topology',    type=str,
                     default='topol.tpr',            help='the topolgy file')
 parser.add_argument('-f',     dest='trajectory',  type=str,   default=[
