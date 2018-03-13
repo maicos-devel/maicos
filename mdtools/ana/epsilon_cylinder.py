@@ -11,16 +11,16 @@ import MDAnalysis as mda
 import numpy as np
 
 import pbctools
+from . import add_traj_arguments, print_frameinfo
 
 #========== PARSER ===========
 #=============================
 parser = argparse.ArgumentParser(description="""Calculation of the dielectric
 profile for axial and radial direction at the system's center of geometry.""",
      prog = "mdtools epsilon_cylinder", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s', dest='topology', type=str,
-                    default='topol.tpr', help="the gromacs topology file")
-parser.add_argument('-f', dest='trajectory', type=str, nargs='+',
-                    default=['traj.xtc'], help="the gromacs trajectory file")
+
+add_traj_arguments(parser)
+
 parser.add_argument('-g', dest='geometry', type=str,
                     default=None, help="A gro file w/o water")
 parser.add_argument('-r', dest='radius', type=float,
@@ -33,12 +33,6 @@ parser.add_argument('-l', dest='length', type=float,
                     default=None, help='length of the cylinder in Angstrom')
 parser.add_argument('-o', dest='output', type=str,
                     default='eps_cyl', help='Prefix for output filenames')
-parser.add_argument('-b', dest='begin', type=float,
-                    default=0, help='starting time (ps) for evaluation')
-parser.add_argument('-e', dest='end', type=float,
-                    default=None, help='ending time (ps) for evaluation')
-parser.add_argument('-dt', dest='skipframes', type=int,
-                    default=1, help='skip every N frames')
 parser.add_argument('-dout', dest='outfreq', type=float,
                     default='1000', help='Default time after which output files are refreshed (1000 ps)')
 parser.add_argument('-si', dest='single', action='store_true',
@@ -98,6 +92,8 @@ def output():
 #============================
 
 def main(firstarg=2):
+    global args
+    
     args = parser.parse_args(args=sys.argv[firstarg:])
 
     u = mda.Universe(args.topology, args.trajectory)
@@ -223,18 +219,15 @@ def main(firstarg=2):
         m_ax[:, frame // resample_freq] += this_m_ax
         mM_ax[:, frame // resample_freq] += this_m_ax * this_M_ax
 
-        if (ts.frame % 250 == 1):
-            print("\rEvaluating frame: %12d    time: %12d ps" %
-                  (ts.frame, int(ts.time)), end="")
-            sys.stdout.flush()
-            # call for output
-            if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-                output()
+
         frame += 1
-    print("\rEvaluating frame: %12d    time: %12d ps" %
-          (ts.frame, int(ts.time)), end="")
+        print_frameinfo(ts,frame)
+        # call for output
+        if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
+            output()
+
+    print("\n")
     output()
-    print('\nDone.')
 
 if __name__ == "__main__":
     main(firstarg=1)

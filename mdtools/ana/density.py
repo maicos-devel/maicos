@@ -10,6 +10,8 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 
+from . import add_traj_arguments, initilize_universe, print_frameinfo
+
 #========== PARSER ===========
 #=============================
 parser = argparse.ArgumentParser(description="""
@@ -17,17 +19,10 @@ parser = argparse.ArgumentParser(description="""
     For group selections use strings in the MDAnalysis selection command style
     found here:
     https://pythonhosted.org/MDAnalysis/documentation_pages/selections.html""",
-     prog = "mdtools density", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s',   dest='topology',    type=str,
-                    default='topol.tpr',            help="the topolgy file")
-parser.add_argument('-f',   dest='trajectory',  type=str,   default=[
-                    'traj.xtc'], nargs='+', help="A single or multiple trajectory files.")
-parser.add_argument('-b',   dest='begin',       type=float, default=0,
-                    help='start time (ps) for evaluation')
-parser.add_argument('-e',   dest='end',         type=float,
-                    default=None,                   help='end time (ps) for evaluation')
-parser.add_argument('-dt',  dest='skipframes',  type=int,
-                    default=1,                      help='skip every N frames')
+                                 prog="mdtools density", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+add_traj_arguments(parser)
+
 parser.add_argument('-o',   dest='output',      type=str,
                     default='density',              help='Prefix for output filenames')
 parser.add_argument('-dout', dest='outfreq',     type=float, default='1000',
@@ -51,17 +46,17 @@ parser.add_argument('-gr',  dest='groups',      type=str,   default=[
 #=============================
 
 
-def output():
-    """Saves the current profiles to a file."""
+def output(density_mean, density_mean_sq, av_box_length):
+    """Averages the profile and saves the current profiles to a file."""
 
-    dens_mean = density_mean / frames
-    dens_mean_sq = density_mean_sq / frames
+    dens_mean = density_mean / args.frame
+    dens_mean_sq = density_mean_sq / args.frame
 
     dens_std = np.nan_to_num(np.sqrt(dens_mean_sq - dens_mean**2))
-    dens_err = dens_std / np.sqrt(frames)
+    dens_err = dens_std / np.sqrt(args.frame)
 
-    dz = av_box_length / (frames * nbins)
-    z = np.linspace(0, av_box_length / frames, nbins, endpoint=False) + dz / 2
+    dz = av_box_length / (args.frame * args.nbins)
+    z = np.linspace(0, av_box_length / args.frame, args.nbins, endpoint=False) + dz / 2
 
     # write header
     if args.density == "mass":
@@ -78,7 +73,7 @@ def output():
     else:
         columns = "%s density profile [%s]" % (args.density, units)
     columns += "\nstatistics over %d picoseconds \npositions [nm]" % (
-        (end - begin + 1) * dt)
+        (args.endframe - args.beginframe + 1) * args.dt)
     for group in args.groups:
         columns += "\t" + group
     for group in args.groups:
@@ -91,12 +86,13 @@ def output():
 
     # save chemcial potential
     if (args.zpos != None):
-        this = (args.zpos / (av_box_length / frames) * nbins).astype(int)
+        this = (args.zpos / (av_box_length / args.frame) * args.nbins).astype(int)
         np.savetxt(args.muout + '.dat',
                    np.hstack((mu(dens_mean[this]), dmu(dens_mean[this], dens_err[this])))[None])
     else:
         np.savetxt(args.muout + '.dat',
-                   np.array((np.mean(mu(dens_mean)), np.mean(dmu(dens_mean, dens_err))))[None])
+                   np.array((np.mean(mu(dens_mean, args.temperature)),
+                             np.mean(dmu(dens_mean, dens_err, args.temperature))))[None])
 
 
 def weight(selection):
@@ -113,13 +109,15 @@ def weight(selection):
         return ((selection.atoms.velocities**2).sum(axis=1) * selection.atoms.masses / 2 * 1.20272362)
 
 
-def mu(rho):
+def mu(rho, temperature):
     # db = 1.00394e-1  # De Broglie (converted to nm)
+    kT = 0.00831446215 * temperature
     mu = kT * np.log(rho)
     return mu
 
 
-def dmu(rho, drho):
+def dmu(rho, drho, temperature):
+    kT = 0.00831446215 * temperature
     return (kT / rho * drho)
 
 
@@ -127,39 +125,29 @@ def dmu(rho, drho):
 #============================
 
 def main(firstarg=2):
+    global args
+
     args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
+
     if args.density != 'mass' and args.density != 'number' \
             and args.density != 'charge' and args.density != 'temp':
-        parser.error('Unknown density type: valid are mass, number, charge, temp')
+        parser.error(
+            'Unknown density type: valid are mass, number, charge, temp')
 
-    dim = args.dim
     if args.density == 'temp':
-        print('Computing temperature profile along %s-axes.' % ('XYZ'[dim]))
+        print('Computing temperature profile along %s-axes.' %
+              ('XYZ'[args.dim]))
     else:
         print('Computing %s density profile along %s-axes.' %
-              (args.density, 'XYZ'[dim]))
-
-    print("Loading trajectory...")
-    u = mda.Universe(args.topology, args.trajectory)
-
-    dt = u.trajectory.dt
-    kT = 0.00831446215 * args.temperature
-
-    begin = int(args.begin // dt)
-    if args.end != None:
-        end = int(args.end // dt)
-    else:
-        end = int(u.trajectory.totaltime // dt)
-
-    if begin > end:
-        sys.exit("Start time is larger than end time!")
+              (args.density, 'XYZ'[args.dim]))
 
     ngroups = len(args.groups)
-    nbins = int(np.ceil(u.dimensions[dim] / 10 / args.binwidth))
+    args.nbins = int(np.ceil(u.dimensions[args.dim] / 10 / args.binwidth))
 
-    density_mean = np.zeros((nbins, ngroups))
-    density_mean_sq = np.zeros((nbins, ngroups))
-    frames = 0
+    density_mean = np.zeros((args.nbins, ngroups))
+    density_mean_sq = np.zeros((args.nbins, ngroups))
+    args.frame = 0
     av_box_length = 0
 
     print("\nCalcualate profile for the following group(s):")
@@ -168,47 +156,38 @@ def main(firstarg=2):
         sel.append(u.select_atoms(gr))
         print("%s: %i atoms" % (gr, sel[i].n_atoms))
 
-
-    print('\nUsing', nbins, 'bins.')
+    print('\nUsing', args.nbins, 'bins.')
 
     #======== MAIN LOOP =========
     #============================
-    for ts in u.trajectory[begin:end + 1:args.skipframes]:
-        curV = u.dimensions[:3].prod() / 1000
-        av_box_length += u.dimensions[dim] / 10
+    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+        curV = ts.volume / 1000
+        av_box_length += u.dimensions[args.dim] / 10
 
         for index, selection in enumerate(sel):
-            bins = (selection.atoms.positions[:, dim] /
-                    (u.dimensions[dim] / nbins)).astype(int) % nbins
+            bins = (selection.atoms.positions[:, args.dim] /
+                    (u.dimensions[args.dim] / args.nbins)).astype(int) % args.nbins
             density_ts = np.histogram(bins, bins=np.arange(
-                nbins + 1), weights=weight(selection))[0]
+                args.nbins + 1), weights=weight(selection))[0]
 
-            bincount = np.bincount(bins, minlength=nbins)
+            bincount = np.bincount(bins, minlength=args.nbins)
 
             if args.density == 'temp':
                 density_mean[:, index] += density_ts / bincount
                 density_mean_sq[:, index] += (density_ts / bincount)**2
             else:
-                density_mean[:, index] += density_ts / curV * nbins
-                density_mean_sq[:, index] += (density_ts / curV * nbins)**2
+                density_mean[:, index] += density_ts / curV * args.nbins
+                density_mean_sq[:, index] += (density_ts / curV * args.nbins)**2
 
-        frames += 1
-        if (frames < 100):
-            print("\rEvaluating frame: %12d    time: %12d ps" %
-                  (ts.frame, int(ts.time)), end="")
-        elif (frames < 1000 and frames % 10 == 1):
-            print("\rEvaluating frame: %12d    time: %12d ps" %
-                  (ts.frame, int(ts.time)), end="")
-        elif (frames % 250 == 1):
-            print("\rEvaluating frame: %12d    time: %12d ps" %
-                  (ts.frame, int(ts.time)), end="")
+        args.frame += 1
+        print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-            output()
-        sys.stdout.flush()
+            output(density_mean, density_mean_sq, av_box_length)
 
-    output()
+    output(density_mean, density_mean_sq, av_box_length)
     print("\n")
+
 
 if __name__ == "__main__":
     main(firstarg=1)

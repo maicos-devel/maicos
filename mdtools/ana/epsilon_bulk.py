@@ -11,6 +11,7 @@ import MDAnalysis
 import numpy as np
 
 import pbctools
+from . import add_traj_arguments, initilize_universe, print_frameinfo
 
 parser = argparse.ArgumentParser(
     description="""
@@ -18,18 +19,11 @@ parser = argparse.ArgumentParser(
           dielectric constant. The selection uses the MDAnalysis selection commands found here:
           http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
           prog = "mdtools epsilon_bulk", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s',           dest='topology',    type=str,
-                    default='topol.tpr',            help='the topolgy file')
-parser.add_argument('-f',           dest='trajectory',  type=str,     default=[
-                    'traj.xtc'], nargs='+', help='A single or multiple trajectory files.')
+
+add_traj_arguments(parser)
+
 parser.add_argument('-sel',         dest='sel',         type=str,     default='all',
                     help='Atoms for which to compute the profile', )
-parser.add_argument('-b',           dest='begin',       type=float,   default=0,
-                    help='First frame (ps) to read from trajectory')
-parser.add_argument('-e',           dest='end',         type=float,
-                    default=None,                   help='Last frame (ps) to read from trajectory')
-parser.add_argument('-skip',        dest='skipframes',  type=int,
-                    default=1,                      help='Evaluate every Nth frames')
 parser.add_argument('-dout',        dest='outfreq',     type=float,   default='100',
                     help='Number of frames after which the output is updated.')
 parser.add_argument('-o',           dest='output',      type=str,
@@ -81,10 +75,11 @@ def output(M, M2, V, verbose=False):
 
 
 def main(firstarg=2):
-    args = parser.parse_args(args=sys.argv[firstarg:])
-    print('\nCommand line was: %s\n' % ' '.join(sys.argv))
+    global args
 
-    u = MDAnalysis.Universe(args.topology, args.trajectory)
+    args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
+
     s = u.select_atoms(args.sel)
     print("There are {} atoms in the selection '{}'.".format(s.atoms.n_atoms, args.sel))
 
@@ -92,20 +87,12 @@ def main(firstarg=2):
     M2 = np.zeros(3)
     V = 0
 
-    if args.begin < 0:
-        args.begin += u.trajectory.totaltime
-    startframe = int(args.begin // u.trajectory.dt)
 
-    if (args.end != None):
-        endframe = int(args.end // u.trajectory.dt)
-    else:
-        endframe = int(u.trajectory.n_frames)
-
-    frame = 0
+    args.frame = 0
     print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        frame, round(u.trajectory.time)), end="")
+        args.frame, round(u.trajectory.time)), end="")
 
-    for ts in u.trajectory[startframe:endframe:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 
         if args.bpbc:
             pbctools.repairMolecules(u)
@@ -115,16 +102,13 @@ def main(firstarg=2):
         M2 += M_ts * M_ts
         V += ts.volume
 
-        if (ts.frame % 100 == 1):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frame, round(ts.time)), end="")
-            sys.stdout.flush()
+        args.frame += 1
+        print_frameinfo(ts,args.frame)
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-            output(M / frame, M2 / frame, V / frame)
-        frame += 1
+            output(M / args.frame, M2 / args.frame, V / args.frame)
 
     print("\n")
-    output(M / frame, M2 / frame, V / frame, verbose=True)
+    output(M / args.frame, M2 / args.frame, V / args.frame, verbose=True)
 
 if __name__ == "__main__":
     main(firstarg=1)

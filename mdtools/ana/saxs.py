@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 from __future__ import division, print_function
 
@@ -8,10 +9,10 @@ import sys
 
 import MDAnalysis as mda
 import numpy as np
+import sfactor
 from scipy.stats import binned_statistic
 
-import sfactor
-
+from . import add_traj_arguments, initilize_universe, print_frameinfo
 from .. import sharePath
 
 #========== PARSER ===========
@@ -22,19 +23,12 @@ parser = argparse.ArgumentParser(description="""
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
     http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
-    prog = "mdtools saxs", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s',     dest='topology',    type=str,
-                    default='topol.tpr',            help='the topolgy file')
-parser.add_argument('-f',     dest='trajectory',  type=str,   default=[
-                    'traj.xtc'], nargs='+', help='A single or multiple trajectory files.')
+                                 prog="mdtools saxs", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+add_traj_arguments(parser)
+
 parser.add_argument('-sel',   dest='sel',         type=str,   default='all',
                     help='Atoms for which to compute the profile', )
-parser.add_argument('-b',     dest='begin',       type=float, default=0,
-                    help='First frame (ps) to read from trajectory')
-parser.add_argument('-e',     dest='end',         type=float, default=None,
-                    help='Last frame (ps) to read from trajectory')
-parser.add_argument('-skip',  dest='skipframes',  type=int,
-                    default=1,                      help='Evaluate every Nth frames')
 parser.add_argument('-dout',  dest='outfreq',     type=float, default='100',
                     help='Number of frames after which the output is updated.')
 parser.add_argument('-sq',    dest='output',      type=str,
@@ -50,13 +44,13 @@ parser.add_argument('-dq',    dest='dq',          type=float,
 #=============================
 
 
-def output():
+def output(q, struct_factor):
     """Saves the current profiles to a file."""
     nonzeros = np.where(struct_factor[:, 0] != 0)[0]
     scat_factor = struct_factor[nonzeros]
     wave_vectors = q[nonzeros]
 
-    scat_factor = scat_factor.sum(axis=1) / frames
+    scat_factor = scat_factor.sum(axis=1) / args.frame
 
     np.savetxt(args.output + '.dat',
                np.vstack([wave_vectors, scat_factor]).T,
@@ -120,10 +114,11 @@ with open(os.path.join(sharePath, "sfactor.dat")) as f:
 #=========== MAIN ===========
 #============================
 def main(firstarg=2):
-    args = parser.parse_args(args=sys.argv[firstarg:])
+    global args
 
-    print("Loading trajectory...\n")
-    u = mda.Universe(args.topology, args.trajectory)
+    args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
+
     sel = u.select_atoms(args.sel)
 
     groups = []
@@ -143,25 +138,15 @@ def main(firstarg=2):
         print("{:>14} --> {:>5}".format(atom_type, element))
 
     print("\n")
-    dt = u.trajectory.dt
 
-    begin = int(args.begin // dt)
-    if args.end != None:
-        end = int(args.end // dt)
-    else:
-        end = int(u.trajectory.totaltime // u.trajectory.dt)
-
-    if begin > end:
-        print("Start time is larger than end time!")
-
-    nbins = int(np.ceil((args.endq - args.startq) / args.dq))
+    args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
     q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
-    struct_factor = np.zeros([nbins, len(groups)])
-    frames = 0
+    struct_factor = np.zeros([args.nbins, len(groups)])
+    args.frame = 0
 
     #======== MAIN LOOP =========
     #============================
-    for ts in u.trajectory[begin:end + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
         for i, t in enumerate(groups):
 
             # convert everything to cartesian coordinates
@@ -182,25 +167,16 @@ def main(firstarg=2):
             S_ts *= compute_form_factor(q_ts, atom_types[i])**2
 
             struct_ts = binned_statistic(
-                q_ts, S_ts, bins=nbins, range=(args.startq, args.endq))[0]
+                q_ts, S_ts, bins=args.nbins, range=(args.startq, args.endq))[0]
             struct_factor[:, i] += np.nan_to_num(struct_ts)
 
-        frames += 1
-        if (frames < 100):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
-        elif (frames < 1000 and frames % 10 == 1):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
-        elif (frames % 250 == 1):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
+        args.frame += 1
+        print_frameinfo(ts,args.frame)
         # call for output
-        if (frames % args.outfreq == 0):
-            output()
-        sys.stdout.flush()
+        if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
+            output(q, struct_factor)
 
-    output()
+    output(q, struct_factor)
     print("\n")
 
 

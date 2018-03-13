@@ -13,6 +13,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy.stats import binned_statistic
 
+from . import add_traj_arguments, initilize_universe, print_frameinfo
 from .. import sharePath
 
 #========== PARSER ===========
@@ -24,18 +25,11 @@ parser = argparse.ArgumentParser(description="""
     The system can be replicated with the -nbox option. The system is than stacked multiplie times on itself. No
     replication is done be default.""", prog="mdtools debyer",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s',     dest='topology',    type=str,
-                    default='topol.tpr',            help='the topolgy file')
-parser.add_argument('-f',     dest='trajectory',  type=str,     default=[
-                    'traj.xtc'], nargs='+', help='A single or multiple trajectory files.')
+
+add_traj_arguments(parser)
+
 parser.add_argument('-sel',   dest='sel',         type=str,     default='all',
                     help='Atoms for which to compute the profile', )
-parser.add_argument('-b',     dest='begin',       type=float,   default=0,
-                    help='First frame (ps) to read from trajectory')
-parser.add_argument('-e',     dest='end',         type=float,   default=None,
-                    help='Last frame (ps) to read from trajectory')
-parser.add_argument('-skip',  dest='skipframes',  type=int,
-                    default=1,                      help='Evaluate every Nth frames')
 parser.add_argument('-dout',  dest='outfreq',     type=float,   default='100',
                     help='Number of frames after which the output is updated.')
 parser.add_argument('-sq',    dest='output',      type=str,
@@ -54,22 +48,22 @@ parser.add_argument('-v',     dest='verbose',     action='store_true',
 
 def cleanup():
     """averages over all dat file and removes them"""
-    datfiles = [f for f in os.listdir(tmp) if f.endswith(".dat")]
-    xyzfiles = [f for f in os.listdir(tmp) if f.endswith(".xyz")]
+    datfiles = [f for f in os.listdir(args.tmp) if f.endswith(".dat")]
+    xyzfiles = [f for f in os.listdir(args.tmp) if f.endswith(".xyz")]
 
     for i, f in enumerate(datfiles):
-        path = "{}/{}".format(tmp, f)
+        path = "{}/{}".format(args.tmp, f)
         if i == 0:
             s_tmp = np.loadtxt(path)
         else:
             s_tmp = np.vstack([s_tmp, np.loadtxt(path)])
 
         os.remove(path)
-        os.remove("{}/{}".format(tmp, xyzfiles[i]))
+        os.remove("{}/{}".format(args.tmp, xyzfiles[i]))
 
-    if frames > args.outfreq:
+    if args.frame > args.outfreq:
         s_prev = np.loadtxt("{}.dat".format(args.output))
-        s_prev[:, 1] *= (frames - len(datfiles))  # weighting for average
+        s_prev[:, 1] *= (args.frame - len(datfiles))  # weighting for average
         s_tmp = np.vstack([s_tmp, s_prev])
 
     s_out = binned_statistic(
@@ -106,10 +100,11 @@ def writeXYZ(filename, obj, atom_names):
 
 
 def main(firstarg=2):
-    args = parser.parse_args(args=sys.argv[firstarg:])
+    global args
 
-    print("Loading trajectory...\n")
-    u = mda.Universe(args.topology, args.trajectory)
+    args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
+
     sel = u.select_atoms(args.sel)
 
     if sel.n_atoms == 0:
@@ -138,75 +133,48 @@ def main(firstarg=2):
 
     #sel = sel.atoms.select_atoms("not name 'DUM'")
 
-    startq = args.startq
-    dt = u.trajectory.dt
-
-    begin = int(args.begin // dt)
-    if args.end != None:
-        end = int(args.end // dt)
-    else:
-        end = int(u.trajectory.totaltime // u.trajectory.dt)
-
-    if begin > end:
-        print("Start time is larger than end time!")
-
-    maxnframes = -begin
-    if begin > 0:
-        maxnframes += end
-
-    maxnframes /= args.skipframes
-
     # create tmp directory for saving datafiles
-    tmp = tempfile.mkdtemp()
+    args.tmp = tempfile.mkdtemp()
 
     if args.verbose:
         FNULL = None
-        print("{} is the tempory directory for all files.".format(tmp))
+        print("{} is the tempory directory for all files.".format(args.tmp))
     else:
         FNULL = open(os.devnull, 'w')
 
-    nbins = int(np.ceil((args.endq - args.startq) / args.dq))
+    args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
     q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
     shift = np.zeros(3)
 
-    frames = 0
-    for ts in u.trajectory[begin:end + 1:args.skipframes]:
+    args.frame = 0
+    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 
         # convert coordinates in a rectengular box
         box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))
         sel.atoms.positions = sel.atoms.positions \
             - box * np.round(sel.atoms.positions / box)  # minimum image
 
-        writeXYZ("{}/{}.xyz".format(tmp, frames), sel.atoms, atom_names)
+        writeXYZ("{}/{}.xyz".format(args.tmp, args.frame), sel.atoms, atom_names)
 
         ref_q = 4 * np.pi / np.min(box)
         if ref_q > args.startq:
-            startq = ref_q
+            args.startq = ref_q
 
         command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
-            round(startq, 3), args.endq, args.dq, tmp, frames,
+            round(args.startq, 3), args.endq, args.dq, args.tmp, args.frame,
             box[0], box[1], box[2], np.min(box) / 2)
 
         subprocess.call("{} {}".format(args.debyer, command),
                         stdout=FNULL, stderr=FNULL, shell=True)
 
-        frames += 1
-        if (frames < 100):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
-        elif (frames < 1000 and frames % 10 == 1):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
-        elif (frames % 250 == 1):
-            print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-                frames, round(ts.time)), end="")
+        args.frame += 1
+        print_frameinfo(ts, args.frame)
         # call for output
-        if (frames % args.outfreq == 0) and frames < maxnframes:
+        if (args.frame % args.outfreq == 0) and args.frame < maxnframes:
             cleanup()
-        sys.stdout.flush()
 
     cleanup()
-    os.rmdir(tmp)
+    os.rmdir(args.tmp)
     print("\n")
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-from __future__ import division
+from __future__ import division, print_function
 
 # parse command line options
 import argparse
@@ -11,22 +11,18 @@ import MDAnalysis
 import numpy as np
 
 import pbctools
+from . import add_traj_arguments, print_frameinfo
 
 parser = argparse.ArgumentParser(description="Calculate the dielectric profile.\
         See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.",
      prog = "mdtools epsilon_planar", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s', dest='topology', type=str,
-                    default='topol.tpr')
-parser.add_argument('-f', dest='trajectory', type=str, nargs='+',
-                    default=['traj.xtc'])
+
+add_traj_arguments(parser)
+
 parser.add_argument('-dz', dest='binwidth', type=float,
                     default=0.05, help='specify the binwidth [nm]')
 parser.add_argument('-dt', dest='skipframes', type=int,
                     default=1, help='skip every N frames')
-parser.add_argument('-b', dest='begin', type=float,
-                    default=0, help='starting time for evaluation')
-parser.add_argument('-e', dest='end', type=float,
-                    default=-1, help='ending time for evaluation')
 parser.add_argument('-d', dest='dim', type=int,
                     default=2, help='direction normal to the surface (x,y,z=0,1,2, default: z)')
 parser.add_argument('-zmin', dest='zmin', type=float,
@@ -165,6 +161,8 @@ def output():
 
 
 def main(firstarg=2):
+    global args
+    
     args = parser.parse_args(args=sys.argv[firstarg:])
 
     u = MDAnalysis.Universe(args.topology, args.trajectory)
@@ -223,12 +221,12 @@ def main(firstarg=2):
     M_perp = np.zeros((resample))
     M_perp_2 = np.zeros((resample))
 
-    print 'Using', nbins, 'bins.'
+    print('Using', nbins, 'bins.')
 
     A = np.prod(u.dimensions[xydims])
 
     frame = 0
-    print "Evaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), '\r',
+    print("\rEvaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), end="")
 
     startframe = int(begin // u.trajectory.dt)
     endframe = int(end // u.trajectory.dt)
@@ -323,15 +321,14 @@ def main(firstarg=2):
         V += ts.volume
         Lz += ts.dimensions[dim]
 
-        if (ts.frame % 250 == 0):
-            print "Evaluating frame: %12d    time: %12d\r" % (frame, int(ts.time)),
-            sys.stdout.flush()
-            # call for output
+        frame += 1
+        print_frameinfo(ts,frame)
+        # call for output
         if (frame % args.outfreq == 0 and frame >= args.outfreq):
             output()
-        frame += 1
 
-    print '\n'
+
+    print('\n')
     output()
 
 if __name__ == "__main__":
