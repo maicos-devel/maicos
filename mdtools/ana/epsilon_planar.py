@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding: utf8
 
 from __future__ import division, print_function
@@ -15,18 +15,16 @@ from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""Calculate the dielectric profile.
+parser.description = """Calculate the dielectric profile.
         See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details."""
 parser.add_argument('-dz', dest='binwidth', type=float,
                     default=0.05, help='specify the binwidth [nm]')
-parser.add_argument('-dt', dest='skipframes', type=int,
-                    default=1, help='skip every N frames')
 parser.add_argument('-d', dest='dim', type=int,
                     default=2, help='direction normal to the surface (x,y,z=0,1,2, default: z)')
 parser.add_argument('-zmin', dest='zmin', type=float,
-                    default=0, help='minimal z-coordinate for evaluation')
+                    default=0, help='minimal z-coordinate for evaluation [nm]')
 parser.add_argument('-zmax', dest='zmax', type=float,
-                    default=-1, help='maximal z-coordinate for evaluation')
+                    default=-1, help='maximal z-coordinate for evaluation [nm]')
 parser.add_argument('-temp', dest='temperature', type=float,
                     default=300, help='temperature [K]')
 parser.add_argument('-o', dest='output', type=str,
@@ -51,43 +49,39 @@ parser.add_argument('-shift', dest='membrane_shift', action='store_const',
 parser.add_argument('-com', dest='com', action='store_const',
                     const=True, default=False,
                     help='shift system such that the water COM is centered')
-parser.add_argument('-box', dest='box', type=float, nargs="+",
-                    default=None,
-                    help='Sets the box dimensions x y z [alpha beta gamma] (in Angstrom!).\
-                   If None dimensions from the trajectory will be used.')
 parser.add_argument('-nopbcrepair', dest='bpbc', action='store_false',
                     help='do not make broken molecules whole again (only works if molecule is smaller than shortest box vector')
 
 
-def output():
-    avV = V / frame
+def output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2):
+    avV = V / args.frame
 
-    cov_perp = mM_perp.sum(axis=2) / frame - \
-        m_perp.sum(axis=2) / frame * M_perp.sum() / frame
-    dcov_perp = np.sqrt((mM_perp.std(axis=2) / frame * resample)**2
-                        + (m_perp.std(axis=2) / frame *
-                           resample * M_perp.sum() / frame)**2
-                        + (m_perp.sum(axis=2) / frame * M_perp.std() / frame * resample)**2) / np.sqrt(resample - 1)
-    cov_perp_self = mm_perp / frame - \
-        (m_perp.sum(axis=2) / frame * m_perp.sum(axis=2) /
-         frame * A * Lz / nbins / frame)
-    cov_perp_coll = cmM_perp / frame - \
-        m_perp.sum(axis=2) / frame * cM_perp / frame
+    cov_perp = mM_perp.sum(axis=2) / args.frame - \
+        m_perp.sum(axis=2) / args.frame * M_perp.sum() / args.frame
+    dcov_perp = np.sqrt((mM_perp.std(axis=2) / args.frame * args.resample)**2
+                        + (m_perp.std(axis=2) / args.frame *
+                           args.resample * M_perp.sum() / args.frame)**2
+                        + (m_perp.sum(axis=2) / args.frame * M_perp.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
+    cov_perp_self = mm_perp / args.frame - \
+        (m_perp.sum(axis=2) / args.frame * m_perp.sum(axis=2) /
+         args.frame * A * Lz / args.nbins / args.frame)
+    cov_perp_coll = cmM_perp / args.frame - \
+        m_perp.sum(axis=2) / args.frame * cM_perp / args.frame
 
-    var_perp = M_perp_2.sum() / frame - (M_perp.sum() / frame)**2
-    dvar_perp = (M_perp_2 / frame - (M_perp / frame)
-                 ** 2).std() / np.sqrt(resample - 1)
+    var_perp = M_perp_2.sum() / args.frame - (M_perp.sum() / args.frame)**2
+    dvar_perp = (M_perp_2 / args.frame - (M_perp / args.frame)
+                 ** 2).std() / np.sqrt(args.resample - 1)
 
-    cov_par = mM_par.sum(axis=2) / frame - \
-        m_par.sum(axis=2) / frame * M_par.sum() / frame
-    cov_par_self = mm_par / frame - \
-        m_par.sum(axis=2) / frame * (m_par.sum(axis=2)
-                                     * Lz / nbins / frame * A) / frame
-    cov_par_coll = cmM_par / frame - m_par.sum(axis=2) / frame * cM_par / frame
-    dcov_par = np.sqrt((mM_par.std(axis=2) / frame * resample)**2
-                       + (m_par.std(axis=2) / frame *
-                          resample * M_par.sum() / frame)**2
-                       + (m_par.sum(axis=2) / frame * M_par.std() / frame * resample)**2) / np.sqrt(resample - 1)
+    cov_par = mM_par.sum(axis=2) / args.frame - \
+        m_par.sum(axis=2) / args.frame * M_par.sum() / args.frame
+    cov_par_self = mm_par / args.frame - \
+        m_par.sum(axis=2) / args.frame * (m_par.sum(axis=2)
+                                     * Lz / args.nbins / args.frame * A) / args.frame
+    cov_par_coll = cmM_par / args.frame - m_par.sum(axis=2) / args.frame * cM_par / args.frame
+    dcov_par = np.sqrt((mM_par.std(axis=2) / args.frame * args.resample)**2
+                       + (m_par.std(axis=2) / args.frame *
+                          args.resample * M_par.sum() / args.frame)**2
+                       + (m_par.sum(axis=2) / args.frame * M_par.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
 
     eps0inv = 1. / 8.854e-12
     pref = (1.6e-19)**2 / 1e-10
@@ -123,10 +117,10 @@ def output():
         eps_perp_coll = (- eps0inv * beta * pref * cov_perp_coll) \
             / (1 + eps0inv * beta * pref / avV * var_perp)
 
-    if (zmax == -1):
-        z = np.linspace(0, Lz / frame, len(eps_par)) / 10
+    if (args.zmax == -1):
+        z = np.linspace(0, Lz / args.frame, len(eps_par)) / 10
     else:
-        z = np.linspace(zmin, zmax, len(eps_par)) / 10.
+        z = np.linspace(args.zmin, args.zmax, len(eps_par)) / 10.
 
     outdata_perp = np.hstack([z[:, np.newaxis], eps_perp.sum(axis=1)[:, np.newaxis], eps_perp,
                               np.linalg.norm(deps_perp, axis=1)[
@@ -151,9 +145,11 @@ def output():
                 (outdata_perp[i + 1] + outdata_perp[i + 1][-1::-1])
 
     np.savetxt(args.output + '_perp.dat', outdata_perp,
-               header="statistics over %d picoseconds" % ts.time)
+               header="statistics over %d picoseconds" % (
+                   (args.endframe - args.beginframe + 1) * args.dt))
     np.savetxt(args.output + '_par.dat', outdata_par,
-               header="statistics over %d picoseconds" % ts.time)
+               header="statistics over %d picoseconds" % (
+                   (args.endframe - args.beginframe + 1) * args.dt))
 
     return
 
@@ -162,29 +158,33 @@ def main(firstarg=2):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
 
-    u = MDAnalysis.Universe(args.topology, args.trajectory)
-    mysels = [u.select_atoms(i) for i in args.groups]
+    print("\nCalcualate profile for the following group(s):")
+    mysels = []
+    for i, gr in enumerate(args.groups):
+        mysels.append(u.select_atoms(gr))
+        print("{:>15}: {:>10} atoms".format(gr, mysels[i].n_atoms))
+        if mysels[i].n_atoms == 0:
+            sys.exit(
+                "\n Error: {} does not contain any atoms. Please adjust '-gr' selection.".format(gr))
+
+    print("\n")
+
     sol = u.select_atoms('resname SOL')
 
-    if args.box != None:
-        assert (len(args.box) == 6 or len(args.box) == 3),\
-            'The boxdimensions must contain 3 entries for the box vectors and possibly 3 more for the angles.'
-        u.dimensions = np.array(args.box)
-
-    dim = args.dim
     # Assume a threedimensional universe...
-    xydims = np.roll(np.arange(3), -dim)[1:]
+    xydims = np.roll(np.arange(3), -args.dim)[1:]
     dz = args.binwidth * 10  # Convert to Angstroms
 
     if (args.zmax == -1):
-        zmax = u.dimensions[dim]
+        zmax = u.dimensions[args.dim]
     else:
-        zmax = args.zmax * 10.
-    zmin = args.zmin * 10.
-    nbins = int((zmax - zmin) / dz)  # CAVE: binwidth varies in NPT !
+        args.zmax *= 10.
+        zmax = args.zmax
 
-    begin = args.begin
+    args.zmin = args.zmin * 10.
+    args.nbins = int((zmax - args.zmin) / dz)  # CAVE: binwidth varies in NPT !
 
     if (args.end != -1):
         end = args.end
@@ -196,82 +196,80 @@ def main(firstarg=2):
         thus we can easily do block averaging
         for now hardcode 10 blocks...
     '''
-    resample = 10
-    resample_freq = u.trajectory.n_frames // resample
+    args.resample = 10
+    resample_freq = u.trajectory.n_frames // args.resample
 
-    m_par = np.zeros((nbins, len(args.groups), resample))
-    mM_par = np.zeros((nbins, len(args.groups), resample))  # total fluctuations
-    mm_par = np.zeros((nbins, len(args.groups)))  # self
-    cmM_par = np.zeros((nbins, len(args.groups)))  # collective contribution
-    cM_par = np.zeros((nbins, len(args.groups)))
-    M_par = np.zeros((resample))
-
-    # Same for perpendicular
-    m_perp = np.zeros((nbins, len(args.groups), resample))
-    mM_perp = np.zeros((nbins, len(args.groups), resample))  # total fluctuations
-    mm_perp = np.zeros((nbins, len(args.groups)))  # self
-    cmM_perp = np.zeros((nbins, len(args.groups)))  # collective contribution
-    cM_perp = np.zeros((nbins, len(args.groups)))  # collective contribution
 
     V = 0
     Lz = 0
-
-    M_perp = np.zeros((resample))
-    M_perp_2 = np.zeros((resample))
-
-    print('Using', nbins, 'bins.')
-
     A = np.prod(u.dimensions[xydims])
 
-    frame = 0
+    m_par = np.zeros((args.nbins, len(args.groups), args.resample))
+    mM_par = np.zeros((args.nbins, len(args.groups), args.resample)
+                      )  # total fluctuations
+    mm_par = np.zeros((args.nbins, len(args.groups)))  # self
+    cmM_par = np.zeros((args.nbins, len(args.groups)))  # collective contribution
+    cM_par = np.zeros((args.nbins, len(args.groups)))
+    M_par = np.zeros((args.resample))
+
+    # Same for perpendicular
+    m_perp = np.zeros((args.nbins, len(args.groups), args.resample))
+    mM_perp = np.zeros((args.nbins, len(args.groups), args.resample)
+                       )  # total fluctuations
+    mm_perp = np.zeros((args.nbins, len(args.groups)))  # self
+    cmM_perp = np.zeros((args.nbins, len(args.groups)))  # collective contribution
+    cM_perp = np.zeros((args.nbins, len(args.groups)))  # collective contribution
+    M_perp = np.zeros((args.resample))
+    M_perp_2 = np.zeros((args.resample))
+
+
+    print('Using', args.nbins, 'bins.')
+
+    args.frame = 0
     print("\rEvaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), end="")
-
-    startframe = int(begin // u.trajectory.dt)
-    endframe = int(end // u.trajectory.dt)
-
-    for ts in u.trajectory[startframe:endframe:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 
         if (args.zmax == -1):
-            zmax = ts.dimensions[dim]
+            zmax = ts.dimensions[args.dim]
 
         if args.membrane_shift:
             # shift membrane
-            ts.positions[:, dim] += ts.dimensions[dim] / 2
-            ts.positions[:, dim] %= ts.dimensions[dim]
+            ts.positions[:, args.dim] += ts.dimensions[args.dim] / 2
+            ts.positions[:, args.dim] %= ts.dimensions[args.dim]
         if args.com:
             # put water COM into center
             waterCOM = np.sum(
                 sol.atoms.positions[:, 2] * sol.atoms.masses) / sol.atoms.masses.sum()
             print("shifting by ", waterCOM)
-            ts.positions[:, dim] += ts.dimensions[dim] / 2 - waterCOM
-            ts.positions[:, dim] %= ts.dimensions[dim]
+            ts.positions[:, args.dim] += ts.dimensions[args.dim] / 2 - waterCOM
+            ts.positions[:, args.dim] %= ts.dimensions[args.dim]
 
         if args.bpbc:
             # make broken molecules whole again!
             pbctools.repairMolecules(u.atoms)
 
-        dz_frame = ts.dimensions[dim] / nbins
+        dz_frame = ts.dimensions[args.dim] / args.nbins
 
         # precalculate total polarization of the box
         this_M_perp, this_M_par = np.split(
-            np.roll(np.dot(u.atoms.charges, u.atoms.positions), -dim), [1])
+            np.roll(np.dot(u.atoms.charges, u.atoms.positions), -args.dim), [1])
 
         # Use polarization density ( for perpendicular component )
         # ========================================================
 
         # sum up the averages
-        M_perp[frame // resample_freq] += this_M_perp
-        M_perp_2[frame // resample_freq] += this_M_perp**2
+        M_perp[args.frame // resample_freq] += this_M_perp
+        M_perp_2[args.frame // resample_freq] += this_M_perp**2
         for i, sel in enumerate(mysels):
-            bins = ((sel.atoms.positions[:, dim] - zmin) /
-                    ((zmax - zmin) / (nbins))).astype(int)
+            bins = ((sel.atoms.positions[:, args.dim] - args.zmin) /
+                    ((zmax - args.zmin) / (args.nbins))).astype(int)
             curQ = np.histogram(bins, bins=np.arange(
-                nbins + 1), weights=sel.atoms.charges)[0]
+                args.nbins + 1), weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / A)
-            m_perp[:, i, frame // resample_freq] += this_m_perp
-            mM_perp[:, i, frame // resample_freq] += this_m_perp * this_M_perp
+            m_perp[:, i, args.frame // resample_freq] += this_m_perp
+            mM_perp[:, i, args.frame // resample_freq] += this_m_perp * this_M_perp
             mm_perp[:, i] += this_m_perp * this_m_perp * \
-                (ts.dimensions[dim] / nbins) * A  # self term
+                (ts.dimensions[args.dim] / args.nbins) * A  # self term
             # collective contribution
             cmM_perp[:, i] += this_m_perp * \
                 (this_M_perp - this_m_perp * (A * dz_frame))
@@ -290,10 +288,11 @@ def main(firstarg=2):
             centers = np.sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
                 / np.abs(sel.residues[0].atoms.charges).sum()
             testpos = sel.atoms.positions
-            testpos[:, dim] = np.repeat(centers[:, dim], atomsPerMolecule)
+            testpos[:, args.dim] = np.repeat(
+                centers[:, args.dim], atomsPerMolecule)
 
-            binsz = (((testpos[:, dim] - zmin) % ts.dimensions[dim])
-                     / ((zmax - zmin) / nbins)).astype(int)
+            binsz = (((testpos[:, args.dim] - args.zmin) % ts.dimensions[args.dim])
+                     / ((zmax - args.zmin) / args.nbins)).astype(int)
 
             # Average parallel directions
             for j, direction in enumerate(xydims):
@@ -301,15 +300,16 @@ def main(firstarg=2):
                 binsx = (sel.atoms.positions[:, direction]
                          / (ts.dimensions[direction] / nbinsx)).astype(int)
                 binsx[np.where(binsx < 0)] = 0
-                curQx = np.histogram2d(binsz, binsx, bins=[np.arange(0, nbins + 1), np.arange(0, nbinsx + 1)],
+                curQx = np.histogram2d(binsz, binsx, bins=[np.arange(0, args.nbins + 1), np.arange(0, nbinsx + 1)],
                                        weights=sel.atoms.charges)[0]
                 curqx = np.cumsum(curQx, axis=1) / (ts.dimensions[xydims[1 - j]] * (
-                    ts.dimensions[dim] / nbins))  # integral over x, so units of area
+                    ts.dimensions[args.dim] / args.nbins))  # integral over x, so units of area
                 this_m_par = -curqx.mean(axis=1)
 
-                m_par[:, i, frame // resample_freq] += this_m_par
-                mM_par[:, i, frame // resample_freq] += this_m_par * this_M_par[j]
-                M_par[frame // resample_freq] += this_M_par[j]
+                m_par[:, i, args.frame // resample_freq] += this_m_par
+                mM_par[:, i, args.frame // resample_freq] += this_m_par * \
+                    this_M_par[j]
+                M_par[args.frame // resample_freq] += this_M_par[j]
                 mm_par[:, i] += this_m_par * this_m_par * dz_frame * A
                 # collective contribution
                 cmM_par[:, i] += this_m_par * \
@@ -317,17 +317,17 @@ def main(firstarg=2):
                 cM_par[:, i] += this_M_par[j] - this_m_par * dz_frame * A
 
         V += ts.volume
-        Lz += ts.dimensions[dim]
+        Lz += ts.dimensions[args.dim]
 
-        frame += 1
-        print_frameinfo(ts,frame)
+        args.frame += 1
+        print_frameinfo(ts, args.frame)
         # call for output
-        if (frame % args.outfreq == 0 and frame >= args.outfreq):
-            output()
-
+        if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
+            output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
 
     print('\n')
-    output()
+    output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
+
 
 if __name__ == "__main__":
     main(firstarg=1)

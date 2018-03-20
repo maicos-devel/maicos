@@ -23,7 +23,6 @@ def initilize_universe(argobj):
     else:
         argobj.endframe = int(u.trajectory.totaltime // argobj.dt)
 
-    print(argobj.endframe, argobj.beginframe)
     if argobj.beginframe > argobj.endframe:
         sys.exit("Start time is larger than end time!")
 

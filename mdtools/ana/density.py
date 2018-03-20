@@ -152,9 +152,13 @@ def main(firstarg=2):
     sel = []
     for i, gr in enumerate(args.groups):
         sel.append(u.select_atoms(gr))
-        print("%s: %i atoms" % (gr, sel[i].n_atoms))
+        print("{:>15}: {:>10} atoms".format(gr, sel[i].n_atoms))
+        if sel[i].n_atoms == 0:
+            sys.exit(
+                "\n Error: {} does not contain any atoms. Please adjust '-gr' selection.".format(gr))
+    print("\n")
 
-    print('\nUsing', args.nbins, 'bins.')
+    print('Using', args.nbins, 'bins.')
 
     #======== MAIN LOOP =========
     #============================
