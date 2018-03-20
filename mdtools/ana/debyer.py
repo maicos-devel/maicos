@@ -51,14 +51,17 @@ def output():
     for f in datfiles[1:]:
         s_tmp = np.vstack([s_tmp, np.loadtxt("{}/{}".format(args.tmp, f))])
 
+    nbins = int(np.ceil((args.endq - args.startq) / args.dq))
+    q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
+
     s_out = binned_statistic(
-        s_tmp[:, 0], s_tmp[:, 1], bins=args.nbins, range=(args.startq, args.endq))[0]
+        s_tmp[:, 0], s_tmp[:, 1], bins=nbins, range=(args.startq, args.endq))[0]
     s_out = np.nan_to_num(s_out)
 
     nonzeros = np.where(s_out != 0)[0]
 
     np.savetxt(args.output + '.dat',
-               np.vstack([args.q[nonzeros], s_out[nonzeros]]).T,
+               np.vstack([q[nonzeros], s_out[nonzeros]]).T,
                header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
 
 def cleanup():
@@ -130,9 +133,6 @@ def main(firstarg=2):
         print("{} is the tempory directory for all files.".format(args.tmp))
     else:
         OUT = open(os.devnull, 'w')
-
-    args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
-    args.q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
 
     args.frame = 0
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
