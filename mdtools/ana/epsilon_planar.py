@@ -118,7 +118,7 @@ def output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_p
             / (1 + eps0inv * beta * pref / avV * var_perp)
 
     if (args.zmax == -1):
-        z = np.linspace(0, Lz / args.frame, len(eps_par)) / 10
+        z = np.linspace(args.zmin, Lz / args.frame, len(eps_par)) / 10
     else:
         z = np.linspace(args.zmin, args.zmax, len(eps_par)) / 10.
 
