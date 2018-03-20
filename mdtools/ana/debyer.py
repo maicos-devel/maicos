@@ -32,36 +32,24 @@ parser.add_argument('-dout',  dest='outfreq',     type=float,   default='100',
 parser.add_argument('-sq',    dest='output',      type=str,
                     default='./sq',                 help='Prefix/Path for output file')
 parser.add_argument('-startq', dest='startq',      type=float,
-                    default=0,                      help='Starting q (1/A)')
+                    default=0,                      help='Starting q (1/Å)')
 parser.add_argument('-endq',  dest='endq',        type=float,
-                    default=60,                     help='Ending q (1/A)')
+                    default=6,                     help='Ending q (1/Å)')
 parser.add_argument('-dq',    dest='dq',          type=float,
-                    default=0.02,                   help='binwidth (1/A)')
+                    default=0.02,                   help='binwidth (1/Å)')
 parser.add_argument('-d',     dest='debyer',      type=str,
                     default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
 parser.add_argument('-v',     dest='verbose',     action='store_true',
                     help='Be loud and noisy.')
 
 
-def cleanup():
+def output():
     """averages over all dat file and removes them"""
     datfiles = [f for f in os.listdir(args.tmp) if f.endswith(".dat")]
-    xyzfiles = [f for f in os.listdir(args.tmp) if f.endswith(".xyz")]
 
-    for i, f in enumerate(datfiles):
-        path = "{}/{}".format(args.tmp, f)
-        if i == 0:
-            s_tmp = np.loadtxt(path)
-        else:
-            s_tmp = np.vstack([s_tmp, np.loadtxt(path)])
-
-        os.remove(path)
-        os.remove("{}/{}".format(args.tmp, xyzfiles[i]))
-
-    if args.frame > args.outfreq:
-        s_prev = np.loadtxt("{}.dat".format(args.output))
-        s_prev[:, 1] *= (args.frame - len(datfiles))  # weighting for average
-        s_tmp = np.vstack([s_tmp, s_prev])
+    s_tmp = np.loadtxt("{}/{}".format(args.tmp, datfiles[0]))
+    for f in datfiles[1:]:
+        s_tmp = np.vstack([s_tmp, np.loadtxt("{}/{}".format(args.tmp, f))])
 
     s_out = binned_statistic(
         s_tmp[:, 0], s_tmp[:, 1], bins=args.nbins, range=(args.startq, args.endq))[0]
@@ -73,6 +61,13 @@ def cleanup():
                np.vstack([args.q[nonzeros], s_out[nonzeros]]).T,
                header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
 
+def cleanup():
+    """Cleans up temporal file directory."""
+
+    for f in os.listdir(args.tmp):
+        os.remove("{}/{}".format(args.tmp, f))
+
+    os.rmdir(args.tmp)
 
 type_dict = {}
 with open(os.path.join(sharePath, "atomtypes.dat")) as f:
@@ -131,10 +126,10 @@ def main(firstarg=2):
     args.tmp = tempfile.mkdtemp()
 
     if args.verbose:
-        FNULL = None
+        OUT = None
         print("{} is the tempory directory for all files.".format(args.tmp))
     else:
-        FNULL = open(os.devnull, 'w')
+        OUT = open(os.devnull, 'w')
 
     args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
     args.q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
@@ -159,16 +154,16 @@ def main(firstarg=2):
             box[0], box[1], box[2], np.min(box) / 2.001)
 
         subprocess.call("{} {}".format(args.debyer, command),
-                        stdout=FNULL, stderr=FNULL, shell=True)
+                        stdout=OUT, stderr=OUT, shell=True)
 
         args.frame += 1
         print_frameinfo(ts, args.frame)
         # call for output
-        if (args.frame % args.outfreq == 0) and args.frame < maxnframes:
-            cleanup()
+        if args.frame % args.outfreq == 0 and args.frame > 0:
+            output()
 
+    output()
     cleanup()
-    os.rmdir(args.tmp)
     print("\n")
 
 
