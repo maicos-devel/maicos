@@ -13,21 +13,18 @@ import MDAnalysis as mda
 import numpy as np
 from scipy.stats import binned_statistic
 
-from . import add_traj_arguments, initilize_universe, print_frameinfo
-from .. import sharePath
+from . import initilize_universe, print_frameinfo
+from .. import sharePath, initilize_parser
 
 #========== PARSER ===========
 #=============================
-parser = argparse.ArgumentParser(description="""
+parser = initilize_parser(add_traj_arguments=True)
+parser.description = """
     An interface to the Deyer library. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
     http://www.mdanalysis.org/docs/documentation_pages/selections.html
     The system can be replicated with the -nbox option. The system is than stacked multiplie times on itself. No
-    replication is done be default.""", prog="mdtools debyer",
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+    replication is done be default."""
 parser.add_argument('-sel',   dest='sel',         type=str,     default='all',
                     help='Atoms for which to compute the profile', )
 parser.add_argument('-dout',  dest='outfreq',     type=float,   default='100',
@@ -67,13 +64,13 @@ def cleanup():
         s_tmp = np.vstack([s_tmp, s_prev])
 
     s_out = binned_statistic(
-        s_tmp[:, 0], s_tmp[:, 1], bins=nbins, range=(args.startq, args.endq))[0]
+        s_tmp[:, 0], s_tmp[:, 1], bins=args.nbins, range=(args.startq, args.endq))[0]
     s_out = np.nan_to_num(s_out)
 
     nonzeros = np.where(s_out != 0)[0]
 
     np.savetxt(args.output + '.dat',
-               np.vstack([q[nonzeros], s_out[nonzeros]]).T,
+               np.vstack([args.q[nonzeros], s_out[nonzeros]]).T,
                header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
 
 
@@ -105,7 +102,7 @@ def main(firstarg=2):
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)
 
-    sel = u.select_atoms(args.sel)
+    sel = u.select_atoms(args.sel + " and not name DUM and not name MW")
 
     if sel.n_atoms == 0:
         sys.exit("Exiting since selection does not contain any atoms.")
@@ -119,19 +116,16 @@ def main(firstarg=2):
     for i, atom_type in enumerate(sel.types.astype(str)):
         element = type_dict[atom_type]
 
-        if element is not "DUM":
-            # add hydrogens in the case of united atom forcefields
-            if element in ["CH1", "CH2", "CH3", "CH4", "NH", "NH2", "NH3"]:
-                atom_names[i] = element[0]
-                for h in range(int(element[-1])):
-                    atom_names.append("H")
-                    # add a extra atom to universe. It got the wrong type but we only
-                    # need the position, since we maintain our own atom type list.
-                    sel += sel.atoms[i]
-            else:
-                atom_names[i] = element
-
-    #sel = sel.atoms.select_atoms("not name 'DUM'")
+        # add hydrogens in the case of united atom forcefields
+        if element in ["CH1", "CH2", "CH3", "CH4", "NH", "NH2", "NH3"]:
+            atom_names[i] = element[0]
+            for h in range(int(element[-1])):
+                atom_names.append("H")
+                # add a extra atom to universe. It got the wrong type but we only
+                # need the position, since we maintain our own atom type list.
+                sel += sel.atoms[i]
+        else:
+            atom_names[i] = element
 
     # create tmp directory for saving datafiles
     args.tmp = tempfile.mkdtemp()
@@ -143,8 +137,7 @@ def main(firstarg=2):
         FNULL = open(os.devnull, 'w')
 
     args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
-    q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
-    shift = np.zeros(3)
+    args.q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
 
     args.frame = 0
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
@@ -154,7 +147,8 @@ def main(firstarg=2):
         sel.atoms.positions = sel.atoms.positions \
             - box * np.round(sel.atoms.positions / box)  # minimum image
 
-        writeXYZ("{}/{}.xyz".format(args.tmp, args.frame), sel.atoms, atom_names)
+        writeXYZ("{}/{}.xyz".format(args.tmp, args.frame),
+                 sel.atoms, atom_names)
 
         ref_q = 4 * np.pi / np.min(box)
         if ref_q > args.startq:
@@ -162,7 +156,7 @@ def main(firstarg=2):
 
         command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
             round(args.startq, 3), args.endq, args.dq, args.tmp, args.frame,
-            box[0], box[1], box[2], np.min(box) / 2)
+            box[0], box[1], box[2], np.min(box) / 2.001)
 
         subprocess.call("{} {}".format(args.debyer, command),
                         stdout=FNULL, stderr=FNULL, shell=True)

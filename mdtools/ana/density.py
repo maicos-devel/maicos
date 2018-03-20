@@ -10,19 +10,17 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 
-from . import add_traj_arguments, initilize_universe, print_frameinfo
+from . import initilize_universe, print_frameinfo
+from .. import initilize_parser
 
 #========== PARSER ===========
 #=============================
-parser = argparse.ArgumentParser(description="""
+parser = initilize_parser(add_traj_arguments=True)
+parser.description="""
     Computes partial densities or tempertaure profiles across the box.
     For group selections use strings in the MDAnalysis selection command style
     found here:
-    https://pythonhosted.org/MDAnalysis/documentation_pages/selections.html""",
-                                 prog="mdtools density", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+    https://pythonhosted.org/MDAnalysis/documentation_pages/selections.html"""
 parser.add_argument('-o',   dest='output',      type=str,
                     default='density',              help='Prefix for output filenames')
 parser.add_argument('-dout', dest='outfreq',     type=float, default='1000',

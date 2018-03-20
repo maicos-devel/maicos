@@ -12,21 +12,18 @@ import numpy as np
 import sfactor
 from scipy.stats import binned_statistic
 
-from . import add_traj_arguments, initilize_universe, print_frameinfo
-from .. import sharePath
+from . import initilize_universe, print_frameinfo
+from .. import sharePath, initilize_parser
 
 #========== PARSER ===========
 #=============================
-parser = argparse.ArgumentParser(description="""
+parser = initilize_parser(add_traj_arguments=True)
+parser.description="""
     Computes SAXS scattering intensities for all atom types from the given trajectory.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
-    http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
-                                 prog="mdtools saxs", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+    http://www.mdanalysis.org/docs/documentation_pages/selections.html"""
 parser.add_argument('-sel',   dest='sel',         type=str,   default='all',
                     help='Atoms for which to compute the profile', )
 parser.add_argument('-dout',  dest='outfreq',     type=float, default='100',

@@ -11,14 +11,12 @@ import MDAnalysis
 import numpy as np
 
 import pbctools
-from . import add_traj_arguments, print_frameinfo
+from . import initilize_universe, print_frameinfo
+from .. import initilize_parser
 
-parser = argparse.ArgumentParser(description="Calculate the dielectric profile.\
-        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.",
-     prog = "mdtools epsilon_planar", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+parser = initilize_parser(add_traj_arguments=True)
+parser.description="""Calculate the dielectric profile.
+        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details."""
 parser.add_argument('-dz', dest='binwidth', type=float,
                     default=0.05, help='specify the binwidth [nm]')
 parser.add_argument('-dt', dest='skipframes', type=int,
@@ -162,7 +160,7 @@ def output():
 
 def main(firstarg=2):
     global args
-    
+
     args = parser.parse_args(args=sys.argv[firstarg:])
 
     u = MDAnalysis.Universe(args.topology, args.trajectory)

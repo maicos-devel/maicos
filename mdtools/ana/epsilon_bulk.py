@@ -11,17 +11,14 @@ import MDAnalysis
 import numpy as np
 
 import pbctools
-from . import add_traj_arguments, initilize_universe, print_frameinfo
+from . import initilize_universe, print_frameinfo
+from .. import initilize_parser
 
-parser = argparse.ArgumentParser(
-    description="""
+parser = initilize_parser(add_traj_arguments=True)
+parser.description="""
           Computes the dipole moment flcutuations and from this the
           dielectric constant. The selection uses the MDAnalysis selection commands found here:
-          http://www.mdanalysis.org/docs/documentation_pages/selections.html""",
-          prog = "mdtools epsilon_bulk", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+          http://www.mdanalysis.org/docs/documentation_pages/selections.html"""
 parser.add_argument('-sel',         dest='sel',         type=str,     default='all',
                     help='Atoms for which to compute the profile', )
 parser.add_argument('-dout',        dest='outfreq',     type=float,   default='100',

@@ -19,17 +19,14 @@ import MDAnalysis
 import numpy as np
 
 import moleculeinsertion
-from .. import sharePath
+from .. import sharePath, initilize_parser
 
 #===================================================================================================
 # INPUT OPTIONS
 #===================================================================================================
-
-
-parser = argparse.ArgumentParser(description="""Builds an armchair CNT with
-or withput two HOPG at the end. Or a single HOPG sheet.""",
-                                 prog="mdtools carbonstructure", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
+parser = initilize_parser()
+parser.description="""Builds an armchair CNT with
+or withput two HOPG at the end. Or a single HOPG sheet."""
 parser.add_argument('-s', '--structure', type=str, required=True,
                     default=None, help='Structure to build type.', choices=["armcnt", "hopg", "hopgcnt"])
 parser.add_argument('-i', '--index', type=int, required=True,

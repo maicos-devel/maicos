@@ -11,16 +11,12 @@ import MDAnalysis as mda
 import numpy as np
 
 import pbctools
-from . import add_traj_arguments, print_frameinfo
+from . import initilize_universe, print_frameinfo
+from .. import initilize_parser
 
-#========== PARSER ===========
-#=============================
-parser = argparse.ArgumentParser(description="""Calculation of the dielectric
-profile for axial and radial direction at the system's center of geometry.""",
-     prog = "mdtools epsilon_cylinder", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-add_traj_arguments(parser)
-
+parser = initilize_parser(add_traj_arguments=True)
+parser.description="""Calculation of the dielectric
+profile for axial and radial direction at the system's center of geometry."""
 parser.add_argument('-g', dest='geometry', type=str,
                     default=None, help="A gro file w/o water")
 parser.add_argument('-r', dest='radius', type=float,
@@ -93,7 +89,7 @@ def output():
 
 def main(firstarg=2):
     global args
-    
+
     args = parser.parse_args(args=sys.argv[firstarg:])
 
     u = mda.Universe(args.topology, args.trajectory)

@@ -14,11 +14,11 @@ import numpy as np
 
 import moleculeinsertion
 
-from .. import sharePath
+from .. import sharePath, initilize_parser
 
-parser = argparse.ArgumentParser(description="""Inserts Nw watermolecules in a given
-z distance.""", prog="mdtools insert", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
+parser = initilize_parser()
+parser.description="""Inserts Nw watermolecules in a given
+z distance."""
 parser.add_argument('-cp', '--refstructure', type=str, required=True,
                     default="protein.gro", help='Structure file: gro, pdb, ...')
 parser.add_argument('-cs', '--addstructure', type=str,
