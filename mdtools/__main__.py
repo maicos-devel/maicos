@@ -7,7 +7,8 @@ import sys
 # Dictionary containing the app name and the directory
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
-        "epsilon_cylinder": "ana", "epsilon_planar": "ana", "saxs": "ana"}
+        "epsilon_cylinder": "ana", "epsilon_planar": "ana", "saxs": "ana",
+        "pertop":"build"}
 
 applist = list(apps.keys())
 applist.sort()
