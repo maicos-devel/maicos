@@ -20,7 +20,7 @@ from .. import sharePath, initilize_parser
 #=============================
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """
-    An interface to the Deyer library. By using the -sel option atoms can be selected for which the
+    A python interface to the Deyer library. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
     http://www.mdanalysis.org/docs/documentation_pages/selections.html
     The system can be replicated with the -nbox option. The system is than stacked multiplie times on itself. No
@@ -54,15 +54,17 @@ def output():
     nbins = int(np.ceil((args.endq - args.startq) / args.dq))
     q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
 
-    s_out = binned_statistic(
-        s_tmp[:, 0], s_tmp[:, 1], bins=nbins, range=(args.startq, args.endq))[0]
-    s_out = np.nan_to_num(s_out)
+    bins = ((s_tmp[:, 0] - args.startq) /
+            ((args.endq - args.startq) / nbins)).astype(int)
+    s_out = np.histogram(bins, bins=np.arange(
+        nbins + 1), weights=s_tmp[:, 1])[0]
 
     nonzeros = np.where(s_out != 0)[0]
 
     np.savetxt(args.output + '.dat',
-               np.vstack([q[nonzeros], s_out[nonzeros]]).T,
+               np.vstack([q[nonzeros], s_out[nonzeros] / len(datfiles)]).T,
                header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
+
 
 def cleanup():
     """Cleans up temporal file directory."""
@@ -71,6 +73,7 @@ def cleanup():
         os.remove("{}/{}".format(args.tmp, f))
 
     os.rmdir(args.tmp)
+
 
 type_dict = {}
 with open(os.path.join(sharePath, "atomtypes.dat")) as f:
@@ -102,6 +105,7 @@ def main(firstarg=2):
 
     sel = u.select_atoms(args.sel + " and not name DUM and not name MW")
 
+    print("Selection '{}' contains {} atoms.\n".format(args.sel, sel.n_atoms))
     if sel.n_atoms == 0:
         sys.exit("Exiting since selection does not contain any atoms.")
 
