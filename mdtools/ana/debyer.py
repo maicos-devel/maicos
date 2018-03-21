@@ -25,22 +25,24 @@ parser.description = """
     http://www.mdanalysis.org/docs/documentation_pages/selections.html
     The system can be replicated with the -nbox option. The system is than stacked multiplie times on itself. No
     replication is done be default."""
-parser.add_argument('-sel',   dest='sel',         type=str,     default='all',
+parser.add_argument('-sel', dest='sel', type=str, default='all',
                     help='Atoms for which to compute the profile', )
-parser.add_argument('-dout',  dest='outfreq',     type=float,   default='100',
+parser.add_argument('-dout', dest='outfreq', type=float, default='100',
                     help='Number of frames after which the output is updated.')
-parser.add_argument('-sq',    dest='output',      type=str,
-                    default='./sq',                 help='Prefix/Path for output file')
-parser.add_argument('-startq', dest='startq',      type=float,
-                    default=0,                      help='Starting q (1/Å)')
-parser.add_argument('-endq',  dest='endq',        type=float,
-                    default=6,                     help='Ending q (1/Å)')
-parser.add_argument('-dq',    dest='dq',          type=float,
-                    default=0.02,                   help='binwidth (1/Å)')
-parser.add_argument('-d',     dest='debyer',      type=str,
+parser.add_argument('-sq', dest='output', type=str,
+                    default='./sq', help='Prefix/Path for output file')
+parser.add_argument('-startq', dest='startq', type=float,
+                    default=0, help='Starting q (1/Å)')
+parser.add_argument('-endq', dest='endq', type=float,
+                    default=6, help='Ending q (1/Å)')
+parser.add_argument('-dq', dest='dq', type=float,
+                    default=0.02, help='binwidth (1/Å)')
+parser.add_argument('-sinc', dest='sinc',
+                    action='store_true', help='apply sinc damping')
+parser.add_argument('-d', dest='debyer', type=str,
                     default="~/repos/debyer/debyer/debyer", help='path to the debyer executable')
-parser.add_argument('-v',     dest='verbose',     action='store_true',
-                    help='Be loud and noisy.')
+parser.add_argument('-v', dest='verbose',
+                    action='store_true', help='Be loud and noisy.')
 
 
 def output():
@@ -156,6 +158,8 @@ def main(firstarg=2):
         command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
             round(args.startq, 3), args.endq, args.dq, args.tmp, args.frame,
             box[0], box[1], box[2], np.min(box) / 2.001)
+
+        command += args.sinc * " --sinc"
 
         subprocess.call("{} {}".format(args.debyer, command),
                         stdout=OUT, stderr=OUT, shell=True)
