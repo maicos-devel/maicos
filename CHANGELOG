@@ -10,5 +10,8 @@ The rules for this file:
   * keep the format consistent (79 char width, Y/M/D date format) and do not
     use tabs but use spaces for formatting
 
-2018/MM/DD Philip Loche
-  * prepared for release outside lab
+
+  * 0.1
+
+2018/04/31 Philip Loche
+  * first internal release
