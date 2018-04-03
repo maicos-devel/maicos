@@ -39,7 +39,7 @@ if __name__ == "__main__":
           zip_safe=False,
           requires=['numpy (>=1.10.4)', 'MDAnalysis (>=0.17.0)',
                     'Cython(>=0.27.3)'],
-          build_requires=['numpy (>=1.10.4)', 'Cython(>=0.27.3)'],
+          setup_requires=['numpy (>=1.10.4)', 'Cython(>=0.27.3)'],
           install_requires=['numpy>=1.10.4',
                             'MDAnalysis>=0.17.0', 'Cython>=0.27.3'],
           entry_points={

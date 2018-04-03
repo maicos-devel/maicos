@@ -4,6 +4,8 @@
 import argparse
 import sys
 
+from . import version
+
 # Dictionary containing the app name and the directory
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
@@ -18,6 +20,8 @@ parser = argparse.ArgumentParser(description="""
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("program", type=str, help="Program to start",
                     choices=applist)
+parser.add_argument('--version', action='version',
+                    version="mdtools {}".format(version.__version__))
 
 
 def main():

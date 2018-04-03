@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import division
+from __future__ import print_function, division
 
 import argparse
 import sys
@@ -92,10 +92,10 @@ def main(firstarg=2):
     unit = np.zeros(3)
     unit[args.dim] += 1
 
-    print 'Using', args.nbins, 'bins.'
+    print('Using', args.nbins, 'bins.')
 
     args.frame = 0
-    print "Evaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), '\r',
+    print("Evaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), end="")
 
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 
@@ -161,7 +161,7 @@ def main(firstarg=2):
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(diporder, av_box_length)
 
-    print '\n'
+    print('\n')
     output(diporder, av_box_length)
 
 
