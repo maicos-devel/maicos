@@ -18,7 +18,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-import moleculeinsertion
+from . import moleculeinsertion
 from .. import sharePath, initilize_parser
 
 #===================================================================================================

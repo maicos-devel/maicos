@@ -12,17 +12,16 @@ import sys
 import MDAnalysis
 import numpy as np
 
-import moleculeinsertion
-
+from . import moleculeinsertion
 from .. import sharePath, initilize_parser
 
 parser = initilize_parser()
-parser.description="""Inserts Nw watermolecules in a given
+parser.description = """Inserts Nw watermolecules in a given
 z distance."""
 parser.add_argument('-cp', '--refstructure', type=str, required=True,
                     default="protein.gro", help='Structure file: gro, pdb, ...')
 parser.add_argument('-cs', '--addstructure', type=str,
-                    default=os.path.join(sharePath,'watermolecule.gro'), help='Structure file for added molecules: gro, pdb, ...')
+                    default=os.path.join(sharePath, 'watermolecule.gro'), help='Structure file for added molecules: gro, pdb, ...')
 parser.add_argument('-o', '--output', type=str,
                     default='out.gro', help='Output file')
 parser.add_argument('-zmin', '--zmin', type=float,

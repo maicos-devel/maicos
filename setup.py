@@ -20,7 +20,6 @@ if __name__ == "__main__":
           author_email="ploche@physik.fu-berlin.de",
           package_data={'': ['share/*']},
           include_package_data=True,
-          zip_safe=False,
           requires=['numpy (>=1.10.4)', 'MDAnalysis (>=0.17.0)'],
           setup_requires=['numpy (>=1.10.4)'],
           install_requires=['numpy>=1.10.4', 'MDAnalysis>=0.17.0'],
