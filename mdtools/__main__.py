@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from __future__ import absolute_import
+
 import argparse
+import importlib
 import sys
 
 from . import version
@@ -9,8 +12,7 @@ from . import version
 # Dictionary containing the app name and the directory
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
-        "epsilon_cylinder": "ana", "epsilon_planar": "ana",
-        "pertop":"build"}
+        "epsilon_cylinder": "ana", "epsilon_planar": "ana", "pertop": "build"}
 
 applist = list(apps.keys())
 applist.sort()
@@ -28,7 +30,8 @@ def main():
 
     try:
         if sys.argv[1] in applist:
-            exec("import {}.{} as app".format(apps[sys.argv[1]], sys.argv[1]))
+            app = importlib.import_module(
+                ".{}.{}".format(apps[sys.argv[1]], sys.argv[1]), package="mdtools")
         else:
             parser.parse_args()
     except IndexError:

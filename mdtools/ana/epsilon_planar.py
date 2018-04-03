@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf8
 
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 # parse command line options
 import argparse
