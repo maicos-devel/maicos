@@ -73,7 +73,7 @@ def main(firstarg=2):
               'angles': [5, 6, 6, 6, 11, 11, 11, 11],
               'dihedrals': [5, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11, 11],
               'cmap': [5, 6, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11]}
-           #, 'position_restraints':[4,5,11,11,11]}
+    # , 'position_restraints':[4,5,11,11,11]}
 
     # atomnumberpos, resnumberpos in [ atoms ]
     arnvals = [0, 2]

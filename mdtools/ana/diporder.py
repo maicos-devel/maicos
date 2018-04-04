@@ -9,15 +9,14 @@ import sys
 import MDAnalysis
 import numpy as np
 
-import pbctools
-
+from . import pbctools
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
 # parse command line options
 
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""Calculate dipolar order parameters."""
+parser.description = """Calculate dipolar order parameters."""
 parser.add_argument('-dz', dest='binwidth', type=float,
                     default=0.01, help='specify the binwidth [nm]')
 parser.add_argument('-d', dest='dim', type=int,
@@ -95,7 +94,8 @@ def main(firstarg=2):
     print('Using', args.nbins, 'bins.')
 
     args.frame = 0
-    print("Evaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), end="")
+    print("Evaluating frame: ", u.trajectory.frame,
+          "\ttime: ", int(u.trajectory.time), end="")
 
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 

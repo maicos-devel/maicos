@@ -10,12 +10,12 @@ import sys
 import MDAnalysis
 import numpy as np
 
-import pbctools
+from . import pbctools
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""
+parser.description = """
           Computes the dipole moment flcutuations and from this the
           dielectric constant. The selection uses the MDAnalysis selection commands found here:
           http://www.mdanalysis.org/docs/documentation_pages/selections.html"""
@@ -78,12 +78,12 @@ def main(firstarg=2):
     u = initilize_universe(args)
 
     s = u.select_atoms(args.sel)
-    print("There are {} atoms in the selection '{}'.".format(s.atoms.n_atoms, args.sel))
+    print("There are {} atoms in the selection '{}'.".format(
+        s.atoms.n_atoms, args.sel))
 
     M = np.zeros(3)
     M2 = np.zeros(3)
     V = 0
-
 
     args.frame = 0
     print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
@@ -100,12 +100,13 @@ def main(firstarg=2):
         V += ts.volume
 
         args.frame += 1
-        print_frameinfo(ts,args.frame)
+        print_frameinfo(ts, args.frame)
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output(M / args.frame, M2 / args.frame, V / args.frame)
 
     print("\n")
     output(M / args.frame, M2 / args.frame, V / args.frame, verbose=True)
+
 
 if __name__ == "__main__":
     main(firstarg=1)

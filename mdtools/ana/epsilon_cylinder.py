@@ -10,12 +10,12 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 
-import pbctools
+from . import pbctools
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""Calculation of the dielectric
+parser.description = """Calculation of the dielectric
 profile for axial and radial direction at the system's center of geometry."""
 parser.add_argument('-g', dest='geometry', type=str,
                     default=None, help="A gro file w/o water")
@@ -34,8 +34,8 @@ parser.add_argument('-dout', dest='outfreq', type=float,
 parser.add_argument('-si', dest='single', action='store_true',
                     help='Single water line?')
 
-#======== DEFINITIONS ========
-#=============================
+# ======== DEFINITIONS ========
+# =============================
 epsilon_0 = 5.526350e-3  # ElementaryCharge (Angstroms Volts)^-1
 kb = 8.6173324e-5  # electronVolts Kelvins^-1
 T = 300  # Kelvins
@@ -84,8 +84,8 @@ def output():
     np.savetxt(args.output + '_rad.dat', outdata_rad.T, header=header)
 
 
-#=========== MAIN ===========
-#============================
+# =========== MAIN ===========
+# ============================
 
 def main(firstarg=2):
     global args
@@ -121,7 +121,6 @@ def main(firstarg=2):
 
     if begin > end:
         sys.exit("Start time is larger than end time!")
-
 
     nbins = int(np.ceil(radius / args.binwidth))
 
@@ -215,15 +214,15 @@ def main(firstarg=2):
         m_ax[:, frame // resample_freq] += this_m_ax
         mM_ax[:, frame // resample_freq] += this_m_ax * this_M_ax
 
-
         frame += 1
-        print_frameinfo(ts,frame)
+        print_frameinfo(ts, frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output()
 
     print("\n")
     output()
+
 
 if __name__ == "__main__":
     main(firstarg=1)

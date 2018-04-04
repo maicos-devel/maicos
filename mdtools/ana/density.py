@@ -13,10 +13,10 @@ import numpy as np
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
-#========== PARSER ===========
-#=============================
+# ========== PARSER ===========
+# =============================
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""
+parser.description = """
     Computes partial densities or tempertaure profiles across the box.
     For group selections use strings in the MDAnalysis selection command style
     found here:
@@ -40,8 +40,8 @@ parser.add_argument('-dens', dest='density',     type=str,   default='mass',
 parser.add_argument('-gr',  dest='groups',      type=str,   default=[
                     'all'], nargs='+',      help='Atoms for which to compute the density profile', )
 
-#======== DEFINITIONS ========
-#=============================
+# ======== DEFINITIONS ========
+# =============================
 
 
 def output(density_mean, density_mean_sq, av_box_length):
@@ -54,7 +54,8 @@ def output(density_mean, density_mean_sq, av_box_length):
     dens_err = dens_std / np.sqrt(args.frame)
 
     dz = av_box_length / (args.frame * args.nbins)
-    z = np.linspace(0, av_box_length / args.frame, args.nbins, endpoint=False) + dz / 2
+    z = np.linspace(0, av_box_length / args.frame,
+                    args.nbins, endpoint=False) + dz / 2
 
     # write header
     if args.density == "mass":
@@ -84,7 +85,8 @@ def output(density_mean, density_mean_sq, av_box_length):
 
     # save chemcial potential
     if (args.zpos != None):
-        this = (args.zpos / (av_box_length / args.frame) * args.nbins).astype(int)
+        this = (args.zpos / (av_box_length / args.frame)
+                * args.nbins).astype(int)
         np.savetxt(args.muout + '.dat',
                    np.hstack((mu(dens_mean[this]), dmu(dens_mean[this], dens_err[this])))[None])
     else:
@@ -119,8 +121,8 @@ def dmu(rho, drho, temperature):
     return (kT / rho * drho)
 
 
-#========== MAIN ============
-#============================
+# ========== MAIN ============
+# ============================
 
 def main(firstarg=2):
     global args
@@ -160,8 +162,8 @@ def main(firstarg=2):
 
     print('Using', args.nbins, 'bins.')
 
-    #======== MAIN LOOP =========
-    #============================
+    # ======== MAIN LOOP =========
+    # ============================
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
         curV = ts.volume / 1000
         av_box_length += u.dimensions[args.dim] / 10
@@ -179,7 +181,8 @@ def main(firstarg=2):
                 density_mean_sq[:, index] += (density_ts / bincount)**2
             else:
                 density_mean[:, index] += density_ts / curV * args.nbins
-                density_mean_sq[:, index] += (density_ts / curV * args.nbins)**2
+                density_mean_sq[:,
+                                index] += (density_ts / curV * args.nbins)**2
 
         args.frame += 1
         print_frameinfo(ts, args.frame)

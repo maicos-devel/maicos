@@ -62,7 +62,7 @@ def box(TargetUniverse, ProjectileUniverse, InsertionShift=None, zmin=0, zmax=No
 
 
 def cyzone(TargetUniverse, ProjectileUniverse, radius,
-           InsertionShift=np.array([0,0,0]), zmin=0, zmax=None):
+           InsertionShift=np.array([0, 0, 0]), zmin=0, zmax=None):
     """Insert the Projectile atoms into a cylindrical zone in the
     around TargetUniverse's center of geometry at random position and orientation
     and returns a new Universe."""
@@ -76,7 +76,7 @@ def cyzone(TargetUniverse, ProjectileUniverse, radius,
     cogProjectile = ProjectileUniverse.atoms.center_of_geometry()
     cogTarget = TargetUniverse.atoms.center_of_geometry()
 
-    if InsertionShift.any() == np.array([0,0,0]).any():
+    if InsertionShift.any() == np.array([0, 0, 0]).any():
         InsertionShift = np.array((cogTarget[0], cogTarget[1], zmin))
 
     TargetUniverse = MDAnalysis.Merge(

@@ -15,10 +15,10 @@ from scipy.stats import binned_statistic
 from . import initilize_universe, print_frameinfo
 from .. import sharePath, initilize_parser
 
-#========== PARSER ===========
-#=============================
+# ========== PARSER ===========
+# =============================
 parser = initilize_parser(add_traj_arguments=True)
-parser.description="""
+parser.description = """
     Computes SAXS scattering intensities for all atom types from the given trajectory.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
@@ -37,8 +37,8 @@ parser.add_argument('-endq',  dest='endq',        type=float,
 parser.add_argument('-dq',    dest='dq',          type=float,
                     default=0.05,                   help='binwidth (1/nm)')
 
-#======== DEFINITIONS ========
-#=============================
+# ======== DEFINITIONS ========
+# =============================
 
 
 def output(q, struct_factor):
@@ -108,8 +108,8 @@ with open(os.path.join(sharePath, "sfactor.dat")) as f:
             CM_parameters[elements[0]].c = float(elements[10])
 
 
-#=========== MAIN ===========
-#============================
+# =========== MAIN ===========
+# ============================
 def main(firstarg=2):
     global args
 
@@ -141,8 +141,8 @@ def main(firstarg=2):
     struct_factor = np.zeros([args.nbins, len(groups)])
     args.frame = 0
 
-    #======== MAIN LOOP =========
-    #============================
+    # ======== MAIN LOOP =========
+    # ============================
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
         for i, t in enumerate(groups):
 
@@ -168,7 +168,7 @@ def main(firstarg=2):
             struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         args.frame += 1
-        print_frameinfo(ts,args.frame)
+        print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output(q, struct_factor)

@@ -10,7 +10,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-import pbctools
+from . import pbctools
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
@@ -76,8 +76,9 @@ def output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_p
         m_par.sum(axis=2) / args.frame * M_par.sum() / args.frame
     cov_par_self = mm_par / args.frame - \
         m_par.sum(axis=2) / args.frame * (m_par.sum(axis=2)
-                                     * Lz / args.nbins / args.frame * A) / args.frame
-    cov_par_coll = cmM_par / args.frame - m_par.sum(axis=2) / args.frame * cM_par / args.frame
+                                          * Lz / args.nbins / args.frame * A) / args.frame
+    cov_par_coll = cmM_par / args.frame - \
+        m_par.sum(axis=2) / args.frame * cM_par / args.frame
     dcov_par = np.sqrt((mM_par.std(axis=2) / args.frame * args.resample)**2
                        + (m_par.std(axis=2) / args.frame *
                           args.resample * M_par.sum() / args.frame)**2
@@ -199,7 +200,6 @@ def main(firstarg=2):
     args.resample = 10
     resample_freq = u.trajectory.n_frames // args.resample
 
-
     V = 0
     Lz = 0
     A = np.prod(u.dimensions[xydims])
@@ -208,7 +208,8 @@ def main(firstarg=2):
     mM_par = np.zeros((args.nbins, len(args.groups), args.resample)
                       )  # total fluctuations
     mm_par = np.zeros((args.nbins, len(args.groups)))  # self
-    cmM_par = np.zeros((args.nbins, len(args.groups)))  # collective contribution
+    cmM_par = np.zeros((args.nbins, len(args.groups))
+                       )  # collective contribution
     cM_par = np.zeros((args.nbins, len(args.groups)))
     M_par = np.zeros((args.resample))
 
@@ -217,16 +218,18 @@ def main(firstarg=2):
     mM_perp = np.zeros((args.nbins, len(args.groups), args.resample)
                        )  # total fluctuations
     mm_perp = np.zeros((args.nbins, len(args.groups)))  # self
-    cmM_perp = np.zeros((args.nbins, len(args.groups)))  # collective contribution
-    cM_perp = np.zeros((args.nbins, len(args.groups)))  # collective contribution
+    cmM_perp = np.zeros((args.nbins, len(args.groups))
+                        )  # collective contribution
+    cM_perp = np.zeros((args.nbins, len(args.groups))
+                       )  # collective contribution
     M_perp = np.zeros((args.resample))
     M_perp_2 = np.zeros((args.resample))
-
 
     print('Using', args.nbins, 'bins.')
 
     args.frame = 0
-    print("\rEvaluating frame: ", u.trajectory.frame, "\ttime: ", int(u.trajectory.time), end="")
+    print("\rEvaluating frame: ", u.trajectory.frame,
+          "\ttime: ", int(u.trajectory.time), end="")
     for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
 
         if (args.zmax == -1):
@@ -267,7 +270,8 @@ def main(firstarg=2):
                 args.nbins + 1), weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / A)
             m_perp[:, i, args.frame // resample_freq] += this_m_perp
-            mM_perp[:, i, args.frame // resample_freq] += this_m_perp * this_M_perp
+            mM_perp[:, i, args.frame //
+                    resample_freq] += this_m_perp * this_M_perp
             mm_perp[:, i] += this_m_perp * this_m_perp * \
                 (ts.dimensions[args.dim] / args.nbins) * A  # self term
             # collective contribution
@@ -323,10 +327,12 @@ def main(firstarg=2):
         print_frameinfo(ts, args.frame)
         # call for output
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
-            output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
+            output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par,
+                   m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
 
     print('\n')
-    output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
+    output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par,
+           m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
 
 
 if __name__ == "__main__":

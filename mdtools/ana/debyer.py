@@ -16,8 +16,8 @@ from scipy.stats import binned_statistic
 from . import initilize_universe, print_frameinfo
 from .. import sharePath, initilize_parser
 
-#========== PARSER ===========
-#=============================
+# ========== PARSER ===========
+# =============================
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """
     A python interface to the Deyer library. By using the -sel option atoms can be selected for which the
@@ -95,8 +95,8 @@ def writeXYZ(filename, obj, atom_names):
     write.write_next_timestep(ts)
     write.close()
 
-#======= PREPERATIONS =======
-#============================
+# ======= PREPERATIONS =======
+# ============================
 
 
 def main(firstarg=2):
