@@ -164,7 +164,7 @@ def main(firstarg=2):
 
     # ======== MAIN LOOP =========
     # ============================
-    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
         curV = ts.volume / 1000
         av_box_length += u.dimensions[args.dim] / 10
 

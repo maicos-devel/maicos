@@ -143,7 +143,7 @@ def main(firstarg=2):
 
     # ======== MAIN LOOP =========
     # ============================
-    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
         for i, t in enumerate(groups):
 
             # convert everything to cartesian coordinates

@@ -141,7 +141,7 @@ def main(firstarg=2):
         OUT = open(os.devnull, 'w')
 
     args.frame = 0
-    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # convert coordinates in a rectengular box
         box = np.diag(mda.lib.mdamath.triclinic_vectors(ts.dimensions))

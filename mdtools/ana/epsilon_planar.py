@@ -230,7 +230,7 @@ def main(firstarg=2):
     args.frame = 0
     print("\rEvaluating frame: ", u.trajectory.frame,
           "\ttime: ", int(u.trajectory.time), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         if (args.zmax == -1):
             zmax = ts.dimensions[args.dim]

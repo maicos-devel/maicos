@@ -89,7 +89,7 @@ def main(firstarg=2):
     print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
         args.frame, round(u.trajectory.time)), end="")
 
-    for ts in u.trajectory[args.beginframe:args.endframe + 1:args.skipframes]:
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         if args.bpbc:
             pbctools.repairMolecules(u)
