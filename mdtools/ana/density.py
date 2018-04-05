@@ -110,15 +110,26 @@ def weight(selection):
 
 
 def mu(rho, temperature):
+    """Returns the chemical potential calculated from the density: mu = k_B T log(rho.)"""
     # db = 1.00394e-1  # De Broglie (converted to nm)
     kT = 0.00831446215 * temperature
-    mu = kT * np.log(rho)
-    return mu
+    if np.all(rho > 0):
+        return kT * np.log(rho)
+    elif np.any(rho == 0):
+        return np.float64("-inf")
+    else:
+        return np.float("nan")
 
 
 def dmu(rho, drho, temperature):
+    """Returns the error of the chemical potential calculated from the density using propagation of uncertainty."""
     kT = 0.00831446215 * temperature
-    return (kT / rho * drho)
+    if np.all(rho > 0):
+        return (kT / rho * drho)
+    elif np.any(rho == 0):
+        return np.float64("-inf")
+    else:
+        return np.float("nan")
 
 
 # ========== MAIN ============
