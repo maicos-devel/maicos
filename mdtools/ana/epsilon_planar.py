@@ -145,12 +145,9 @@ def output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par, m_perp, mM_p
             outdata_perp[i + 1] = .5 * \
                 (outdata_perp[i + 1] + outdata_perp[i + 1][-1::-1])
 
-    np.savetxt(args.output + '_perp.dat', outdata_perp,
-               header="statistics over %d picoseconds" % (
-                   (args.endframe - args.beginframe + 1) * args.dt))
-    np.savetxt(args.output + '_par.dat', outdata_par,
-               header="statistics over %d picoseconds" % (
-                   (args.endframe - args.beginframe + 1) * args.dt))
+    header = "statistics over {:.1f} picoseconds".format(args.frame * args.dt)
+    np.savetxt(args.output + '_perp.dat', outdata_perp, header=header)
+    np.savetxt(args.output + '_par.dat', outdata_par, header=header)
 
     return
 
@@ -198,7 +195,7 @@ def main(firstarg=2):
         for now hardcode 10 blocks...
     '''
     args.resample = 10
-    resample_freq = u.trajectory.n_frames // args.resample
+    resample_freq = int(np.ceil((args.endframe - args.beginframe) / args.resample))
 
     V = 0
     Lz = 0

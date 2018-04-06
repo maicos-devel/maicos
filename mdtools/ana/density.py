@@ -68,11 +68,11 @@ def output(density_mean, density_mean_sq, av_box_length):
         units = "K"
 
     if args.density == 'temp':
-        columns = "temperature profile [%s]" % (units)
+        columns = "temperature profile [{}]".format(units)
     else:
-        columns = "%s density profile [%s]" % (args.density, units)
-    columns += "\nstatistics over %d picoseconds \npositions [nm]" % (
-        (args.endframe - args.beginframe + 1) * args.dt)
+        columns = "{} density profile [{}]".format(args.density, units)
+    columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
+        args.frame * args.dt)
     for group in args.groups:
         columns += "\t" + group
     for group in args.groups:
@@ -147,11 +147,9 @@ def main(firstarg=2):
             'Unknown density type: valid are mass, number, charge, temp')
 
     if args.density == 'temp':
-        print('Computing temperature profile along %s-axes.' %
-              ('XYZ'[args.dim]))
+        print('Computing temperature profile along {}-axes.'.format('XYZ'[args.dim]))
     else:
-        print('Computing %s density profile along %s-axes.' %
-              (args.density, 'XYZ'[args.dim]))
+        print('Computing {} density profile along {}-axes.'.format(args.density, 'XYZ'[args.dim]))
 
     ngroups = len(args.groups)
     args.nbins = int(np.ceil(u.dimensions[args.dim] / 10 / args.binwidth))

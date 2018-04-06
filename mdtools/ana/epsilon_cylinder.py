@@ -41,30 +41,31 @@ kb = 8.6173324e-5  # electronVolts Kelvins^-1
 T = 300  # Kelvins
 
 
-def output():
+def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
+    """Averages the profiles and saves them to a file."""
 
     if args.single == True:  # removed average of M if single line water.
-        cov_ax = mM_ax.sum(axis=1) / frame
-        cov_rad = mM_rad.sum(axis=1) / frame
+        cov_ax = mM_ax.sum(axis=1) / args.frame
+        cov_rad = mM_rad.sum(axis=1) / args.frame
 
-        dcov_ax = (mM_ax.std(axis=1) / frame * resample) / \
-            np.sqrt(resample - 1)
-        dcov_rad = (mM_rad.std(axis=1) / frame * resample) / \
-            np.sqrt(resample - 1)
+        dcov_ax = (mM_ax.std(axis=1) / args.frame * args.resample) / \
+            np.sqrt(args.resample - 1)
+        dcov_rad = (mM_rad.std(axis=1) / args.frame * args.resample) / \
+            np.sqrt(args.resample - 1)
     else:
-        cov_ax = mM_ax.sum(axis=1) / frame - \
-            m_ax.sum(axis=1) / frame * M_ax.sum() / frame
-        cov_rad = mM_rad.sum(axis=1) / frame - \
-            m_rad.sum(axis=1) / frame * M_rad.sum() / frame
+        cov_ax = mM_ax.sum(axis=1) / args.frame - \
+            m_ax.sum(axis=1) / args.frame * M_ax.sum() / args.frame
+        cov_rad = mM_rad.sum(axis=1) / args.frame - \
+            m_rad.sum(axis=1) / args.frame * M_rad.sum() / args.frame
 
         dcov_ax = np.sqrt(
-            (mM_ax.std(axis=1) / frame * resample)**2
-            + (m_ax.std(axis=1) / frame * resample * M_ax.sum() / frame)**2
-            + (m_ax.sum(axis=1) / frame * M_ax.std() / frame * resample)**2) / np.sqrt(resample - 1)
+            (mM_ax.std(axis=1) / args.frame * args.resample)**2
+            + (m_ax.std(axis=1) / args.frame * args.resample * M_ax.sum() / args.frame)**2
+            + (m_ax.sum(axis=1) / args.frame * M_ax.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
         dcov_rad = np.sqrt(
-            (mM_rad.std(axis=1) / frame * resample)**2
-            + (m_rad.std(axis=1) / frame * resample * M_rad.sum() / frame)**2
-            + (m_rad.sum(axis=1) / frame * M_rad.std() / frame * resample)**2) / np.sqrt(resample - 1)
+            (mM_rad.std(axis=1) / args.frame * args.resample)**2
+            + (m_rad.std(axis=1) / args.frame * args.resample * M_rad.sum() / args.frame)**2
+            + (m_rad.sum(axis=1) / args.frame * M_rad.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
 
     eps_ax = 1 + cov_ax / (epsilon_0 * kb * T)
     eps_rad_inv = 1 - 2 * np.pi * r * length * cov_rad / (epsilon_0 * kb * T)
@@ -77,8 +78,8 @@ def output():
     outdata_rad = np.array(
         [r, eps_rad_inv, deps_rad_inv])
 
-    header = 'Command line was: %s\n' % ' '.join(sys.argv) +\
-             'statistics over: %d ps\n' % (ts.time - begin) +\
+    header = 'Command line was: {}\n'.format(' '.join(sys.argv)) +\
+             "statistics over {:.1f} picoseconds\n".format(args.frame * args.dt) +\
              'r [Angtsroms]\t eps \t eps_err'
     np.savetxt(args.output + '_ax.dat', outdata_ax.T, header=header)
     np.savetxt(args.output + '_rad.dat', outdata_rad.T, header=header)
@@ -91,6 +92,7 @@ def main(firstarg=2):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
+    u = initilize_universe(args)
 
     u = mda.Universe(args.topology, args.trajectory)
     if args.geometry != None:
@@ -111,16 +113,6 @@ def main(firstarg=2):
     else:
         length = u.dimensions[2]
 
-    dt = u.trajectory.dt
-
-    begin = int(args.begin // dt)
-    if args.end != None:
-        end = int(args.end // dt)
-    else:
-        end = int(u.trajectory.totaltime // u.trajectory.dt)
-
-    if begin > end:
-        sys.exit("Start time is larger than end time!")
 
     nbins = int(np.ceil(radius / args.binwidth))
 
@@ -142,22 +134,24 @@ def main(firstarg=2):
     # Use resampling for error estimation.
     # We do block averaging for 10 hardcoded blocks.
 
-    resample = 10
-    resample_freq = int(np.ceil((end - begin) / resample))
+    args.resample = 10
+    resample_freq = int(np.ceil((args.endframe - args.beginframe) / args.resample))
 
-    m_rad = np.zeros((nbins, resample))
+    m_rad = np.zeros((nbins, args.resample))
 
-    M_rad = np.zeros((resample))
-    mM_rad = np.zeros((nbins, resample))  # total fluctuations
+    M_rad = np.zeros((args.resample))
+    mM_rad = np.zeros((nbins, args.resample))  # total fluctuations
 
-    m_ax = np.zeros((nbins, resample))
-    M_ax = np.zeros((resample))
-    mM_ax = np.zeros((nbins, resample))  # total fluctuations
+    m_ax = np.zeros((nbins, args.resample))
+    M_ax = np.zeros((args.resample))
+    mM_ax = np.zeros((nbins, args.resample))  # total fluctuations
 
     print('Computing dielectric profiles for water in the cylinder.')
     print('Using', nbins, 'bins.')
-    frame = 0
-    for ts in u.trajectory[begin:end:args.skipframes]:
+    args.frame = 0
+    print("\rEvaluating frame: ", u.trajectory.frame,
+          "\ttime: ", int(u.trajectory.time), end="")
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # make broken molecules whole again!
         pbctools.repairMolecules(u.atoms)
@@ -178,17 +172,17 @@ def main(firstarg=2):
                                 r * dr) / (r * np.pi * length)
 
         this_M_rad = np.sum(this_m_rad * dr)
-        M_rad[frame // resample_freq] += this_M_rad
+        M_rad[args.frame // resample_freq] += this_M_rad
 
-        m_rad[:, frame // resample_freq] += this_m_rad
-        mM_rad[:, frame // resample_freq] += this_m_rad * this_M_rad
+        m_rad[:, args.frame // resample_freq] += this_m_rad
+        mM_rad[:, args.frame // resample_freq] += this_m_rad * this_M_rad
 
         # Use virtual cutting method ( for axial component )
         # ========================================================
         nbinsz = 250  # number of virtual cuts ("many")
 
         this_M_ax = np.dot(u.atoms.charges, positions_cyl[:, 1])
-        M_ax[frame // resample_freq] += this_M_ax
+        M_ax[args.frame // resample_freq] += this_M_ax
 
         # Move all r-positions to 'center of charge' such that we avoid monopoles in r-direction.
         # We only want to cut in z direction.
@@ -211,17 +205,17 @@ def main(firstarg=2):
 
         this_m_ax = -curqz.mean(axis=1)
 
-        m_ax[:, frame // resample_freq] += this_m_ax
-        mM_ax[:, frame // resample_freq] += this_m_ax * this_M_ax
+        m_ax[:, args.frame // resample_freq] += this_m_ax
+        mM_ax[:, args.frame // resample_freq] += this_m_ax * this_M_ax
 
-        frame += 1
-        print_frameinfo(ts, frame)
+        args.frame += 1
+        print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-            output()
+            output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
     print("\n")
-    output()
+    output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
 
 if __name__ == "__main__":

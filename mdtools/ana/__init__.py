@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+import math
 import sys
 
 import MDAnalysis
@@ -17,11 +18,13 @@ def initilize_universe(argobj):
 
     argobj.dt = u.trajectory.dt
 
-    argobj.beginframe = int(argobj.begin // argobj.dt)
+    argobj.beginframe = int(math.ceil(argobj.begin // argobj.dt))
     if argobj.end != None:
-        argobj.endframe = int(argobj.end // argobj.dt)
+        argobj.endframe = int(math.ceil(argobj.end // argobj.dt))
     else:
-        argobj.endframe = int(u.trajectory.totaltime // argobj.dt)
+        argobj.endframe = int(math.ceil(u.trajectory.totaltime // argobj.dt))
+
+    argobj.endframe += 1  # catch also last frame in loops
 
     if argobj.beginframe > argobj.endframe:
         sys.exit("Start time is larger than end time!")
