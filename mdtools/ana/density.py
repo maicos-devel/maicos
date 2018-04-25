@@ -141,10 +141,9 @@ def main(firstarg=2):
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)
 
-    if args.density != 'mass' and args.density != 'number' \
-            and args.density != 'charge' and args.density != 'temp':
+    if args.density not in ["mass", "number", "charge", "temp"]:
         parser.error(
-            'Unknown density type: valid are mass, number, charge, temp')
+            'Unknown density type {}. Valid are mass, number, charge, temp'.format(args.density))
 
     if args.density == 'temp':
         print('Computing temperature profile along {}-axes.'.format('XYZ'[args.dim]))
