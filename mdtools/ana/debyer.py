@@ -140,7 +140,11 @@ def main(firstarg=2):
     else:
         OUT = open(os.devnull, 'w')
 
+    # ======== MAIN LOOP =========
+    # ============================
     args.frame = 0
+    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+        args.frame, round(u.trajectory.time)), end="")
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # convert coordinates in a rectengular box

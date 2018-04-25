@@ -148,9 +148,12 @@ def main(firstarg=2):
 
     print('Computing dielectric profiles for water in the cylinder.')
     print('Using', nbins, 'bins.')
+    
+    # ======== MAIN LOOP =========
+    # ============================
     args.frame = 0
-    print("\rEvaluating frame: ", u.trajectory.frame,
-          "\ttime: ", int(u.trajectory.time), end="")
+    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+        args.frame, round(u.trajectory.time)), end="")
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # make broken molecules whole again!

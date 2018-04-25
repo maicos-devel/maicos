@@ -139,11 +139,12 @@ def main(firstarg=2):
     args.nbins = int(np.ceil((args.endq - args.startq) / args.dq))
     q = np.arange(args.startq, args.endq, args.dq) + 0.5 * args.dq
     struct_factor = np.zeros([args.nbins, len(groups)])
-    args.frame = 0
 
     # ======== MAIN LOOP =========
     # ============================
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+    args.frame = 0
+    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+        args.frame, round(u.trajectory.time)), end="")
         for i, t in enumerate(groups):
 
             # convert everything to cartesian coordinates

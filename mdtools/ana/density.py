@@ -156,7 +156,6 @@ def main(firstarg=2):
 
     density_mean = np.zeros((args.nbins, ngroups))
     density_mean_sq = np.zeros((args.nbins, ngroups))
-    args.frame = 0
     av_box_length = 0
 
     print("\nCalcualate profile for the following group(s):")
@@ -173,6 +172,9 @@ def main(firstarg=2):
 
     # ======== MAIN LOOP =========
     # ============================
+    args.frame = 0
+    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+        args.frame, round(u.trajectory.time)), end="")
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
         curV = ts.volume / 1000
         av_box_length += u.dimensions[args.dim] / 10
