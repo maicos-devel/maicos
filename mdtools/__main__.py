@@ -12,7 +12,8 @@ from . import version
 # Dictionary containing the app name and the directory
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
-        "epsilon_cylinder": "ana", "epsilon_planar": "ana", "pertop": "build"}
+        "epsilon_cylinder": "ana", "epsilon_planar": "ana", "pertop": "build",
+        "velocityprofile": "ana"}
 
 applist = list(apps.keys())
 applist.sort()
