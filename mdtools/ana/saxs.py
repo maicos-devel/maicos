@@ -145,6 +145,8 @@ def main(firstarg=2):
     args.frame = 0
     print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
         args.frame, round(u.trajectory.time)), end="")
+    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+        
         for i, t in enumerate(groups):
 
             # convert everything to cartesian coordinates

@@ -18,7 +18,7 @@ parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculation of the dielectric
 profile for axial and radial direction at the system's center of geometry."""
 parser.add_argument('-g', dest='geometry', type=str,
-                    default=None, help="A gro file w/o water")
+                    default=None, help="A structure file without water")
 parser.add_argument('-r', dest='radius', type=float,
                     default=None, help='radius of the cylinder in Angstrom')
 parser.add_argument('-dr', dest='binwidth', type=float,
@@ -148,7 +148,7 @@ def main(firstarg=2):
 
     print('Computing dielectric profiles for water in the cylinder.')
     print('Using', nbins, 'bins.')
-    
+
     # ======== MAIN LOOP =========
     # ============================
     args.frame = 0

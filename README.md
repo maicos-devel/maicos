@@ -14,6 +14,15 @@ cd mdana
 sudo python setup.py install
 ```
 To install it only on the user site use `python setup.py install --user`.
+If you are using `BASH` you can add the autocompletion script
+by
+
+```
+source mdtools-completion.bash
+```
+
+To load the completion at every login simply paste the path **given at the end
+of the installation** to your `.bashrc` or `.profile` file.
 
 # Usage
 
