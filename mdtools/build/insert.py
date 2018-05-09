@@ -25,9 +25,9 @@ parser.add_argument('-cs', '--addstructure', type=str,
 parser.add_argument('-o', '--output', type=str,
                     default='out.gro', help='Output file')
 parser.add_argument('-zmin', '--zmin', type=float,
-                    default=0, help='Minimal z coordinate for insertion.')
+                    default=0, help='Minimal z coordinate [Å] for insertion.')
 parser.add_argument('-zmax', '--zmax', type=float,
-                    default=None, help='Maximal z coordinate for insertion. If None box dimensions are taken.')
+                    default=None, help='Maximal z coordinate [Å] for insertion. If None box dimensions are taken.')
 parser.add_argument('-Nw', '--Nw', type=int,
                     default=1, help='Number of molecules to insert.')
 parser.add_argument('-d', '--dist', type=float,
@@ -44,7 +44,7 @@ def main(firstarg=2):
         args.zmax = u.dimensions[2]
 
     print("Inserting", args.Nw, "water molecules bewteen z=",
-          args.zmin, "and z=", args.zmax)
+          args.zmin, "Å and z=", args.zmax, "Å")
 
     water = MDAnalysis.Universe(args.addstructure)
     for i in range(args.Nw):

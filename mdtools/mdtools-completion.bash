@@ -55,7 +55,10 @@ _mdtools_completion()
         -o)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -cp|-cs|-zmin|-zmax|-Nw|-d)
+        -cp|-cs)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+        return 0 ;;
+        -zmin|-zmax|-Nw|-d)
         COMPREPLY=( )
         return 0 ;;
       esac
