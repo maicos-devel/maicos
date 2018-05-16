@@ -17,7 +17,7 @@ if __name__ == "__main__":
               'for molecular dynamics simulations.',
               author="Philip Loche",
               author_email="ploche@physik.fu-berlin.de",
-              package_data={'': ['share/*', 'mdtools-completion.bash']},
+              package_data={'': ['share/*']},
               include_package_data=True,
               requires=['numpy (>=1.10.4)',
                         'MDAnalysis (>=0.17.0)', 'scipy (>=0.17)'],
@@ -36,4 +36,4 @@ if __name__ == "__main__":
                        key=os.path.getctime)
     print("\nTo use the BASH autocompletion add")
     print("  source {}\nto your .bashr or .profile file".format(
-                os.path.join(mdtools_path,"mdtools","mdtools-completion.bash")))
+                os.path.join(mdtools_path,"mdtools/share/mdtools-completion.bash")))

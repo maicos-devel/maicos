@@ -11,7 +11,6 @@ import tempfile
 
 import MDAnalysis as mda
 import numpy as np
-from scipy.stats import binned_statistic
 
 from . import initilize_universe, print_frameinfo
 from .. import sharePath, initilize_parser
