@@ -6,6 +6,8 @@ import os
 import sys
 
 from .version import __version__
+from .ana import pbctools
+from .build import moleculeinsertion
 
 sharePath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          "share")
