@@ -24,6 +24,7 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
   mdtools_opts+=" pertop"
+  mdtools_opts+=" saxs"
   mdtools_opts+=" velocity"
   mdtools_opts+=" --help --version"
 
@@ -198,6 +199,25 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -p -l -v" -- ${cur_word} ) )
       return 0 ;;
+
+      saxs)
+        case "${prev_word}" in
+          -s)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+          return 0 ;;
+          -sq)
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-dt|-box|-dout|-sel|-startq|-endq|-dq)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -sel -dout -sq\
+                                  -startq -endq -dq" -- ${cur_word} ) )
+        return 0 ;;
 
       velocity)
         case "${prev_word}" in

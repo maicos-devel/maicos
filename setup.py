@@ -22,7 +22,7 @@ if __name__ == "__main__":
               requires=['numpy (>=1.10.4)',
                         'MDAnalysis (>=0.17.0)', 'scipy (>=0.17)'],
               setup_requires=['numpy (>=1.10.4)'],
-              install_requires=['numpy>=1.10.4',
+              install_requires=['numpy>=1.10.4', 'numba>=0.38.0',
                                 'MDAnalysis>=0.17.0', 'scipy (>=0.17)'],
               entry_points={
                   'console_scripts': ['mdtools=mdtools.__main__:main', ],

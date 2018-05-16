@@ -4,12 +4,13 @@
 from __future__ import division, print_function, absolute_import
 
 import argparse
+import math
 import os
 import sys
 
 import MDAnalysis as mda
 import numpy as np
-import sfactor
+import numba as nb
 from scipy.stats import binned_statistic
 
 from . import initilize_universe, print_frameinfo
@@ -87,6 +88,46 @@ def compute_form_factor(q, atom_type):
 
     return form_factor
 
+@nb.jit(nb.types.UniTuple(nb.float32[:,:,:],2)(nb.float32[:,:], nb.float32[:], nb.float32, nb.float32),
+        nopython=True, nogil=True, parallel=True)
+def compute_structure_factor(positions, boxdimensions,  start_q, end_q):
+    """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
+
+    maxn = [0,0,0]
+    q_factor = np.zeros(3, dtype=nb.float32);
+
+    n_atoms = positions.shape[0]
+    for i in range(3):
+        q_factor[i] = 2*np.pi/boxdimensions[i]
+        maxn[i] = math.ceil(end_q/q_factor[i])
+
+    S_array = np.zeros((maxn[0],maxn[1],maxn[2]), dtype=nb.float32)
+    q_array = np.zeros((maxn[0],maxn[1],maxn[2]), dtype=nb.float32)
+
+    for i in nb.prange(maxn[0]):
+        qx = i * q_factor[0]
+
+        for j in range(maxn[1]):
+            qy = j * q_factor[1]
+
+            for k in range(maxn[2]):
+                if (i + j + k != 0):
+                    qz = k * q_factor[2]
+                    qrr = math.sqrt(qx*qx+qy*qy+qz*qz)
+
+                    if (qrr >= start_q and qrr <= end_q):
+                        q_array[i,j,k] = qrr
+
+                        sin = 0
+                        cos = 0
+                        for l in range(n_atoms):
+                            qdotr = positions[l,0]*qx + positions[l,1]*qy + positions[l,2]*qz
+                            sin += math.sin(qdotr)
+                            cos += math.cos(qdotr)
+
+                        S_array[i,j,k] += sin*sin + cos*cos
+
+    return (q_array,S_array)
 
 type_dict = {}
 with open(os.path.join(sharePath, "atomtypes.dat")) as f:
@@ -146,7 +187,7 @@ def main(firstarg=2):
     print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
         args.frame, round(u.trajectory.time)), end="")
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
-        
+
         for i, t in enumerate(groups):
 
             # convert everything to cartesian coordinates
@@ -154,8 +195,8 @@ def main(firstarg=2):
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
-            q_ts, S_ts = sfactor.compute_structure_factor(
-                np.double(positions / 10), np.double(box / 10), args.startq, args.endq)
+            q_ts, S_ts = sfactor.compute_structure_factor(positions/10, box/10,
+                                                          args.startq, args.endq)
 
             q_ts = np.asarray(q_ts).flatten()
             S_ts = np.asarray(S_ts).flatten()
