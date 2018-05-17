@@ -11,7 +11,6 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import numba as nb
-from scipy.stats import binned_statistic
 
 from . import initilize_universe, print_frameinfo
 from .. import sharePath, initilize_parser
@@ -42,13 +41,13 @@ parser.add_argument('-dq',    dest='dq',          type=float,
 # =============================
 
 
-def output(q, struct_factor):
+def output(q, struct_factor, n_atoms):
     """Saves the current profiles to a file."""
     nonzeros = np.where(struct_factor[:, 0] != 0)[0]
     scat_factor = struct_factor[nonzeros]
     wave_vectors = q[nonzeros]
 
-    scat_factor = scat_factor.sum(axis=1) / args.frame
+    scat_factor = scat_factor.sum(axis=1) / (args.frame * n_atoms)
 
     np.savetxt(args.output + '.dat',
                np.vstack([wave_vectors, scat_factor]).T,
@@ -159,6 +158,10 @@ def main(firstarg=2):
 
     sel = u.select_atoms(args.sel)
 
+    print("\nSelection '{}' contains {} atoms.".format(args.sel, sel.n_atoms))
+    if sel.n_atoms == 0:
+        sys.exit("Exiting since selection does not contain any atoms.")
+
     groups = []
     atom_types = []
     print("\nMap the following atomtypes:")
@@ -195,11 +198,11 @@ def main(firstarg=2):
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
-            q_ts, S_ts = sfactor.compute_structure_factor(positions/10, box/10,
+            q_ts, S_ts = compute_structure_factor(positions/10, box/10,
                                                           args.startq, args.endq)
 
-            q_ts = np.asarray(q_ts).flatten()
-            S_ts = np.asarray(S_ts).flatten()
+            q_ts = q_ts.flatten()
+            S_ts = S_ts.flatten()
             nonzeros = np.where(S_ts != 0)[0]
 
             q_ts = q_ts[nonzeros]
@@ -207,17 +210,21 @@ def main(firstarg=2):
 
             S_ts *= compute_form_factor(q_ts, atom_types[i])**2
 
-            struct_ts = binned_statistic(
-                q_ts, S_ts, bins=args.nbins, range=(args.startq, args.endq))[0]
+            bins = ((q_ts - args.startq) /
+                    ((args.endq - args.startq) / args.nbins)).astype(int)
+            struct_ts = np.histogram(bins, bins=np.arange(args.nbins + 1),
+                                     weights=S_ts)[0]
+            with np.errstate(divide='ignore', invalid='ignore'):
+                struct_ts /= np.bincount(bins, minlength=args.nbins)
             struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         args.frame += 1
         print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
-            output(q, struct_factor)
+            output(q, struct_factor, sel.atoms.n_atoms)
 
-    output(q, struct_factor)
+    output(q, struct_factor, sel.atoms.n_atoms)
     print("\n")
 
 
