@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import copy
@@ -13,7 +13,7 @@ import MDAnalysis
 import numpy as np
 
 from . import moleculeinsertion
-from .. import sharePath, initilize_parser
+from .. import initilize_parser, sharePath
 
 parser = initilize_parser()
 parser.description = """Inserts Nw watermolecules in a given

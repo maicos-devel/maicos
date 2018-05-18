@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 # parse command line options
 import argparse
@@ -10,8 +10,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import pbctools
-from . import initilize_universe, print_frameinfo
+from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)
@@ -195,7 +194,8 @@ def main(firstarg=2):
         for now hardcode 10 blocks...
     '''
     args.resample = 10
-    resample_freq = int(np.ceil((args.endframe - args.beginframe) / args.resample))
+    resample_freq = int(
+        np.ceil((args.endframe - args.beginframe) / args.resample))
 
     V = 0
     Lz = 0

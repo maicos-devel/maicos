@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import os
@@ -10,8 +10,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import pbctools
-from . import initilize_universe, print_frameinfo
+from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)

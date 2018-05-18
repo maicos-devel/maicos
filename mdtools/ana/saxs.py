@@ -123,8 +123,8 @@ def compute_structure_factor(positions, boxdimensions,  start_q, end_q, mintheta
                     qrr = math.sqrt(qx * qx + qy * qy + qz * qz)
                     theta = math.acos(qz / qrr)
 
-                    if (qrr >= start_q and qrr <= end_q and \
-                        theta >= mintheta and theta <= maxtheta):
+                    if (qrr >= start_q and qrr <= end_q and
+                            theta >= mintheta and theta <= maxtheta):
                         q_array[i, j, k] = qrr
 
                         sin = 0

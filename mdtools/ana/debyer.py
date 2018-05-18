@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import os
@@ -13,7 +13,7 @@ import MDAnalysis as mda
 import numpy as np
 
 from . import initilize_universe, print_frameinfo
-from .. import sharePath, initilize_parser
+from .. import initilize_parser, sharePath
 
 # ========== PARSER ===========
 # =============================

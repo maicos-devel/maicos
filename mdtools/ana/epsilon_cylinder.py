@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import os
@@ -10,8 +10,7 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 
-from . import pbctools
-from . import initilize_universe, print_frameinfo
+from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
 
 parser = initilize_parser(add_traj_arguments=True)
@@ -60,11 +59,13 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
 
         dcov_ax = np.sqrt(
             (mM_ax.std(axis=1) / args.frame * args.resample)**2
-            + (m_ax.std(axis=1) / args.frame * args.resample * M_ax.sum() / args.frame)**2
+            + (m_ax.std(axis=1) / args.frame *
+               args.resample * M_ax.sum() / args.frame)**2
             + (m_ax.sum(axis=1) / args.frame * M_ax.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
         dcov_rad = np.sqrt(
             (mM_rad.std(axis=1) / args.frame * args.resample)**2
-            + (m_rad.std(axis=1) / args.frame * args.resample * M_rad.sum() / args.frame)**2
+            + (m_rad.std(axis=1) / args.frame *
+               args.resample * M_rad.sum() / args.frame)**2
             + (m_rad.sum(axis=1) / args.frame * M_rad.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
 
     eps_ax = 1 + cov_ax / (epsilon_0 * kb * T)
@@ -113,7 +114,6 @@ def main(firstarg=2):
     else:
         length = u.dimensions[2]
 
-
     nbins = int(np.ceil(radius / args.binwidth))
 
     if args.variable_dr:
@@ -135,7 +135,8 @@ def main(firstarg=2):
     # We do block averaging for 10 hardcoded blocks.
 
     args.resample = 10
-    resample_freq = int(np.ceil((args.endframe - args.beginframe) / args.resample))
+    resample_freq = int(
+        np.ceil((args.endframe - args.beginframe) / args.resample))
 
     m_rad = np.zeros((nbins, args.resample))
 

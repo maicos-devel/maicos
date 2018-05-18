@@ -12,9 +12,10 @@ import MDAnalysis
 def initilize_universe(argobj):
     """Reads the trajectory data and returns an MDAnalysis universe."""
 
-    print('\nCommand line was: {}\n'.format(' '.join(sys.argv)))
-    print("Loading trajectory...")
+    print("\nLoading trajectory... ", end="")
+    sys.stdout.flush()
     u = MDAnalysis.Universe(argobj.topology, argobj.trajectory)
+    print("Done!")
 
     argobj.dt = u.trajectory.dt
 

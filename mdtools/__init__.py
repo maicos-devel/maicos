@@ -5,12 +5,11 @@ import argparse
 import os
 import sys
 
-from .version import __version__
 from .ana import pbctools
 from .build import moleculeinsertion
+from .version import __version__
 
-sharePath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         "share")
+sharePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
 
 
 def initilize_parser(add_traj_arguments=False):
@@ -20,6 +19,7 @@ def initilize_parser(add_traj_arguments=False):
     *add_traj_arguments* adds basic trajectory analysis options.
 
     :returns: an argparse object"""
+    print('\nCommand line was: {}\n'.format(' '.join(sys.argv)))
     parser = argparse.ArgumentParser(
         prog="mdtools " + sys.argv[1],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter

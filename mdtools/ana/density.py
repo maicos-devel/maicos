@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import os
@@ -146,9 +146,11 @@ def main(firstarg=2):
             'Unknown density type {}. Valid are mass, number, charge, temp'.format(args.density))
 
     if args.density == 'temp':
-        print('Computing temperature profile along {}-axes.'.format('XYZ'[args.dim]))
+        print(
+            'Computing temperature profile along {}-axes.'.format('XYZ'[args.dim]))
     else:
-        print('Computing {} density profile along {}-axes.'.format(args.density, 'XYZ'[args.dim]))
+        print(
+            'Computing {} density profile along {}-axes.'.format(args.density, 'XYZ'[args.dim]))
 
     ngroups = len(args.groups)
     args.nbins = int(np.ceil(u.dimensions[args.dim] / 10 / args.binwidth))

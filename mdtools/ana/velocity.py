@@ -11,8 +11,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy.optimize import curve_fit
 
-from . import pbctools
-from . import initilize_universe, print_frameinfo
+from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
 
 # ========== PARSER ===========

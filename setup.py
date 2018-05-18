@@ -5,8 +5,9 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-from mdtools.version import __version__
 from setuptools import find_packages, setup
+
+from mdtools.version import __version__
 
 if __name__ == "__main__":
     s = setup(name='mdtools',
@@ -29,8 +30,8 @@ if __name__ == "__main__":
     installation_path = s.command_obj['install'].install_lib
     # Get newest installation folder
     mdtools_path = max([os.path.join(installation_path, i) for i
-                            in os.listdir(installation_path) if "mdtools" in i],
+                        in os.listdir(installation_path) if "mdtools" in i],
                        key=os.path.getctime)
     print("\nTo use the BASH autocompletion add")
     print("  source {}\nto your .bashr or .profile file".format(
-                os.path.join(mdtools_path,"mdtools/share/mdtools-completion.bash")))
+        os.path.join(mdtools_path, "mdtools/share/mdtools-completion.bash")))

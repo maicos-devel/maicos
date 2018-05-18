@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import print_function, division, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import sys
@@ -9,8 +9,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import pbctools
-from . import initilize_universe, print_frameinfo
+from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
 
 # parse command line options
