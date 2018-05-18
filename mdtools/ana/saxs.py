@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import division, print_function, absolute_import
+from __future__ import absolute_import, division, print_function
 
 import argparse
 import math
@@ -10,16 +10,19 @@ import sys
 
 import MDAnalysis as mda
 import numpy as np
+
 import numba as nb
 
 from . import initilize_universe, print_frameinfo
-from .. import sharePath, initilize_parser
+from .. import initilize_parser, sharePath
 
 # ========== PARSER ===========
 # =============================
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """
-    Computes SAXS scattering intensities for all atom types from the given trajectory.
+    Computes SAXS scattering intensities for all atom types from the given trajectory. The possible scattering
+    vectors q can be restricted by a miminal and maximal angle with the z-axis. For 0 and 180 all possible vectors
+    are taken into account.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands found here:
@@ -36,6 +39,10 @@ parser.add_argument('-endq',  dest='endq',        type=float,
                     default=60,                     help='Ending q (1/nm)')
 parser.add_argument('-dq',    dest='dq',          type=float,
                     default=0.05,                   help='binwidth (1/nm)')
+parser.add_argument('-mintheta', dest='mintheta',      type=float,
+                    default=0,                      help='Minimal angle (°) between the q vectors and the z-axis.')
+parser.add_argument('-maxtheta',  dest='maxtheta',        type=float,
+                    default=180,         help='Maximal angle (°) between the q vectors and the z-axis.')
 
 # ======== DEFINITIONS ========
 # =============================
@@ -87,21 +94,22 @@ def compute_form_factor(q, atom_type):
 
     return form_factor
 
-@nb.jit(nb.types.UniTuple(nb.float32[:,:,:],2)(nb.float32[:,:], nb.float32[:], nb.float32, nb.float32),
+
+@nb.jit(nb.types.UniTuple(nb.float32[:, :, :], 2)(nb.float32[:, :], nb.float32[:], nb.float32, nb.float32, nb.float32, nb.float32),
         nopython=True, nogil=True, parallel=True)
-def compute_structure_factor(positions, boxdimensions,  start_q, end_q):
+def compute_structure_factor(positions, boxdimensions,  start_q, end_q, mintheta, maxtheta):
     """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
 
-    maxn = [0,0,0]
-    q_factor = np.zeros(3, dtype=nb.float32);
+    maxn = [0, 0, 0]
+    q_factor = np.zeros(3, dtype=nb.float32)
 
     n_atoms = positions.shape[0]
     for i in range(3):
-        q_factor[i] = 2*np.pi/boxdimensions[i]
-        maxn[i] = math.ceil(end_q/q_factor[i])
+        q_factor[i] = 2 * np.pi / boxdimensions[i]
+        maxn[i] = math.ceil(end_q / q_factor[i])
 
-    S_array = np.zeros((maxn[0],maxn[1],maxn[2]), dtype=nb.float32)
-    q_array = np.zeros((maxn[0],maxn[1],maxn[2]), dtype=nb.float32)
+    S_array = np.zeros((maxn[0], maxn[1], maxn[2]), dtype=nb.float32)
+    q_array = np.zeros((maxn[0], maxn[1], maxn[2]), dtype=nb.float32)
 
     for i in nb.prange(maxn[0]):
         qx = i * q_factor[0]
@@ -112,21 +120,25 @@ def compute_structure_factor(positions, boxdimensions,  start_q, end_q):
             for k in range(maxn[2]):
                 if (i + j + k != 0):
                     qz = k * q_factor[2]
-                    qrr = math.sqrt(qx*qx+qy*qy+qz*qz)
+                    qrr = math.sqrt(qx * qx + qy * qy + qz * qz)
+                    theta = math.acos(qz / qrr)
 
-                    if (qrr >= start_q and qrr <= end_q):
-                        q_array[i,j,k] = qrr
+                    if (qrr >= start_q and qrr <= end_q and \
+                        theta >= mintheta and theta <= maxtheta):
+                        q_array[i, j, k] = qrr
 
                         sin = 0
                         cos = 0
                         for l in range(n_atoms):
-                            qdotr = positions[l,0]*qx + positions[l,1]*qy + positions[l,2]*qz
+                            qdotr = positions[l, 0] * qx + \
+                                positions[l, 1] * qy + positions[l, 2] * qz
                             sin += math.sin(qdotr)
                             cos += math.cos(qdotr)
 
-                        S_array[i,j,k] += sin*sin + cos*cos
+                        S_array[i, j, k] += sin * sin + cos * cos
 
-    return (q_array,S_array)
+    return (q_array, S_array)
+
 
 type_dict = {}
 with open(os.path.join(sharePath, "atomtypes.dat")) as f:
@@ -154,8 +166,21 @@ def main(firstarg=2):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
-    u = initilize_universe(args)
 
+    args.mintheta = min(args.mintheta, args.maxtheta)
+    args.maxtheta = max(args.mintheta, args.maxtheta)
+
+    if args.mintheta < 0:
+        print("mintheta = {}° < 0°: Set mininmal angle to 0°.".format(args.mintheta))
+        args.mintheta = 0
+    if args.maxtheta > 180:
+        print("maxtheta = {}° > 180°: Set maximal angle to 180°.".format(args.maxtheta))
+        args.maxtheta = np.pi
+
+    args.mintheta *= np.pi / 180
+    args.maxtheta *= np.pi / 180
+
+    u = initilize_universe(args)
     sel = u.select_atoms(args.sel)
 
     print("\nSelection '{}' contains {} atoms.".format(args.sel, sel.n_atoms))
@@ -198,8 +223,9 @@ def main(firstarg=2):
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
-            q_ts, S_ts = compute_structure_factor(positions/10, box/10,
-                                                          args.startq, args.endq)
+            q_ts, S_ts = compute_structure_factor(positions / 10, box / 10,
+                                                  args.startq, args.endq,
+                                                  args.mintheta, args.maxtheta)
 
             q_ts = q_ts.flatten()
             S_ts = S_ts.flatten()

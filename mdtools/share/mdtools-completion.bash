@@ -214,12 +214,12 @@ _mdtools_completion()
           -sq)
           COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
           return 0 ;;
-          -b|-e|-dt|-box|-dout|-sel|-startq|-endq|-dq)
+          -b|-e|-dt|-box|-dout|-sel|-startq|-endq|-dq|-mintheta|-maxtheta)
           COMPREPLY=( )
           return 0 ;;
         esac
         COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -sel -dout -sq\
-                                  -startq -endq -dq" -- ${cur_word} ) )
+                                  -startq -endq -dq -mintheta -maxtheta" -- ${cur_word} ) )
         return 0 ;;
 
       velocity)
