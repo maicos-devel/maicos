@@ -1,4 +1,6 @@
-# functions for calculating the polarization of an MD trajectory from an MDAnalysis universe -- by Shane Carlson
+# functions for calculating the polarization of an MD trajectory from a 
+# selection of atoms from an MDAnalysis universe.
+# by Shane Carlson
 
 import numpy as np
 
