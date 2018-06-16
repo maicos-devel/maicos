@@ -6,6 +6,8 @@ import numpy as np
 
 def TotalPolarizationInst(selection):
     
+    pbctools.repairMolecules(selection) # reunites molecules that straddle PB's
+
     Pinst = np.zeros(3)
 
     for atm in selection.atoms:
