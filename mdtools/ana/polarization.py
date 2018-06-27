@@ -13,7 +13,7 @@ def TotalPolarizationInst(selection):
     for atm in selection.atoms:
         Pinst += atm.charge*atm.position
     
-    return Pinst
+    return Pinst/10 #divide by 10, since the distances given by MDAnlaysis are in Angstroms, and we prefer nm
 
 def TotalPolarizationTraj(selection):
 
