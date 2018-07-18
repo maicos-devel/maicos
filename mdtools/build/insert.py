@@ -12,7 +12,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import moleculeinsertion
+from ..utils import moleculeinsertion
 from .. import initilize_parser, sharePath
 
 parser = initilize_parser()
@@ -48,8 +48,7 @@ def main(firstarg=2):
 
     water = MDAnalysis.Universe(args.addstructure)
     for i in range(args.Nw):
-        u = moleculeinsertion.box(
-            u, water, zmax=args.zmax, zmin=args.zmin, distance=args.dist)
+        u = box(u, water, zmax=args.zmax, zmin=args.zmin, distance=args.dist)
         print("\r{} of {} watermolecules placed.".format(i, args.Nw), end=" ")
         sys.stdout.flush()
         if (i + 1) % 250 == 0:

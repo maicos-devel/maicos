@@ -10,8 +10,9 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import initilize_universe, pbctools, print_frameinfo
+from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import repairMolecules
 
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculate the dielectric profile.
@@ -248,7 +249,7 @@ def main(firstarg=2):
 
         if args.bpbc:
             # make broken molecules whole again!
-            pbctools.repairMolecules(u.atoms)
+            repairMolecules(u.atoms)
 
         dz_frame = ts.dimensions[args.dim] / args.nbins
 

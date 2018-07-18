@@ -10,8 +10,9 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import initilize_universe, pbctools, print_frameinfo
+from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import repairMolecules
 
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """
@@ -92,7 +93,7 @@ def main(firstarg=2):
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         if args.bpbc:
-            pbctools.repairMolecules(u)
+            repairMolecules(u)
 
         M_ts = np.dot(s.atoms.charges, s.atoms.positions)
         M += M_ts

@@ -9,8 +9,9 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import initilize_universe, pbctools, print_frameinfo
+from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import repairMolecules
 
 # parse command line options
 
@@ -111,7 +112,7 @@ def main(firstarg=2):
             ts.positions[:, args.dim] %= ts.dimensions[args.dim]
 
         # make broken molecules whole again!
-        pbctools.repairMolecules(u)
+        repairMolecules(u)
 
         A = np.prod(ts.dimensions[xydims])
         dz_frame = ts.dimensions[args.dim] / args.nbins

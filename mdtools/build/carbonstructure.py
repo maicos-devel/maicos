@@ -18,7 +18,7 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from . import moleculeinsertion
+from ..utils import cyzone
 from .. import initilize_parser, sharePath
 
 # ===================================================================================================
@@ -43,6 +43,7 @@ parser.add_argument('-x', '--gromacs', action='store_false',
 ccbond = 1.42  # C-C bond length in Angstrom
 pbcx = False
 pbcy = False
+FNULL = open(os.devnull, 'w')
 
 
 # ===================================================================================================
@@ -233,7 +234,6 @@ def write_forcefield(file):
 
 def gmxsolvate(radius, length, reservoir, nCatoms, xshift, yshift, scale=0.57):
 
-    FNULL = open(os.devnull, 'w')
     subprocess.call("gmx solvate -cp system.gro -cs spc216.gro -o system_sol.gro -scale " +
                     str(scale), shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
 
@@ -425,7 +425,7 @@ def main(firstarg=2):
                         u = MDAnalysis.Universe('system_sol.gro')
 
                         for i in range(nSOLresidues - GMXnSOLresidues):
-                            u = moleculeinsertion.cyzone(
+                            u = cyzone(
                                 u, water, radius, InsertionShift)
                             print("%i of %i watermolecules placed." % (
                                 i + 1 + GMXnSOLresidues, nSOLresidues), end="\r")
@@ -452,7 +452,7 @@ def main(firstarg=2):
                     nSOLresidues = int(
                         round(args.density * length * np.pi * radius**2 / 1000))
                     for i in range(nSOLresidues):
-                        u = moleculeinsertion.cyzone(
+                        u = cyzone(
                             u, water, radius, InsertionShift)
                         print("{} of {} watermolecules placed.".format(
                             i + 1, nSOLresidues), end="\r")
@@ -471,7 +471,7 @@ def main(firstarg=2):
                         (u.dimensions[0] / 2, u.dimensions[1] / 2, 0))
 
                     for i in range(nSOLresiduesCNT):
-                        u = moleculeinsertion.cyzone(
+                        u = cyzone(
                             u, water, radius, InsertionShift, zmin=reservoir, zmax=length + reservoir)
                         print("{} of {} watermolecules placed.".format(
                             i + 1, nSOLresidues), end="\r")
@@ -494,9 +494,11 @@ def main(firstarg=2):
 
             u.atoms.write('system_sol.gro')
         else:
-            args.density = 32.9
+            if args.density == None:
+                args.density = 32.9
             subprocess.call(
-                "gmx solvate -cp system.gro -cs spc216.gro -o system_sol.gro &>/dev/null", shell=True)
+                "gmx solvate -cp system.gro -cs spc216.gro -o system_sol.gro",
+                shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
             u = MDAnalysis.Universe('system_sol.gro')
             oxygens = u.select_atoms("name OW")
             nSOLresidues = oxygens.n_atoms

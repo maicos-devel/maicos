@@ -10,8 +10,9 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 
-from . import initilize_universe, pbctools, print_frameinfo
+from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import repairMolecules
 
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculation of the dielectric
@@ -158,7 +159,7 @@ def main(firstarg=2):
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # make broken molecules whole again!
-        pbctools.repairMolecules(u.atoms)
+        repairMolecules(u.atoms)
 
         # Transform from cartesian coordinates [x,y,z] to cylindrical coordinates [r,z] (skip phi because of symmetry)
         positions_cyl = np.empty([u.atoms.positions.shape[0], 2])
