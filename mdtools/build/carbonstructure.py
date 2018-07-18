@@ -18,8 +18,8 @@ import sys
 import MDAnalysis
 import numpy as np
 
-from ..utils import cyzone
 from .. import initilize_parser, sharePath
+from ..utils import cyzone
 
 # ===================================================================================================
 # INPUT OPTIONS
@@ -39,6 +39,8 @@ parser.add_argument('-d', '--density', type=float,
                     default=None,   help='The water number density per nm^3. If no input density will be estimated.')
 parser.add_argument('-x', '--gromacs', action='store_false',
                     help='Use "gmx solvate" for solvation. Gromacs installation needed.')
+parser.add_argument('-o', dest='output', type=str,
+                    default='.', help='Output directory.')
 
 ccbond = 1.42  # C-C bond length in Angstrom
 pbcx = False
@@ -168,23 +170,6 @@ def write_gro(file, data, xwidth, ywidth, zwidth):
     file.write(outline + "\n")
 
 
-def write_top(file, nSOLresidues):
-    file.write('; The force field files to be included\n')
-    file.write('#include "forcefield.itp"\n\n')
-
-    file.write('; Include own Carbon topology\n')
-    file.write('#include "carbon.itp"\n\n')
-
-    file.write('; Include SPC/E water topology\n')
-    file.write('#include "spce.itp"\n\n')
-
-    file.write('[ system ]\n; name\n Carbon Nanotube\n\n')
-
-    file.write('[ molecules ]\n; Compound \t#mol\n')
-    file.write('CNT \t1\n')
-    file.write('SOL \t' + str(nSOLresidues) + '\n')
-
-
 def write_carbon_itp(file, nCNTatoms):
     file.write('[ moleculetype ]\n')
     file.write('; molname nrexcl\n')
@@ -211,33 +196,12 @@ def write_carbon_itp(file, nCNTatoms):
         file.write(outline)
         index += 1
 
-
-def write_forcefield(file):
-    file.write('; Values from GROMOS53a6\n\n')
-
-    file.write('[ defaults ]\n')
-    file.write('; nbfunc  comb-rule gen-pairs fudgeLJ fudgeQQ\n')
-    file.write('  1       1         no        1.0     1.0\n\n')
-
-    file.write('[ atomtypes ]\n')
-    file.write(';name  at.num  mass   charge  ptype   c6            c12\n')
-    file.write(
-        ' OW    8       0.000  0.000   A       0.0026173456  2.634129e-06\n')
-    # no C-C interaction
-    file.write('  C    6       0.000  0.000   A       0.0           0.0\n')
-    file.write('  H    1       0.000  0.000   A       0             0\n\n')
-
-    file.write('[ nonbond_params ]\n')
-    file.write('; i  j   func   c6            c12\n')
-    file.write('  C  OW  1      0.0024751208  3.606306e-06\n\n')
-
-
 def gmxsolvate(radius, length, reservoir, nCatoms, xshift, yshift, scale=0.57):
 
-    subprocess.call("gmx solvate -cp system.gro -cs spc216.gro -o system_sol.gro -scale " +
+    subprocess.call("gmx solvate -cp out.gro -cs spc216.gro -o out.gro -scale " +
                     str(scale), shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
 
-    u = MDAnalysis.Universe('system_sol.gro')
+    u = MDAnalysis.Universe('out.gro')
 
     CNT = u.atoms[:nCatoms]
     oxygens = u.select_atoms("name OW")
@@ -258,13 +222,13 @@ def gmxsolvate(radius, length, reservoir, nCatoms, xshift, yshift, scale=0.57):
         (O_selection.atoms.indices, O_selection.atoms.indices + 1, O_selection.atoms.indices + 2)))
 
     System = CNT + u.atoms[selectionarray]
-    System.atoms.write('system_sol.gro')
+    System.atoms.write('out.gro')
 
     return O_selection.n_atoms
 
 
 def deletesolvate(nCatoms, nSOLresidues):
-    u = MDAnalysis.Universe('system_sol.gro')
+    u = MDAnalysis.Universe('out.gro')
 
     CNT = u.atoms[:nCatoms]
     oxygens = u.select_atoms("name OW")
@@ -275,7 +239,7 @@ def deletesolvate(nCatoms, nSOLresidues):
         np.hstack((randomoxygens, randomoxygens + 1, randomoxygens + 2))) + nCatoms
 
     System = CNT + u.atoms[selectionarray]
-    System.atoms.write('system_sol.gro')
+    System.atoms.write('out.gro')
 
     return System
 
@@ -371,24 +335,9 @@ def main(firstarg=2):
     print("Done!")
     sys.stdout.flush()
 
-    if args.structure == "hopg":
-        directory = args.structure + " w_" + \
-            str(round(xwidth, 2)) + " l_" + str(round(length, 2))
-    else:
-        directory = args.structure + " r_" + \
-            str(round(radius, 2)) + " l_" + str(round(length, 2))
+    os.chdir(args.output)
 
-    print("Change working directory: %s" % directory)
-
-    try:
-        os.mkdir(directory)
-    except OSError as e:
-        if e.errno == 17:  # pass if directory exist
-            pass
-
-    os.chdir(directory)
-
-    OUT = open("system.gro", 'w')
+    OUT = open("out.gro", 'w')
     write_gro(OUT, coords, xwidth, ywidth, (length + 2 * reservoir))
     OUT.close()
 
@@ -402,7 +351,7 @@ def main(firstarg=2):
                 sys.stdout.flush()
 
                 if args.structure == "armcnt":
-                    structure = MDAnalysis.Universe('system.gro')
+                    structure = MDAnalysis.Universe('out.gro')
                     cog = structure.atoms.center_of_geometry()
                     InsertionShift = np.array((cog[0], cog[1], 0))
                     nSOLresidues = int(
@@ -422,7 +371,7 @@ def main(firstarg=2):
 
                         water = MDAnalysis.Universe(
                             os.path.join(sharePath, "watermolecule.gro"))
-                        u = MDAnalysis.Universe('system_sol.gro')
+                        u = MDAnalysis.Universe('out.gro')
 
                         for i in range(nSOLresidues - GMXnSOLresidues):
                             u = cyzone(
@@ -431,12 +380,12 @@ def main(firstarg=2):
                                 i + 1 + GMXnSOLresidues, nSOLresidues), end="\r")
                             sys.stdout.flush()
                             if (i + 1) % 500 == 0:
-                                u.atoms.write('system_sol.gro')
+                                u.atoms.write('out.gro')
                         print("\nDone!")
                 elif args.structure == "hopgcnt":
                     nSOLresidues = gmxsolvate(
                         radius, length, reservoir, nCatoms, xwidth / 2, ywidth / 2)
-                    u = MDAnalysis.Universe('system_sol.gro')
+                    u = MDAnalysis.Universe('out.gro')
                     print("Done!")
 
             else:
@@ -444,7 +393,7 @@ def main(firstarg=2):
                     "Filling structure with water and writing a backup file every 500 steps...")
                 water = MDAnalysis.Universe(
                     os.path.join(sharePath, "watermolecule.gro"))
-                u = MDAnalysis.Universe('system.gro')
+                u = MDAnalysis.Universe('out.gro')
 
                 if args.structure == "armcnt":
                     cog = u.atoms.center_of_geometry()
@@ -458,7 +407,7 @@ def main(firstarg=2):
                             i + 1, nSOLresidues), end="\r")
                         sys.stdout.flush()
                         if (i + 1) % 500 == 0:
-                            u.atoms.write('system_sol.gro')
+                            u.atoms.write('out.gro')
 
                 elif args.structure == "hopgcnt":
 
@@ -477,7 +426,7 @@ def main(firstarg=2):
                             i + 1, nSOLresidues), end="\r")
                         sys.stdout.flush()
                         if (i + 1) % 500 == 0:
-                            u.atoms.write('system_sol.gro')
+                            u.atoms.write('out.gro')
 
                     for i in range(nSOLresiduesbulk):
                         u = moleculeinsertion.box(u, water, zmax=reservoir)
@@ -490,16 +439,17 @@ def main(firstarg=2):
                             2 * (i + 1) + nSOLresiduesCNT, nSOLresidues), end="\r")
                         sys.stdout.flush()
                         if (i + 1) % 250 == 0:
-                            u.atoms.write('system_sol.gro')
+                            u.atoms.write('out.gro')
 
-            u.atoms.write('system_sol.gro')
+            u.atoms.write('out.gro')
         else:
-            if args.density == None:
-                args.density = 32.9
+            if args.density != None:
+                scale = 0.57 * (32.9/args.density)**0.33
+
             subprocess.call(
-                "gmx solvate -cp system.gro -cs spc216.gro -o system_sol.gro",
+                "gmx solvate -cp out.gro -cs spc216.gro -scale {:.3f} -o out.gro".format(scale),
                 shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
-            u = MDAnalysis.Universe('system_sol.gro')
+            u = MDAnalysis.Universe('out.gro')
             oxygens = u.select_atoms("name OW")
             nSOLresidues = oxygens.n_atoms
     else:
@@ -507,14 +457,6 @@ def main(firstarg=2):
 
     print("Creating gromacs files...", end=" ")
     sys.stdout.flush()
-
-    OUT = open('topol.top', 'w')
-    write_top(OUT, nSOLresidues)
-    OUT.close()
-
-    OUT = open('forcefield.itp', 'w')
-    write_forcefield(OUT)
-    OUT.close()
 
     OUT = open('carbon.itp', 'w')
     write_carbon_itp(OUT, nCatoms)
@@ -538,8 +480,6 @@ def main(firstarg=2):
                       '\t\t#waterdensity (Molecules/nm^-3)\n')
 
     print("All parameters are written to parameters.txt")
-
-    shutil.copy(os.path.join(sharePath, "spce.itp"), os.getcwd())
 
     print("Finished!")
 

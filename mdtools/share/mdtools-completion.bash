@@ -48,7 +48,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -i -l -w -d -x" -- ${cur_word} ) )
+      COMPREPLY=( $( compgen -W "-h -s -i -l -w -d -x -o" -- ${cur_word} ) )
       return 0 ;;
 
     insert)
