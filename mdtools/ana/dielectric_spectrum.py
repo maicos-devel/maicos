@@ -7,7 +7,6 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import os
 import sys
-import timeit
 
 import MDAnalysis as mda
 import numpy as np
@@ -73,10 +72,14 @@ def single_exp(x, A, D):
 
 
 def main(firstarg=2):
+
     global args
 
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
+
+    if not args.noplots:
+        import matplotlib.pyplot as plt
 
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
@@ -94,10 +97,13 @@ def main(firstarg=2):
 
     # ======== MAIN LOOP =========
     # ============================
+    
     t_0 = time.clock()
     args.frame = 0
-    print("\rEvaluating frame: {:>12}\ttime: {:>12} ps".format(
+
+    print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
         args.frame, round(u.trajectory.time)), end="")
+
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
         # Calculations done in every frame
@@ -109,18 +115,19 @@ def main(firstarg=2):
         print_frameinfo(ts, args.frame)
 
     t_1 = time.clock()
-    print("\n")
 
-    print("Calculation took {:.2f} seconds.".format(t_1 - t_0))
-
+    print("\nCalculation took {:.2f} seconds.".format(t_1 - t_0))
 
     V /= args.frame
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
-    # Define the truncation length:
+
+    # Colors for plotting
 
     col1 = 'royalblue'
     col2 = 'red'
     col3 = 'grey'
+
+    # Define the truncation length:
 
     if args.trunclen == None:
 
@@ -147,8 +154,6 @@ def main(firstarg=2):
         # Plot the trunclen fit:
 
         if not args.noplots:
-
-            import matplotlib.pyplot as plt
 
             plotlen = 2 * args.trunclen
 
@@ -208,8 +213,9 @@ def main(firstarg=2):
     seglen = int(len(u.trajectory) / args.Nsegments)  # length of segments
 
     if args.trunclen > seglen:
-        args.Nsegments = int(len(u.trajectory) / float(args.trunclen))
-        seglen = int(len(u.trajectory) / float(args.Nsegments))
+        args.Nsegments = int(len(u.trajectory) / float(args.trunclen)) 
+    # TODO shouldn't be using len(u.trajectory) anymore: it might not be the number of frames
+        seglen = int(len(u.trajectory) / float(args.Nsegments)) 
 
     print('Number of segments to be used in error:\t{0}'.format(args.Nsegments))
 
