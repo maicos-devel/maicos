@@ -73,8 +73,6 @@ def single_exp(x, A, D):
 
 
 def main(firstarg=2):
-    # Not essential but nice to use args also in custo functions without passing
-    # explicitly
     global args
 
     # parse the arguments and saves them in an args object
@@ -98,11 +96,10 @@ def main(firstarg=2):
         Nseg = 100
 
     P = np.zeros( ( ( args.endframe-args.beginframe) // args.skipframes , 3) )
-    print(P.shape)
     V = 0
     t = dt * np.arange(args.beginframe,args.endframe,args.skipframes)
     t -= dt * args.beginframe
-    print(t.shape)
+
     # ======== MAIN LOOP =========
     # ============================
     t_0 = time.clock()
@@ -122,12 +119,10 @@ def main(firstarg=2):
     t_end = time.clock()
     print("\n")
 
-    # Final calculations i.e. printing informations and call for output
     print("Calculation took {:.2f} seconds.".format(t_end - t_0))
 
     V /= args.frame
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
-    print(P_P.shape)
     # Define the truncation length:
 
     col1 = 'royalblue'
