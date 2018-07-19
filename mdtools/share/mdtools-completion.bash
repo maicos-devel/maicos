@@ -19,6 +19,7 @@ _mdtools_completion()
   mdtools_opts+=" insert"
   mdtools_opts+=" debyer"
   mdtools_opts+=" density"
+  mdtools_opts+=" dielectric_spectrum"
   mdtools_opts+=" diporder"
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_cylinder"
@@ -104,6 +105,25 @@ _mdtools_completion()
       COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -d \
                                 -dz -muo -temp -zpos -dens -gr" -- ${cur_word} ) )
       return 0 ;;
+
+  dielectric_spectrum)
+    case "${prev_word}" in
+      -s)
+      COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+      return 0 ;;
+      -f)
+      COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+      return 0 ;;
+      -o)
+      COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+      return 0 ;;
+      -b|-e|-dt|-box|-temp|-o|-truncfac|-trunclen|-Nsegments|-np)
+      COMPREPLY=( )
+      return 0 ;;
+    esac
+    COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -temp -truncfac\
+                              -trunclen -Nsegments -np" -- ${cur_word} ) )
+    return 0 ;;
 
     diporder)
       case "${prev_word}" in
