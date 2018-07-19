@@ -443,8 +443,9 @@ def main(firstarg=2):
 
             u.atoms.write('out.gro')
         else:
+            scale = 0.57
             if args.density != None:
-                scale = 0.57 * (32.9/args.density)**0.33
+                scale *= (32.9/args.density)**0.33
 
             subprocess.call(
                 "gmx solvate -cp out.gro -cs spc216.gro -scale {:.3f} -o out.gro".format(scale),
