@@ -147,3 +147,71 @@ def repairMolecules(selection):
         # now shift them back into the primary simulation cell
         seg.atoms.positions += np.repeat(
             (centers % selection.dimensions[:3]) - centers, atomsPerMolecule, axis=0)
+
+dt_dk_tolerance = 1e-8 # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
+
+def FT(t, x, depvar=True):
+    """Description needed."""
+    a, b = np.min(t), np.max(t)
+    dt = (t[-1] - t[0])/float( len(t)-1 ) # timestep
+    if (abs((t[1:]-t[:-1] - dt)) > dt_dk_tolerance).any():
+        print(np.max( abs(t[1:]-t[:-1])))
+        raise RuntimeError("Time series not equally spaced!")
+    N = len(t)
+    # calculate frequency values for FT
+    k = np.fft.fftshift(np.fft.fftfreq(N,d=dt)*2*np.pi)
+    # calculate FT of data
+    xf = np.fft.fftshift(np.fft.fft(x))
+    xf2 = xf*(b-a)/N*np.exp(-1j*k*a)
+    if depvar:
+        return k, xf2
+    else:
+        return xf2
+
+def iFT(k, xf, depvar=True):
+    """Description needed."""
+    dk = (k[-1] - k[0])/float( len(k)-1 ) # timestep
+    if (abs((k[1:]-k[:-1] - dk)) > dt_dk_tolerance).any():
+        print(np.max( abs(k[1:]-k[:-1])))
+        raise RuntimeError("Time series not equally spaced!")
+    N = len(k)
+    x = np.fft.ifftshift(np.fft.ifft(xf))
+    t = np.fft.ifftshift(np.fft.fftfreq(N, d=dk))*2*np.pi
+    if N%2 == 0:
+        x2 = x*np.exp(-1j*t*N*dk/2.)*N*dk/(2*np.pi)
+    else:
+        x2 = x*np.exp(-1j*t*(N-1)*dk/2.)*N*dk/(2*np.pi)
+    if depvar:
+        return t, x2
+    else:
+        return x2
+
+def Correlation(a, b=None, subtract_mean=False):
+    """Description needed."""
+    meana = int(subtract_mean)*np.mean(a) # essentially an if statement for subtracting mean
+    a2 = np.append( a-meana, np.zeros(2**int( np.ceil( (np.log(len(a))/np.log(2)) ) ) - len(a)) ) # round up to a power of 2
+    data_a = np.append( a2, np.zeros(len(a2)) ) # pad with an equal number of zeros
+    fra = np.fft.fft(data_a) # FT the data
+    if b is None:
+        sf = np.conj(fra)*fra # take the conj and multiply pointwise if autocorrelation
+    else:
+        meanb = int(subtract_mean)*np.mean(b)
+        b2 = np.append( b-meanb, np.zeros( 2**int( np.ceil( ( np.log(len(b))/np.log(2)) ) )-len(b) ) )
+        data_b = np.append(b2, np.zeros(len(b2)))
+        frb = np.fft.fft( data_b )
+        sf = np.conj(fra)*frb
+    cor = np.real(np.fft.ifft(sf)[:len(a)])/np.array( range(len(a),0,-1) ) # inverse FFT and normalization
+    return cor
+
+def ScalarProdCorr(a, b=None, subtract_mean=False):
+    """Description needed."""
+    cor = np.zeros(len(a[:,0]))
+
+    if b is None:
+        for i in range(0, len(a[0,:])):
+            cor[:] += Correlation(a[:,i], a[:,i], subtract_mean)
+    else:
+        for i in range(0, len(a[0,:])):
+            cor[:] += Correlation(a[:,i], b[:,i], subtract_mean)
+
+    return cor
