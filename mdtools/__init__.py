@@ -32,7 +32,7 @@ def initilize_parser(add_traj_arguments=False):
                             help="start time (ps) for evaluation")
         parser.add_argument("-e",   dest="end",         type=float,
                             default=None,                   help="end time (ps) for evaluation")
-        parser.add_argument("-dt",  dest="skipframes",  type=int,
+        parser.add_argument("-skip",  dest="skipframes",  type=int,
                             default=1,                      help="skip every N frames")
         parser.add_argument("-box", dest="box", type=float, nargs="+",
                             default=None,
