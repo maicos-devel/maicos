@@ -27,10 +27,10 @@ from ..utils import repairMolecules, FT, ScalarProdCorr
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Description for my awesome analysis script."""
 parser.add_argument('-temp',   dest='temperature',      type=float,
-                    default=300, help='Reference temperature')
+                    default=300, help='Reference temperature.')
 parser.add_argument("-o", "--output",
                     default="", help="Prefix for the output file.")
-parser.add_argument("-truncfac", type=float,
+parser.add_argument("-truncfac", type=float, default=30.0,
                     help="Truncation factor.\
     By default, the autocorrelation of the polarization is fit with A*exp( -t/Tau ),\
     and the truncation length is then taken as truncfac*Tau. The default is 30.\
@@ -38,9 +38,9 @@ parser.add_argument("-truncfac", type=float,
 parser.add_argument("-trunclen", type=float,
                     help="Truncation length in picoseconds.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
-parser.add_argument("-Nsegments", type=int,
-                    help="The number of segments the polarization trajectory is broken into in order to find the\
-    standard deviation.\
+parser.add_argument("-Nsegments", type=int, default=100,
+                    help="The number of segments the polarization trajectory is broken into in order\
+    to find the standard deviation.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
 parser.add_argument("-np", "--noplots",
                     help="Prevents plots from being generated.", action="store_true")
@@ -83,31 +83,22 @@ def main(firstarg=2):
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
 
-    T = args.temperature  # temperature in Kelvin
-    truncfac = args.truncfac  # truncation factor to determine truncation length
-    trunclen = args.trunclen  # truncation length
-    Nseg = args.Nsegments  # number of segments for calculating variance
     dt = args.dt
 
     if len(args.output) > 0:
         args.output += "_"
 
-    if truncfac == None:
-        truncfac = 30.0
-    if Nseg == None:
-        Nseg = 100
+    P = np.zeros( ( (args.endframe-args.beginframe) // args.skipframes , 3) )
 
-    P = np.zeros( ( ( args.endframe-args.beginframe) // args.skipframes , 3) )
-    print(P.shape)
     V = 0
     t = dt * np.arange(args.beginframe,args.endframe,args.skipframes)
     t -= dt * args.beginframe
-    print(t.shape)
+
     # ======== MAIN LOOP =========
     # ============================
     t_0 = time.clock()
     args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
+    print("\rEvaluating frame: {:>12}\ttime: {:>12} ps".format(
         args.frame, round(u.trajectory.time)), end="")
     for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
@@ -119,11 +110,10 @@ def main(firstarg=2):
         args.frame += 1
         print_frameinfo(ts, args.frame)
 
-    t_end = time.clock()
+    t_1 = time.clock()
     print("\n")
 
-    # Final calculations i.e. printing informations and call for output
-    print("Calculation took {:.2f} seconds.".format(t_end - t_0))
+    print("Calculation took {:.2f} seconds.".format(t_1 - t_0))
 
     V /= args.frame
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
@@ -134,27 +124,27 @@ def main(firstarg=2):
     col2 = 'red'
     col3 = 'grey'
 
-    if trunclen == None:
+    if args.trunclen == None:
 
         p_opt, p_cov = scipy.optimize.curve_fit(
             single_exp, t, P_P, p0=(1, 1))  # fit whole dataset
 
         # if necessary, cut off data and fit again
-        if 2 * truncfac * p_opt[1] < len(P_P):
+        if 2 * args.truncfac * p_opt[1] < len(P_P):
             # cutoff index for 2. fit
-            im = np.absolute(t - 2 * truncfac * p_opt[1]).argmin()
+            im = np.absolute(t - 2 * args.truncfac * p_opt[1]).argmin()
             p_opt, p_cov = scipy.optimize.curve_fit(
                 single_exp, t[:im], P_P[:im], p0=p_opt)
 
         # if necessary, cut off data and fit again
-        if truncfac * p_opt[1] < len(P_P):
+        if args.truncfac * p_opt[1] < len(P_P):
             # cutoff index for 2. fit
-            im = np.absolute(t - truncfac * p_opt[1]).argmin()
+            im = np.absolute(t - args.truncfac * p_opt[1]).argmin()
             p_opt, p_cov = scipy.optimize.curve_fit(
                 single_exp, t[:im], P_P[:im], p0=p_opt)
 
         # step where data is cut off
-        trunclen = np.absolute(t - truncfac * p_opt[1]).argmin()
+        args.trunclen = np.absolute(t - args.truncfac * p_opt[1]).argmin()
 
         # Plot the trunclen fit:
 
@@ -162,13 +152,13 @@ def main(firstarg=2):
 
             import matplotlib.pyplot as plt
 
-            plotlen = 2 * trunclen
+            plotlen = 2 * args.trunclen
 
             if plotlen > len(P_P):
-                plotlen = int(1.1 * trunclen)
+                plotlen = int(1.1 * args.trunclen)
 
             if plotlen > len(P_P):
-                plotlen = trunclen
+                plotlen = args.trunclen
 
             plt.figure(figsize=(8, 5))
 
@@ -178,8 +168,8 @@ def main(firstarg=2):
 
             plt.xlim(-0.02 * t[plotlen], t[plotlen])
 
-            plt.axvline(x=t[trunclen], linewidth=1, color=col3, linestyle='--',
-                        label='truncation length = {0:.4} s'.format(t[trunclen]))
+            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, linestyle='--',
+                        label='truncation length = {0:.4} s'.format(t[args.trunclen]))
             plt.plot(t[:plotlen], P_P[:plotlen], color=col1, marker='.',
                      markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
             plt.plot(t[:plotlen], single_exp(t[:plotlen], p_opt[0], p_opt[1]),
@@ -191,19 +181,19 @@ def main(firstarg=2):
             plt.close()
 
         print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps\n'.format(
-            trunclen, trunclen * dt))
+            args.trunclen, args.trunclen * dt))
 
     else:
         # convert from picoseconds into the frame index
-        trunclen = int(trunclen / dt)
+        args.trunclen = int(args.trunclen / dt)
         print('Truncation length set manually to {0} steps, i.e. {1:.3} ps\n'.format(
-            trunclen, trunclen * dt))
+            args.trunclen, args.trunclen * dt))
 
 
     # Truncate and pad with zeros:
 
-    t = np.resize(t, 2 * trunclen)  # resize
-    P_P = np.append(np.resize(P_P, trunclen), np.zeros(trunclen))  # resize, pad w zeros
+    t = np.resize(t, 2 * args.trunclen)  # resize
+    P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # resize, pad w zeros
 
 
     # Calculate susceptibility from entire autocorrelation:
@@ -217,25 +207,25 @@ def main(firstarg=2):
 
     # Find the variance/std deviation of the susceptibility:
 
-    seglen = int(len(u.trajectory) / Nseg)  # length of segments
+    seglen = int(len(u.trajectory) / args.Nsegments)  # length of segments
 
-    if trunclen > seglen:
-        Nseg = int(len(u.trajectory) / float(trunclen))
-        seglen = int(len(u.trajectory) / float(Nseg))
+    if args.trunclen > seglen:
+        args.Nsegments = int(len(u.trajectory) / float(args.trunclen))
+        seglen = int(len(u.trajectory) / float(args.Nsegments))
 
-    print('Number of segments to be used in error:\t{0}'.format(Nseg))
+    print('Number of segments to be used in error:\t{0}'.format(args.Nsegments))
 
     # std deviation of susceptibility
-    dsusc = np.zeros(2 * trunclen, dtype=complex)
+    dsusc = np.zeros(2 * args.trunclen, dtype=complex)
 
-    for seg in range(0, Nseg):
+    for seg in range(0, args.Nsegments):
         P_P = ScalarProdCorr(P[seg * seglen:(seg + 1) * seglen, :])
-        P_P = np.append(np.resize(P_P, trunclen), np.zeros(trunclen))
+        P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))
         ss = FT(t, TimeDerivative5PS(P_P, u.trajectory.dt), False)
         dsusc += (ss - susc).real * (ss - susc).real + \
             1j * (ss - susc).imag * (ss - susc).imag
 
-    dsusc = np.sqrt(dsusc) / Nseg  # convert from variance to std. deviation
+    dsusc = np.sqrt(dsusc) / args.Nsegments  # convert from variance to std. deviation
 
     t1 = timeit.default_timer()
 
@@ -245,9 +235,9 @@ def main(firstarg=2):
 
     # Discard negative-frequency data; contains the same information as positive regime:
 
-    nu = nu[trunclen:]
-    susc = susc[trunclen:]
-    dsusc = dsusc[trunclen:]
+    nu = nu[args.trunclen:]
+    susc = susc[args.trunclen:]
+    dsusc = dsusc[args.trunclen:]
 
     pref = scipy.constants.e * scipy.constants.e * 1e9 / \
         (3 * V * scipy.constants.k * T * scipy.constants.epsilon_0)
