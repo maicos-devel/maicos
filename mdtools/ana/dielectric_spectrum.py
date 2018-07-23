@@ -292,7 +292,8 @@ def main(firstarg=2):
 
     print('Susceptibility data saved as ' + suscfilename)
 
-    # 
+    # ==== OPTIONAL PLOTTING =====
+    # ============================
 
     if args.noplots:
         print('User specified not to generate plots -- finished :)')
