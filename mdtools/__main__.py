@@ -13,7 +13,8 @@ from . import version
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
         "epsilon_cylinder": "ana", "epsilon_planar": "ana", "pertop": "build",
-        "saxs": "ana", "velocity": "ana", "dielectric_spectrum":"ana"}
+        "saxs": "ana", "velocity": "ana", "dielectric_spectrum":"ana",
+        "density_cylinder": "ana"}
 
 applist = list(apps.keys())
 applist.sort()
