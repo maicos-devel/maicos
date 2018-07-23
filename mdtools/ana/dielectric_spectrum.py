@@ -48,10 +48,11 @@ parser.add_argument("-Nsegments", type=int, default=100,
 parser.add_argument("-np", "--noplots",
                     help="Prevents plots from being generated.", action="store_true")
 
-# Numerical time derivative function using a 5-point stencil:
+# ======== DEFINITIONS ========
+# =============================
 
-def TimeDerivative5PS(v, dt):  # Five-point stencil time derivative for evenly spaced array
-    # note: v must be 1-d array
+def TimeDerivative5PS(v, dt): # Numerical 5-point stencil time derivative
+    # note: v must be evenly-spaced 1-d array
 
     dvdt = np.empty(len(v))
 
@@ -75,7 +76,6 @@ def single_exp(x, A, D):
 # ========== MAIN ============
 # ============================
 
-
 def main(firstarg=2):
 
     global args
@@ -89,66 +89,70 @@ def main(firstarg=2):
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
 
-    dt = args.dt*args.skipframes
+    dt = args.dt * args.skipframes
 
     Nframes = (args.endframe - args.beginframe) // args.skipframes
 
     if len(args.output) > 0:
         args.output += "_"
 
-    V = 0
     args.frame = 0
-    t = dt * np.arange(args.beginframe, args.endframe, args.skipframes)
-    t -= dt * args.beginframe
-
-    # ======== MAIN LOOP =========
-    # ============================
+    t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
     
     t_0 = time.clock()
 
     if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
 
         P = np.zeros((Nframes , 3))
-        print('Polarization file not found: calculating polarization trajectory and average volume...')
-        print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
+        print('Polarization file not found: calculating polarization trajectory and average volume')
+        V = np.zeros(1)
+        print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
-
         for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
             # Calculations done in every frame
-            V += ts.volume
+            V[0] += ts.volume
             repairMolecules(u.atoms)
             P[args.frame,:] = np.dot(u.atoms.charges, u.atoms.positions)
             args.frame += 1
             print_frameinfo(ts, args.frame)
 
         P /= 10 # MDA gives units of Angstroms, we use nm
+        V[0] *= 1e-3 / float(args.frame) # normalization and unit conversion
         np.save(args.output+'P_tseries.npy', P)
+        np.savetxt(args.output+'V.txt', V)
 
-    else:
+    elif not os.path.isfile(args.output+'V.txt'):
 
-        print('Polarization file found: loading polarization trajectory and calculating average volume...')
+        print('Polarization file found: loading polarization and calculating average volume')
         P = np.load(args.output+'P_tseries.npy')
-
+        V = np.zeros(1)
         print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
 
         for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
             # Calculations done in every frame
-            V += ts.volume
+            V[0] += ts.volume
             args.frame += 1
             print_frameinfo(ts, args.frame)
 
-    V *= 1e-3 / float(args.frame)
+        V *= 1e-3 / float(args.frame) # normalization and unit conversion                
+        np.savetxt(args.output+'V.txt', V)
+
+    else:
+
+        print('Polarization and volume files found: loading both...', end="")
+        P = np.load(args.output+'P_tseries.npy')
+        V = np.loadtxt(args.output+'V.txt')
+
     t_1 = time.clock()
 
-    print("\nCalculations took {:.2f} seconds.".format(t_1 - t_0))
+    print("\nTook {:.2f} seconds".format(t_1 - t_0))
 
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
 
     # Colors for plotting
-
     col1 = 'royalblue'
     col2 = 'red'
     col3 = 'grey'
@@ -189,7 +193,7 @@ def main(firstarg=2):
             if plotlen > len(P_P):
                 plotlen = args.trunclen
 
-            plt.figure(figsize=(6, 6))
+            plt.figure(figsize=(8, 5.657))
 
             plt.title('Exponential Fit to Determine Truncation Length')
             plt.ylabel('$<P(0)$ $P(t)>$')
@@ -236,7 +240,7 @@ def main(firstarg=2):
 
     # Find the variance/std deviation of the susceptibility:
 
-    seglen = Nframes / args.Nsegments  # length of segments
+    seglen = int(Nframes / float(args.Nsegments))  # length of segments
 
     if args.trunclen > seglen:
         args.Nsegments = int(Nframes / float(args.trunclen))
@@ -284,14 +288,15 @@ def main(firstarg=2):
     np.savetxt(suscfilename,
                np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
                delimiter='\t',
-               header='nu\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
+               header='freq\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
 
     print('Susceptibility data saved as ' + suscfilename)
 
+    # 
+
     if args.noplots:
-        print('User specified not to generate plots -- finished')
+        print('User specified not to generate plots -- finished :)')
     else:
-        # -------------------- Plotting ------------------------ #
 
         print('Calculations complete. Generating plots...')
 
@@ -309,7 +314,7 @@ def main(firstarg=2):
 
         # Plot lin-log:
 
-        plt.figure(figsize=(6, 6))
+        plt.figure(figsize=(8, 5.657))
 
         plt.title('Complex Dielectric Function (lin-log)')
         plt.ylabel('$\chi$')
@@ -337,7 +342,7 @@ def main(firstarg=2):
 
         # Plot log-log
 
-        plt.figure(figsize=(6, 6))
+        plt.figure(figsize=(8, 5.657))
 
         plt.title('Complex Dielectric Function (log-log)')
         plt.ylabel('$\chi$')
@@ -365,7 +370,7 @@ def main(firstarg=2):
 
         plt.savefig(args.output + 'susc_log.pdf', format='pdf')
 
-        print('Plots generated -- finished')
+        print('Plots generated -- finished :)')
 
     print('\n\n')
 
