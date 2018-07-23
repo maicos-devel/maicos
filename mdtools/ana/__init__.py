@@ -44,14 +44,14 @@ def initilize_universe(argobj):
 def print_frameinfo(ts, frame):
     """Prints the current frame information during evaulation."""
     if (frame < 100):
-        print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
+        print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             ts.frame, round(ts.time)), end="")
         sys.stdout.flush()
     elif (frame < 1000 and frame % 10 == 1):
-        print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
+        print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             ts.frame, round(ts.time)), end="")
         sys.stdout.flush()
     elif (frame % 250 == 1):
-        print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
+        print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             ts.frame, round(ts.time)), end="")
         sys.stdout.flush()

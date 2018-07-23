@@ -21,10 +21,14 @@ from ..utils import repairMolecules, FT, ScalarProdCorr
 
 # ========== PARSER ===========
 # =============================
+
 # parser object will already contain options for
 # the topology, trajectory, begin, end, skipped frames and the box dimenions
+
 parser = initilize_parser(add_traj_arguments=True)
-parser.description = """Description for my awesome analysis script."""
+parser.description = """This script, given molecular dynamics trajectory data, should produce a\
+    .txt file containing the complex dielectric function as a function of the (linear, not radial)\
+    frequency, along with the associated standard deviations."""
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", "--output",
@@ -44,7 +48,6 @@ parser.add_argument("-Nsegments", type=int, default=100,
 parser.add_argument("-np", "--noplots",
                     help="Prevents plots from being generated.", action="store_true")
 
-
 # Numerical time derivative function using a 5-point stencil:
 
 def TimeDerivative5PS(v, dt):  # Five-point stencil time derivative for evenly spaced array
@@ -54,7 +57,7 @@ def TimeDerivative5PS(v, dt):  # Five-point stencil time derivative for evenly s
 
     dvdt[2:-2] = (8 * (v[2:] - v[:-2])[1:-1] - v[4:] + v[:-4]) / float(12 * dt)
 
-    # 2 pt stencil for the 2nd-to-last datapoints
+    # 2 pt stencil for the 2nd-to-last datapoints; prevents any truncatoin at the ends
     dvdt[1] = (v[2] - v[0]) / float(2 * dt)
     dvdt[-2] = (v[-1] - v[-3]) / float(2 * dt)
 
@@ -63,6 +66,8 @@ def TimeDerivative5PS(v, dt):  # Five-point stencil time derivative for evenly s
     dvdt[-1] = (v[-1] - v[-2]) / float(dt)
 
     return dvdt
+
+# Single exponential for fitting:
 
 def single_exp(x, A, D):
     return np.absolute(A) * np.exp(-x / D)
@@ -84,41 +89,62 @@ def main(firstarg=2):
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
 
-    dt = args.dt
+    dt = args.dt*args.skipframes
+
+    Nframes = (args.endframe - args.beginframe) // args.skipframes
 
     if len(args.output) > 0:
         args.output += "_"
 
-    P = np.zeros(((args.endframe - args.beginframe) // args.skipframes , 3))
-
     V = 0
-    t = dt * np.arange(args.beginframe,args.endframe,args.skipframes)
+    args.frame = 0
+    t = dt * np.arange(args.beginframe, args.endframe, args.skipframes)
     t -= dt * args.beginframe
 
     # ======== MAIN LOOP =========
     # ============================
     
     t_0 = time.clock()
-    args.frame = 0
 
-    print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
+    if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
 
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+        P = np.zeros((Nframes , 3))
+        print('Polarization file not found: calculating polarization trajectory and average volume...')
+        print("\rEvaluating frame: {:>12} \ttime: {:>12} ps".format(
+            args.frame, round(u.trajectory.time)), end="")
 
-        # Calculations done in every frame
-        V += ts.volume
-        repairMolecules(u.atoms)
-        P[args.frame,:] = np.dot(u.atoms.charges, u.atoms.positions)
+        for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
+            # Calculations done in every frame
+            V += ts.volume
+            repairMolecules(u.atoms)
+            P[args.frame,:] = np.dot(u.atoms.charges, u.atoms.positions)
+            args.frame += 1
+            print_frameinfo(ts, args.frame)
 
+        P /= 10 # MDA gives units of Angstroms, we use nm
+        np.save(args.output+'P_tseries.npy', P)
+
+    else:
+
+        print('Polarization file found: loading polarization trajectory and calculating average volume...')
+        P = np.load(args.output+'P_tseries.npy')
+
+        print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
+            args.frame, round(u.trajectory.time)), end="")
+
+        for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+
+            # Calculations done in every frame
+            V += ts.volume
+            args.frame += 1
+            print_frameinfo(ts, args.frame)
+
+    V *= 1e-3 / float(args.frame)
     t_1 = time.clock()
 
-    print("\nCalculation took {:.2f} seconds.".format(t_1 - t_0))
+    print("\nCalculations took {:.2f} seconds.".format(t_1 - t_0))
 
-    V /= args.frame
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
 
     # Colors for plotting
@@ -163,7 +189,7 @@ def main(firstarg=2):
             if plotlen > len(P_P):
                 plotlen = args.trunclen
 
-            plt.figure(figsize=(8, 5))
+            plt.figure(figsize=(6, 6))
 
             plt.title('Exponential Fit to Determine Truncation Length')
             plt.ylabel('$<P(0)$ $P(t)>$')
@@ -183,13 +209,13 @@ def main(firstarg=2):
             plt.savefig(args.output+'P_autocorr_trunc_fit.pdf', format='pdf')
             plt.close()
 
-        print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps\n'.format(
+        print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
             args.trunclen, args.trunclen * dt))
 
     else:
         # convert from picoseconds into the frame index
         args.trunclen = int(args.trunclen / dt)
-        print('Truncation length set manually to {0} steps, i.e. {1:.3} ps\n'.format(
+        print('Truncation length set manually to {0} steps, i.e. {1:.3} ps'.format(
             args.trunclen, args.trunclen * dt))
 
 
@@ -203,19 +229,18 @@ def main(firstarg=2):
 
     print('Calculating susceptibilty and errors...')
 
-    t0 = timeit.default_timer()
+    t0 = time.clock()
 
-    nu, susc = FT(t, TimeDerivative5PS(P_P, u.trajectory.dt))
+    nu, susc = FT(t, TimeDerivative5PS(P_P, dt))
 
 
     # Find the variance/std deviation of the susceptibility:
 
-    seglen = int(len(u.trajectory) / args.Nsegments)  # length of segments
+    seglen = Nframes / args.Nsegments  # length of segments
 
     if args.trunclen > seglen:
-        args.Nsegments = int(len(u.trajectory) / float(args.trunclen)) 
-    # TODO shouldn't be using len(u.trajectory) anymore: it might not be the number of frames
-        seglen = int(len(u.trajectory) / float(args.Nsegments)) 
+        args.Nsegments = int(Nframes / float(args.trunclen))
+        seglen = int(Nframes / float(args.Nsegments))
 
     print('Number of segments to be used in error:\t{0}'.format(args.Nsegments))
 
@@ -225,16 +250,16 @@ def main(firstarg=2):
     for seg in range(0, args.Nsegments):
         P_P = ScalarProdCorr(P[seg * seglen:(seg + 1) * seglen, :])
         P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))
-        ss = FT(t, TimeDerivative5PS(P_P, u.trajectory.dt), False)
+        ss = FT(t, TimeDerivative5PS(P_P, dt), False)
         dsusc += (ss - susc).real * (ss - susc).real + \
             1j * (ss - susc).imag * (ss - susc).imag
 
     dsusc = np.sqrt(dsusc) / args.Nsegments  # convert from variance to std. deviation
 
-    t1 = timeit.default_timer()
+    t1 = time.clock()
 
     print(
-        'Susceptibility and associated errors calculated - took {0:.3} s\n'.format(t1 - t0))
+        'Susceptibility and associated errors calculated - took {0:.3} s'.format(t1 - t0))
 
 
     # Discard negative-frequency data; contains the same information as positive regime:
@@ -244,7 +269,7 @@ def main(firstarg=2):
     dsusc = dsusc[args.trunclen:]
 
     pref = scipy.constants.e * scipy.constants.e * 1e9 / \
-        (3 * V * scipy.constants.k * T * scipy.constants.epsilon_0)
+        (3 * V * scipy.constants.k * args.temperature * scipy.constants.epsilon_0)
 
     susc *= -pref
     susc.imag *= -1  # we want -1 * Im susc (sometimes denoted as Chi'')
@@ -261,14 +286,14 @@ def main(firstarg=2):
                delimiter='\t',
                header='nu\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
 
-    print('Susceptibility data saved as ' + suscfilename + '\n')
+    print('Susceptibility data saved as ' + suscfilename)
 
     if args.noplots:
         print('User specified not to generate plots -- finished')
     else:
         # -------------------- Plotting ------------------------ #
 
-        print('Calculations complete. Generating plots...\n')
+        print('Calculations complete. Generating plots...')
 
         # Extraction of values useful for plotting:
 
@@ -284,7 +309,7 @@ def main(firstarg=2):
 
         # Plot lin-log:
 
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(6, 6))
 
         plt.title('Complex Dielectric Function (lin-log)')
         plt.ylabel('$\chi$')
@@ -312,7 +337,7 @@ def main(firstarg=2):
 
         # Plot log-log
 
-        plt.figure(figsize=(8, 5))
+        plt.figure(figsize=(6, 6))
 
         plt.title('Complex Dielectric Function (log-log)')
         plt.ylabel('$\chi$')
@@ -340,7 +365,9 @@ def main(firstarg=2):
 
         plt.savefig(args.output + 'susc_log.pdf', format='pdf')
 
-        print('Plots generated -- finished\n')
+        print('Plots generated -- finished')
+
+    print('\n\n')
 
 if __name__ == "__main__":
     main(firstarg=1)
