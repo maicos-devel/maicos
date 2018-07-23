@@ -107,7 +107,7 @@ _mdtools_completion()
                                 -dz -muo -temp -zpos -dens -gr" -- ${cur_word} ) )
       return 0 ;;
 
-    density)
+    density_cylinder)
       case "${prev_word}" in
         -s)
         COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
