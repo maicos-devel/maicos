@@ -86,6 +86,9 @@ def main(firstarg=2):
     if not args.noplots:
         import matplotlib.pyplot as plt
 
+    # == POLARIZATION/AUTOCORR ===
+    # ============================
+
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
 
@@ -151,6 +154,9 @@ def main(firstarg=2):
     print("\nTook {:.2f} seconds".format(t_1 - t_0))
 
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
+
+    # ======== TRUNCATION ========
+    # ============================
 
     # Colors for plotting
     col1 = 'royalblue'
@@ -228,6 +234,8 @@ def main(firstarg=2):
     t = np.resize(t, 2 * args.trunclen)  # resize
     P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # resize, pad w zeros
 
+    # ====== SUSCEPTIBILITY ======
+    # ============================
 
     # Calculate susceptibility from entire autocorrelation:
 
