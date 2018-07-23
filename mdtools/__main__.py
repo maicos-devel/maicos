@@ -6,6 +6,7 @@ from __future__ import absolute_import
 import argparse
 import importlib
 import sys
+import warnings
 
 from . import version
 
@@ -13,7 +14,7 @@ from . import version
 apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
         "epsilon_cylinder": "ana", "epsilon_planar": "ana", "pertop": "build",
-        "saxs": "ana", "velocity": "ana", "dielectric_spectrum":"ana",
+        "saxs": "ana", "velocity": "ana", "dielectric_spectrum": "ana",
         "density_cylinder": "ana"}
 
 applist = list(apps.keys())
@@ -24,11 +25,15 @@ parser = argparse.ArgumentParser(description="""
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("program", type=str, help="Program to start",
                     choices=applist)
+parser.add_argument('--debug', action='store_true',
+                    help='Run with debug options')
 parser.add_argument('--version', action='version',
                     version="mdtools {}".format(version.__version__))
 
 
 def main():
+    if "--debug" in sys.argv:
+        warnings.filterwarnings("ignore")
 
     try:
         if sys.argv[1] in applist:
