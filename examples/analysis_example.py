@@ -85,6 +85,9 @@ def main(firstarg=2, DEBUG=False):
     print("Average volume of the simulation box {:.2f} Å".format(
         Volume / args.frame))
 
+    if DEBUG:
+        print("Some usefule debug informations can be stored and given here...")
+
 
 if __name__ == "__main__":
     main(firstarg=1)
