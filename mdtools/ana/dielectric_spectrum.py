@@ -47,6 +47,9 @@ parser.add_argument("-Nsegments", type=int, default=100,
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
 parser.add_argument("-np", "--noplots",
                     help="Prevents plots from being generated.", action="store_true")
+parser.add_argument("-pf", "--plotformat", default="pdf",
+                    help="Choose the format of generated plots.")
+
 
 # ======== DEFINITIONS ========
 # =============================
@@ -82,6 +85,8 @@ def main(firstarg=2):
 
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
+    
+    print('====== DIELECTRIC SPECTRUM CALCULATOR ======')
 
     if not args.noplots:
         import matplotlib.pyplot as plt
@@ -145,15 +150,17 @@ def main(firstarg=2):
 
     else:
 
-        print('Polarization and volume files found: loading both...', end="")
+        print('Polarization and volume files found: loading both...', end='')
         P = np.load(args.output+'P_tseries.npy')
         V = np.loadtxt(args.output+'V.txt')
 
     t_1 = time.clock()
 
-    print("\nTook {:.2f} seconds".format(t_1 - t_0))
+    print("\nTook {:.2f} s".format(t_1 - t_0))
 
+    print('Calculating the autocorrelation... ', end='')
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
+    print('Done')
 
     # ======== TRUNCATION ========
     # ============================
@@ -163,8 +170,13 @@ def main(firstarg=2):
     col2 = 'red'
     col3 = 'grey'
 
-    # Define the truncation length:
+    # Parameters for when data needs to be thinned for plotting
+    Npp = 1000 # Max number of points for all plots
+    Lpp = 200 # Num points of susc plotted with lin spacing: Lpp<Npp 
 
+    # Define the truncation length:
+    
+    print('Finding the truncation length for the autocorrelation...')
     if args.trunclen == None:
 
         p_opt, p_cov = scipy.optimize.curve_fit(
@@ -199,6 +211,10 @@ def main(firstarg=2):
             if plotlen > len(P_P):
                 plotlen = args.trunclen
 
+            sk = 1            
+            if plotlen > Npp: # thin data so .pdf plot files aren't massive
+                sk = plotlen // Npp + 1
+                
             plt.figure(figsize=(8, 5.657))
 
             plt.title('Exponential Fit to Determine Truncation Length')
@@ -209,14 +225,14 @@ def main(firstarg=2):
 
             plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, linestyle='--',
                         label='truncation length = {0:.4} s'.format(t[args.trunclen]))
-            plt.plot(t[:plotlen], P_P[:plotlen], color=col1, marker='.',
+            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, marker='.',
                      markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
-            plt.plot(t[:plotlen], single_exp(t[:plotlen], p_opt[0], p_opt[1]),
+            plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
                      linewidth=1, color=col2, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
 
             plt.legend(loc='best')
 
-            plt.savefig(args.output+'P_autocorr_trunc_fit.pdf', format='pdf')
+            plt.savefig(args.output+'P_autocorr_trunc_fit.'+args.plotformat, format=args.plotformat)
             plt.close()
 
         print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
@@ -308,9 +324,9 @@ def main(firstarg=2):
     else:
 
         print('Calculations complete. Generating plots...')
-
+        
         # Extraction of values useful for plotting:
-
+        
         nuPeak = nu[np.argmax(susc.imag)]  # frequency at peak
         nuL = nu[1]  # lower x benchmark
         nuBuf = 1.4  # buffer factor for extra room in the x direction
@@ -320,6 +336,15 @@ def main(firstarg=2):
         suscL = np.min([susc.real[-1], susc.imag[1]]) / 2  # lower y benchmark
         suscBuf = 1.2  # buffer factor for extra room in the x direction
 
+        # Thin data if there are too many points
+
+        if len(susc) > Npp:  # matplotlib.savefig() will plot 50,000 points, but not 60,000
+            ip = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
+            ip = np.unique(np.append(np.arange(Lpp,dtype=int), ip))
+            print('Too many datapoints: plotting above datapoint {0} with log spacing;'.format(Lpp))
+            print('Plotting {0} datapoints'.format(len(ip)))
+        else:
+            ip = np.arange(len(susc),dtype=int)
 
         # Plot lin-log:
 
@@ -335,17 +360,17 @@ def main(firstarg=2):
 
         plt.xscale('log')
 
-        plt.fill_between(nu, susc.real - dsusc.real, susc.real +
-                         dsusc.real, color=col2, alpha=0.1)
-        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag +
-                         dsusc.imag, color=col1, alpha=0.1)
+        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                         dsusc.real[ip], color=col2, alpha=0.1)
+        plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
+                         dsusc.imag[ip], color=col1, alpha=0.1)
 
-        plt.plot(nu, susc.real, col2, linewidth=1, label='$\chi^{{\prime}}$')
-        plt.plot(nu, susc.imag, col1, linewidth=1, label='$\chi^{{\prime \prime}}$')
+        plt.plot(nu[ip], susc.real[ip], col2, linewidth=1, label='$\chi^{{\prime}}$')
+        plt.plot(nu[ip], susc.imag[ip], col1, linewidth=1, label='$\chi^{{\prime \prime}}$')
 
         plt.legend(loc='best')
 
-        plt.savefig(args.output + 'susc_linlog.pdf', format='pdf')
+        plt.savefig(args.output + 'susc_linlog.'+args.plotformat, format=args.plotformat)
 
         plt.close()
 
@@ -365,19 +390,19 @@ def main(firstarg=2):
         plt.yscale('log')
         plt.xscale('log')
 
-        plt.fill_between(nu, susc.real - dsusc.real, susc.real +
-                         dsusc.real, color=col2, alpha=0.1)
-        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag +
-                         dsusc.imag, color=col1, alpha=0.1)
+        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                         dsusc.real[ip], color=col2, alpha=0.1)
+        plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
+                         dsusc.imag[ip], color=col1, alpha=0.1)
 
-        plt.plot(nu, susc.real, color=col2, linewidth=1,
+        plt.plot(nu[ip], susc.real[ip], color=col2, linewidth=1,
                  label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
-        plt.plot(nu, susc.imag, color=col1, linewidth=1,
+        plt.plot(nu[ip], susc.imag[ip], color=col1, linewidth=1,
                  label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
 
         plt.legend(loc='best')
 
-        plt.savefig(args.output + 'susc_log.pdf', format='pdf')
+        plt.savefig(args.output + 'susc_log.'+args.plotformat, format=args.plotformat)
 
         print('Plots generated -- finished :)')
 
