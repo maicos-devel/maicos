@@ -223,5 +223,10 @@ def main(firstarg=2, DEBUG=False):
     output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
 
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
+
 if __name__ == "__main__":
     main(firstarg=1)

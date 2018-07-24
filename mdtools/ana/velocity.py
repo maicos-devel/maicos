@@ -223,5 +223,10 @@ def main(firstarg=2, DEBUG=False):
     print("\n")
 
 
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
+
 if __name__ == "__main__":
     main(firstarg=1)

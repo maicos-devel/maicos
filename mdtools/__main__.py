@@ -53,7 +53,6 @@ def main():
     app.main(DEBUG=DEBUG)
 
     if DEBUG:
-        #TODO Add app.main variables to current namespace for debugging.
         code.interact(
             banner="Start interactive Python interpreter.⁠ Acces program namespace by using app.<variable>.",
             local=dict(globals(), **locals())

@@ -16,14 +16,15 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import os
 import sys
-# Custom import modules
-import time
 
 import MDAnalysis as mda
 import numpy as np
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+
+# Custom import modules
+import time
 
 # ========== PARSER ===========
 # =============================
@@ -86,8 +87,9 @@ def main(firstarg=2, DEBUG=False):
         Volume / args.frame))
 
     if DEBUG:
-        print("Some usefule debug informations can be stored and given here...")
-
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)
