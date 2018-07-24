@@ -149,7 +149,7 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
 # ========== MAIN ============
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)

@@ -28,7 +28,7 @@ _mdtools_completion()
   mdtools_opts+=" pertop"
   mdtools_opts+=" saxs"
   mdtools_opts+=" velocity"
-  mdtools_opts+=" --help --version"
+  mdtools_opts+=" --debug --help --version"
 
   #  Define knowing topology and trajectory formats.
   topols='!*@(.txyz|.top|.dms|.gsd|.crd\

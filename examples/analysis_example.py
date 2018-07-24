@@ -49,7 +49,7 @@ def foo(bar=None):
 # ============================
 
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     # Not essential but nice to use args also in custo functions without passing
     # explicitly
     global args

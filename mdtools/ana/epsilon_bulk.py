@@ -71,7 +71,7 @@ def output(M, M2, V, verbose=False):
                fmt='%1.2f', header='eps\teps_x\teps_y\teps_z')
 
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])

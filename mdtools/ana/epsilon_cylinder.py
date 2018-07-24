@@ -90,7 +90,7 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
 # =========== MAIN ===========
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])

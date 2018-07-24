@@ -98,7 +98,7 @@ def writeXYZ(filename, obj, atom_names):
 # ============================
 
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])

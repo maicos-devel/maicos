@@ -76,7 +76,7 @@ def single_exp(x, A, D):
 # ========== MAIN ============
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
 
     global args
 
