@@ -171,7 +171,7 @@ def main(firstarg=2):
     col3 = 'grey'
 
     # Parameters for when data needs to be thinned for plotting
-    Npp = 1000 # Max number of points for all plots
+    Npp = 2000 # Max number of points for all plots
     Lpp = 200 # Num points of susc plotted with lin spacing: Lpp<Npp 
 
     # Define the truncation length:
