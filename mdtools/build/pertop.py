@@ -39,7 +39,7 @@ def remove_comments(datastr):
     return newdatastr
 
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     args = parser.parse_args(args=sys.argv[firstarg:])
 
     with open(args.topology, 'r') as f:
@@ -270,6 +270,11 @@ def main(firstarg=2):
         for line in newlines:
             f.write(line)
 
+
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)

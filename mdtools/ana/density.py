@@ -135,7 +135,7 @@ def dmu(rho, drho, temperature):
 # ========== MAIN ============
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
@@ -205,6 +205,10 @@ def main(firstarg=2):
     output(density_mean, density_mean_sq, av_box_length)
     print("\n")
 
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)

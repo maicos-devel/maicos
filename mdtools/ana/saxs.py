@@ -162,7 +162,7 @@ with open(os.path.join(sharePath, "sfactor.dat")) as f:
 
 # =========== MAIN ===========
 # ============================
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
@@ -253,6 +253,11 @@ def main(firstarg=2):
     output(q, struct_factor, sel.atoms.n_atoms)
     print("\n")
 
+
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)

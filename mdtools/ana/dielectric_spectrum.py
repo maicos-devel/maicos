@@ -79,13 +79,13 @@ def single_exp(x, A, D):
 # ========== MAIN ============
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
 
     global args
 
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
-    
+
     print('====== DIELECTRIC SPECTRUM CALCULATOR ======')
 
     if not args.noplots:
@@ -106,7 +106,7 @@ def main(firstarg=2):
 
     args.frame = 0
     t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
-    
+
     t_0 = time.clock()
 
     if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
@@ -145,7 +145,7 @@ def main(firstarg=2):
             args.frame += 1
             print_frameinfo(ts, args.frame)
 
-        V *= 1e-3 / float(args.frame) # normalization and unit conversion                
+        V *= 1e-3 / float(args.frame) # normalization and unit conversion
         np.savetxt(args.output+'V.txt', V)
 
     else:
@@ -171,11 +171,12 @@ def main(firstarg=2):
     col3 = 'grey'
 
     # Parameters for when data needs to be thinned for plotting
+
     Npp = 2000 # Max number of points for all plots
     Lpp = 200 # Num points of susc plotted with lin spacing: Lpp<Npp 
 
     # Define the truncation length:
-    
+
     print('Finding the truncation length for the autocorrelation...')
     if args.trunclen == None:
 
@@ -211,10 +212,10 @@ def main(firstarg=2):
             if plotlen > len(P_P):
                 plotlen = args.trunclen
 
-            sk = 1            
+            sk = 1
             if plotlen > Npp: # thin data so .pdf plot files aren't massive
                 sk = plotlen // Npp + 1
-                
+
             plt.figure(figsize=(8, 5.657))
 
             plt.title('Exponential Fit to Determine Truncation Length')
@@ -324,9 +325,9 @@ def main(firstarg=2):
     else:
 
         print('Calculations complete. Generating plots...')
-        
+
         # Extraction of values useful for plotting:
-        
+
         nuPeak = nu[np.argmax(susc.imag)]  # frequency at peak
         nuL = nu[1]  # lower x benchmark
         nuBuf = 1.4  # buffer factor for extra room in the x direction
@@ -407,6 +408,11 @@ def main(firstarg=2):
         print('Plots generated -- finished :)')
 
     print('\n\n')
+
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)

@@ -90,7 +90,7 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
 # =========== MAIN ===========
 # ============================
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
@@ -222,6 +222,11 @@ def main(firstarg=2):
     print("\n")
     output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
+
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)

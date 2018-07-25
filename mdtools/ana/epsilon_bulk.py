@@ -71,7 +71,7 @@ def output(M, M2, V, verbose=False):
                fmt='%1.2f', header='eps\teps_x\teps_y\teps_z')
 
 
-def main(firstarg=2):
+def main(firstarg=2, DEBUG=False):
     global args
 
     args = parser.parse_args(args=sys.argv[firstarg:])
@@ -108,6 +108,11 @@ def main(firstarg=2):
     print("\n")
     output(M / args.frame, M2 / args.frame, V / args.frame, verbose=True)
 
+
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)
