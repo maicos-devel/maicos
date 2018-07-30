@@ -49,7 +49,10 @@ parser.add_argument("-np", "--noplots",
                     help="Prevents plots from being generated.", action="store_true")
 parser.add_argument("-pf", "--plotformat", default="pdf",
                     help="Choose the format of generated plots.")
-
+parser.add_argument("-nobin",
+                    help="Do not bin data.\
+    Data is by default binned logarithmically.\
+    This helps to reduce noise, particularly in the high-frequency domain.", action="store_true")
 
 # ======== DEFINITIONS ========
 # =============================
@@ -70,6 +73,27 @@ def TimeDerivative5PS(v, dt): # Numerical 5-point stencil time derivative
     dvdt[-1] = (v[-1] - v[-2]) / float(dt)
 
     return dvdt
+
+# Averages array values in bins for easier plotting
+# Note: "bins" array should contain the INDEX (integer) where a bin begins
+
+def Bin(a, bins):
+
+    if np.iscomplex(a).any():
+        avg = np.zeros(len(bins), dtype=complex) # average of data
+    else:
+        avg = np.zeros(len(bins))
+
+    count = np.zeros(len(bins), dtype=int)
+    ic = -1
+
+    for i in range(0, len(a)):
+        if i in bins:
+            ic += 1 # index for new average
+        avg[ic] += a[i]
+        count[ic] += 1
+
+    return avg / count
 
 # Single exponential for fitting:
 
@@ -172,8 +196,8 @@ def main(firstarg=2, DEBUG=False):
 
     # Parameters for when data needs to be thinned for plotting
 
-    Npp = 2000 # Max number of points for all plots
-    Lpp = 200 # Num points of susc plotted with lin spacing: Lpp<Npp 
+    Npp = 100 # Max number of points for all plots
+    Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp 
 
     # Define the truncation length:
 
@@ -333,19 +357,39 @@ def main(firstarg=2, DEBUG=False):
         nuBuf = 1.4  # buffer factor for extra room in the x direction
 
         # max value of data
-        suscMax = np.ceil(np.max([np.max(susc.real), np.max(susc.imag)]))
+        suscReMax = np.max(susc.real)
+        suscImMax = np.max(susc.imag)
+        suscMax = np.ceil(np.max([suscReMax, suscImMax]))
         suscL = np.min([susc.real[-1], susc.imag[1]]) / 2  # lower y benchmark
         suscBuf = 1.2  # buffer factor for extra room in the x direction
 
-        # Thin data if there are too many points
+        # Thin or bin data if there are too many points:
+        # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if len(susc) > Npp:  # matplotlib.savefig() will plot 50,000 points, but not 60,000
+        if len(susc) > Npp and args.nobin: # data thinning
+
             ip = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
             ip = np.unique(np.append(np.arange(Lpp,dtype=int), ip))
-            print('Too many datapoints: plotting above datapoint {0} with log spacing;'.format(Lpp))
+            print('Too many datapoints: plotting above datapoint {0} with log spacing'.format(Lpp))
             print('Plotting {0} datapoints'.format(len(ip)))
-        else:
+
+        elif args.nobin: # neither binning nor thinning
+
             ip = np.arange(len(susc),dtype=int)
+            print('Plotting all {0} datapoints'.format(len(ip)))
+
+        else: # data binning
+
+            bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
+            bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
+
+            susc = Bin(susc, bins)
+            dsusc = Bin(dsusc, bins)
+            nu = Bin(nu, bins)
+
+            ip = np.arange(len(susc),dtype=int)
+            print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
+            print('Plotting {0} datapoints'.format(len(ip)))
 
         # Plot lin-log:
 
