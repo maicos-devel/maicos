@@ -26,33 +26,44 @@ from ..utils import repairMolecules, FT, ScalarProdCorr
 # the topology, trajectory, begin, end, skipped frames and the box dimenions
 
 parser = initilize_parser(add_traj_arguments=True)
-parser.description = """This script, given molecular dynamics trajectory data, should produce a\
-    .txt file containing the complex dielectric function as a function of the (linear, not radial)\
-    frequency, along with the associated standard deviations."""
+parser.description = """This script, given molecular dynamics trajectory data, should produce a
+    .txt file containing the complex dielectric function as a function of the (linear, not radial -
+    i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
+    The following algorithm, based on linear-response theory, is followed:
+    *Calculate system polarization, P, at each timeframe.
+    *Take the time autocorrelation, <PP>, via FFT.
+    *Find a suitable truncation length for <PP> (or "cutoff") via an exponential fit.
+    *Truncate <PP>. 
+    *Take the time derivative using a 5 point stencil numerical derivative function. 
+    *Take the positive-domain FT giving the complex dielectric susceptibility...
+    By default, the polarization trajectory and the average system volume are saved in the
+    working directory, and the data are reloaded from these files if they are present.
+    A plot of the truncation-length fit as well as lin-log and log-log plots of the susceptibility 
+    are also produced by default."""
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
-parser.add_argument("-o", "--output",
-                    default="", help="Prefix for the output file.")
+parser.add_argument("-o", dest="output",
+                    default="", help="Prefix for the output files.")
 parser.add_argument("-truncfac", type=float, default=30.0,
                     help="Truncation factor.\
     By default, the autocorrelation of the polarization is fit with A*exp( -t/Tau ),\
-    and the truncation length is then taken as truncfac*Tau. The default is 30.\
+    and the truncation length is then taken as truncfac*Tau.\
     Alternatively, the truncation length in number of steps may be specified with -trunclen.")
 parser.add_argument("-trunclen", type=float,
                     help="Truncation length in picoseconds.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
 parser.add_argument("-Nsegments", type=int, default=100,
                     help="The number of segments the polarization trajectory is broken into in order\
-    to find the standard deviation.\
-    Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
-parser.add_argument("-np", "--noplots",
+    to find the standard deviation.")
+parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
-parser.add_argument("-pf", "--plotformat", default="pdf",
-                    help="Choose the format of generated plots.")
+parser.add_argument("-plotformat", default="pdf",
+                    help="Allows the user to choose the format of generated plots.")
 parser.add_argument("-nobin",
-                    help="Do not bin data.\
-    Data is by default binned logarithmically.\
-    This helps to reduce noise, particularly in the high-frequency domain.", action="store_true")
+                    help="Prevents the data from being binned for graphing.\
+    The data are by default binned logarithmically. This helps to reduce noise, particularly in\
+    the high-frequency domain, and also prevents plots from being massive files."
+    , action="store_true")
 
 # ======== DEFINITIONS ========
 # =============================
@@ -124,7 +135,7 @@ def main(firstarg=2, DEBUG=False):
 
         # Parameters for when data needs to be thinned for plotting
 
-        Npp = 100 # Max number of points for all plots
+        Npp = 100 # Max number of points for susc plots
         Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp 
 
 
@@ -451,7 +462,7 @@ def main(firstarg=2, DEBUG=False):
 
         plt.savefig(args.output + 'susc_log.'+args.plotformat, format=args.plotformat)
 
-        print('Plots generated -- finished :)')
+        print('Susceptibility plots generated -- finished :)')
 
     print('\n\n')
 
