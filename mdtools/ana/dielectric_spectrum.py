@@ -74,10 +74,9 @@ def TimeDerivative5PS(v, dt): # Numerical 5-point stencil time derivative
 
     return dvdt
 
-# Averages array values in bins for easier plotting
-# Note: "bins" array should contain the INDEX (integer) where a bin begins
 
-def Bin(a, bins):
+def Bin(a, bins):   # Averages array values in bins for easier plotting
+    # note: "bins" array should contain the INDEX (integer) where that bin begins
 
     if np.iscomplex(a).any():
         avg = np.zeros(len(bins), dtype=complex) # average of data
@@ -95,9 +94,9 @@ def Bin(a, bins):
 
     return avg / count
 
-# Single exponential for fitting:
 
-def single_exp(x, A, D):
+def single_exp(x, A, D): # Single exponential for fitting:
+
     return np.absolute(A) * np.exp(-x / D)
 
 # ========== MAIN ============
@@ -112,8 +111,22 @@ def main(firstarg=2, DEBUG=False):
 
     print('====== DIELECTRIC SPECTRUM CALCULATOR ======')
 
-    if not args.noplots:
+    if not args.noplots: # if plots are to be created
+
         import matplotlib.pyplot as plt
+
+        # Colors/alpha values for plotting
+        col1 = 'royalblue'
+        col2 = 'crimson'
+        col3 = 'grey'
+        curve = 0.9
+        shade = 0.1
+
+        # Parameters for when data needs to be thinned for plotting
+
+        Npp = 100 # Max number of points for all plots
+        Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp 
+
 
     # == POLARIZATION/AUTOCORR ===
     # ============================
@@ -135,11 +148,14 @@ def main(firstarg=2, DEBUG=False):
 
     if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
 
-        P = np.zeros((Nframes , 3))
         print('Polarization file not found: calculating polarization trajectory and average volume')
+
+        P = np.zeros((Nframes , 3))
         V = np.zeros(1)
+
         print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
+
         for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
             # Calculations done in every frame
@@ -157,8 +173,10 @@ def main(firstarg=2, DEBUG=False):
     elif not os.path.isfile(args.output+'V.txt'):
 
         print('Polarization file found: loading polarization and calculating average volume')
+
         P = np.load(args.output+'P_tseries.npy')
         V = np.zeros(1)
+
         print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
 
@@ -184,22 +202,10 @@ def main(firstarg=2, DEBUG=False):
 
     print('Calculating the autocorrelation... ', end='')
     P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
-    print('Done')
+    print('Done!')
 
     # ======== TRUNCATION ========
     # ============================
-
-    # Colors for plotting
-    col1 = 'royalblue'
-    col2 = 'red'
-    col3 = 'grey'
-
-    # Parameters for when data needs to be thinned for plotting
-
-    Npp = 100 # Max number of points for all plots
-    Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp 
-
-    # Define the truncation length:
 
     print('Finding the truncation length for the autocorrelation...')
     if args.trunclen == None:
@@ -236,9 +242,9 @@ def main(firstarg=2, DEBUG=False):
             if plotlen > len(P_P):
                 plotlen = args.trunclen
 
-            sk = 1
-            if plotlen > Npp: # thin data so .pdf plot files aren't massive
-                sk = plotlen // Npp + 1
+            sk = 1 # how many data points to skip when plotting
+            if plotlen > 2*Npp:
+                sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
 
             plt.figure(figsize=(8, 5.657))
 
@@ -248,12 +254,12 @@ def main(firstarg=2, DEBUG=False):
 
             plt.xlim(-0.02 * t[plotlen], t[plotlen])
 
-            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, linestyle='--',
-                        label='truncation length = {0:.4} s'.format(t[args.trunclen]))
-            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, marker='.',
+            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
+                        label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
+            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
                      markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
             plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
-                     linewidth=1, color=col2, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
+                     linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
 
             plt.legend(loc='best')
 
@@ -272,8 +278,8 @@ def main(firstarg=2, DEBUG=False):
 
     # Truncate and pad with zeros:
 
-    t = np.resize(t, 2 * args.trunclen)  # resize
-    P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # resize, pad w zeros
+    t = np.resize(t, 2 * args.trunclen)  # truncate
+    P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # truncate, pad w zeros
 
     # ====== SUSCEPTIBILITY ======
     # ============================
@@ -345,7 +351,9 @@ def main(firstarg=2, DEBUG=False):
     # ============================
 
     if args.noplots:
+
         print('User specified not to generate plots -- finished :)')
+
     else:
 
         print('Calculations complete. Generating plots...')
@@ -365,12 +373,12 @@ def main(firstarg=2, DEBUG=False):
         # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if args.nobin or args.trunclen <= Npp: # neither binning nor thinning
+        if args.nobin or args.trunclen <= Npp: # all data is used
 
             ip = np.arange(len(susc),dtype=int)
             print('Plotting all {0} datapoints'.format(len(ip)))
 
-        else: # data binning
+        else: # data is binned
 
             bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
@@ -387,7 +395,7 @@ def main(firstarg=2, DEBUG=False):
 
         plt.figure(figsize=(8, 5.657))
 
-        plt.title('Complex Dielectric Function (lin-log)')
+        plt.title('Complex Dielectric Function')
         plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
 
@@ -398,12 +406,14 @@ def main(firstarg=2, DEBUG=False):
         plt.xscale('log')
 
         plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=0.1)
+                         dsusc.real[ip], color=col2, alpha=shade)
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
-                         dsusc.imag[ip], color=col1, alpha=0.1)
+                         dsusc.imag[ip], color=col1, alpha=shade)
 
-        plt.plot(nu[ip], susc.real[ip], col2, linewidth=1, label='$\chi^{{\prime}}$')
-        plt.plot(nu[ip], susc.imag[ip], col1, linewidth=1, label='$\chi^{{\prime \prime}}$')
+        plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
+                    linewidth=1, label='$\chi^{{\prime}}$')
+        plt.plot(nu[ip], susc.imag[ip], col1, alpha=curve,
+                    linewidth=1, label='$\chi^{{\prime \prime}}$')
 
         plt.legend(loc='best')
 
@@ -415,7 +425,7 @@ def main(firstarg=2, DEBUG=False):
 
         plt.figure(figsize=(8, 5.657))
 
-        plt.title('Complex Dielectric Function (log-log)')
+        plt.title('Complex Dielectric Function')
         plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
 
@@ -428,13 +438,13 @@ def main(firstarg=2, DEBUG=False):
         plt.xscale('log')
 
         plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=0.1)
+                         dsusc.real[ip], color=col2, alpha=shade)
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
-                         dsusc.imag[ip], color=col1, alpha=0.1)
+                         dsusc.imag[ip], color=col1, alpha=shade)
 
-        plt.plot(nu[ip], susc.real[ip], color=col2, linewidth=1,
+        plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
                  label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
-        plt.plot(nu[ip], susc.imag[ip], color=col1, linewidth=1,
+        plt.plot(nu[ip], susc.imag[ip], color=col1, alpha=curve, linewidth=1,
                  label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
 
         plt.legend(loc='best')
