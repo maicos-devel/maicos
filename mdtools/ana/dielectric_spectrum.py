@@ -356,24 +356,16 @@ def main(firstarg=2, DEBUG=False):
         nuL = nu[1]  # lower x benchmark
         nuBuf = 1.4  # buffer factor for extra room in the x direction
 
-        # max value of data
-        suscReMax = np.max(susc.real)
+        suscReMax = np.max(susc.real) 
         suscImMax = np.max(susc.imag)
-        suscMax = np.ceil(np.max([suscReMax, suscImMax]))
+        suscMax = np.ceil(np.max([suscReMax, suscImMax])) # max value of data
         suscL = np.min([susc.real[-1], susc.imag[1]]) / 2  # lower y benchmark
         suscBuf = 1.2  # buffer factor for extra room in the x direction
 
-        # Thin or bin data if there are too many points:
+        # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if len(susc) > Npp and args.nobin: # data thinning
-
-            ip = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
-            ip = np.unique(np.append(np.arange(Lpp,dtype=int), ip))
-            print('Too many datapoints: plotting above datapoint {0} with log spacing'.format(Lpp))
-            print('Plotting {0} datapoints'.format(len(ip)))
-
-        elif args.nobin: # neither binning nor thinning
+        if args.nobin or args.trunclen <= Npp: # neither binning nor thinning
 
             ip = np.arange(len(susc),dtype=int)
             print('Plotting all {0} datapoints'.format(len(ip)))
