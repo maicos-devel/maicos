@@ -35,8 +35,8 @@ parser.add_argument('-dr', dest='binwidth', type=float,
                     default=1, help='binwidth (nm).')
 parser.add_argument('-l', dest='length', type=float,
                     default=None, help='Length of the cylinder (nm). If None length of box in the binning dimension is taken.')
-parser.add_argument('-dens', dest='density', type=str,
-                    help='Density: mass, number, charge', default='mass')
+parser.add_argument('-dens', dest='density',     type=str,   default='mass',
+                    choices=["mass", "number", "charge", "temp"], help='Density')
 parser.add_argument('-gr', dest='groups', type=str, nargs='+', default=['all'],
                     help='Atoms for which to compute the density profile')
 
@@ -96,10 +96,6 @@ def main(firstarg=2, DEBUG=False):
 
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)
-
-    if args.density not in ["mass", "number", "charge", "temp"]:
-        parser.error(
-            'Unknown density type {}. Valid are mass, number, charge, temp'.format(args.density))
 
     print (
         'Computing radial {} density profile along {}-axes.'.format(args.density, 'XYZ'[args.dim]))

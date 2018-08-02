@@ -33,12 +33,12 @@ parser.description = """This script, given molecular dynamics trajectory data, s
     *Calculate system polarization, P, at each timeframe.
     *Take the time autocorrelation, <PP>, via FFT.
     *Find a suitable truncation length for <PP> (or "cutoff") via an exponential fit.
-    *Truncate <PP>. 
-    *Take the time derivative using a 5 point stencil numerical derivative function. 
+    *Truncate <PP>.
+    *Take the time derivative using a 5 point stencil numerical derivative function.
     *Take the positive-domain FT giving the complex dielectric susceptibility...
     By default, the polarization trajectory and the average system volume are saved in the
     working directory, and the data are reloaded from these files if they are present.
-    A plot of the truncation-length fit as well as lin-log and log-log plots of the susceptibility 
+    A plot of the truncation-length fit as well as lin-log and log-log plots of the susceptibility
     are also produced by default."""
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
@@ -57,7 +57,7 @@ parser.add_argument("-Nsegments", type=int, default=100,
     to find the standard deviation.")
 parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
-parser.add_argument("-plotformat", default="pdf",
+parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
                     help="Allows the user to choose the format of generated plots.")
 parser.add_argument("-nobin",
                     help="Prevents the data from being binned for graphing.\
@@ -136,7 +136,7 @@ def main(firstarg=2, DEBUG=False):
         # Parameters for when data needs to be thinned for plotting
 
         Npp = 100 # Max number of points for susc plots
-        Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp 
+        Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp
 
 
     # == POLARIZATION/AUTOCORR ===

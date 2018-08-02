@@ -38,7 +38,7 @@ parser.add_argument('-com', dest='com', action='store_const',
                     const=True, default=False,
                     help='shift system such that the water COM is centered')
 parser.add_argument('-bin', dest='binmethod', type=str,
-                    default='COM',
+                    default='COM', choices=["COM", "COC", "OXY"],
                     help='binning method: center of Mass (COM), center of charge (COC) or oxygen position (OXY)')
 
 
@@ -142,8 +142,6 @@ def main(firstarg=2, DEBUG=False):
         elif args.binmethod == 'OXY':
             bins = ((sol.atoms.positions[::3, args.dim] %
                      ts.dimensions[args.dim]) / dz_frame).astype(int)
-        else:
-            raise ValueError('Unknown binning method: %s' % args.binmethod)
 
         bincount = np.bincount(bins, minlength=args.nbins)
 
