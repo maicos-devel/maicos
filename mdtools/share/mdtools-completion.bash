@@ -99,7 +99,10 @@ _mdtools_completion()
         -o|-muo)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-d|-dz|-temp|-zpos|-dens|-gr)
+        -dens)
+        COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-d|-dz|-temp|-zpos|-gr)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -118,7 +121,10 @@ _mdtools_completion()
         -o|-muo)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-o|—dout|-center|-r|-dr|-l|-dens|-gr)
+        -dens)
+        COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-o|—dout|-center|-r|-dr|-l|-gr)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -136,12 +142,15 @@ _mdtools_completion()
       -o)
       COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
       return 0 ;;
-      -b|-e|-dt|-box|-temp|-o|-truncfac|-trunclen|-Nsegments|-np)
+      -plotformat)
+      COMPREPLY=( $( compgen -W "png pdf ps eps svg" -- ${cur_word}) )
+      return 0 ;;
+      -b|-e|-dt|-box|-temp|-o|-truncfac|-trunclen|-Nsegments|-noplots|-nobin)
       COMPREPLY=( )
       return 0 ;;
     esac
     COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -temp -truncfac\
-                              -trunclen -Nsegments -np" -- ${cur_word} ) )
+                              -trunclen -Nsegments -plotformat -nobin" -- ${cur_word} ) )
     return 0 ;;
 
     diporder)

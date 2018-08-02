@@ -36,7 +36,7 @@ parser.add_argument('-temp', dest='temperature', type=float, default=300,
 parser.add_argument('-zpos', dest='zpos',        type=float, default=None,
                     help='position at which the chemical potential will be computed. By default average over box.')
 parser.add_argument('-dens', dest='density',     type=str,   default='mass',
-                    help='Density: mass, number, charge, temp')
+                    choices=["mass", "number", "charge", "temp"], help='Density')
 parser.add_argument('-gr',  dest='groups',      type=str,   default=[
                     'all'], nargs='+',      help='Atoms for which to compute the density profile', )
 
@@ -88,7 +88,9 @@ def output(density_mean, density_mean_sq, av_box_length):
         this = (args.zpos / (av_box_length / args.frame)
                 * args.nbins).astype(int)
         np.savetxt(args.muout + '.dat',
-                   np.hstack((mu(dens_mean[this]), dmu(dens_mean[this], dens_err[this])))[None])
+                   np.hstack((mu(dens_mean[this], args.temperature),
+                              dmu(dens_mean[this], dens_err[this], args.temperature)))[None])
+
     else:
         np.savetxt(args.muout + '.dat',
                    np.array((np.mean(mu(dens_mean, args.temperature)),
@@ -140,10 +142,6 @@ def main(firstarg=2, DEBUG=False):
 
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)
-
-    if args.density not in ["mass", "number", "charge", "temp"]:
-        parser.error(
-            'Unknown density type {}. Valid are mass, number, charge, temp'.format(args.density))
 
     if args.density == 'temp':
         print(
