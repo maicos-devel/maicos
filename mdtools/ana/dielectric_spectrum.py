@@ -120,7 +120,7 @@ def main(firstarg=2, DEBUG=False):
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
 
-    print('====== DIELECTRIC SPECTRUM CALCULATOR ======')
+    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======')
 
     if not args.noplots: # if plots are to be created
 
@@ -369,18 +369,6 @@ def main(firstarg=2, DEBUG=False):
 
         print('Calculations complete. Generating plots...')
 
-        # Extraction of values useful for plotting:
-
-        nuPeak = nu[np.argmax(susc.imag)]  # frequency at peak
-        nuL = nu[1]  # lower x benchmark
-        nuBuf = 1.4  # buffer factor for extra room in the x direction
-
-        suscReMax = np.max(susc.real) 
-        suscImMax = np.max(susc.imag)
-        suscMax = np.ceil(np.max([suscReMax, suscImMax])) # max value of data
-        suscL = np.min([susc.real[-1], susc.imag[1]]) / 2  # lower y benchmark
-        suscBuf = 1.2  # buffer factor for extra room in the x direction
-
         # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
@@ -401,6 +389,18 @@ def main(firstarg=2, DEBUG=False):
             ip = np.arange(len(susc),dtype=int)
             print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
             print('Plotting {0} datapoints'.format(len(ip)))
+
+        # Extraction of values useful for plotting:
+
+        nuPeak = nu[np.argmax(susc.imag)]  # frequency at peak
+        nuL = nu[1]  # lower x benchmark
+        nuBuf = 1.4  # buffer factor for extra room in the x direction
+
+        suscReMax = np.max(susc.real) 
+        suscImMax = np.max(susc.imag)
+        suscMax = np.ceil(np.max([suscReMax, suscImMax])) # max value of data
+        suscL = np.min([susc.real[-1], susc.imag[1], susc.imag[-1]])  # lower y benchmark
+        suscBuf = 1.2  # buffer factor for extra room in the x direction
 
         # Plot lin-log:
 
@@ -432,7 +432,7 @@ def main(firstarg=2, DEBUG=False):
 
         plt.close()
 
-        # Plot log-log
+        # Plot log-log:
 
         plt.figure(figsize=(8, 5.657))
 
