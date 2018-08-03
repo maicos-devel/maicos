@@ -154,7 +154,6 @@ def main(firstarg=2, DEBUG=False):
 
     args.frame = 0
     t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
-
     t_0 = time.clock()
 
     if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
@@ -289,7 +288,9 @@ def main(firstarg=2, DEBUG=False):
 
     # Truncate and pad with zeros:
 
-    t = np.resize(t, 2 * args.trunclen)  # truncate
+    if not len(t) >= 2 * args.trunclen: # t too short to simply truncate
+        t = np.append(t, t+t[-1]+dt)
+    t = np.resize(t, 2 * args.trunclen)  # truncate   
     P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # truncate, pad w zeros
 
     # ====== SUSCEPTIBILITY ======
