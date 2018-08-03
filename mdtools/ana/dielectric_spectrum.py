@@ -302,7 +302,9 @@ def main(firstarg=2, DEBUG=False):
 
     t0 = time.clock()
 
-    nu, susc = FT(t, TimeDerivative5PS(P_P, dt))
+    P_P_tderiv = TimeDerivative5PS(P_P, dt) # TODO add 2nd method: multiplying by -i*omega
+
+    nu, susc = FT(t, P_P_tderiv)
 
 
     # Find the variance/std deviation of the susceptibility:
