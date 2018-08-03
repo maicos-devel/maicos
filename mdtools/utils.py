@@ -219,7 +219,7 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
 
     if b is None:
         for i in range(0, len(a[0,:])):
-            corr[:] += Correlation(a[:,i], a[:,i], subtract_mean)
+            corr[:] += Correlation(a[:,i], None, subtract_mean)
     else:
         for i in range(0, len(a[0,:])):
             corr[:] += Correlation(a[:,i], b[:,i], subtract_mean)
