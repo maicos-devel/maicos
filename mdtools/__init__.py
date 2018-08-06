@@ -17,7 +17,7 @@ def initilize_parser(add_traj_arguments=False):
     *add_traj_arguments* adds basic trajectory analysis options.
 
     :returns: an argparse object"""
-    print('\nCommand line was: {}\n'.format(' '.join(sys.argv)))
+    print('\nCommand line was: mdtools {}\n'.format(' '.join(sys.argv[1:])))
     parser = argparse.ArgumentParser(
         prog="mdtools " + sys.argv[1],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
