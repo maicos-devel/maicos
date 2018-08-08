@@ -334,10 +334,10 @@ def main(firstarg=2, DEBUG=False):
     output(V, Lz, A, m_par, mM_par, mm_par, cmM_par, cM_par, M_par,
            m_perp, mM_perp, mm_perp, cmM_perp, cM_perp, M_perp, M_perp_2)
 
-   if DEBUG:
-       # Inject local variables into global namespace for debugging.
-       for key, value in locals().items():
-           globals()[key] = value
+    if DEBUG:
+        # Inject local variables into global namespace for debugging.
+        for key, value in locals().items():
+            globals()[key] = value
 
 if __name__ == "__main__":
     main(firstarg=1)
