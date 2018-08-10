@@ -17,7 +17,9 @@ import time
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
-from ..utils import repairMolecules, FT, ScalarProdCorr
+from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
+
+# TODO method 2: use Kramers Kronig via FFT to get chi prime
 
 # ========== PARSER ===========
 # =============================
@@ -29,17 +31,15 @@ parser = initilize_parser(add_traj_arguments=True)
 parser.description = """This script, given molecular dynamics trajectory data, should produce a
     .txt file containing the complex dielectric function as a function of the (linear, not radial -
     i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
-    The following algorithm, based on linear-response theory, is followed:
-    *Calculate system polarization, P, at each timeframe.
-    *Take the time autocorrelation, <PP>, via FFT.
-    *Find a suitable truncation length for <PP> (or "cutoff") via an exponential fit.
-    *Truncate <PP>.
-    *Take the time derivative using a 5 point stencil numerical derivative function.
-    *Take the positive-domain FT giving the complex dielectric susceptibility...
+    The two algorithms are based on linear-response theory, specifically the equation\
+    chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.\
     By default, the polarization trajectory and the average system volume are saved in the
     working directory, and the data are reloaded from these files if they are present.
-    A plot of the truncation-length fit as well as lin-log and log-log plots of the susceptibility
-    are also produced by default."""
+    Lin-log and log-log plots of the susceptibility are also produced by default,\
+    along with a plot of the truncation-length fit if method 1 is used."""
+parser.add_argument("-method", type=int, default=1,
+                    help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
+    and a numerical time derivative. Method 2 uses 1 FFT and multiplys by the frequency.")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
@@ -52,9 +52,12 @@ parser.add_argument("-truncfac", type=float, default=30.0,
 parser.add_argument("-trunclen", type=float,
                     help="Truncation length in picoseconds.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
-parser.add_argument("-Nsegments", type=int, default=100,
-                    help="The number of segments the polarization trajectory is broken into in order\
-    to find the standard deviation.")
+parser.add_argument("-df", type=float,
+                    help="The desired frequency spacing in THz. This determines the minimum\
+    frequency about which there is data. Overrides -segs option.")
+parser.add_argument("-segs", type=int, default=20,
+                    help="Sets the number of segments the trajectory is broken into.\
+    This overrides the -df option.")
 parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
 parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
@@ -115,12 +118,12 @@ def single_exp(x, A, D): # Single exponential for fitting:
 
 def main(firstarg=2, DEBUG=False):
 
+    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======')
+
     global args
 
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
-
-    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======')
 
     if not args.noplots: # if plots are to be created
 
@@ -135,25 +138,34 @@ def main(firstarg=2, DEBUG=False):
 
         # Parameters for when data needs to be thinned for plotting
 
-        Npp = 100 # Max number of points for susc plots
+        Npp = 200 # Max number of points for susc plots
         Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp
 
 
-    # == POLARIZATION/AUTOCORR ===
+    # ====== INITIALIZATION ======
     # ============================
 
     # the MDAnalysis universe given by the user for analysis
     u = initilize_universe(args)
 
-    dt = args.dt * args.skipframes
-
+    dt = args.dt*args.skipframes
     Nframes = (args.endframe - args.beginframe) // args.skipframes
+
+    # Find a suitable number of segments:
+    if not args.df == None:
+        args.segs = np.max([int(Nframes*dt*args.df), 2])
+
+    seglen = int(Nframes / args.segs)
 
     if len(args.output) > 0:
         args.output += "_"
 
     args.frame = 0
-    t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
+    t = (np.arange(args.beginframe, args.endframe) - args.beginframe)*dt
+
+    # ======= POLARIZATION =======
+    # ============================
+
     t_0 = time.clock()
 
     if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
@@ -183,10 +195,8 @@ def main(firstarg=2, DEBUG=False):
     elif not os.path.isfile(args.output+'V.txt'):
 
         print('Polarization file found: loading polarization and calculating average volume')
-
         P = np.load(args.output+'P_tseries.npy')
         V = np.zeros(1)
-
         print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
 
@@ -207,133 +217,159 @@ def main(firstarg=2, DEBUG=False):
         V = np.loadtxt(args.output+'V.txt')
 
     t_1 = time.clock()
-
     print("\nTook {:.2f} s".format(t_1 - t_0))
+    t_0 = time.clock()
 
-    print('Calculating the autocorrelation... ', end='')
-    P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
-    print('Done!')
-
-    # ======== TRUNCATION ========
+    # ========= METHOD 1 =========
     # ============================
 
-    print('Finding the truncation length for the autocorrelation...')
-    if args.trunclen == None:
+    if args.method == 1:
 
-        p_opt, p_cov = scipy.optimize.curve_fit(
-            single_exp, t, P_P, p0=(1, 1))  # fit whole dataset
+        # Autocorrelation
 
-        # if necessary, cut off data and fit again
-        if 2 * args.truncfac * p_opt[1] < len(P_P):
-            # cutoff index for 2. fit
-            im = np.absolute(t - 2 * args.truncfac * p_opt[1]).argmin()
+        print('Calculating the autocorrelation... ', end='')
+        P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
+        print('Done!')
+
+        # Truncation:
+
+        print('Finding the truncation length for the autocorrelation...')
+        if args.trunclen == None:
+
             p_opt, p_cov = scipy.optimize.curve_fit(
-                single_exp, t[:im], P_P[:im], p0=p_opt)
+                single_exp, t, P_P, p0=(1, 1))  # fit whole dataset
 
-        # if necessary, cut off data and fit again
-        if args.truncfac * p_opt[1] < len(P_P):
-            # cutoff index for 2. fit
-            im = np.absolute(t - args.truncfac * p_opt[1]).argmin()
-            p_opt, p_cov = scipy.optimize.curve_fit(
-                single_exp, t[:im], P_P[:im], p0=p_opt)
+            # if necessary, cut off data and fit again
+            if 2 * args.truncfac * p_opt[1] < len(P_P):
+                # cutoff index for 2. fit
+                im = np.absolute(t - 2 * args.truncfac * p_opt[1]).argmin()
+                p_opt, p_cov = scipy.optimize.curve_fit(
+                    single_exp, t[:im], P_P[:im], p0=p_opt)
 
-        # step where data is cut off
-        args.trunclen = np.absolute(t - args.truncfac * p_opt[1]).argmin()
+            # if necessary, cut off data and fit again
+            if args.truncfac * p_opt[1] < len(P_P):
+                # cutoff index for 2. fit
+                im = np.absolute(t - args.truncfac * p_opt[1]).argmin()
+                p_opt, p_cov = scipy.optimize.curve_fit(
+                    single_exp, t[:im], P_P[:im], p0=p_opt)
 
-        # Plot the trunclen fit:
+            # step where data is cut off
+            args.trunclen = np.absolute(t - args.truncfac * p_opt[1]).argmin()
 
-        if not args.noplots:
+            # Plot the trunclen fit:
 
-            plotlen = 2 * args.trunclen
+            if not args.noplots:
 
-            if plotlen > len(P_P):
-                plotlen = int(1.1 * args.trunclen)
+                plotlen = 2 * args.trunclen
 
-            if plotlen > len(P_P):
-                plotlen = args.trunclen
+                if plotlen > len(P_P):
+                    plotlen = int(1.1 * args.trunclen)
 
-            sk = 1 # how many data points to skip when plotting
-            if plotlen > 2*Npp:
-                sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
+                if plotlen > len(P_P):
+                    plotlen = args.trunclen
 
-            plt.figure(figsize=(8, 5.657))
+                sk = 1 # how many data points to skip when plotting
+                if plotlen > 2*Npp:
+                    sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
 
-            plt.title('Exponential Fit to Determine Truncation Length')
-            plt.ylabel('$<P(0)$ $P(t)>$')
-            plt.xlabel('t [ps]')
+                plt.figure(figsize=(8, 5.657))
 
-            plt.xlim(-0.02 * t[plotlen], t[plotlen])
+                plt.title('Exponential Fit to Determine Truncation Length')
+                plt.ylabel('$<P(0)$ $P(t)>$')
+                plt.xlabel('t [ps]')
 
-            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
-                        label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
-            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
-                     markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
-            plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
-                     linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
+                plt.xlim(-0.02 * t[plotlen], t[plotlen])
 
-            plt.legend(loc='best')
+                plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
+                            label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
+                plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
+                         markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
+                plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
+                         linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
 
-            plt.savefig(args.output+'P_autocorr_trunc_fit.'+args.plotformat, format=args.plotformat)
-            plt.close()
+                plt.legend(loc='best')
 
-        print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
-            args.trunclen, args.trunclen * dt))
+                plt.savefig(args.output+'P_autocorr_trunc_fit.'+args.plotformat, format=args.plotformat)
+                plt.close()
 
-    else:
-        # convert from picoseconds into the frame index
-        args.trunclen = int(args.trunclen / dt)
-        print('Truncation length set manually to {0} steps, i.e. {1:.3} ps'.format(
-            args.trunclen, args.trunclen * dt))
+            print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
+                args.trunclen, t[args.trunclen]))
 
+        else: # args.trunclen specified by user
+            # convert from picoseconds into the frame index
+            args.trunclen = int(args.trunclen / dt)
+            print('Truncation length set manually to {0} steps, i.e. {1:.3} ps'.format(
+                args.trunclen, args.trunclen * dt))
 
-    # Truncate and pad with zeros:
+        # Truncate and pad with zeros:
 
-    if not len(t) >= 2 * args.trunclen: # t too short to simply truncate
-        t = np.append(t, t+t[-1]+dt)
-    t = np.resize(t, 2 * args.trunclen)  # truncate   
-    P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # truncate, pad w zeros
+        if len(t) < 2 * args.trunclen: # if t too short to simply truncate
+            t = np.append(t, t+t[-1]+dt)
 
-    # ====== SUSCEPTIBILITY ======
+        t = np.resize(t, 2 * args.trunclen)  # truncate   
+        P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # truncate, pad w zeros
+
+        # Susceptibility and errors:
+
+        print('Calculating susceptibilty and errors...')
+
+        if args.trunclen > seglen: # if segments too short
+
+            args.segs = int(Nframes / args.trunclen)
+            seglen = int(Nframes / args.segs) # lengthen seglen to >trunclen
+
+        nu, susc = FT(t, TimeDerivative5PS(P_P, dt)) # total susc
+        dsusc = np.zeros(2 * args.trunclen, dtype=complex)
+
+        for s in range(0, args.segs):
+
+            P_P = ScalarProdCorr(P[s*seglen:(s+1)*seglen, :])
+            P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))
+            ss = FT(t, TimeDerivative5PS(P_P, dt), False)
+            dsusc += (ss - susc).real*(ss - susc).real + \
+                1j * (ss - susc).imag*(ss - susc).imag
+
+        dsusc = np.sqrt(dsusc) / args.segs  # convert from variance to std. deviation
+
+    # ========= METHOD 2 =========
     # ============================
 
-    # Calculate susceptibility from entire autocorrelation:
+    if args.method == 2:
 
-    print('Calculating susceptibilty and errors...')
+        # Susceptibility and errors:
 
-    t0 = time.clock()
+        print('Calculating susceptibilty and errors...')
 
-    P_P_tderiv = TimeDerivative5PS(P_P, dt) # TODO add 2nd method: multiplying by -i*omega
+        t = t[:2*seglen] # truncate t array (it's automatically longer than 2*seglen)
+        ss = np.zeros((2*seglen, args.segs), dtype=complex) # ss[t:segment]
+        dsusc = np.zeros(2*seglen, dtype=complex)
 
-    nu, susc = FT(t, P_P_tderiv)
+        nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0] # get freqs
 
+        for s in range(0, args.segs):
+            for i in range(0, len(P[0,:])):
+                FP = FT(t, np.append(P[s*seglen:(s+1)*seglen, i], np.zeros(seglen)), False)
+                ss[:,s] += FP.real*FP.real + FP.imag*FP.imag
+            ss[:,s] *= nu*1j / (2*seglen*dt) # 2 b/c it's the full FT, not only the pos domain
 
-    # Find the variance/std deviation of the susceptibility:
+        susc = np.mean(ss, axis=1) # susc[t]
 
-    seglen = int(Nframes / float(args.Nsegments))  # length of segments
+        for s in range(0, args.segs):
+            dsusc += (ss[:,s] - susc).real*(ss[:,s] - susc).real + \
+                1j * (ss[:,s] - susc).imag*(ss[:,s] - susc).imag
 
-    if args.trunclen > seglen:
-        args.Nsegments = int(Nframes / float(args.trunclen))
-        seglen = int(Nframes / float(args.Nsegments))
+        dsusc = np.sqrt(dsusc) / args.segs  # convert from variance to std. deviation
+        args.trunclen = seglen
 
-    print('Number of segments to be used in error:\t{0}'.format(args.Nsegments))
+    t_1 = time.clock()
 
-    # std deviation of susceptibility
-    dsusc = np.zeros(2 * args.trunclen, dtype=complex)
+    print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
+    print('Number of segments:\t{0}'.format(args.segs))
+    print('Length of segments:\t{0} frames, {1:.0f} ps'.format(seglen, seglen*dt))
+    print('Frequency spacing: \t~ {0:.5f} THz'.format(args.segs/(Nframes*dt)))
 
-    for seg in range(0, args.Nsegments):
-        P_P = ScalarProdCorr(P[seg * seglen:(seg + 1) * seglen, :])
-        P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))
-        ss = FT(t, TimeDerivative5PS(P_P, dt), False)
-        dsusc += (ss - susc).real * (ss - susc).real + \
-            1j * (ss - susc).imag * (ss - susc).imag
-
-    dsusc = np.sqrt(dsusc) / args.Nsegments  # convert from variance to std. deviation
-
-    t1 = time.clock()
-
-    print(
-        'Susceptibility and associated errors calculated - took {0:.3} s'.format(t1 - t0))
-
+    # == MANIPULATE / SAVE DATA ==
+    # ============================
 
     # Discard negative-frequency data; contains the same information as positive regime:
 
@@ -354,10 +390,17 @@ def main(firstarg=2, DEBUG=False):
 
     suscfilename = args.output+'susc.txt'
 
-    np.savetxt(suscfilename,
+    if args.method == 1:
+        np.savetxt(suscfilename,
                np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
                delimiter='\t',
                header='freq\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
+
+    if args.method == 2: # TODO get real part with KK rels
+        np.savetxt(suscfilename,
+               np.transpose([nu, susc.imag, dsusc.imag]),
+               delimiter='\t',
+               header='freq\tsusc\'\'\tstd_dev_susc\'\'')
 
     print('Susceptibility data saved as ' + suscfilename)
 
@@ -365,7 +408,6 @@ def main(firstarg=2, DEBUG=False):
     # ============================
 
     if args.noplots:
-
         print('User specified not to generate plots -- finished :)')
 
     else:
@@ -386,7 +428,8 @@ def main(firstarg=2, DEBUG=False):
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
             susc = Bin(susc, bins)
-            dsusc = Bin(dsusc, bins)
+            if args.method == 1:
+                dsusc = Bin(dsusc, bins)
             nu = Bin(nu, bins)
 
             ip = np.arange(len(susc),dtype=int)
@@ -402,15 +445,22 @@ def main(firstarg=2, DEBUG=False):
         suscReMax = np.max(susc.real) 
         suscImMax = np.max(susc.imag)
         suscMax = np.ceil(np.max([suscReMax, suscImMax])) # max value of data
-        suscL = np.min([susc.real[-1], susc.imag[1], susc.imag[-1]])  # lower y benchmark
+        endpoints = np.array([susc.real[1], susc.real[-1], susc.imag[1], susc.imag[-1]])
+        suscL = np.min( endpoints.ravel()[np.flatnonzero(endpoints)] )  # lower y benchmark
         suscBuf = 1.2  # buffer factor for extra room in the x direction
 
         # Plot lin-log:
 
         plt.figure(figsize=(8, 5.657))
 
-        plt.title('Complex Dielectric Function')
-        plt.ylabel('$\chi$')
+        if args.method == 1:
+            plt.title('Complex Dielectric Function')
+            plt.ylabel('$\chi$')
+
+        if args.method == 2:
+            plt.title('Complex Dielectric Function - Imaginary Component')
+            plt.ylabel('$\chi^{{\prime \prime}}$')
+
         plt.xlabel('$\\nu$ [THz]')
 
         plt.grid()
@@ -419,17 +469,22 @@ def main(firstarg=2, DEBUG=False):
 
         plt.xscale('log')
 
-        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=shade)
+        if args.method == 1:
+            plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                             dsusc.real[ip], color=col2, alpha=shade)
+
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
                          dsusc.imag[ip], color=col1, alpha=shade)
 
-        plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
-                    linewidth=1, label='$\chi^{{\prime}}$')
+        if args.method == 1:
+            plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
+                        linewidth=1, label='$\chi^{{\prime}}$')
+
         plt.plot(nu[ip], susc.imag[ip], col1, alpha=curve,
                     linewidth=1, label='$\chi^{{\prime \prime}}$')
 
-        plt.legend(loc='best')
+        if args.method == 1:
+            plt.legend(loc='best')
 
         plt.savefig(args.output + 'susc_linlog.'+args.plotformat, format=args.plotformat)
 
@@ -439,8 +494,14 @@ def main(firstarg=2, DEBUG=False):
 
         plt.figure(figsize=(8, 5.657))
 
-        plt.title('Complex Dielectric Function')
-        plt.ylabel('$\chi$')
+        if args.method == 1:
+            plt.title('Complex Dielectric Function')
+            plt.ylabel('$\chi$')
+
+        if args.method == 2:
+            plt.title('Complex Dielectric Function - Imaginary Component')
+            plt.ylabel('$\chi^{{\prime \prime}}$')
+
         plt.xlabel('$\\nu$ [THz]')
 
         plt.grid()
@@ -451,13 +512,16 @@ def main(firstarg=2, DEBUG=False):
         plt.yscale('log')
         plt.xscale('log')
 
-        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=shade)
+        if args.method == 1:
+            plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                             dsusc.real[ip], color=col2, alpha=shade)
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
                          dsusc.imag[ip], color=col1, alpha=shade)
 
-        plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
-                 label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
+        if args.method == 1:
+            plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
+                     label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
+
         plt.plot(nu[ip], susc.imag[ip], color=col1, alpha=curve, linewidth=1,
                  label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
 
