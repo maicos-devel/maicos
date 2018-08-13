@@ -276,26 +276,22 @@ def main(firstarg=2, DEBUG=False):
                     plotlen = args.trunclen
 
                 sk = 1 # how many data points to skip when plotting
+
                 if plotlen > 2*Npp:
                     sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
 
                 plt.figure(figsize=(8, 5.657))
-
                 plt.title('Exponential Fit to Determine Truncation Length')
                 plt.ylabel('$<P(0)$ $P(t)>$')
                 plt.xlabel('t [ps]')
-
                 plt.xlim(-0.02 * t[plotlen], t[plotlen])
-
                 plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
                             label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
                 plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
                          markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
                 plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
                          linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
-
                 plt.legend(loc='best')
-
                 plt.savefig(args.output+'P_autocorr_trunc_fit.'+args.plotformat, format=args.plotformat)
                 plt.close()
 
@@ -403,7 +399,7 @@ def main(firstarg=2, DEBUG=False):
     np.savetxt(suscfilename,
            np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
            delimiter='\t',
-           header='freq\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
+           header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
 
     print('Susceptibility data saved as ' + suscfilename)
 
