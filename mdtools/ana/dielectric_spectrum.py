@@ -44,6 +44,9 @@ parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
                     default="", help="Prefix for the output files.")
+parser.add_argument("-u", dest="use",
+                    help="Looks for polarization and volume files with this prefix.\
+    By default, the program looks for files with the prefix -o.")
 parser.add_argument("-truncfac", type=float, default=30.0,
                     help="Truncation factor.\
     By default, the autocorrelation of the polarization is fit with A*exp( -t/Tau ),\
@@ -163,6 +166,9 @@ def main(firstarg=2, DEBUG=False):
     if len(args.output) > 0:
         args.output += "_"
 
+    if args.use == None:
+        args.use = args.output
+
     args.frame = 0
     t = (np.arange(args.beginframe, args.endframe) - args.beginframe)*dt
 
@@ -171,7 +177,7 @@ def main(firstarg=2, DEBUG=False):
 
     t_0 = time.clock()
 
-    if not os.path.isfile(args.output+'P_tseries.npy'): # check if polarization is present
+    if not os.path.isfile(args.use+'P_tseries.npy'): # check if polarization is present
 
         print('Polarization file not found: calculating polarization trajectory and average volume')
 
@@ -195,10 +201,10 @@ def main(firstarg=2, DEBUG=False):
         np.save(args.output+'P_tseries.npy', P)
         np.savetxt(args.output+'V.txt', V)
 
-    elif not os.path.isfile(args.output+'V.txt'):
+    elif not os.path.isfile(args.use+'V.txt'):
 
         print('Polarization file found: loading polarization and calculating average volume')
-        P = np.load(args.output+'P_tseries.npy')
+        P = np.load(args.use+'P_tseries.npy')
         V = np.zeros(1)
         print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
             args.frame, round(u.trajectory.time)), end="")
@@ -216,8 +222,8 @@ def main(firstarg=2, DEBUG=False):
     else:
 
         print('Polarization and volume files found: loading both...', end='')
-        P = np.load(args.output+'P_tseries.npy')
-        V = np.loadtxt(args.output+'V.txt')
+        P = np.load(args.use+'P_tseries.npy')
+        V = np.loadtxt(args.use+'V.txt')
 
     t_1 = time.clock()
     print("\nTook {:.2f} s".format(t_1 - t_0))
