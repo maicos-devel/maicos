@@ -19,7 +19,6 @@ from .. import initilize_parser
 
 from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
 
-# TODO method 2: use Kramers Kronig via FFT to get chi prime
 
 # ========== PARSER ===========
 # =============================
@@ -39,7 +38,8 @@ parser.description = """This script, given molecular dynamics trajectory data, s
     along with a plot of the truncation-length fit if method 1 is used."""
 parser.add_argument("-method", type=int, default=1,
                     help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
-    and a numerical time derivative. Method 2 uses 1 FFT and multiplys by the frequency.")
+    and a numerical time derivative. Method 2 uses 1 FFT and multiplys by the frequency,\
+    and uses 2 more FFT's to obtain the real part of the frequency.")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
@@ -62,6 +62,8 @@ parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
 parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
                     help="Allows the user to choose the format of generated plots.")
+parser.add_argument("-ymin", type=float,
+                    help="Manually sets the minimum lower bound for the log-log plot.")
 parser.add_argument("-nobin",
                     help="Prevents the data from being binned for graphing.\
     The data are by default binned logarithmically. This helps to reduce noise, particularly in\
@@ -113,6 +115,7 @@ def single_exp(x, A, D): # Single exponential for fitting:
 
     return np.absolute(A) * np.exp(-x / D)
 
+
 # ========== MAIN ============
 # ============================
 
@@ -138,7 +141,7 @@ def main(firstarg=2, DEBUG=False):
 
         # Parameters for when data needs to be thinned for plotting
 
-        Npp = 200 # Max number of points for susc plots
+        Npp = 100 # Max number of points for susc plots
         Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp
 
 
@@ -222,6 +225,10 @@ def main(firstarg=2, DEBUG=False):
 
     # ========= METHOD 1 =========
     # ============================
+
+    # Prefactor for susceptibility:
+    pref = scipy.constants.e * scipy.constants.e * 1e9 / \
+        (3 * V * scipy.constants.k * args.temperature * scipy.constants.epsilon_0)
 
     if args.method == 1:
 
@@ -329,7 +336,10 @@ def main(firstarg=2, DEBUG=False):
             dsusc += (ss - susc).real*(ss - susc).real + \
                 1j * (ss - susc).imag*(ss - susc).imag
 
-        dsusc = np.sqrt(dsusc) / args.segs  # convert from variance to std. deviation
+        dsusc = np.sqrt(dsusc)*pref / args.segs  # convert from variance to std. deviation
+
+        susc *= -pref
+        susc.imag *= -1  # we want -1 * Im susc (sometimes denoted as Chi'')
 
     # ========= METHOD 2 =========
     # ============================
@@ -345,12 +355,19 @@ def main(firstarg=2, DEBUG=False):
         dsusc = np.zeros(2*seglen, dtype=complex)
 
         nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0] # get freqs
+        sgnnu = np.sign(nu)
+        sgnnu[sgnnu==0] = 1 # for Kramers Kronig for the real part
 
         for s in range(0, args.segs):
             for i in range(0, len(P[0,:])):
+ 
                 FP = FT(t, np.append(P[s*seglen:(s+1)*seglen, i], np.zeros(seglen)), False)
                 ss[:,s] += FP.real*FP.real + FP.imag*FP.imag
-            ss[:,s] *= nu*1j / (2*seglen*dt) # 2 b/c it's the full FT, not only the pos domain
+
+            ss[:,s] *= nu*1j*pref / (2*seglen*dt) # 2 b/c it's the full FT, not only the pos domain
+
+            # Get the real part by Kramers Kronig:
+            ss[:,s].real = iFT(t, 1j*np.sign(nu)*FT(nu, ss[:,s], False), False).imag
 
         susc = np.mean(ss, axis=1) # susc[t]
 
@@ -377,30 +394,16 @@ def main(firstarg=2, DEBUG=False):
     susc = susc[args.trunclen:]
     dsusc = dsusc[args.trunclen:]
 
-    pref = scipy.constants.e * scipy.constants.e * 1e9 / \
-        (3 * V * scipy.constants.k * args.temperature * scipy.constants.epsilon_0)
-
-    susc *= -pref
-    susc.imag *= -1  # we want -1 * Im susc (sometimes denoted as Chi'')
-
-    dsusc *= pref  # std. deviation of susc is linear in susc
     nu /= 2 * np.pi  # now nu represents f instead of omega
 
     # Save susceptibility in a user-friendly text file:
 
     suscfilename = args.output+'susc.txt'
 
-    if args.method == 1:
-        np.savetxt(suscfilename,
-               np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
-               delimiter='\t',
-               header='freq\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
-
-    if args.method == 2: # TODO get real part with KK rels
-        np.savetxt(suscfilename,
-               np.transpose([nu, susc.imag, dsusc.imag]),
-               delimiter='\t',
-               header='freq\tsusc\'\'\tstd_dev_susc\'\'')
+    np.savetxt(suscfilename,
+           np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
+           delimiter='\t',
+           header='freq\tsusc\'\tstd_dev_susc\'\tsusc\'\'\tstd_dev_susc\'\'')
 
     print('Susceptibility data saved as ' + suscfilename)
 
@@ -436,97 +439,50 @@ def main(firstarg=2, DEBUG=False):
             print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
             print('Plotting {0} datapoints'.format(len(ip)))
 
-        # Extraction of values useful for plotting:
-
-        nuPeak = nu[np.argmax(susc.imag)]  # frequency at peak
-        nuL = nu[1]  # lower x benchmark
         nuBuf = 1.4  # buffer factor for extra room in the x direction
-
-        suscReMax = np.max(susc.real) 
-        suscImMax = np.max(susc.imag)
-        suscMax = np.ceil(np.max([suscReMax, suscImMax])) # max value of data
-        endpoints = np.array([susc.real[1], susc.real[-1], susc.imag[1], susc.imag[-1]])
-        suscL = np.min( endpoints.ravel()[np.flatnonzero(endpoints)] )  # lower y benchmark
-        suscBuf = 1.2  # buffer factor for extra room in the x direction
 
         # Plot lin-log:
 
         plt.figure(figsize=(8, 5.657))
-
-        if args.method == 1:
-            plt.title('Complex Dielectric Function')
-            plt.ylabel('$\chi$')
-
-        if args.method == 2:
-            plt.title('Complex Dielectric Function - Imaginary Component')
-            plt.ylabel('$\chi^{{\prime \prime}}$')
-
+        plt.title('Complex Dielectric Function')
+        plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
-
         plt.grid()
-
-        plt.xlim(nuL / nuBuf, nu[-1] * nuBuf)
-
+        plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
         plt.xscale('log')
-
-        if args.method == 1:
-            plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                             dsusc.real[ip], color=col2, alpha=shade)
-
+        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                         dsusc.real[ip], color=col2, alpha=shade)
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
                          dsusc.imag[ip], color=col1, alpha=shade)
-
-        if args.method == 1:
-            plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
-                        linewidth=1, label='$\chi^{{\prime}}$')
-
+        plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
+                    linewidth=1, label='$\chi^{{\prime}}$')
         plt.plot(nu[ip], susc.imag[ip], col1, alpha=curve,
                     linewidth=1, label='$\chi^{{\prime \prime}}$')
-
-        if args.method == 1:
-            plt.legend(loc='best')
-
+        plt.legend(loc='best')
         plt.savefig(args.output + 'susc_linlog.'+args.plotformat, format=args.plotformat)
-
         plt.close()
 
         # Plot log-log:
 
         plt.figure(figsize=(8, 5.657))
-
-        if args.method == 1:
-            plt.title('Complex Dielectric Function')
-            plt.ylabel('$\chi$')
-
-        if args.method == 2:
-            plt.title('Complex Dielectric Function - Imaginary Component')
-            plt.ylabel('$\chi^{{\prime \prime}}$')
-
+        plt.title('Complex Dielectric Function')
+        plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
-
         plt.grid()
-
-        plt.ylim(suscL / suscBuf, suscMax * suscBuf)
-        plt.xlim(nuL / nuBuf, nu[-1] * nuBuf)
-
+        plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
         plt.yscale('log')
         plt.xscale('log')
-
-        if args.method == 1:
-            plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                             dsusc.real[ip], color=col2, alpha=shade)
+        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
+                         dsusc.real[ip], color=col2, alpha=shade)
         plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
                          dsusc.imag[ip], color=col1, alpha=shade)
-
-        if args.method == 1:
-            plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
-                     label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
-
+        plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
+                 label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
         plt.plot(nu[ip], susc.imag[ip], color=col1, alpha=curve, linewidth=1,
                  label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
-
+        if not args.ymin == None:
+            plt.ylim(ymin=args.ymin)     
         plt.legend(loc='best')
-
         plt.savefig(args.output + 'susc_log.'+args.plotformat, format=args.plotformat)
 
         print('Susceptibility plots generated -- finished :)')
