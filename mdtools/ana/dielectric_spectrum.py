@@ -39,7 +39,7 @@ parser.description = """This script, given molecular dynamics trajectory data, s
 parser.add_argument("-method", type=int, default=1,
                     help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
     and a numerical time derivative. Method 2 uses 1 FFT and multiplys by the frequency,\
-    and uses 2 more FFT's to obtain the real part of the frequency.")
+    and uses 2 more FFT's in Kramers Kronig to obtain the real part of the frequency.")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
