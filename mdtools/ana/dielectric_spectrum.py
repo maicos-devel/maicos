@@ -36,7 +36,7 @@ parser.description = """This script, given molecular dynamics trajectory data, s
     working directory, and the data are reloaded from these files if they are present.
     Lin-log and log-log plots of the susceptibility are also produced by default,\
     along with a plot of the truncation-length fit if method 1 is used."""
-parser.add_argument("-method", type=int, default=1,
+parser.add_argument("-method", type=int, default=1, choices=[1,2],
                     help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
     and a numerical time derivative. Method 2 uses 1 FFT and multiplys by the frequency,\
     and uses 2 more FFT's in Kramers Kronig to obtain the real part of the frequency.")
@@ -308,13 +308,12 @@ def main(firstarg=2, DEBUG=False):
 
         if len(t) < 2 * args.trunclen: # if t too short to simply truncate
             t = np.append(t, t+t[-1]+dt)
-
         t = np.resize(t, 2 * args.trunclen)  # truncate   
         P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(args.trunclen))  # truncate, pad w zeros
 
         # Susceptibility and errors:
 
-        print('Calculating susceptibilty and errors...')
+        print('Calculating susceptibilty and errors via Method 1...')
 
         if args.trunclen > seglen: # if segments too short
 
@@ -332,10 +331,11 @@ def main(firstarg=2, DEBUG=False):
             dsusc += (ss - susc).real*(ss - susc).real + \
                 1j * (ss - susc).imag*(ss - susc).imag
 
-        dsusc = np.sqrt(dsusc)*pref / args.segs  # convert from variance to std. deviation
+        dsusc.real = np.sqrt(dsusc.real)*pref / args.segs  # convert from variance to std. deviation
+        dsusc.imag = np.sqrt(dsusc.imag)*pref / args.segs  # convert from variance to std. deviation
 
-        susc *= -pref
-        susc.imag *= -1  # we want -1 * Im susc (sometimes denoted as Chi'')
+        susc.real *= -pref
+        susc.imag *= pref  # we want -1 * Im susc (sometimes denoted as Chi'')
 
     # ========= METHOD 2 =========
     # ============================
@@ -344,11 +344,11 @@ def main(firstarg=2, DEBUG=False):
 
         # Susceptibility and errors:
 
-        print('Calculating susceptibilty and errors...')
+        print('Calculating susceptibilty and errors\
+            \nUsing method 2 (real part via Kramers Kronig)...')
 
         t = t[:2*seglen] # truncate t array (it's automatically longer than 2*seglen)
         ss = np.zeros((2*seglen, args.segs), dtype=complex) # ss[t:segment]
-        dsusc = np.zeros(2*seglen, dtype=complex)
 
         nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0] # get freqs
 
@@ -365,12 +365,14 @@ def main(firstarg=2, DEBUG=False):
             ss[:,s].real = iFT(t, 1j*np.sign(nu)*FT(nu, ss[:,s], False), False).imag
 
         susc = np.mean(ss, axis=1) # susc[t]
+        dsusc = np.zeros(2*seglen, dtype=complex)
 
         for s in range(0, args.segs):
             dsusc += (ss[:,s] - susc).real*(ss[:,s] - susc).real + \
                 1j * (ss[:,s] - susc).imag*(ss[:,s] - susc).imag
 
-        dsusc = np.sqrt(dsusc) / args.segs  # convert from variance to std. deviation
+        dsusc.real = np.sqrt(dsusc.real) / args.segs
+        dsusc.imag = np.sqrt(dsusc.imag) / args.segs
         args.trunclen = seglen
 
     t_1 = time.clock()
@@ -415,24 +417,20 @@ def main(firstarg=2, DEBUG=False):
         # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if args.nobin or args.trunclen <= Npp: # all data is used
-
-            ip = np.arange(len(susc),dtype=int)
-            print('Plotting all {0} datapoints'.format(len(ip)))
-
-        else: # data is binned
+        if not (args.nobin or args.trunclen <= Npp): # all data is used
 
             bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
             susc = Bin(susc, bins)
-            if args.method == 1:
-                dsusc = Bin(dsusc, bins)
+            dsusc = Bin(dsusc, bins)
             nu = Bin(nu, bins)
 
-            ip = np.arange(len(susc),dtype=int)
             print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
-            print('Plotting {0} datapoints'.format(len(ip)))
+            print('Plotting {0} datapoints'.format(len(susc)))
+
+        else: # data is binned
+            print('Plotting all {0} datapoints'.format(len(susc)))
 
         nuBuf = 1.4  # buffer factor for extra room in the x direction
 
@@ -445,14 +443,12 @@ def main(firstarg=2, DEBUG=False):
         plt.grid()
         plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
         plt.xscale('log')
-        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=shade)
-        plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
-                         dsusc.imag[ip], color=col1, alpha=shade)
-        plt.plot(nu[ip], susc.real[ip], col2, alpha=curve,
-                    linewidth=1, label='$\chi^{{\prime}}$')
-        plt.plot(nu[ip], susc.imag[ip], col1, alpha=curve,
-                    linewidth=1, label='$\chi^{{\prime \prime}}$')
+        plt.fill_between(nu, susc.real - dsusc.real, susc.real + dsusc.real,
+            color=col2, alpha=shade)
+        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag + dsusc.imag,
+            color=col1, alpha=shade)
+        plt.plot(nu, susc.real, color=col2, alpha=curve, linewidth=1, label='$\chi^{{\prime}}$')
+        plt.plot(nu, susc.imag, color=col1, alpha=curve, linewidth=1, label='$\chi^{{\prime \prime}}$')
         plt.legend(loc='best')
         plt.savefig(args.output + 'susc_linlog.'+args.plotformat, format=args.plotformat)
         plt.close()
@@ -467,14 +463,14 @@ def main(firstarg=2, DEBUG=False):
         plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
         plt.yscale('log')
         plt.xscale('log')
-        plt.fill_between(nu[ip], susc.real[ip] - dsusc.real[ip], susc.real[ip] +
-                         dsusc.real[ip], color=col2, alpha=shade)
-        plt.fill_between(nu[ip], susc.imag[ip] - dsusc.imag[ip], susc.imag[ip] +
-                         dsusc.imag[ip], color=col1, alpha=shade)
-        plt.plot(nu[ip], susc.real[ip], color=col2, alpha=curve, linewidth=1,
-                 label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
-        plt.plot(nu[ip], susc.imag[ip], color=col1, alpha=curve, linewidth=1,
-                 label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
+        plt.fill_between(nu, susc.real - dsusc.real, susc.real + dsusc.real,
+            color=col2, alpha=shade)
+        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag + dsusc.imag, 
+            color=col1, alpha=shade)
+        plt.plot(nu, susc.real, color=col2, alpha=curve, linewidth=1,
+             label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
+        plt.plot(nu, susc.imag, color=col1, alpha=curve, linewidth=1,
+             label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
         if not args.ymin == None:
             plt.ylim(ymin=args.ymin)     
         plt.legend(loc='best')
@@ -482,7 +478,7 @@ def main(firstarg=2, DEBUG=False):
 
         print('Susceptibility plots generated -- finished :)')
 
-    print('\n\n')
+    print('\n============================================\n\n')
 
     if DEBUG:
         # Inject local variables into global namespace for debugging.
