@@ -52,12 +52,12 @@ parser.add_argument("-truncfac", type=float, default=30.0,
 parser.add_argument("-trunclen", type=float,
                     help="Truncation length in picoseconds.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
-parser.add_argument("-df", type=float,
-                    help="The desired frequency spacing in THz. This determines the minimum\
-    frequency about which there is data. Overrides -segs option.")
 parser.add_argument("-segs", type=int, default=20,
                     help="Sets the number of segments the trajectory is broken into.\
     This overrides the -df option.")
+parser.add_argument("-df", type=float,
+                    help="The desired frequency spacing in THz. This determines the minimum\
+    frequency about which there is data. Overrides -segs option.")
 parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
 parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
@@ -154,7 +154,7 @@ def main(firstarg=2, DEBUG=False):
     dt = args.dt*args.skipframes
     Nframes = (args.endframe - args.beginframe) // args.skipframes
 
-    # Find a suitable number of segments:
+    # Find a suitable number of segments if it's not specified:
     if not args.df == None:
         args.segs = np.max([int(Nframes*dt*args.df), 2])
 
@@ -223,12 +223,12 @@ def main(firstarg=2, DEBUG=False):
     print("\nTook {:.2f} s".format(t_1 - t_0))
     t_0 = time.clock()
 
-    # ========= METHOD 1 =========
-    # ============================
-
     # Prefactor for susceptibility:
     pref = scipy.constants.e * scipy.constants.e * 1e9 / \
         (3 * V * scipy.constants.k * args.temperature * scipy.constants.epsilon_0)
+
+    # ========= METHOD 1 =========
+    # ============================
 
     if args.method == 1:
 
@@ -351,8 +351,6 @@ def main(firstarg=2, DEBUG=False):
         dsusc = np.zeros(2*seglen, dtype=complex)
 
         nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0] # get freqs
-        sgnnu = np.sign(nu)
-        sgnnu[sgnnu==0] = 1 # for Kramers Kronig for the real part
 
         for s in range(0, args.segs):
             for i in range(0, len(P[0,:])):
@@ -360,7 +358,8 @@ def main(firstarg=2, DEBUG=False):
                 FP = FT(t, np.append(P[s*seglen:(s+1)*seglen, i], np.zeros(seglen)), False)
                 ss[:,s] += FP.real*FP.real + FP.imag*FP.imag
 
-            ss[:,s] *= nu*1j*pref / (2*seglen*dt) # 2 b/c it's the full FT, not only the pos domain
+            ss[:,s] *= nu*1j*pref / (2*seglen*dt)
+            # (1/2 because it's the full FT, not only the pos domain)
 
             # Get the real part by Kramers Kronig:
             ss[:,s].real = iFT(t, 1j*np.sign(nu)*FT(nu, ss[:,s], False), False).imag
@@ -381,7 +380,7 @@ def main(firstarg=2, DEBUG=False):
     print('Length of segments:\t{0} frames, {1:.0f} ps'.format(seglen, seglen*dt))
     print('Frequency spacing: \t~ {0:.5f} THz'.format(args.segs/(Nframes*dt)))
 
-    # == MANIPULATE / SAVE DATA ==
+    # ========= SAVE DATA ========
     # ============================
 
     # Discard negative-frequency data; contains the same information as positive regime:
