@@ -76,8 +76,9 @@ parser.add_argument("-nobin",
 # ======== DEFINITIONS ========
 # =============================
 
-def TimeDerivative5PS(v, dt): # Numerical 5-point stencil time derivative
-    # note: v must be evenly-spaced 1-d array
+def TimeDerivative5PS(v, dt): 
+
+    """Numerical 5-point stencil time derivative. Note: v must be evenly-spaced 1-d array"""
 
     dvdt = np.empty(len(v))
 
@@ -94,8 +95,9 @@ def TimeDerivative5PS(v, dt): # Numerical 5-point stencil time derivative
     return dvdt
 
 
-def Bin(a, bins):   # Averages array values in bins for easier plotting
-    # note: "bins" array should contain the INDEX (integer) where that bin begins
+def Bin(a, bins):
+    """Averages array values in bins for easier plotting. 
+    Note: "bins" array should contain the INDEX (integer) where that bin begins"""
 
     if np.iscomplex(a).any():
         avg = np.zeros(len(bins), dtype=complex) # average of data
@@ -114,7 +116,7 @@ def Bin(a, bins):   # Averages array values in bins for easier plotting
     return avg / count
 
 
-def single_exp(x, A, D): # Single exponential for fitting:
+def single_exp(x, A, D): # Single exponential for fitting
 
     return np.absolute(A) * np.exp(-x / D)
 
@@ -425,7 +427,8 @@ def main(firstarg=2, DEBUG=False):
 
         if not (args.nobin or args.trunclen <= Npp): # all data is used
 
-            bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
+            bins = np.logspace(np.log(Lpp) / np
+.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
             susc = Bin(susc, bins)
