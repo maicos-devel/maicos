@@ -19,6 +19,8 @@ from .. import initilize_parser
 
 from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
 
+# TODO set up script to calc spectrum at intervals while calculating polarization
+# for very big-data trajectories
 
 # ========== PARSER ===========
 # =============================
@@ -56,8 +58,7 @@ parser.add_argument("-trunclen", type=float,
                     help="Truncation length in picoseconds.\
     Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
 parser.add_argument("-segs", type=int, default=20,
-                    help="Sets the number of segments the trajectory is broken into.\
-    This overrides the -df option.")
+                    help="Sets the number of segments the trajectory is broken into.")
 parser.add_argument("-df", type=float,
                     help="The desired frequency spacing in THz. This determines the minimum\
     frequency about which there is data. Overrides -segs option.")
@@ -253,6 +254,7 @@ def main(firstarg=2, DEBUG=False):
         print('Finding the truncation length for the autocorrelation...')
         if args.trunclen == None:
 
+            fit = True
             p_opt, p_cov = scipy.optimize.curve_fit(
                 single_exp, t, P_P, p0=(1, 1))  # fit whole dataset
 
@@ -273,46 +275,48 @@ def main(firstarg=2, DEBUG=False):
             # step where data is cut off
             args.trunclen = np.absolute(t - args.truncfac * p_opt[1]).argmin()
 
-            # Plot the trunclen fit:
-
-            if not args.noplots:
-
-                plotlen = 2 * args.trunclen
-
-                if plotlen > len(P_P):
-                    plotlen = int(1.1 * args.trunclen)
-
-                if plotlen > len(P_P):
-                    plotlen = args.trunclen
-
-                sk = 1 # how many data points to skip when plotting
-
-                if plotlen > 2*Npp:
-                    sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
-
-                plt.figure(figsize=(8, 5.657))
-                plt.title('Exponential Fit to Determine Truncation Length')
-                plt.ylabel('$<P(0)$ $P(t)>$')
-                plt.xlabel('t [ps]')
-                plt.xlim(-0.02 * t[plotlen], t[plotlen])
-                plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
-                            label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
-                plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
-                         markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
-                plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
-                         linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
-                plt.legend(loc='best')
-                plt.savefig(args.output+'P_autocorr_trunc_fit.'+args.plotformat, format=args.plotformat)
-                plt.close()
-
             print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
                 args.trunclen, t[args.trunclen]))
 
         else: # args.trunclen specified by user
-            # convert from picoseconds into the frame index
-            args.trunclen = int(args.trunclen / dt)
+ 
+            fit = False
+            args.trunclen = int(args.trunclen / dt) # convert from picoseconds into the frame index
             print('Truncation length set manually to {0} steps, i.e. {1:.3} ps'.format(
                 args.trunclen, args.trunclen * dt))
+
+        # Plot the autocorrelation and trunclen (with trunclen fit):
+
+        if not args.noplots:
+
+            plotlen = 2 * args.trunclen
+
+            if plotlen > len(P_P):
+                plotlen = int(1.1 * args.trunclen)
+
+            if plotlen > len(P_P):
+                plotlen = args.trunclen
+
+            sk = 1 # how many data points to skip when plotting
+
+            if plotlen > 2*Npp:
+                sk = plotlen // (2*Npp) + 1 # ~2x as many points as for susc figs
+
+            plt.figure(figsize=(8, 5.657))
+            plt.title('Truncation Length Visualization')
+            plt.ylabel('$<P(0)$ $P(t)>$')
+            plt.xlabel('t [ps]')
+            plt.xlim(-0.02 * t[plotlen], t[plotlen])
+            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
+                        label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
+            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
+                     markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
+            if fit:
+                plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
+                         linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
+            plt.legend(loc='best')
+            plt.savefig(args.output+'P_autocorr_trunc.'+args.plotformat, format=args.plotformat)
+            plt.close()
 
         # Truncate and pad with zeros:
 
@@ -429,8 +433,7 @@ def main(firstarg=2, DEBUG=False):
 
         if not (args.nobin or args.trunclen <= Npp): # all data is used
 
-            bins = np.logspace(np.log(Lpp) / np
-.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
+            bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
             susc = Bin(susc, bins)
