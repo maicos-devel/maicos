@@ -170,6 +170,8 @@ def main(firstarg=2, DEBUG=False):
 
     if args.use == None:
         args.use = args.output
+    else:
+        args.use += "_"
 
     args.frame = 0
     t = (np.arange(args.beginframe, args.endframe) - args.beginframe)*dt
