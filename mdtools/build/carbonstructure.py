@@ -197,9 +197,8 @@ def write_carbon_itp(file, nCNTatoms):
         index += 1
 
 def gmxsolvate(radius, length, reservoir, nCatoms, xshift, yshift, scale=0.57):
-
-    subprocess.call("gmx solvate -cp out.gro -cs spc216.gro -o out.gro -scale " +
-                    str(scale), shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+    gromacs.solvate(cp="out.gro", cs="spc216.gro", o="out.gro", 
+                    scale=str(scale), stdout=False, stderr=False)
 
     u = MDAnalysis.Universe('out.gro')
 
@@ -260,6 +259,10 @@ def main(firstarg=2, DEBUG=False):
 
     args = parser.parse_args(args=sys.argv[firstarg:])
 
+    if args.gromacs:
+        global gromacs
+        import gromacs
+    
     print("Bulding C structure...", end=" ")
 
     if args.structure == "hopg":
@@ -447,9 +450,9 @@ def main(firstarg=2, DEBUG=False):
             if args.density != None:
                 scale *= (32.9/args.density)**0.33
 
-            subprocess.call(
-                "gmx solvate -cp out.gro -cs spc216.gro -scale {:.3f} -o out.gro".format(scale),
-                shell=True, stdout=FNULL, stderr=subprocess.STDOUT)
+            gromacs.solvate(cp="out.gro", cs="spc216.gro", o="out.gro", 
+                            scale="{:.3f}".format(scale), 
+                            stdout=False, stderr=False)
             u = MDAnalysis.Universe('out.gro')
             oxygens = u.select_atoms("name OW")
             nSOLresidues = oxygens.n_atoms
