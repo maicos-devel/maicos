@@ -25,12 +25,14 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
+  mdtools_opts+=" free-energy"
   mdtools_opts+=" pertop"
+  mdtools_opts+=" rerun-free-energy"
   mdtools_opts+=" saxs"
   mdtools_opts+=" velocity"
   mdtools_opts+=" --debug --help --version"
 
-  #  Define knowing topology and trajectory formats.
+  #  Define knowing topology, trajectory, structure formats.
   topols='!*@(.txyz|.top|.dms|.gsd|.crd\
           .parm7|.data|.minimal|.xpdb|.xml|.prmtop|.ent|.tpr|.gms|.gro|.pdb|\
           .history|.mmtf|.mol2|.psf|.pdbqt|.pqr|.arc|.config|.xyz)'
@@ -38,6 +40,7 @@ _mdtools_completion()
          .history|.dms|.gms|.gro|.inpcrd|.restrt|.lammps|.data|.mol2|.pdb|\
          .ent|.xpdb|.pdbqt|.pqr|.trj|.mdcrd|.crdbox|.ncdf|.nc|.trr|.trz|.xtc|\
          .xyz|.txyz|.arc|.memory|.mmtf|.gsd|.dummy)'
+  structs='!*@(.gro|.g96|.pdb|.brk|.ent|.esp|.tpr)'
 
   #  Complete the arguments to the module commands.
   case "$module" in
@@ -235,7 +238,31 @@ _mdtools_completion()
                                 -zmax -temp -groups -2d -vac -sym -com -nopbcrepair"\
                                                           -- ${cur_word} ) )
       return 0 ;;
-
+    
+    free-energy)
+      case "${prev_word}" in
+        -f)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.mdp)" -- ${cur_word}) )
+        return 0 ;;
+        -c)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$structs" -- ${cur_word}) )
+        return 0 ;;
+        -n)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.ndx)" -- ${cur_word}) )
+        return 0 ;;
+        -p)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
+        return 0 ;;
+        -sub)   
+        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+        return 0 ;;
+        -sp|-mdrun|-d)
+        COMPREPLY=( )
+        return 0 ;;
+      esac
+      COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -mdrun -d" -- ${cur_word} ) )
+      return 0 ;;
+        
     pertop)
       case "${prev_word}" in
         -p)
@@ -250,7 +277,32 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -p -l -v" -- ${cur_word} ) )
       return 0 ;;
-
+      
+      rerun-free-energy)
+        case "${prev_word}" in
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.mdp)" -- ${cur_word}) )
+          return 0 ;;
+          -c)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$structs" -- ${cur_word}) )
+          return 0 ;;
+          -n)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.ndx)" -- ${cur_word}) )
+          return 0 ;;
+          -p)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
+          return 0 ;;
+          -sub)   
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-q|-nl|-d|-x|-o|-mdrun)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -d -b -e -q -nl\
+                                    -x -o -mdrun" -- ${cur_word} ) )
+        return 0 ;;
+      
       saxs)
         case "${prev_word}" in
           -s)

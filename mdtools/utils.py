@@ -226,3 +226,46 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
             corr[:] += Correlation(a[:,i], b[:,i], subtract_mean)
 
     return corr
+    
+    
+def nlambdas(mdp):
+    """Returns the total number of lambda states of a given MDP dictionary"""
+    for t in "fep", "coul", "vdw", "bonded", "restraint", "mass", "temperature":
+        try:
+            return len(mdp['{}-lambdas'.format(t)])
+        except KeyError:
+            pass
+    return 0
+
+
+def replace(file_path, pattern, subst, new_file_path=None):
+    """Replaces the pattern with subst in the given file by file path
+    and writes it to new_file_path."""
+    with open(file_path, 'r') as f:
+        read_data = f.read()
+    if new_file_path == None:
+        new_file_path = file_path
+    with open(new_file_path, "w") as f:
+        f.write(read_data.replace(str(pattern), str(subst)))
+
+
+def copy_itp(path_to_topfile, new_path="."):
+    """Copy all non standard from the path_to_topfile to new_path."""
+    topdir = os.path.dirname(path_to_topfile)
+    itp_files = [itp for itp in os.listdir(topdir) if ".itp" in itp]
+    for file_name in itp_files:
+        shutil.copy("{}/{}".format(topdir, file_name), new_path)
+
+
+def submit_job(subfile_path, jobname, command):
+    """Appends the commands to the subfile given by subfile_path, sets the jobname and submits the jib using SLURM."""
+    with open(subfile_path) as f:
+        submission_file = f.read()
+
+    submission_file = submission_file.replace('job_name', jobname)
+    submission_file += "{}\n".format(command)
+
+    with open('srun.sh', 'w') as f:
+        f.write(submission_file)
+
+    subprocess.call('sbatch srun.sh', shell=True)
