@@ -3,8 +3,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-# parse command line options
-import argparse
 import sys
 
 import MDAnalysis

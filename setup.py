@@ -4,15 +4,26 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+import subprocess
 
 from setuptools import find_packages, setup
 
 from mdtools.version import __version__
 
+def get_git_revision_hash():
+    try:
+        hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+        return ".g"+hash.decode()[:-2]
+    except:
+        # no git repo
+        return ""
+        
+print(get_git_revision_hash())
+
 if __name__ == "__main__":
     s = setup(name='mdtools',
               packages=find_packages(),
-              version=__version__,
+              version=__version__ + get_git_revision_hash(),
               license='MIT',
               description='A collection of scripts to analyse and build systems '
               'for molecular dynamics simulations.',
@@ -20,8 +31,9 @@ if __name__ == "__main__":
               author_email="ploche@physik.fu-berlin.de",
               package_data={'': ['share/*']},
               include_package_data=True,
-              install_requires=['numpy>=1.10.4', 'numba>=0.38.0',
-                                'MDAnalysis>=0.17.0', 'scipy (>=0.17)'],
+              install_requires=['GromacsWrapper>=0.7', 'MDAnalysis>=0.17.0',
+                                'matplotlib>=2.0.0', 'numba>=0.38.0',
+                                 'numpy>=1.10.4', 'scipy>=0.17'],
               entry_points={
                   'console_scripts': ['mdtools=mdtools.__main__:main', ],
               },
