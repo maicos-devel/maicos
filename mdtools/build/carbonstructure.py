@@ -9,7 +9,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import argparse
 import os
 import shutil
 import subprocess
