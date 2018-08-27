@@ -252,7 +252,7 @@ def main(firstarg=2, DEBUG=False):
     print("\nTook {:.2f} s".format(t_1 - t_0))
 
     Nframes = len(t)
-    dt = (t[-1]-t[0])/Nframes
+    dt = (t[-1]-t[0])/(Nframes-1)
 
     # Find a suitable number of segments if it's not specified:
     if not args.df == None:

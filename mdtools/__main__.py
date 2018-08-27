@@ -16,7 +16,8 @@ apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "density": "ana", "diporder": "ana", "epsilon_bulk": "ana",
         "epsilon_cylinder": "ana", "epsilon_planar": "ana",
         "pertop": "build", "saxs": "ana", "velocity": "ana", 
-        "dielectric_spectrum": "ana", "density_cylinder": "ana",
+        "dielectric_spectrum": "ana", "dielectric_spectrum_molecular": "ana",
+        "density_cylinder": "ana",
         "free-energy": "build", "rerun-free-energy": "build"}
 
 applist = list(apps.keys())

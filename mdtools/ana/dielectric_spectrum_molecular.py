@@ -134,7 +134,7 @@ def main(firstarg=2, DEBUG=False):
     # Either get polarization, volume, and time from a trajectory...
 
     if args.init\
-    or not os.path.isfile(args.use+'PM_tseries.npy')\
+    or not os.path.isdir(args.use+'PM_tseries')\
     or not os.path.isfile(args.use+'tseries.npy')\
     or not os.path.isfile(args.use+'V.txt'):
 
@@ -154,9 +154,9 @@ def main(firstarg=2, DEBUG=False):
 
         t_0 = time.clock()
 
-        if not os.path.isfile(args.use+'PM_tseries.npy'): # check if polarization is present
+        if not os.path.isdir(args.use+'PM_tseries'): # check if polarization is present
 
-            print('Polarization file not found: calculating polarization trajectory and average volume')
+            print('Polarization files not found: calculating polarization trajectory and average volume')
 
             P = np.zeros((Nframes, NM, 3))
             V = np.zeros(1)
@@ -170,19 +170,22 @@ def main(firstarg=2, DEBUG=False):
                 V[0] += ts.volume
                 repairMolecules(u.atoms)
                 for m in u.residues:
-                    P[args.frame, resid, :] = np.dot(u.atoms.charges, u.atoms.positions)
+                    P[args.frame, m.resid, :] = np.dot(u.atoms.charges, u.atoms.positions)
                 args.frame += 1
                 print_frameinfo(ts, args.frame)
 
             P /= 10 # MDA gives units of Angstroms, we use nm
             V[0] *= 1e-3 / float(args.frame) # normalization and unit conversion
-            np.save(args.output+'PM_tseries.npy', P)
+
+            os.mkdir(args.output+'PM_tseries')
+            for m in range(0, NM):
+                np.save(args.output+'PM_tseries/PM_tseries_'+str(m)+'.npy', P[:,m,:])
+
             np.savetxt(args.output+'V.txt', V)
 
         elif not os.path.isfile(args.use+'V.txt'):
 
-            print('Polarization file found: loading polarization and calculating average volume')
-            P = np.load(args.use+'PM_tseries.npy')
+            print('Polarization file found: calculating average volume')
             V = np.zeros(1)
             print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
                 args.frame, round(u.trajectory.time)), end="")
@@ -199,27 +202,28 @@ def main(firstarg=2, DEBUG=False):
 
         else:
 
-            print('Polarization and volume files found: loading both...', end='')
-            P = np.load(args.use+'PM_tseries.npy')
+            print('Polarization and volume files found: loading volume...', end='')
             V = np.loadtxt(args.use+'V.txt')
 
         t_1 = time.clock()
 
+        del P # delete P as it's a very large array and we need the memory
 
-    # Or get polarization, volume, and time from saved files
+    else: # no universe initialization needed, data is loaded from files
 
-    else: # no universe is initialized, data is loaded from files
         print('All data files found - not loading universe...', end='')
         t_0 = time.clock()
-        P = np.load(args.use+'PM_tseries.npy')
         t = np.load(args.use+'tseries.npy')
         V = np.loadtxt(args.use+'V.txt')
+        NM = len(next(os.walk(args.output+'PM_tseries')))
+        print(NM)
         t_1 = time.clock()
 
     print("\nTook {:.2f} s".format(t_1 - t_0))
 
     Nframes = len(t)
-    dt = (t[-1]-t[0])/Nframes
+    dt = (t[-1] - t[0])/(Nframes - 1)
+    t = np.append(t, t + t[-1] + dt) # double the length of t
 
     # Prefactor for susceptibility:
     pref = scipy.constants.e*scipy.constants.e*1e9 / \
@@ -230,14 +234,18 @@ def main(firstarg=2, DEBUG=False):
     print('Calculating susceptibilty and errors\
         \nUsing method 2 (real part via Kramers Kronig)...')
 
+    P = np.load(args.output+'PM_tseries/PM_tseries_0.npy')
+    nu = FT(t, np.append(P[:, 0], np.zeros(Nframes)))[0] # get freqs
+
     ss = np.zeros((2*Nframes, NM), dtype=complex) # ss[t:segment]
 
-    nu = FT(t, np.append(P[:, 0, 0], np.zeros(Nframes)))[0] # get freqs
-
     for m in range(0, NM):
-        for i in range(0, len(P[0,:])):
 
-            FP = FT(t, np.append(P[:, m, i], np.zeros(Nframes)), False)
+        P = np.load(args.output+'PM_tseries/PM_tseries_'+str(m)+'.npy')
+
+        for i in range(0, len(P[0,:])): # loop over x y z
+
+            FP = FT(t, np.append(P[:, i], np.zeros(Nframes)), False)
             ss[:,m] += FP.real*FP.real + FP.imag*FP.imag
 
         ss[:,m] *= nu*1j*pref / (2*t[-1])
@@ -253,8 +261,8 @@ def main(firstarg=2, DEBUG=False):
         dsusc += (ss[:,m] - susc).real*(ss[:,m] - susc).real + \
             1j*(ss[:,m] - susc).imag*(ss[:,m] - susc).imag
 
-    dsusc.real = np.sqrt(dsusc.real) / args.segs
-    dsusc.imag = np.sqrt(dsusc.imag) / args.segs
+    dsusc.real = np.sqrt(dsusc.real) / NM
+    dsusc.imag = np.sqrt(dsusc.imag) / NM
 
     t_1 = time.clock()
 
@@ -329,7 +337,7 @@ def main(firstarg=2, DEBUG=False):
         plt.plot(nu, susc.real, color=col2, alpha=curve, linewidth=1, label='$\chi^{{\prime}}$')
         plt.plot(nu, susc.imag, color=col1, alpha=curve, linewidth=1, label='$\chi^{{\prime \prime}}$')
         plt.legend(loc='best')
-        plt.savefig(args.output + 'susc_linlog.'+args.plotformat, format=args.plotformat)
+        plt.savefig(args.output + 'suscM_linlog.'+args.plotformat, format=args.plotformat)
         plt.close()
 
         # Plot log-log:
@@ -353,7 +361,7 @@ def main(firstarg=2, DEBUG=False):
         if not args.ymin == None:
             plt.ylim(ymin=args.ymin)     
         plt.legend(loc='best')
-        plt.savefig(args.output + 'susc_log.'+args.plotformat, format=args.plotformat)
+        plt.savefig(args.output + 'suscM_log.'+args.plotformat, format=args.plotformat)
 
         print('Susceptibility plots generated -- finished :)')
 
