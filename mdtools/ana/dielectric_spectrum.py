@@ -410,8 +410,8 @@ def main(firstarg=2, DEBUG=False):
         dsusc = np.zeros(2*seglen, dtype=complex)
 
         for s in range(0, args.segs):
-            dsusc += (ss[:,s] - susc).real*(ss[:,s] - susc).real + \
-                1j*(ss[:,s] - susc).imag*(ss[:,s] - susc).imag
+            dif = ss[:,s] - susc
+            dsusc += dif.real*dif.real + 1j*dif.imag*dif.imag
 
         dsusc.real = np.sqrt(dsusc.real) / args.segs
         dsusc.imag = np.sqrt(dsusc.imag) / args.segs

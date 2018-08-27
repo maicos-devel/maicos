@@ -156,7 +156,7 @@ def main(firstarg=2, DEBUG=False):
 
         if not os.path.isdir(args.use+'PM_tseries'): # check if polarization is present
 
-            print('Polarization files not found: calculating polarization trajectory and average volume')
+            print('Polarization files not found: calculating polarization trajectories and average volume')
 
             P = np.zeros((Nframes, NM, 3))
             V = np.zeros(1)
@@ -170,7 +170,7 @@ def main(firstarg=2, DEBUG=False):
                 V[0] += ts.volume
                 repairMolecules(u.atoms)
                 for m in u.residues:
-                    P[args.frame, m.resid, :] = np.dot(u.atoms.charges, u.atoms.positions)
+                    P[args.frame, m.resid, :] = np.dot(m.atoms.charges, m.atoms.positions)
                 args.frame += 1
                 print_frameinfo(ts, args.frame)
 
@@ -215,11 +215,11 @@ def main(firstarg=2, DEBUG=False):
         t_0 = time.clock()
         t = np.load(args.use+'tseries.npy')
         V = np.loadtxt(args.use+'V.txt')
-        NM = len(next(os.walk(args.output+'PM_tseries')))
-        print(NM)
+        NM = len(next(os.walk(args.use+'PM_tseries'))[2])
         t_1 = time.clock()
 
     print("\nTook {:.2f} s".format(t_1 - t_0))
+    print('There are {0} molecular polarization trajectories'.format(NM))
 
     Nframes = len(t)
     dt = (t[-1] - t[0])/(Nframes - 1)
@@ -235,6 +235,7 @@ def main(firstarg=2, DEBUG=False):
         \nUsing method 2 (real part via Kramers Kronig)...')
 
     P = np.load(args.output+'PM_tseries/PM_tseries_0.npy')
+
     nu = FT(t, np.append(P[:, 0], np.zeros(Nframes)))[0] # get freqs
 
     ss = np.zeros((2*Nframes, NM), dtype=complex) # ss[t:segment]
@@ -245,21 +246,21 @@ def main(firstarg=2, DEBUG=False):
 
         for i in range(0, len(P[0,:])): # loop over x y z
 
-            FP = FT(t, np.append(P[:, i], np.zeros(Nframes)), False)
+            FP = FT(t, np.append(P[:,i], np.zeros(Nframes)), False)
             ss[:,m] += FP.real*FP.real + FP.imag*FP.imag
 
-        ss[:,m] *= nu*1j*pref / (2*t[-1])
+        ss[:,m] *= nu*1j*pref / (2*Nframes*dt)
         # (1/2 because it's the full FT, not only the pos domain)
 
         # Get the real part by Kramers Kronig:
         ss[:,m].real = iFT(t, 1j*np.sign(nu)*FT(nu, ss[:,m], False), False).imag
 
-    susc = np.mean(ss, axis=1) # susc[t]
+    susc = np.sum(ss, axis=1) # susc[t]
     dsusc = np.zeros(2*Nframes, dtype=complex)
 
     for m in range(0, NM):
-        dsusc += (ss[:,m] - susc).real*(ss[:,m] - susc).real + \
-            1j*(ss[:,m] - susc).imag*(ss[:,m] - susc).imag
+        dif = NM*ss[:,m] - susc
+        dsusc += dif.real*dif.real + 1j*dif.imag*dif.imag
 
     dsusc.real = np.sqrt(dsusc.real) / NM
     dsusc.imag = np.sqrt(dsusc.imag) / NM

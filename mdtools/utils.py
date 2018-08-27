@@ -150,11 +150,11 @@ def repairMolecules(selection):
 
 dt_dk_tolerance = 1e-8 # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
 
-def FT(t, x, depvar=True):
+def FT(t, x, indvar=True):
     """Discrete fast fourier transform.\
     Takes the time series and the function as arguments.\
     By default, returns the FT and the frequency:\
-    setting depvar=False means the function returns only the FT."""
+    setting indvar=False means the function returns only the FT."""
     a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0])/float( len(t)-1 ) # timestep
     if (abs((t[1:]-t[:-1] - dt)) > dt_dk_tolerance).any():
@@ -166,16 +166,16 @@ def FT(t, x, depvar=True):
     # calculate FT of data
     xf = np.fft.fftshift(np.fft.fft(x))
     xf2 = xf*(b-a)/N*np.exp(-1j*k*a)
-    if depvar:
+    if indvar:
         return k, xf2
     else:
         return xf2
 
-def iFT(k, xf, depvar=True):
+def iFT(k, xf, indvar=True):
     """Inverse discrete fast fourier transform.\
     Takes the frequency series and the function as arguments.\
     By default, returns the iFT and the time series:\
-    setting depvar=False means the function returns only the iFT."""
+    setting indvar=False means the function returns only the iFT."""
     dk = (k[-1] - k[0])/float( len(k)-1 ) # timestep
     if (abs((k[1:]-k[:-1] - dk)) > dt_dk_tolerance).any():
         print(np.max( abs(k[1:]-k[:-1])))
@@ -187,7 +187,7 @@ def iFT(k, xf, depvar=True):
         x2 = x*np.exp(-1j*t*N*dk/2.)*N*dk/(2*np.pi)
     else:
         x2 = x*np.exp(-1j*t*(N-1)*dk/2.)*N*dk/(2*np.pi)
-    if depvar:
+    if indvar:
         return t, x2
     else:
         return x2
