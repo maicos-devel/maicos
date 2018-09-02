@@ -21,6 +21,10 @@ from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
 # TODO set up script to calc spectrum at intervals while calculating polarization
 # for very big-data trajectories
 
+# TODO get rid of method 1?
+
+# TODO merge with molecular version?
+
 # ========== PARSER ===========
 # =============================
 

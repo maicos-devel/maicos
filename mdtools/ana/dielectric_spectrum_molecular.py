@@ -222,6 +222,7 @@ def main(firstarg=2, DEBUG=False):
     print('There are {0} molecular polarization trajectories'.format(NM))
 
     Nframes = len(t)
+    print('Number of frames: {0}'.format(Nframes))
     dt = (t[-1] - t[0])/(Nframes - 1)
     t = np.append(t, t + t[-1] + dt) # double the length of t
 
