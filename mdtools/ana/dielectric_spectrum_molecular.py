@@ -40,9 +40,6 @@ parser.description = """This script, given molecular dynamics trajectory data, s
 parser.add_argument("-init",
                     help="Causes initialization of the MDAnalysis universe. Alternatively,\
     polarization data is loaded from saved files, if they are present.", action="store_true")
-parser.add_argument("-molecular",
-                    help="Calculates the spectra for individual molecules before\
-    averaging over them.", action="store_true")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
