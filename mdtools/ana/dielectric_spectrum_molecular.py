@@ -86,17 +86,12 @@ def Bin(a, bins):
     return avg / count
 
 
-def single_exp(x, A, D): # Single exponential for fitting
-
-    return np.absolute(A)*np.exp(-x / D)
-
-
 # ========== MAIN ============
 # ============================
 
 def main(firstarg=2, DEBUG=False):
 
-    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======')
+    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======\n')
 
     global args
 
@@ -207,7 +202,7 @@ def main(firstarg=2, DEBUG=False):
 
         t_1 = time.clock()
 
-        del P # delete P as it's a very large array and we need the memory
+        del P # delete P as it's a very large array
 
     else: # no universe initialization needed, data is loaded from files
 
@@ -232,51 +227,62 @@ def main(firstarg=2, DEBUG=False):
 
     # Susceptibility and errors:
 
-    print('Calculating susceptibilty and errors\
-        \nUsing method 2 (real part via Kramers Kronig)...')
+    print('Calculating susceptibilty and errors:')
 
     P = np.load(args.output+'PM_tseries/PM_tseries_0.npy')
 
     nu = FT(t, np.append(P[:, 0], np.zeros(Nframes)))[0] # get freqs
 
-    ss = np.zeros((2*Nframes, NM), dtype=complex) # ss[t:segment]
+    sm = np.zeros(2*Nframes, dtype=complex)
+    susc = np.zeros(2*Nframes, dtype=complex)
+    dsusc = np.zeros(2*Nframes, dtype=complex)
 
     for m in range(0, NM):
-
+        
+        print('\rMolecule {0} of {1}'.format(m + 1, NM), end='')
         P = np.load(args.output+'PM_tseries/PM_tseries_'+str(m)+'.npy')
+        sm = 0 + 0j
 
         for i in range(0, len(P[0,:])): # loop over x y z
 
             FP = FT(t, np.append(P[:,i], np.zeros(Nframes)), False)
-            ss[:,m] += FP.real*FP.real + FP.imag*FP.imag
+            sm += FP.real*FP.real + FP.imag*FP.imag
 
-        ss[:,m] *= nu*1j*pref / (2*Nframes*dt)
-        # (1/2 because it's the full FT, not only the pos domain)
+        sm *= nu*1j
 
         # Get the real part by Kramers Kronig:
-        ss[:,m].real = iFT(t, 1j*np.sign(nu)*FT(nu, ss[:,m], False), False).imag
+        sm.real = iFT(t, 1j*np.sign(nu)*FT(nu, sm, False), False).imag
+        
+        if m == 0:
 
-    susc = np.sum(ss, axis=1) # susc[t]
-    dsusc = np.zeros(2*Nframes, dtype=complex)
+            susc += sm
+        
+        else:
 
-    for m in range(0, NM):
-        dif = NM*ss[:,m] - susc
-        dsusc += dif.real*dif.real + 1j*dif.imag*dif.imag
+            dm = sm - (susc / m)
+            susc += sm
+            dif = sm - (susc / (m + 1))
+            dm.real *= dif.real
+            dm.imag *= dif.imag
+            dsusc += dm # variance by Welford's Method
 
-    dsusc.real = np.sqrt(dsusc.real) / NM
-    dsusc.imag = np.sqrt(dsusc.imag) / NM
+    dsusc.real = np.sqrt(dsusc.real)
+    dsusc.imag = np.sqrt(dsusc.imag)
+
+    susc *= pref / (2*Nframes*dt) # 1/2 b/c it's the full FT, not only half-domain
+    dsusc *= pref / (2*Nframes*dt)
 
     t_1 = time.clock()
 
-    print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
-    print('Frequency spacing: \t~ {0:.5f} THz'.format(1/(Nframes*dt)))
+    print('\nSusceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
+    print('Frequency spacing: ~ {0:.5f} THz'.format(1/(Nframes*dt)))
 
     # ========= SAVE DATA ========
     # ============================
 
     # Discard negative-frequency data; contains the same information as positive regime:
 
-    nu = nu[Nframes:]
+    nu = nu[Nframes:] # TODO do this sooner!
     susc = susc[Nframes:]
     dsusc = dsusc[Nframes:]
 
@@ -325,7 +331,7 @@ def main(firstarg=2, DEBUG=False):
 
         # Plot lin-log:
 
-        plt.figure(figsize=(8, 5.657))
+        plt.figure()
         plt.title('Complex Dielectric Function')
         plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
@@ -344,7 +350,7 @@ def main(firstarg=2, DEBUG=False):
 
         # Plot log-log:
 
-        plt.figure(figsize=(8, 5.657))
+        plt.figure()
         plt.title('Complex Dielectric Function')
         plt.ylabel('$\chi$')
         plt.xlabel('$\\nu$ [THz]')
