@@ -286,10 +286,10 @@ def main(firstarg=2, DEBUG=False):
             dm.imag *= dif.imag
             dsusc += dm # variance by Welford's Method
 
-    dsusc.real = np.sqrt(dsusc.real)
-    dsusc.imag = np.sqrt(dsusc.imag)
+    dsusc.real = np.sqrt(dsusc.real / args.segs)
+    dsusc.imag = np.sqrt(dsusc.imag / args.segs)
 
-    susc *= pref / (2*seglen*dt) # 1/2 b/c it's the full FT, not only half-domain
+    susc *= pref / (2*seglen*args.segs*dt) # 1/2 b/c it's the full FT, not only half-domain
     dsusc *= pref / (2*seglen*dt)
 
     nu = nu[seglen:] / (2*np.pi) # now nu represents positive f instead of omega
