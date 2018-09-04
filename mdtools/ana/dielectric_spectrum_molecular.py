@@ -29,14 +29,15 @@ from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
 
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """This script, given molecular dynamics trajectory data, should produce a
-    .txt file containing the complex dielectric function as a function of the (linear, not radial -
+    .txt file containing the single-molecule
+    complex dielectric function as a function of the (linear, not radial -
     i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
-    The two algorithms are based on linear-response theory, specifically the equation\
-    chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.\
-    By default, the polarization trajectory and the average system volume are saved in the
+    The algorithm is based on linear-response theory, specifically the equation
+    chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.
+    By default, the polarization trajectory, timeseries array, and average system volume
+    are saved in the
     working directory, and the data are reloaded from these files if they are present.
-    Lin-log and log-log plots of the susceptibility are also produced by default,\
-    along with a plot of the truncation-length fit if method 1 is used."""
+    Lin-log and log-log plots of the susceptibility are also produced by default."""
 parser.add_argument("-init",
                     help="Causes initialization of the MDAnalysis universe. Alternatively,\
     polarization data is loaded from saved files, if they are present.", action="store_true")
@@ -46,7 +47,12 @@ parser.add_argument("-o", dest="output",
                     default="", help="Prefix for the output files.")
 parser.add_argument("-u", dest="use",
                     help="Looks for polarization and volume files with this prefix.\
-    By default, the program looks for files with the prefix -o.")
+    By default, the program looks for files with the prefix given in the output option -o.")
+parser.add_argument("-segs", type=int, default=1,
+                    help="Sets the number of segments the trajectory is broken into.")
+parser.add_argument("-df", type=float,
+                    help="The desired frequency spacing in THz. This determines the minimum\
+    frequency about which there is data. Overrides -segs option.")
 parser.add_argument("-noplots",
                     help="Prevents plots from being generated.", action="store_true")
 parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
@@ -216,9 +222,23 @@ def main(firstarg=2, DEBUG=False):
     print('There are {0} molecular polarization trajectories'.format(NM))
 
     Nframes = len(t)
-    print('Number of frames: {0}'.format(Nframes))
+    print('Number of frames in trajectory: {0}'.format(Nframes))
+
     dt = (t[-1] - t[0])/(Nframes - 1)
-    t = np.append(t, t + t[-1] + dt) # double the length of t
+
+    # Set number of segments based on df if given:
+    if not args.df == None:
+        args.segs = np.max([int(Nframes*dt*args.df), 1])
+
+    print('Number of segments in trajectory: {0}'.format(args.segs))
+
+    seglen = int(Nframes / args.segs)
+
+    print('Number of frames per segment: {0}'.format(seglen))
+
+    if len(t) < 2*seglen: # if t too short to simply truncate
+        t = np.append(t, t + t[-1] + dt)
+    t = t[:2*seglen] # truncate t array
 
     # Prefactor for susceptibility:
     pref = scipy.constants.e*scipy.constants.e*1e9 / \
@@ -230,11 +250,11 @@ def main(firstarg=2, DEBUG=False):
 
     P = np.load(args.use+'PM_tseries/PM_tseries_0.npy')
 
-    nu = FT(t, np.append(P[:, 0], np.zeros(Nframes)))[0] # get freqs
+    nu = FT(t, np.zeros(2*seglen))[0] # get freqs
 
-    sm = np.zeros(2*Nframes, dtype=complex)
-    susc = np.zeros(2*Nframes, dtype=complex)
-    dsusc = np.zeros(2*Nframes, dtype=complex)
+    sm = np.zeros(2*seglen, dtype=complex)
+    susc = np.zeros(seglen, dtype=complex)
+    dsusc = np.zeros(seglen, dtype=complex)
 
     for m in range(0, NM):
         
@@ -242,10 +262,11 @@ def main(firstarg=2, DEBUG=False):
         P = np.load(args.use+'PM_tseries/PM_tseries_'+str(m)+'.npy')
         sm = 0 + 0j
 
-        for i in range(0, len(P[0,:])): # loop over x y z
+        for s in range(0, args.segs): # loop over segments
+            for i in range(0, len(P[0,:])): # loop over x y z
 
-            FP = FT(t, np.append(P[:,i], np.zeros(Nframes)), False)
-            sm += FP.real*FP.real + FP.imag*FP.imag
+                FP = FT(t, np.append(P[s*seglen:(s+1)*seglen, i], np.zeros(seglen)), False)
+                sm += FP.real*FP.real + FP.imag*FP.imag
 
         sm *= nu*1j
 
@@ -254,13 +275,13 @@ def main(firstarg=2, DEBUG=False):
         
         if m == 0:
 
-            susc += sm
+            susc += sm[seglen:]
         
         else:
 
-            dm = sm - (susc / m)
-            susc += sm
-            dif = sm - (susc / (m + 1))
+            dm = sm[seglen:] - (susc / m)
+            susc += sm[seglen:]
+            dif = sm[seglen:] - (susc / (m + 1))
             dm.real *= dif.real
             dm.imag *= dif.imag
             dsusc += dm # variance by Welford's Method
@@ -268,24 +289,18 @@ def main(firstarg=2, DEBUG=False):
     dsusc.real = np.sqrt(dsusc.real)
     dsusc.imag = np.sqrt(dsusc.imag)
 
-    susc *= pref / (2*Nframes*dt) # 1/2 b/c it's the full FT, not only half-domain
-    dsusc *= pref / (2*Nframes*dt)
+    susc *= pref / (2*seglen*dt) # 1/2 b/c it's the full FT, not only half-domain
+    dsusc *= pref / (2*seglen*dt)
+
+    nu = nu[seglen:] / (2*np.pi) # now nu represents positive f instead of omega
 
     t_1 = time.clock()
 
     print('\nSusceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
-    print('Frequency spacing: ~ {0:.5f} THz'.format(1/(Nframes*dt)))
+    print('Frequency spacing: ~ {0:.5f} THz'.format(1/(seglen*dt)))
 
     # ========= SAVE DATA ========
     # ============================
-
-    # Discard negative-frequency data; contains the same information as positive regime:
-
-    nu = nu[Nframes:] # TODO do this sooner!
-    susc = susc[Nframes:]
-    dsusc = dsusc[Nframes:]
-
-    nu /= 2*np.pi  # now nu represents f instead of omega
 
     # Save susceptibility in a user-friendly text file:
 
@@ -311,7 +326,7 @@ def main(firstarg=2, DEBUG=False):
         # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if not (args.nobin or Nframes <= Npp): # all data is used
+        if not (args.nobin or seglen <= Npp): # all data is used
 
             bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp+1).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
