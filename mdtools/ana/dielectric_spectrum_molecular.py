@@ -228,7 +228,7 @@ def main(firstarg=2, DEBUG=False):
 
     print('Calculating susceptibilty and errors:')
 
-    P = np.load(args.output+'PM_tseries/PM_tseries_0.npy')
+    P = np.load(args.use+'PM_tseries/PM_tseries_0.npy')
 
     nu = FT(t, np.append(P[:, 0], np.zeros(Nframes)))[0] # get freqs
 
@@ -239,7 +239,7 @@ def main(firstarg=2, DEBUG=False):
     for m in range(0, NM):
         
         print('\rMolecule {0} of {1}'.format(m + 1, NM), end='')
-        P = np.load(args.output+'PM_tseries/PM_tseries_'+str(m)+'.npy')
+        P = np.load(args.use+'PM_tseries/PM_tseries_'+str(m)+'.npy')
         sm = 0 + 0j
 
         for i in range(0, len(P[0,:])): # loop over x y z
