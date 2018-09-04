@@ -326,19 +326,20 @@ def main(firstarg=2, DEBUG=False):
         # Bin data if there are too many points:
         # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
 
-        if not (args.nobin or seglen <= Npp): # all data is used
+        if not (args.nobin or seglen <= Npp): # data is binned
 
             bins = np.logspace(np.log(Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp-Lpp+1).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
+            print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
+            print('Binning data... ', end='')
             susc = Bin(susc, bins)
             dsusc = Bin(dsusc, bins)
             nu = Bin(nu, bins)
 
-            print('Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
-            print('Plotting {0} datapoints'.format(len(susc)))
+            print('finished - plotting {0} datapoints'.format(len(susc)))
 
-        else: # data is binned
+        else: # all data used
             print('Plotting all {0} datapoints'.format(len(susc)))
 
         nuBuf = 1.4  # buffer factor for extra room in the x direction
