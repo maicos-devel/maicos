@@ -219,7 +219,7 @@ def main(firstarg=2, DEBUG=False):
         t_1 = time.clock()
 
     print("\nTook {:.2f} s".format(t_1 - t_0))
-    print('There are {0} molecular polarization trajectories'.format(NM))
+    print('Number of molecules: {0}'.format(NM))
 
     Nframes = len(t)
     print('Number of frames in trajectory: {0}'.format(Nframes))
