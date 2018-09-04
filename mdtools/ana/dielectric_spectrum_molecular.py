@@ -151,7 +151,7 @@ def main(firstarg=2, DEBUG=False):
             print('Polarization files not found: calculating polarization trajectories and average volume')
 
             P = np.zeros((Nframes, NM, 3))
-            V = np.zeros(1)
+            V = 0.0
 
             print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
                 args.frame, round(u.trajectory.time)), end="")
@@ -159,7 +159,7 @@ def main(firstarg=2, DEBUG=False):
             for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
                 # Calculations done in every frame
-                V[0] += ts.volume
+                V += ts.volume
                 repairMolecules(u.atoms)
                 for m in u.residues:
                     P[args.frame, m.resid, :] = np.dot(m.atoms.charges, m.atoms.positions)
@@ -167,30 +167,32 @@ def main(firstarg=2, DEBUG=False):
                 print_frameinfo(ts, args.frame)
 
             P /= 10 # MDA gives units of Angstroms, we use nm
-            V[0] *= 1e-3 / float(args.frame) # normalization and unit conversion
+            V *= 1e-3 / float(args.frame) # normalization and unit conversion
 
             os.mkdir(args.output+'PM_tseries')
             for m in range(0, NM):
                 np.save(args.output+'PM_tseries/PM_tseries_'+str(m)+'.npy', P[:,m,:])
 
-            np.savetxt(args.output+'V.txt', V)
+            with open(args.output+'V.txt', "w") as Vfile:
+                Vfile.write(str(V))
 
         elif not os.path.isfile(args.use+'V.txt'):
 
             print('Polarization file found: calculating average volume')
-            V = np.zeros(1)
+            V = 0.0
             print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
                 args.frame, round(u.trajectory.time)), end="")
 
             for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
 
                 # Calculations done in every frame
-                V[0] += ts.volume
+                V += ts.volume
                 args.frame += 1
                 print_frameinfo(ts, args.frame)
 
             V *= 1e-3 / float(args.frame) # normalization and unit conversion
-            np.savetxt(args.output+'V.txt', V)
+            with open(args.output+'V.txt', "w") as Vfile:
+                Vfile.write(str(V))
 
         else:
 
