@@ -14,7 +14,7 @@ import sys
 import gromacs
 
 from ..import initilize_parser
-from ..utils import copy_itp, nlambdas, replace, submit_job
+from ..utils import copy_itp, nlambdas, replace, submit_job, append
 
 # ===================================================================================================
 # INPUT OPTIONS
@@ -27,7 +27,7 @@ For every given mdp file it will grommp and run a simulation in the given order.
 The first simulation will use the given gro file. All following files are taken from the prior simulation.
 
 If the -sub flag is choosen all commands will be appended to the given file and 
-submitted to the SLURM workload manager."""
+submitted to the SLURM workload manager otherwise a single executable file will be created."""
 parser.add_argument('-f',     dest='mdp',   type=str,  default=[
                     'grompp.mdp'], nargs='+', help="One or several grompp input files with MD parameters")
 parser.add_argument('-c',     dest='gro',   type=str,  default='conf.gro',
@@ -39,7 +39,7 @@ parser.add_argument('-p',     dest='top',   type=str,
 parser.add_argument('-sub',   dest='sub',   type=str,
                     default=None,           help="Use a SLURM submission script.")
 parser.add_argument('-sp',    dest='split', action="store_true",
-                    help="Split each lambda state into a single submission.")
+                    help="Split each lambda state into a single submission using SLURMS Job Array Support.")
 parser.add_argument('-mdrun', dest='mdrun', type=str,  default="gmx mdrun",
                     help="Command line to run a simulation, e.g. 'gmx mdrun' or 'mdrun_mpi'")
 parser.add_argument('-d',     dest='fdepth', type=int,  default=1,
@@ -69,24 +69,28 @@ def main(firstarg=2, DEBUG=False):
         args.sub = os.path.abspath(args.sub)
 
     # get number of lambda states
-    nlambdas = nlambdas(gromacs.fileformats.mdp.MDP(args.mdp[0]))
-    if nlambdas == 0:
+    nlambda = nlambdas(gromacs.fileformats.mdp.MDP(args.mdp[0]))
+    if nlambda == 0:
         sys.exit("No lambda states found. Can't continue...")
 
-    print("Create input folders and files for {} lambda states...".format(nlambdas))
+    print("Create input folders and files for {} lambda states...".format(nlambda))
 
     projectname = "-".join(os.getcwd().split('/')[-args.fdepth:])
 
     command = ""
-    for l in range(nlambdas):
+    if not args.split or args.sub == None:
+        command += "for SLURM_ARRAY_TASK_ID in $(seq 0 {});do\n".format(nlambda - 1)
+    command += "\ncd lambda_${SLURM_ARRAY_TASK_ID}\n"
 
+    for l in range(nlambda):
         gro = os.path.abspath(args.gro)
-        workdir = 'lambda_{}'.format(l)
+        workdir = "lambda_{}".format(l)
 
         try:
             os.mkdir(workdir)
         except OSError:
             pass
+            
         os.chdir(workdir)
 
         for mdp_path in args.mdp:
@@ -97,43 +101,45 @@ def main(firstarg=2, DEBUG=False):
             mdp_name = "{}_{}.{}".format(mdp_split[0], l, mdp_split[1])
             mdp.write(mdp_name)
 
-            if args.sub != None and not args.split:
-                command += "\n\ncd {}\n".format(workdir)
+            # only add commands in first lambda loop
+            if l == 0:
+                
+                # grompp
+                command += "gmx grompp -maxwarn 3 -f {} -c {} -p {} -o {}_{}".format(
+                    os.path.relpath(mdp_name), os.path.relpath(gro),
+                    os.path.relpath(args.top), os.path.relpath(mdp_split[0]),
+                    "${SLURM_ARRAY_TASK_ID}")
+                if args.index != None:
+                    command += " -n {}".format(os.path.relpath(args.index))
+                command += "\n"
 
-            # grompp
-            command += "gmx grompp -maxwarn 2 -f {} -c {} -p {} -o {}_{}".format(
-                os.path.relpath(mdp_name), os.path.relpath(gro),
-                os.path.relpath(args.top), os.path.relpath(mdp_split[0]), l)
-            if args.index != None:
-                command += " -n {}".format(os.path.relpath(args.index))
-            command += "\n"
+                # mdrun
+                # use standard mdrun and only 1 thread for energy minimization.
+                if mdp["integrator"] == "steep":
+                    command += "gmx mdrun -nt 4"
+                else:
+                    command += "{}".format(os.path.relpath(args.mdrun))
+                command += " -deffnm {}_{}\n".format(mdp_split[0],
+                                                     "${SLURM_ARRAY_TASK_ID}")                         
+                command += "\n"
 
-            # mdrun
-            # use standard mdrun and only 1 thread for energy minimization.
-            if mdp["integrator"] == "steep":
-                command += "gmx mdrun -nt 1"
-            else:
-                command += "{}".format(os.path.relpath(args.mdrun))
-            command += " -deffnm {}_{}\n".format(mdp_split[0], l)
-
-            # set new gro file
-            gro = "{}_{}.gro".format(mdp_split[0], l)
-
-        if args.sub != None and args.split:
-            print("\r{}/{}".format(l + 1, nlambdas), end="")
-            submit_job(args.sub, "{}_{}".format(projectname, l), command)
-            command = ""
-
-        elif args.sub != None and not args.split:
-            command += "cd ..\n"
-
-        elif args.sub == None:
-            subprocess.call(command, shell=True)
+                # set new gro file
+                gro = "{}_{}.gro".format(mdp_split[0], "${SLURM_ARRAY_TASK_ID}")
 
         os.chdir('..')
 
-    if args.sub != None and not args.split:
-        submit_job(args.sub, "{}".format(projectname), command)
+    if not args.split or args.sub == None:
+        command += "cd ..\n\ndone"
+
+    #TODO add if runfile exists
+    runfile = "srun.sh"
+    if args.sub != None:
+        slurm_opts = args.split * "--array 0-{}".format(nlambda)
+        submit_job(args.sub, "{}".format(projectname), command, 
+                   new_subfile_path = runfile, slurm_options = slurm_opts)
+    else:
+        append(runfile, command)
+        print("Run file written to {}".format(runfile))
 
     print("\n")
     if DEBUG:

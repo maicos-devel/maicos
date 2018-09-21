@@ -1,0 +1,79 @@
+; Integrator
+; ===================================================================
+integrator = md
+
+; MD Runing Parameters
+; ===================================================================
+dt = 0.002
+nsteps = 2500000
+comm-mode     = linear              ; Remove center of mass translation
+
+; Output control
+; frequency for coords (x), velocities (v) and forces (f)
+; ===================================================================
+nstxout-compressed = 1000
+nstlog = 500
+nstenergy = 500
+nstcalcenergy = -1
+
+; Neighbor searching
+; ===================================================================
+cutoff-scheme = Verlet
+ns_type = grid
+pbc = xyz
+periodic_molecules = no
+rlist = 0.9
+
+; Electrostatics
+; ===================================================================
+coulombtype = pme
+rcoulomb = 0.9
+fourierspacing = 0.1
+pme-order = 4
+
+; VdW
+; ===================================================================
+vdw-type = Cut-off
+rvdw = 0.9
+vdw-modifier = Potential-shift
+
+; Constraints
+; ===================================================================
+constraints = h-bonds
+constraint-algorithm = LINCS
+
+
+; Temperature Coupling
+; ===================================================================
+tcoupl = v-rescale
+tc-grps = Water 
+tau_t =   0.5  
+ref_t =   300  
+
+; Temperature Coupling
+; ===================================================================
+;Pcoupl                   = Berendsen
+;compressibility          = 0 4.5E-5
+;tau_p                    = 2.0
+;ref_p                    = 1.0 1.0
+;Pcoupltype               = semiisotropic
+
+; Free energy calculations
+; ===================================================================
+; Interpolate between topology A (lambda=0) to topology B (lambda=1)
+free_energy = yes
+init-lambda-state = 22
+delta-lambda = 0
+calc_lambda_neighbors = -1
+
+;init_lambda_state 0    1    2    3    4   5     6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22
+coul-lambdas =   0.0 0.02 0.04 0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20 0.22 0.24 0.26 0.28 0.30 0.40 0.50 0.60 0.70 0.80 0.90 1.00
+
+;sc-alpha                 = 0.5
+;sc-power                 = 1
+
+nstdhdl = 20
+separate-dhdl-file = yes
+dhdl-derivatives = yes
+dh_hist_size = 0
+dh_hist_spacing = 0.1
