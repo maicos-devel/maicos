@@ -98,7 +98,8 @@ def main(firstarg=2, DEBUG=False):
             mdp['init-lambda-state'] = l  # set lambda state
 
             mdp_split = os.path.basename(mdp_path).split(".")
-            mdp_name = "{}_{}.{}".format(mdp_split[0], l, mdp_split[1])
+            mdp_name = "{}_{}.{}".format(mdp_split[0], "${SLURM_ARRAY_TASK_ID}",
+                                         mdp_split[1])
             mdp.write(mdp_name)
 
             # only add commands in first lambda loop
