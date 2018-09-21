@@ -135,7 +135,7 @@ def main(firstarg=2, DEBUG=False):
     #TODO add if runfile exists
     runfile = "srun.sh"
     if args.sub != None:
-        slurm_opts = args.split * "--array 0-{}".format(nlambda)
+        slurm_opts = args.split * "--array 0-{}".format(nlambda - 1)
         submit_job(args.sub, "{}".format(projectname), command, 
                    new_subfile_path = runfile, slurm_options = slurm_opts)
     else:
