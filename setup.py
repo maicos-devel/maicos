@@ -17,8 +17,6 @@ def get_git_revision_hash():
     except:
         # no git repo
         return ""
-        
-print(get_git_revision_hash())
 
 if __name__ == "__main__":
     s = setup(name='mdtools',
