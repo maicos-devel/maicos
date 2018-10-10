@@ -177,7 +177,8 @@ def main(firstarg=2, DEBUG=False):
         
     V_exists = os.path.isfile(args.use+'V.txt')
     if V_exists:
-        V = np.loadtxt(args.use+'V.txt')[0]
+        with open(args.output+'V.txt', "r") as Vfile:
+            V = float(Vfile.readline())
     else:
         V = 0
         
@@ -222,7 +223,8 @@ def main(firstarg=2, DEBUG=False):
             
         if not V_exists:
             V *= 1e-3 / float(args.frame) # normalization and unit conversion
-            np.savetxt(args.output+'V.txt', [V])
+            with open(args.output+'V.txt', "w") as Vfile:
+                Vfile.write(str(V))
             
         if not P_exists:
             P /= 10 # MDA gives units of Angstroms, we use nm
@@ -399,7 +401,8 @@ def main(firstarg=2, DEBUG=False):
 
     t_1 = time.clock()
 
-    print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
+    if args.init or not t_exists or not V_exists or not P_exists:
+        print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
     print('Number of segments:\t{0}'.format(args.segs))
     print('Length of segments:\t{0} frames, {1:.0f} ps'.format(seglen, seglen*dt))
     print('Frequency spacing: \t~ {0:.5f} THz'.format(args.segs/(Nframes*dt)))
