@@ -168,92 +168,68 @@ def main(firstarg=2, DEBUG=False):
     else:
         args.use += "_"
 
-    # Either get polarization, volume, and time from a trajectory...
-
-    if args.init\
-    or not os.path.isfile(args.use+'P_tseries.npy')\
-    or not os.path.isfile(args.use+'tseries.npy')\
-    or not os.path.isfile(args.use+'V.txt'):
-
+    # Check file existance
+    t_exists = os.path.isfile(args.use+'tseries.npy')
+    if t_exists:
+        t = np.load(args.use+'tseries.npy')
+    else:
+        t = None
+        
+    V_exists = os.path.isfile(args.use+'V.txt')
+    if V_exists:
+        V = np.loadtxt(args.use+'V.txt')[0]
+    else:
+        V = 0
+        
+    P_exists = os.path.isfile(args.use+'P_tseries.npy')
+    if P_exists: # check if polarization is present
+        print('Polarization file found: loading polarization and calculating average volume')
+        P = np.load(args.use+'P_tseries.npy')
+    else:
+        print('Polarization file not found: calculating polarization trajectory and average volume')
+        P = None
+        
+    if args.init or not t_exists or not V_exists or not P_exists:
         # the MDAnalysis universe given by the user for analysis
         u = initilize_universe(args)
-
-        dt = args.dt*args.skipframes
+        
+        dt = args.dt * args.skipframes
         Nframes = (args.endframe - args.beginframe) // args.skipframes
-
         args.frame = 0
-        t = (np.arange(args.beginframe, args.endframe) - args.beginframe)*dt
-        np.save(args.output+'tseries.npy', t)
-
-        # ======= POLARIZATION =======
-        # ============================
-
+        
         t_0 = time.clock()
+        P = np.zeros((Nframes , 3))
+        t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
+        
+        print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
+            args.frame, round(u.trajectory.time)), end="")
 
-        if not os.path.isfile(args.use+'P_tseries.npy'): # check if polarization is present
-
-            print('Polarization file not found: calculating polarization trajectory and average volume')
-
-            P = np.zeros((Nframes , 3))
-            V = np.zeros(1)
-
-            print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
-                args.frame, round(u.trajectory.time)), end="")
-
-            for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
-
-                # Calculations done in every frame
-                V[0] += ts.volume
+        for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+            if not V_exists:
+                V += ts.volume
+            if not P_exists:
                 repairMolecules(u.atoms)
                 P[args.frame,:] = np.dot(u.atoms.charges, u.atoms.positions)
-                args.frame += 1
-                print_frameinfo(ts, args.frame)
-
-            P /= 10 # MDA gives units of Angstroms, we use nm
-            V[0] *= 1e-3 / float(args.frame) # normalization and unit conversion
-            np.save(args.output+'P_tseries.npy', P)
-            np.savetxt(args.output+'V.txt', V)
-
-        elif not os.path.isfile(args.use+'V.txt'):
-
-            print('Polarization file found: loading polarization and calculating average volume')
-            P = np.load(args.use+'P_tseries.npy')
-            V = np.zeros(1)
-            print("\rEvaluating frame: {:>12}       time: {:>12} ps".format(
-                args.frame, round(u.trajectory.time)), end="")
-
-            for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
-
-                # Calculations done in every frame
-                V[0] += ts.volume
-                args.frame += 1
-                print_frameinfo(ts, args.frame)
-
+            
+            args.frame += 1
+            print_frameinfo(ts, args.frame)
+        
+        t_1 = time.clock()
+        print("\nTook {:.2f} s".format(t_1 - t_0))
+        
+        if not t_exists:
+            np.save(args.output+'tseries.npy', t)
+            
+        if not V_exists:
             V *= 1e-3 / float(args.frame) # normalization and unit conversion
-            np.savetxt(args.output+'V.txt', V)
-
-        else:
-
-            print('Polarization and volume files found: loading both...', end='')
-            P = np.load(args.use+'P_tseries.npy')
-            V = np.loadtxt(args.use+'V.txt')
-
-        t_1 = time.clock()
-
-
-    # Or get polarization, volume, and time from saved files
-
-    else: # no universe is initialized, data is loaded from files
+            np.savetxt(args.output+'V.txt', [V])
+            
+        if not P_exists:
+            P /= 10 # MDA gives units of Angstroms, we use nm
+            np.save(args.output+'P_tseries.npy', P)
+        
+    else:
         print('All data files found - not loading universe...', end='')
-        t_0 = time.clock()
-        P = np.load(args.use+'P_tseries.npy')
-        t = np.load(args.use+'tseries.npy')
-        V = np.loadtxt(args.use+'V.txt')
-        #np.savetxt(args.output+'P_tseries.txt', P)
-        #np.savetxt(args.output+'tseries.txt', t) # why are these here?
-        t_1 = time.clock()
-
-    print("\nTook {:.2f} s".format(t_1 - t_0))
 
     Nframes = len(t)
     dt = (t[-1]-t[0])/(Nframes-1)
