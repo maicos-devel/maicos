@@ -142,6 +142,9 @@ _mdtools_completion()
       -f)
       COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
       return 0 ;;
+      -method)
+      COMPREPLY=( $( compgen -W "1 2" -- ${cur_word}) )
+      return 0 ;;
       -o)
       COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
       return 0 ;;
@@ -152,8 +155,9 @@ _mdtools_completion()
       COMPREPLY=( )
       return 0 ;;
     esac
-    COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -temp -truncfac\
-                              -trunclen -Nsegments -plotformat -nobin" -- ${cur_word} ) )
+    COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -recalc -temp -o -u \
+                               -truncfac -trunclen -segs -df -noplots ⁠\
+                               -plotformat -ymin -nobin" -- ${cur_word} ) )
     return 0 ;;
 
     diporder)

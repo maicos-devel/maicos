@@ -45,9 +45,8 @@ parser.add_argument("-method", type=int, default=2, choices=[1,2],
                     help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
     and a numerical time derivative. Method 2 uses 1 FFT and multiplies by the frequency,\
     and uses 2 more FFT's in Kramers Kronig to obtain the real part of the frequency.")
-parser.add_argument("-init",
-                    help="Causes initialization of the MDAnalysis universe. Alternatively,\
-    polarization data is loaded from saved files, if they are present.", action="store_true")
+parser.add_argument("-recalc",
+                    help="Forces to recalculate the polarization, regardless if they are already present.", action="store_true")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
@@ -170,27 +169,27 @@ def main(firstarg=2, DEBUG=False):
 
     # Check file existance
     t_exists = os.path.isfile(args.use+'tseries.npy')
-    if t_exists:
+    if t_exists and not args.recalc:
         t = np.load(args.use+'tseries.npy')
     else:
         t = None
         
     V_exists = os.path.isfile(args.use+'V.txt')
-    if V_exists:
+    if V_exists and not args.recalc:
         with open(args.output+'V.txt', "r") as Vfile:
             V = float(Vfile.readline())
     else:
         V = 0
         
     P_exists = os.path.isfile(args.use+'P_tseries.npy')
-    if P_exists: # check if polarization is present
+    if P_exists and not args.recalc: # check if polarization is present
         print('Polarization file found: loading polarization and calculating average volume')
         P = np.load(args.use+'P_tseries.npy')
     else:
         print('Polarization file not found: calculating polarization trajectory and average volume')
         P = None
         
-    if args.init or not t_exists or not V_exists or not P_exists:
+    if args.recalc or not t_exists or not V_exists or not P_exists:
         # the MDAnalysis universe given by the user for analysis
         u = initilize_universe(args)
         
@@ -206,9 +205,9 @@ def main(firstarg=2, DEBUG=False):
             args.frame, round(u.trajectory.time)), end="")
 
         for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
-            if not V_exists:
+            if not V_exists or args.recalc:
                 V += ts.volume
-            if not P_exists:
+            if not P_exists or args.recalc:
                 repairMolecules(u.atoms)
                 P[args.frame,:] = np.dot(u.atoms.charges, u.atoms.positions)
             
@@ -218,15 +217,15 @@ def main(firstarg=2, DEBUG=False):
         t_1 = time.clock()
         print("\nTook {:.2f} s".format(t_1 - t_0))
         
-        if not t_exists:
+        if not t_exists or args.recalc:
             np.save(args.output+'tseries.npy', t)
             
-        if not V_exists:
+        if not V_exists or args.recalc:
             V *= 1e-3 / float(args.frame) # normalization and unit conversion
             with open(args.output+'V.txt', "w") as Vfile:
                 Vfile.write(str(V))
             
-        if not P_exists:
+        if not P_exists or args.recalc:
             P /= 10 # MDA gives units of Angstroms, we use nm
             np.save(args.output+'P_tseries.npy', P)
         
@@ -401,7 +400,7 @@ def main(firstarg=2, DEBUG=False):
 
     t_1 = time.clock()
 
-    if args.init or not t_exists or not V_exists or not P_exists:
+    if args.recalc or not t_exists or not V_exists or not P_exists:
         print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
     print('Number of segments:\t{0}'.format(args.segs))
     print('Length of segments:\t{0} frames, {1:.0f} ps'.format(seglen, seglen*dt))
