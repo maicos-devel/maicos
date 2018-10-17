@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import subprocess
 
 import MDAnalysis
 import numpy as np
@@ -247,6 +248,12 @@ def replace(file_path, pattern, subst, new_file_path=None):
         new_file_path = file_path
     with open(new_file_path, "w") as f:
         f.write(read_data.replace(str(pattern), str(subst)))
+        
+def append(file_path, string):
+    """Open for appending at the end of the file without truncating it. 
+        Creates a new file if it does not exist."""
+    with open(file_path, 'a') as f:
+        f.write(str(string))
 
 
 def copy_itp(path_to_topfile, new_path="."):
@@ -257,15 +264,18 @@ def copy_itp(path_to_topfile, new_path="."):
         shutil.copy("{}/{}".format(topdir, file_name), new_path)
 
 
-def submit_job(subfile_path, jobname, command):
-    """Appends the commands to the subfile given by subfile_path, sets the jobname and submits the jib using SLURM."""
+def submit_job(subfile_path, jobname, command, new_subfile_path=None, slurm_options=""):
+    """Sets the jobname, adds the command and submits the job using SLURM submission system."""
     with open(subfile_path) as f:
         submission_file = f.read()
 
     submission_file = submission_file.replace('job_name', jobname)
-    submission_file += "{}\n".format(command)
-
-    with open('srun.sh', 'w') as f:
+    submission_file += command
+    
+    if new_subfile_path == None:
+        new_subfile_path = subfile_path
+    with open(new_subfile_path, 'w') as f:
         f.write(submission_file)
-
-    subprocess.call('sbatch srun.sh', shell=True)
+    
+    subprocess.call('sbatch {} {}'.format(slurm_options, new_subfile_path), 
+                    shell=True)
