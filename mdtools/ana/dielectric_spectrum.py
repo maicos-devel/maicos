@@ -227,7 +227,6 @@ def main(firstarg=2, DEBUG=False):
 
     dsusc.real = np.sqrt(dsusc.real) / args.segs
     dsusc.imag = np.sqrt(dsusc.imag) / args.segs
-    args.trunclen = seglen
 
     t_1 = time.clock()
 
@@ -244,9 +243,9 @@ def main(firstarg=2, DEBUG=False):
 
     # Discard negative-frequency data; contains the same information as positive regime:
 
-    nu = nu[args.trunclen:]
-    susc = susc[args.trunclen:]
-    dsusc = dsusc[args.trunclen:]
+    nu = nu[seglen:]
+    susc = susc[seglen:]
+    dsusc = dsusc[seglen:]
 
     nu /= 2 * np.pi  # now nu represents f instead of omega
 
