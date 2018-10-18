@@ -115,7 +115,7 @@ def main(firstarg=2, DEBUG=False):
 
     if args.use == None:
         args.use = args.output
-    else:
+    else:        
         args.use += "_"
 
     # Check file existence
@@ -200,38 +200,56 @@ def main(firstarg=2, DEBUG=False):
         t = np.append(t, t + t[-1] + dt)
     # truncate t array (it's automatically longer than 2*seglen)
     t = t[:2 * seglen]
-    ss = np.zeros((2 * seglen, args.segs), dtype=complex)  # ss[t:segment]
 
     nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0]  # get freqs
 
-    for s in range(0, args.segs):
-        for i in range(0, len(P[0, :])):
+    susc = np.zeros(seglen, dtype=complex) # susceptibility
+    dsusc = np.zeros(seglen, dtype=complex) # std deviation of susceptibility
+    ss = np.zeros((2 * seglen), dtype=complex)  # susceptibility for current seg
+
+    for s in range(0, args.segs): # loop over segs
+
+        print('\rSegment {0} of {1}'.format(s + 1, args.segs), end='')
+        ss = 0 + 0j
+
+        for i in range(0, len(P[0, :])): # loop over x, y, z
 
             FP = FT(t, np.append(
                 P[s * seglen:(s + 1) * seglen, i], np.zeros(seglen)), False)
-            ss[:, s] += FP.real * FP.real + FP.imag * FP.imag
+            ss += FP.real * FP.real + FP.imag * FP.imag
 
-        ss[:, s] *= nu * 1j * pref / (2 * seglen * dt)
-        # (1/2 because it's the full FT, not only the pos domain)
+        ss *= nu * 1j
 
         # Get the real part by Kramers Kronig:
-        ss[:, s].real = iFT(t, 1j * np.sign(nu) *
-                            FT(nu, ss[:, s], False), False).imag
+        ss.real = iFT(t, 1j * np.sign(nu) *
+                            FT(nu, ss, False), False).imag
 
-    susc = np.mean(ss, axis=1)  # susc[t]
-    dsusc = np.zeros(2 * seglen, dtype=complex)
+        if s == 0:
 
-    for s in range(0, args.segs):
-        dif = ss[:, s] - susc
-        dsusc += dif.real * dif.real + 1j * dif.imag * dif.imag
+            susc += ss[seglen:]
+        
+        else:
 
-    dsusc.real = np.sqrt(dsusc.real) / args.segs
-    dsusc.imag = np.sqrt(dsusc.imag) / args.segs
+            ds = ss[seglen:] - (susc / s)
+            susc += ss[seglen:]
+            dif = ss[seglen:] - (susc / (s + 1))
+            ds.real *= dif.real
+            ds.imag *= dif.imag
+            dsusc += ds # variance by Welford's Method
+
+    dsusc.real = np.sqrt(dsusc.real)
+    dsusc.imag = np.sqrt(dsusc.imag)
+
+    susc *= pref / (2 * seglen * args.segs * dt) # 1/2 b/c it's the full FT, not only half-domain
+    dsusc *= pref / (2 * seglen * args.segs * dt)
+
+    # Discard negative-frequency data; contains the same information as positive regime:
+
+    nu = nu[seglen:] / (2 * np.pi) # now nu represents positive f instead of omega
 
     t_1 = time.clock()
 
-    print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
-    print('Number of segments:    {0}'.format(args.segs))
+    print('\nSusceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
     print('Length of segments:    {0} frames, {1:.0f} ps'.format(
         seglen, seglen * dt))
     print('Frequency spacing:    ~ {0:.5f} THz'.format(
@@ -240,14 +258,6 @@ def main(firstarg=2, DEBUG=False):
 
     # ========= SAVE DATA ========
     # ============================
-
-    # Discard negative-frequency data; contains the same information as positive regime:
-
-    nu = nu[seglen:]
-    susc = susc[seglen:]
-    dsusc = dsusc[seglen:]
-
-    nu /= 2 * np.pi  # now nu represents f instead of omega
 
     # Save susceptibility in a user-friendly text file:
 

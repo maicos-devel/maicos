@@ -256,7 +256,7 @@ def main(firstarg=2, DEBUG=False):
     susc = np.zeros(seglen, dtype=complex)
     dsusc = np.zeros(seglen, dtype=complex)
 
-    for m in range(0, NM):
+    for m in range(0, NM): # loop over molecules
         
         print('\rMolecule {0} of {1}'.format(m + 1, NM), end='')
         P = np.load(args.use+'PM_tseries/PM_tseries_'+str(m)+'.npy')
