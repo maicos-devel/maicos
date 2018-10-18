@@ -150,8 +150,8 @@ def main(firstarg=2, DEBUG=False):
 
         # Parameters for when data needs to be thinned for plotting
 
-        Npp = 100  # Max number of points for susc plots
-        Lpp = 20  # Num points of susc plotted with lin spacing: Lpp<Npp
+        Npp = 200 # Max number of points for susc plots
+        Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp
 
     # ====== INITIALIZATION ======
     # ============================
