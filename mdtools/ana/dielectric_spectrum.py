@@ -11,7 +11,6 @@ import time
 import MDAnalysis as mda
 import numpy as np
 import scipy.constants
-import scipy.optimize
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
@@ -19,8 +18,6 @@ from ..utils import FT, ScalarProdCorr, iFT, repairMolecules
 
 # TODO set up script to calc spectrum at intervals while calculating polarization
 # for very big-data trajectories
-
-# TODO get rid of method 1?
 
 # TODO merge with molecular version?
 
@@ -34,18 +31,14 @@ parser = initilize_parser(add_traj_arguments=True)
 parser.description = """This script, given molecular dynamics trajectory data, should produce a
     .txt file containing the complex dielectric function as a function of the (linear, not radial -
     i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
-    The two algorithms are based on linear-response theory, specifically the equation\
+    The algorithm is based on the Fluctuation Dissipation Relation (FDR):\
     chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.\
-    By default, the polarization trajectory and the average system volume are saved in the
-    working directory, and the data are reloaded from these files if they are present.
-    Lin-log and log-log plots of the susceptibility are also produced by default,\
-    along with a plot of the truncation-length fit if method 1 is used."""
-parser.add_argument("-method", type=int, default=2, choices=[1, 2],
-                    help="Method 1 follows the longer, more intuitive procedure involving 3 FFTs\
-    and a numerical time derivative. Method 2 uses 1 FFT and multiplies by the frequency,\
-    and uses 2 more FFT's in Kramers Kronig to obtain the real part of the frequency.")
+    By default, the polarization trajectory, time series array and the average system volume are
+    saved in the working directory, and the data are reloaded from these files if they are present.
+    Lin-log and log-log plots of the susceptibility are also produced by default."""
 parser.add_argument("-recalc",
-                    help="Forces to recalculate the polarization, regardless if they are already present.", action="store_true")
+                    help="Forces to recalculate the polarization, regardless if it is already present.",
+    action="store_true")
 parser.add_argument('-temp',   dest='temperature',      type=float,
                     default=300, help='Reference temperature.')
 parser.add_argument("-o", dest="output",
@@ -53,14 +46,6 @@ parser.add_argument("-o", dest="output",
 parser.add_argument("-u", dest="use",
                     help="Looks for polarization and volume files with this prefix.\
     By default, the program looks for files with the prefix -o.")
-parser.add_argument("-truncfac", type=float, default=30.0,
-                    help="Truncation factor.\
-    By default, the autocorrelation of the polarization is fit with A*exp( -t/Tau ),\
-    and the truncation length is then taken as truncfac*Tau.\
-    Alternatively, the truncation length in number of steps may be specified with -trunclen.")
-parser.add_argument("-trunclen", type=float,
-                    help="Truncation length in picoseconds.\
-    Specifying a value overrides the fitting procedure otherwise used to find the truncation length.")
 parser.add_argument("-segs", type=int, default=20,
                     help="Sets the number of segments the trajectory is broken into.")
 parser.add_argument("-df", type=float,
@@ -72,31 +57,20 @@ parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "
                     help="Allows the user to choose the format of generated plots.")
 parser.add_argument("-ymin", type=float,
                     help="Manually sets the minimum lower bound for the log-log plot.")
-parser.add_argument("-nobin",
-                    help="Prevents the data from being binned for graphing.\
+parser.add_argument("-bins", type=int, default=200,
+                    help="Determines the number of bins used for data averaging;\
+    (this parameter sets the upper limit).\
     The data are by default binned logarithmically. This helps to reduce noise, particularly in\
-    the high-frequency domain, and also prevents plot files from being too large.", action="store_true")
+    the high-frequency domain, and also prevents plot files from being too large.")
+parser.add_argument("-binafter", type=int, default=20,
+                    help="The number of low-frequency data points that are left unbinned.")
+parser.add_argument("-nobin",
+                    help="Prevents the data from being binned altogether.\
+    This can result in very large plot files and errors.",
+    action="store_true")
 
 # ======== DEFINITIONS ========
 # =============================
-
-
-def TimeDerivative5PS(v, dt):
-    """Numerical 5-point stencil time derivative. Note: v must be evenly-spaced 1-d array"""
-
-    dvdt = np.empty(len(v))
-
-    dvdt[2:-2] = (8 * (v[2:] - v[:-2])[1:-1] - v[4:] + v[:-4]) / float(12 * dt)
-
-    # 2 pt stencil for the 2nd-to-last datapoints; prevents any truncatoin at the ends
-    dvdt[1] = (v[2] - v[0]) / float(2 * dt)
-    dvdt[-2] = (v[-1] - v[-3]) / float(2 * dt)
-
-    # slope of last segment for final datapoints
-    dvdt[0] = (v[1] - v[0]) / float(dt)
-    dvdt[-1] = (v[-1] - v[-2]) / float(dt)
-
-    return dvdt
 
 
 def Bin(a, bins):
@@ -120,41 +94,21 @@ def Bin(a, bins):
     return avg / count
 
 
-def single_exp(x, A, D):  # Single exponential for fitting
-
-    return np.absolute(A) * np.exp(-x / D)
-
-
 # ========== MAIN ============
 # ============================
 
 def main(firstarg=2, DEBUG=False):
 
-    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======')
+    print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======\n')
+
+
+    # ====== INITIALIZATION ======
+    # ============================
 
     global args
 
     # parse the arguments and saves them in an args object
     args = parser.parse_args(args=sys.argv[firstarg:])
-
-    if not args.noplots:  # if plots are to be created
-
-        import matplotlib.pyplot as plt
-
-        # Colors/alpha values for plotting
-        col1 = 'royalblue'
-        col2 = 'crimson'
-        col3 = 'grey'
-        curve = 0.9
-        shade = 0.1
-
-        # Parameters for when data needs to be thinned for plotting
-
-        Npp = 200 # Max number of points for susc plots
-        Lpp = 20 # Num points of susc plotted with lin spacing: Lpp<Npp
-
-    # ====== INITIALIZATION ======
-    # ============================
 
     if len(args.output) > 0:
         args.output += "_"
@@ -164,30 +118,22 @@ def main(firstarg=2, DEBUG=False):
     else:
         args.use += "_"
 
-    # Check file existance
+    # Check file existence
     t_exists = os.path.isfile(args.use + 'tseries.npy')
     if t_exists and not args.recalc:
         t = np.load(args.use + 'tseries.npy')
-    else:
-        t = None
 
     V_exists = os.path.isfile(args.use + 'V.txt')
     if V_exists and not args.recalc:
         with open(args.output + 'V.txt', "r") as Vfile:
             V = float(Vfile.readline())
-    else:
-        V = 0
 
     P_exists = os.path.isfile(args.use + 'P_tseries.npy')
     if P_exists and not args.recalc:  # check if polarization is present
-        print(
-            'Polarization file found: loading polarization and calculating average volume')
         P = np.load(args.use + 'P_tseries.npy')
-    else:
-        print('Polarization file not found: calculating polarization trajectory and average volume')
-        P = None
 
     if args.recalc or not t_exists or not V_exists or not P_exists:
+        print('Loading universe and generating polarization trajectory,\nvolume and time series array:')
         # the MDAnalysis universe given by the user for analysis
         u = initilize_universe(args)
 
@@ -197,6 +143,7 @@ def main(firstarg=2, DEBUG=False):
 
         t_0 = time.clock()
         P = np.zeros((Nframes, 3))
+        V = 0.0
         t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
 
         print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
@@ -228,10 +175,12 @@ def main(firstarg=2, DEBUG=False):
             np.save(args.output + 'P_tseries.npy', P)
 
     else:
-        print('All data files found - not loading universe...', end='')
+        print('All data files found: loading files directly')
 
-    Nframes = len(t)
-    dt = (t[-1] - t[0]) / (Nframes - 1)
+        Nframes = len(t)
+        dt = (t[-1] - t[0]) / (Nframes - 1)
+
+    t_0 = time.clock()
 
     # Find a suitable number of segments if it's not specified:
     if not args.df == None:
@@ -243,179 +192,52 @@ def main(firstarg=2, DEBUG=False):
     pref = scipy.constants.e * scipy.constants.e * 1e9 / \
         (3 * V * scipy.constants.k * args.temperature * scipy.constants.epsilon_0)
 
-    # ========= METHOD 1 =========
-    # ============================
+    # Susceptibility and errors:
 
-    if args.method == 1:
+    print('Calculating susceptibilty and errors...')
 
-        # Autocorrelation
+    if len(t) < 2 * seglen:  # if t too short to simply truncate
+        t = np.append(t, t + t[-1] + dt)
+    # truncate t array (it's automatically longer than 2*seglen)
+    t = t[:2 * seglen]
+    ss = np.zeros((2 * seglen, args.segs), dtype=complex)  # ss[t:segment]
 
-        print('Calculating the autocorrelation... ', end='')
-        P_P = ScalarProdCorr(P)  # Autocorrelation fn of P for all timesteps
-        print('Done!')
+    nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0]  # get freqs
 
-        # Truncation:
+    for s in range(0, args.segs):
+        for i in range(0, len(P[0, :])):
 
-        print('Finding the truncation length for the autocorrelation...')
-        if args.trunclen == None:
+            FP = FT(t, np.append(
+                P[s * seglen:(s + 1) * seglen, i], np.zeros(seglen)), False)
+            ss[:, s] += FP.real * FP.real + FP.imag * FP.imag
 
-            fit = True
-            p_opt, p_cov = scipy.optimize.curve_fit(
-                single_exp, t, P_P, p0=(1, 1))  # fit whole dataset
+        ss[:, s] *= nu * 1j * pref / (2 * seglen * dt)
+        # (1/2 because it's the full FT, not only the pos domain)
 
-            # if necessary, cut off data and fit again
-            if 2 * args.truncfac * p_opt[1] < len(P_P):
-                # cutoff index for 2. fit
-                im = np.absolute(t - 2 * args.truncfac * p_opt[1]).argmin()
-                p_opt, p_cov = scipy.optimize.curve_fit(
-                    single_exp, t[:im], P_P[:im], p0=p_opt)
+        # Get the real part by Kramers Kronig:
+        ss[:, s].real = iFT(t, 1j * np.sign(nu) *
+                            FT(nu, ss[:, s], False), False).imag
 
-            # if necessary, cut off data and fit again
-            if args.truncfac * p_opt[1] < len(P_P):
-                # cutoff index for 2. fit
-                im = np.absolute(t - args.truncfac * p_opt[1]).argmin()
-                p_opt, p_cov = scipy.optimize.curve_fit(
-                    single_exp, t[:im], P_P[:im], p0=p_opt)
+    susc = np.mean(ss, axis=1)  # susc[t]
+    dsusc = np.zeros(2 * seglen, dtype=complex)
 
-            # step where data is cut off
-            args.trunclen = np.absolute(t - args.truncfac * p_opt[1]).argmin()
+    for s in range(0, args.segs):
+        dif = ss[:, s] - susc
+        dsusc += dif.real * dif.real + 1j * dif.imag * dif.imag
 
-            print('Truncation length set via exponential fit to {0} steps, i.e. {1:.6} ps'.format(
-                args.trunclen, t[args.trunclen]))
-
-        else:  # args.trunclen specified by user
-
-            fit = False
-            # convert from picoseconds into the frame index
-            args.trunclen = int(args.trunclen / dt)
-            print('Truncation length set manually to {0} steps, i.e. {1:.3} ps'.format(
-                args.trunclen, args.trunclen * dt))
-
-        # Plot the autocorrelation and trunclen (with trunclen fit):
-
-        if not args.noplots:
-
-            plotlen = 2 * args.trunclen
-
-            if plotlen > len(P_P):
-                plotlen = int(1.1 * args.trunclen)
-
-            if plotlen > len(P_P):
-                plotlen = args.trunclen
-
-            sk = 1  # how many data points to skip when plotting
-
-            if plotlen > 2 * Npp:
-                # ~2x as many points as for susc figs
-                sk = plotlen // (2 * Npp) + 1
-
-            plt.figure(figsize=(8, 5.657))
-            plt.title('Truncation Length Visualization')
-            plt.ylabel('$<P(0)$ $P(t)>$')
-            plt.xlabel('t [ps]')
-            plt.xlim(-0.02 * t[plotlen], t[plotlen])
-            plt.axvline(x=t[args.trunclen], linewidth=1, color=col3, alpha=curve, linestyle='--',
-                        label='truncation length = {0:.4} ps'.format(t[args.trunclen]))
-            plt.plot(t[:plotlen:sk], P_P[:plotlen:sk], color=col1, alpha=curve, marker='.',
-                     markersize=4, linestyle='', label='$<P(0)$ $P(t)>$')
-            if fit:
-                plt.plot(t[:plotlen:sk], single_exp(t[:plotlen:sk], p_opt[0], p_opt[1]),
-                         linewidth=1, color=col2, alpha=curve, label='fit: ~exp( -t/{0:.4} )'.format(p_opt[1]))
-            plt.legend(loc='best')
-            plt.savefig(args.output + 'P_autocorr_trunc.' +
-                        args.plotformat, format=args.plotformat)
-            plt.close()
-
-        # Truncate and pad with zeros:
-
-        if len(t) < 2 * args.trunclen:  # if t too short to simply truncate
-            t = np.append(t, t + t[-1] + dt)
-        t = np.resize(t, 2 * args.trunclen)  # truncate
-        P_P = np.append(np.resize(P_P, args.trunclen), np.zeros(
-            args.trunclen))  # truncate, pad w zeros
-
-        # Susceptibility and errors:
-
-        print('Calculating susceptibilty and errors via Method 1...')
-
-        if args.trunclen > seglen:  # if segments too short
-
-            args.segs = int(Nframes / args.trunclen)
-            seglen = int(Nframes / args.segs)  # lengthen seglen to >trunclen
-
-        nu, susc = FT(t, TimeDerivative5PS(P_P, dt))  # total susc
-        dsusc = np.zeros(2 * args.trunclen, dtype=complex)
-
-        for s in range(0, args.segs):
-
-            P_P = ScalarProdCorr(P[s * seglen:(s + 1) * seglen, :])
-            P_P = np.append(np.resize(P_P, args.trunclen),
-                            np.zeros(args.trunclen))
-            ss = FT(t, TimeDerivative5PS(P_P, dt), False)
-            dsusc += (ss - susc).real * (ss - susc).real + \
-                1j * (ss - susc).imag * (ss - susc).imag
-
-        # convert from variance to std. deviation
-        dsusc.real = np.sqrt(dsusc.real) * pref / args.segs
-        # convert from variance to std. deviation
-        dsusc.imag = np.sqrt(dsusc.imag) * pref / args.segs
-
-        susc.real *= -pref
-        susc.imag *= pref  # we want -1 * Im susc (sometimes denoted as Chi'')
-
-    # ========= METHOD 2 =========
-    # ============================
-
-    if args.method == 2:
-
-        # Susceptibility and errors:
-
-        print('Calculating susceptibilty and errors\
-            \nUsing method 2 (real part via Kramers Kronig)...')
-
-        if len(t) < 2 * seglen:  # if t too short to simply truncate
-            t = np.append(t, t + t[-1] + dt)
-        # truncate t array (it's automatically longer than 2*seglen)
-        t = t[:2 * seglen]
-        ss = np.zeros((2 * seglen, args.segs), dtype=complex)  # ss[t:segment]
-
-        nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0]  # get freqs
-
-        for s in range(0, args.segs):
-            for i in range(0, len(P[0, :])):
-
-                FP = FT(t, np.append(
-                    P[s * seglen:(s + 1) * seglen, i], np.zeros(seglen)), False)
-                ss[:, s] += FP.real * FP.real + FP.imag * FP.imag
-
-            ss[:, s] *= nu * 1j * pref / (2 * seglen * dt)
-            # (1/2 because it's the full FT, not only the pos domain)
-
-            # Get the real part by Kramers Kronig:
-            ss[:, s].real = iFT(t, 1j * np.sign(nu) *
-                                FT(nu, ss[:, s], False), False).imag
-
-        susc = np.mean(ss, axis=1)  # susc[t]
-        dsusc = np.zeros(2 * seglen, dtype=complex)
-
-        for s in range(0, args.segs):
-            dif = ss[:, s] - susc
-            dsusc += dif.real * dif.real + 1j * dif.imag * dif.imag
-
-        dsusc.real = np.sqrt(dsusc.real) / args.segs
-        dsusc.imag = np.sqrt(dsusc.imag) / args.segs
-        args.trunclen = seglen
+    dsusc.real = np.sqrt(dsusc.real) / args.segs
+    dsusc.imag = np.sqrt(dsusc.imag) / args.segs
+    args.trunclen = seglen
 
     t_1 = time.clock()
 
-    if args.recalc or not t_exists or not V_exists or not P_exists:
-        print(
-            'Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
-    print('Number of segments:\t{0}'.format(args.segs))
-    print('Length of segments:\t{0} frames, {1:.0f} ps'.format(
+    print('Susceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
+    print('Number of segments:    {0}'.format(args.segs))
+    print('Length of segments:    {0} frames, {1:.0f} ps'.format(
         seglen, seglen * dt))
-    print('Frequency spacing: \t~ {0:.5f} THz'.format(
+    print('Frequency spacing:    ~ {0:.5f} THz'.format(
         args.segs / (Nframes * dt)))
+
 
     # ========= SAVE DATA ========
     # ============================
@@ -440,6 +262,36 @@ def main(firstarg=2, DEBUG=False):
 
     print('Susceptibility data saved as ' + suscfilename)
 
+    # Bin data if there are too many points:
+
+    if not (args.nobin or seglen <= args.bins):
+
+        bins = np.logspace(np.log(args.binafter) / np.log(10), np.log(len(susc)) / 
+            np.log(10), args.bins - args.binafter + 1).astype(int)
+        bins = np.unique(np.append(np.arange(args.binafter), bins))[:-1]
+
+        susc = Bin(susc, bins)
+        dsusc = Bin(dsusc, bins)
+        nu = Bin(nu, bins)
+
+        print('Binning data above datapoint {0} in log-spaced bins'.format(args.binafter))
+        print('Binned data consists of {0} datapoints'.format(len(susc)))
+
+        suscfilename = args.output + 'susc_binned.txt'
+
+        np.savetxt(suscfilename,
+                   np.transpose(
+                       [nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
+                   delimiter='\t',
+                   header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
+
+        print('Binned susceptibility data saved as ' + suscfilename)
+
+
+    else:  # data is binned
+        print('Not binning data: there are {0} datapoints'.format(len(susc)))
+
+
     # ==== OPTIONAL PLOTTING =====
     # ============================
 
@@ -447,28 +299,16 @@ def main(firstarg=2, DEBUG=False):
         print('User specified not to generate plots -- finished :)')
 
     else:
+        print('Generating plots...')
 
-        print('Calculations complete. Generating plots...')
+        import matplotlib.pyplot as plt
 
-        # Bin data if there are too many points:
-        # NOTE: matplotlib.savefig() will plot 50,000 points, but not 60,000
-
-        if not (args.nobin or args.trunclen <= Npp):  # all data is used
-
-            bins = np.logspace(np.log(
-                Lpp) / np.log(10), np.log(len(susc)) / np.log(10), Npp - Lpp + 1).astype(int)
-            bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
-
-            susc = Bin(susc, bins)
-            dsusc = Bin(dsusc, bins)
-            nu = Bin(nu, bins)
-
-            print(
-                'Averaging data above datapoint {0} in log-spaced bins'.format(Lpp))
-            print('Plotting {0} datapoints'.format(len(susc)))
-
-        else:  # data is binned
-            print('Plotting all {0} datapoints'.format(len(susc)))
+        # Colors/alpha values for plotting
+        col1 = 'royalblue'
+        col2 = 'crimson'
+        col3 = 'grey'
+        curve = 0.9
+        shade = 0.1
 
         nuBuf = 1.4  # buffer factor for extra room in the x direction
 

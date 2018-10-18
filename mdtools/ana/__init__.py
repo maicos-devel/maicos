@@ -12,7 +12,7 @@ import MDAnalysis
 def initilize_universe(argobj):
     """Reads the trajectory data and returns an MDAnalysis universe."""
 
-    print("\nLoading trajectory... ", end="")
+    print("Loading trajectory... ", end="")
     sys.stdout.flush()
     u = MDAnalysis.Universe(argobj.topology, argobj.trajectory)
     print("Done!")
