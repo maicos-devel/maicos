@@ -301,61 +301,55 @@ def main(firstarg=2, DEBUG=False):
         print('Generating plots...')
 
         import matplotlib.pyplot as plt
+        import mpltex # for plot decoration
 
         # Colors/alpha values for plotting
         col1 = 'royalblue'
         col2 = 'crimson'
-        col3 = 'grey'
         curve = 0.9
-        shade = 0.1
-
+        shade = 0.2
         nuBuf = 1.4  # buffer factor for extra room in the x direction
 
-        # Plot lin-log:
+        # Plots:
+        @mpltex.acs_decorator
+        def my_plot(i):
 
-        plt.figure(figsize=(8, 5.657))
-        plt.title('Complex Dielectric Function')
-        plt.ylabel('$\chi$')
-        plt.xlabel('$\\nu$ [THz]')
-        plt.grid()
-        plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
-        plt.xscale('log')
-        plt.fill_between(nu, susc.real - dsusc.real, susc.real + dsusc.real,
-                         color=col2, alpha=shade)
-        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag + dsusc.imag,
-                         color=col1, alpha=shade)
-        plt.plot(nu, susc.real, color=col2, alpha=curve,
-                 linewidth=1, label='$\chi^{{\prime}}$')
-        plt.plot(nu, susc.imag, color=col1, alpha=curve,
-                 linewidth=1, label='$\chi^{{\prime \prime}}$')
-        plt.legend(loc='best')
-        plt.savefig(args.output + 'susc_linlog.' +
-                    args.plotformat, format=args.plotformat)
-        plt.close()
+            if i == 0:
+                cp = '$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real))
+                cpp = '$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag))
+                plotname = args.output + 'susc_log.' + args.plotformat
 
-        # Plot log-log:
+            if i == 1:    
+                cp = '$\chi^{{\prime}}$'
+                cpp = '$\chi^{{\prime \prime}}$'
+                plotname = args.output + 'susc_linlog.' + args.plotformat
 
-        plt.figure(figsize=(8, 5.657))
-        plt.title('Complex Dielectric Function')
-        plt.ylabel('$\chi$')
-        plt.xlabel('$\\nu$ [THz]')
-        plt.grid()
-        plt.xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
-        plt.yscale('log')
-        plt.xscale('log')
-        plt.fill_between(nu, susc.real - dsusc.real, susc.real + dsusc.real,
-                         color=col2, alpha=shade)
-        plt.fill_between(nu, susc.imag - dsusc.imag, susc.imag + dsusc.imag,
-                         color=col1, alpha=shade)
-        plt.plot(nu, susc.real, color=col2, alpha=curve, linewidth=1,
-                 label='$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real)))
-        plt.plot(nu, susc.imag, color=col1, alpha=curve, linewidth=1,
-                 label='$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag)))
-        if not args.ymin == None:
-            plt.ylim(ymin=args.ymin)
-        plt.legend(loc='best')
-        plt.savefig(args.output + 'susc_log.' +
-                    args.plotformat, format=args.plotformat)
+            fig, ax = plt.subplots(1)
+            ax.set_ylabel('$\chi$')
+            ax.set_xlabel('$\\nu$ [THz]')
+            ax.set_xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
+            ax.set_xscale('log')
+            if i == 0:
+                ax.set_yscale('log')
+            ax.fill_between(nu[1:], susc.real[1:] - dsusc.real[1:], susc.real[1:] +
+                dsusc.real[1:], color=col2, alpha=shade)
+            ax.fill_between(nu[1:], susc.imag[1:] - dsusc.imag[1:], susc.imag[1:] +
+                dsusc.imag[1:], color=col1, alpha=shade)
+            ax.plot(nu[:2], susc.real[:2], color=col2, alpha=curve, linestyle=':')
+            ax.plot(nu[:2], susc.imag[:2], color=col1, alpha=curve, linestyle=':')
+            ax.plot(nu[1:], susc.real[1:], color=col2, alpha=curve, label=cp)
+            ax.plot(nu[1:], susc.imag[1:], color=col1, alpha=curve, label=cpp)
+
+            if i == 0 and (not args.ymin == None):
+                plt.set_ylim(ymin=args.ymin)
+            ax.legend(loc='best')
+            fig.tight_layout(pad=0.1)
+            fig.savefig(plotname, format=args.plotformat)
+
+        
+        my_plot(0) # log-log
+        my_plot(1) # lin-log
+        plt.close('all')
 
         print('Susceptibility plots generated -- finished :)')
 
