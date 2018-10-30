@@ -311,36 +311,30 @@ def main(firstarg=2, DEBUG=False):
         print('Generating plots...')
 
         import matplotlib.pyplot as plt
-        import mpltex # for plot decoration
 
-        # Colors/alpha values for plotting
+        plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+
+        # Colors/alpha values/labels/params for plotting
         col1 = 'royalblue'
         col2 = 'crimson'
         curve = 0.9
-        shade = 0.2
+        shade = 0.15
         nuBuf = 1.4  # buffer factor for extra room in the x direction
+        cp = '$\chi^{{\prime}}$'
+        cpp = '$\chi^{{\prime \prime}}$'
+        width = 3.5 # width in inches
 
         # Plots:
-        @mpltex.acs_decorator
-        def my_plot(i):
 
-            if i == 0:
-                cp = '$\chi^{{\prime}}$ : max = {0:.2f}'.format(np.max(susc.real))
-                cpp = '$\chi^{{\prime \prime}}$ : max = {0:.2f}'.format(np.max(susc.imag))
-                plotname = args.output + 'susc_log.' + args.plotformat
+        def my_plot():
 
-            if i == 1:    
-                cp = '$\chi^{{\prime}}$'
-                cpp = '$\chi^{{\prime \prime}}$'
-                plotname = args.output + 'susc_linlog.' + args.plotformat
-
-            fig, ax = plt.subplots(1)
+            fig, ax = plt.subplots(1, figsize=[width,width/np.sqrt(2)])
             ax.set_ylabel('$\chi$')
             ax.set_xlabel('$\\nu$ [THz]')
             ax.set_xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
             ax.set_xscale('log')
-            if i == 0:
-                ax.set_yscale('log')
+            ax.set_yscale(yscale)
             ax.fill_between(nu[1:], susc.real[1:] - dsusc.real[1:], susc.real[1:] +
                 dsusc.real[1:], color=col2, alpha=shade)
             ax.fill_between(nu[1:], susc.imag[1:] - dsusc.imag[1:], susc.imag[1:] +
@@ -352,13 +346,18 @@ def main(firstarg=2, DEBUG=False):
 
             if i == 0 and (not args.ymin == None):
                 plt.set_ylim(ymin=args.ymin)
-            ax.legend(loc='best')
+            ax.legend(loc='best', frameon=False)
             fig.tight_layout(pad=0.1)
             fig.savefig(plotname, format=args.plotformat)
 
-        
-        my_plot(0) # log-log
-        my_plot(1) # lin-log
+        yscale = 'log'
+        plotname = args.output + 'susc_log.' + args.plotformat
+        my_plot() # log-log
+
+        yscale = 'linear'
+        plotname = args.output + 'susc_linlog.' + args.plotformat
+        my_plot() # lin-log
+
         plt.close('all')
 
         print('Susceptibility plots generated -- finished :)')
