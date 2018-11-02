@@ -21,6 +21,7 @@ _mdtools_completion()
   mdtools_opts+=" density"
   mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
+  mdtools_opts+=" dipole_angle"
   mdtools_opts+=" diporder"
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_cylinder"
@@ -160,6 +161,28 @@ _mdtools_completion()
                                -plotformat -ymin -nobin" -- ${cur_word} ) )
     return 0 ;;
 
+    dipole_angle)
+      case "${prev_word}" in
+        -s)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+        return 0 ;;
+        -f)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+        return 0 ;;
+        -o)
+        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+        return 0 ;;
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-d|-sel)
+        COMPREPLY=( )
+        return 0 ;;
+      esac
+      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -d -sel \
+                                -dout" -- ${cur_word} ) )
+      return 0 ;;
+      
     diporder)
       case "${prev_word}" in
         -s)
