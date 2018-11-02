@@ -1,20 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ========== DESCRIPTION ===========
-# This is an example for an analysis script. To use this
-# script do the following steps:
-# 1. Copy it to the "mdtsools/ana" folder and add your code.
-# 2. Choose an unique name and add <"analysis_example": "ana">
-#    to the apps dictionary in "mdtools/__main__.py".
-# 3. OPTIONAL: Add bash completion commands to "mdtools/share/mdtools_completion.bash".
-# ==================================
-
 # Mandatory imports
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import os
 import sys
 
 import MDAnalysis as mda
@@ -24,13 +14,8 @@ from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 from ..utils import repairMolecules
 
-# Custom import modules
-import time
-
 # ========== PARSER ===========
 # =============================
-# parser object will already contain options for
-# the topology, trajectory, begin, end, skipped frames and the box dimenions
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculates the timeseries of the dipole moment wit an axis."""
 
