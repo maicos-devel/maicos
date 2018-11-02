@@ -51,7 +51,7 @@ def foo(bar=None):
 
 
 def main(firstarg=2, DEBUG=False):
-    # Not essential but nice to use args also in custo functions without passing
+    # Not essential but nice to use args also in custom functions without passing
     # explicitly
     global args
 
@@ -67,16 +67,11 @@ def main(firstarg=2, DEBUG=False):
     # ======== MAIN LOOP =========
     # ============================
     t_0 = time.clock()
-    args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
-
+    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        print_frameinfo(ts, args.frame)
+        
         # Calculations done in every frame
         Volume += ts.volume
-
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
 
     t_end = time.clock()
     print("\n")

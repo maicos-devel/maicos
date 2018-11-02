@@ -139,25 +139,19 @@ def main(firstarg=2, DEBUG=False):
 
         dt = args.dt * args.skipframes
         Nframes = (args.endframe - args.beginframe) // args.skipframes
-        args.frame = 0
 
         t_0 = time.clock()
         P = np.zeros((Nframes, 3))
         V = 0.0
         t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
 
-        print("\rEvaluating frame: {:>12}        time: {:>12} ps".format(
-            args.frame, round(u.trajectory.time)), end="")
-
-        for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+        for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+            print_frameinfo(ts, args.frame)
             if not V_exists or args.recalc:
                 V += ts.volume
             if not P_exists or args.recalc:
                 repairMolecules(u.atoms)
                 P[args.frame, :] = np.dot(u.atoms.charges, u.atoms.positions)
-
-            args.frame += 1
-            print_frameinfo(ts, args.frame)
 
         t_1 = time.clock()
         print("\nTook {:.2f} s".format(t_1 - t_0))
