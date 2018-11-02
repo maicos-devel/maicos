@@ -22,6 +22,7 @@ import numpy as np
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import repairMolecules
 
 # Custom import modules
 import time
@@ -70,6 +71,9 @@ def main(firstarg=2, DEBUG=False):
     # ============================
     for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
         print_frameinfo(ts, args.frame)
+        
+        # make broken molecules whole again!
+        repairMolecules(u)
         
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
         dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)), axis=0)
