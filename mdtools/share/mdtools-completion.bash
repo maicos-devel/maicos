@@ -106,7 +106,10 @@ _mdtools_completion()
         -dens)
         COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-d|-dz|-temp|-zpos|-gr)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-temp|-zpos|-gr)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -127,6 +130,9 @@ _mdtools_completion()
         return 0 ;;
         -dens)
         COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
+        return 0 ;;
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
         return 0 ;;
         -b|-e|-dt|-box|-o|—dout|-center|-r|-dr|-l|-gr)
         COMPREPLY=( )
@@ -197,7 +203,10 @@ _mdtools_completion()
         -bin)
         COMPREPLY=( $( compgen -W "COM COC OXY" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-d|-dz|-sel|-shift)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-sel|-shift)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -257,7 +266,10 @@ _mdtools_completion()
         -o)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-dz|-d|-zmin|-zmax|-temp|-groups)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-zmin|-zmax|-temp|-groups)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -360,7 +372,10 @@ _mdtools_completion()
           -o)
           COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
           return 0 ;;
-          -b|-e|-dt|-box|-dout|-d|-dv|-nbins|-gr|-nblock)
+          -d)
+          COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-dt|-box|-dout|-dv|-nbins|-gr|-nblock)
           COMPREPLY=( )
           return 0 ;;
         esac
