@@ -64,8 +64,11 @@ def main(firstarg=2, DEBUG=False):
     # unit normal vector
     unit = np.zeros(3)
     unit[args.dim] += 1
+    
+    dt = args.dt * args.skipframes
 
-    cos_theta = np.empty(args.n_frames)
+    cos_theta = np.empty((args.n_frames, 2))
+    cos_theta[:, 0] = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
 
     # ======== MAIN LOOP =========
     # ============================
@@ -78,7 +81,7 @@ def main(firstarg=2, DEBUG=False):
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
         dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)), axis=0)
 
-        cos_theta[args.frame] = (np.dot(dipoles, unit) / np.linalg.norm(dipoles)).mean()
+        cos_theta[args.frame, 1] = (np.dot(dipoles, unit) / np.linalg.norm(dipoles)).mean()
         
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(cos_theta)
