@@ -79,8 +79,8 @@ def main(firstarg=2, DEBUG=False):
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(cos_theta)
 
-        print("\n")
-        output(cos_theta)
+    print("\n")
+    output(cos_theta)
         
     if DEBUG:
         # Inject local variables into global namespace for debugging.
