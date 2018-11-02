@@ -285,7 +285,7 @@ def main(firstarg=2, DEBUG=False):
             chargepos = sel.atoms.positions * \
                 np.abs(sel.atoms.charges[:, np.newaxis])
             atomsPerMolecule = sel.n_atoms // sel.n_residues
-            centers = np.sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
+            centers = sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
                 / np.abs(sel.residues[0].atoms.charges).sum()
             testpos = sel.atoms.positions
             testpos[:, args.dim] = np.repeat(
