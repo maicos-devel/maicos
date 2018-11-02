@@ -13,7 +13,7 @@ from mdtools.version import __version__
 def get_git_revision_hash():
     try:
         hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-        return ".g"+hash.decode()[:-2]
+        return "-dev"
     except:
         # no git repo
         return ""
