@@ -19,7 +19,7 @@ apps = {"carbonstructure": "build", "insert": "build", "debyer": "ana",
         "dielectric_spectrum": "ana", "dielectric_spectrum_molecular": "ana",
         "density_cylinder": "ana",
         "free-energy": "build", "rerun-free-energy": "build",
-        "dipole_angle": "ana"}
+        "dipole_angle": "ana","kinetic_energy": "ana"}
 
 applist = list(apps.keys())
 applist.sort()

@@ -27,6 +27,7 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
   mdtools_opts+=" free-energy"
+  mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" pertop"
   mdtools_opts+=" rerun-free-energy"
   mdtools_opts+=" saxs"
@@ -301,6 +302,24 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -mdrun -d" -- ${cur_word} ) )
       return 0 ;;
+      
+      kinetic_energy)
+        case "${prev_word}" in
+          -s)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+          return 0 ;;
+          -o)
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-dt|-box)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o " -- ${cur_word} ) )
+        return 0 ;;
         
     pertop)
       case "${prev_word}" in
