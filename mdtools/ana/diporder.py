@@ -117,8 +117,8 @@ def main(firstarg=2, DEBUG=False):
         dz_frame = ts.dimensions[args.dim] / args.nbins
 
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
-        dipoles = np.sum(chargepos[i::atomsPerMolecule] for i in range(
-            atomsPerMolecule)) / 10  # convert to e nm
+        dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(
+            atomsPerMolecule)), axis=0) / 10  # convert to e nm
 
         if args.binmethod == 'COM':
             # Calculate the centers of the objects ( i.e. Molecules )
