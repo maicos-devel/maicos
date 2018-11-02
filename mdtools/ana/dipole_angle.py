@@ -81,7 +81,7 @@ def main(firstarg=2, DEBUG=False):
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
         dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)), axis=0)
 
-        cos_theta[args.frame, 1] = (np.dot(dipoles, unit) / np.linalg.norm(dipoles)).mean()
+        cos_theta[args.frame, 1] = (np.dot(dipoles, unit) / np.linalg.norm(dipoles, axis=1)).mean()
         
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(cos_theta)
