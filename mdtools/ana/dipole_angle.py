@@ -31,8 +31,11 @@ parser.add_argument('-o',   dest='output',      type=str,
 # ========== MAIN ============
 # ============================
 
-def output(cos_theta):
-    np.save(args.output, cos_theta)
+def output(t, cos_theta_i, cos_theta_ii, cos_theta_ij):
+    np.savetxt("{}.dat".format(args.output), 
+               np.vstack([t, cos_theta_i, cos_theta_ii, cos_theta_ij]).T,
+               header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
+               fmt='%.5e')
 
 def main(firstarg=2, DEBUG=False):
     global args
@@ -52,8 +55,10 @@ def main(firstarg=2, DEBUG=False):
     
     dt = args.dt * args.skipframes
 
-    cos_theta = np.empty((args.n_frames, 2))
-    cos_theta[:, 0] = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
+    t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
+    cos_theta_i  = np.empty(args.n_frames)
+    cos_theta_ii = np.empty(args.n_frames)
+    cos_theta_ij = np.empty(args.n_frames)
 
     # ======== MAIN LOOP =========
     # ============================
@@ -66,13 +71,19 @@ def main(firstarg=2, DEBUG=False):
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
         dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)), axis=0)
 
-        cos_theta[args.frame, 1] = (np.dot(dipoles, unit) / np.linalg.norm(dipoles, axis=1)).mean()
+        cos_theta = np.dot(dipoles, unit) / np.linalg.norm(dipoles, axis=1)
+        matrix = np.outer(cos_theta, cos_theta)
+        trace = matrix.trace()
+        
+        cos_theta_i[args.frame]  = cos_theta.mean()
+        cos_theta_ii[args.frame] = trace / sol.n_atoms
+        cos_theta_ij[args.frame] = (matrix.sum() - trace) / sol.n_atoms
         
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
-            output(cos_theta)
+            output(t, cos_theta_i, cos_theta_ii, cos_theta_ij)
 
     print("\n")
-    output(cos_theta)
+    output(t, cos_theta_i, cos_theta_ii, cos_theta_ij)
         
     if DEBUG:
         # Inject local variables into global namespace for debugging.
