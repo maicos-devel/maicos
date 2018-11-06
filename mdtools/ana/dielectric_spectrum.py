@@ -320,6 +320,7 @@ def main(firstarg=2, DEBUG=False):
         col2 = 'crimson'
         curve = 0.9
         shade = 0.15
+        lw = 1.0
         nuBuf = 1.4  # buffer factor for extra room in the x direction
         cp = '$\chi^{{\prime}}$'
         cpp = '$\chi^{{\prime \prime}}$'
@@ -339,10 +340,10 @@ def main(firstarg=2, DEBUG=False):
                 dsusc.real[1:], color=col2, alpha=shade)
             ax.fill_between(nu[1:], susc.imag[1:] - dsusc.imag[1:], susc.imag[1:] +
                 dsusc.imag[1:], color=col1, alpha=shade)
-            ax.plot(nu[:2], susc.real[:2], color=col2, alpha=curve, linestyle=':')
-            ax.plot(nu[:2], susc.imag[:2], color=col1, alpha=curve, linestyle=':')
-            ax.plot(nu[1:], susc.real[1:], color=col2, alpha=curve, label=cp)
-            ax.plot(nu[1:], susc.imag[1:], color=col1, alpha=curve, label=cpp)
+            ax.plot(nu[:2], susc.real[:2], color=col2, alpha=curve, linestyle=':', linewidth=lw)
+            ax.plot(nu[:2], susc.imag[:2], color=col1, alpha=curve, linestyle=':', linewidth=lw)
+            ax.plot(nu[1:], susc.real[1:], color=col2, alpha=curve, label=cp, linewidth=lw)
+            ax.plot(nu[1:], susc.imag[1:], color=col1, alpha=curve, label=cpp, linewidth=lw)
 
             if i == 0 and (not args.ymin == None):
                 plt.set_ylim(ymin=args.ymin)
