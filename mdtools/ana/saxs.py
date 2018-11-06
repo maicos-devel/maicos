@@ -210,10 +210,8 @@ def main(firstarg=2, DEBUG=False):
 
     # ======== MAIN LOOP =========
     # ============================
-    args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        print_frameinfo(ts, args.frame)
 
         for i, t in enumerate(groups):
 
@@ -243,8 +241,6 @@ def main(firstarg=2, DEBUG=False):
                 struct_ts /= np.bincount(bins, minlength=args.nbins)
             struct_factor[:, i] += np.nan_to_num(struct_ts)
 
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output(q, struct_factor, sel.atoms.n_atoms)

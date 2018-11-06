@@ -21,11 +21,13 @@ _mdtools_completion()
   mdtools_opts+=" density"
   mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
+  mdtools_opts+=" dipole_angle"
   mdtools_opts+=" diporder"
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
   mdtools_opts+=" free-energy"
+  mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" pertop"
   mdtools_opts+=" rerun-free-energy"
   mdtools_opts+=" saxs"
@@ -105,7 +107,10 @@ _mdtools_completion()
         -dens)
         COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-d|-dz|-temp|-zpos|-gr)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-temp|-zpos|-gr)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -126,6 +131,9 @@ _mdtools_completion()
         return 0 ;;
         -dens)
         COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
+        return 0 ;;
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
         return 0 ;;
         -b|-e|-dt|-box|-o|—dout|-center|-r|-dr|-l|-gr)
         COMPREPLY=( )
@@ -160,6 +168,28 @@ _mdtools_completion()
                                -plotformat -ymin -nobin" -- ${cur_word} ) )
     return 0 ;;
 
+    dipole_angle)
+      case "${prev_word}" in
+        -s)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+        return 0 ;;
+        -f)
+        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+        return 0 ;;
+        -o)
+        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+        return 0 ;;
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-d|-sel)
+        COMPREPLY=( )
+        return 0 ;;
+      esac
+      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -d -sel \
+                                -dout" -- ${cur_word} ) )
+      return 0 ;;
+      
     diporder)
       case "${prev_word}" in
         -s)
@@ -174,7 +204,10 @@ _mdtools_completion()
         -bin)
         COMPREPLY=( $( compgen -W "COM COC OXY" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-d|-dz|-sel|-shift)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-sel|-shift)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -234,7 +267,10 @@ _mdtools_completion()
         -o)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-dz|-d|-zmin|-zmax|-temp|-groups)
+        -d)
+        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-dout|-dz|-zmin|-zmax|-temp|-groups)
         COMPREPLY=( )
         return 0 ;;
       esac
@@ -266,6 +302,24 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -mdrun -d" -- ${cur_word} ) )
       return 0 ;;
+      
+      kinetic_energy)
+        case "${prev_word}" in
+          -s)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+          return 0 ;;
+          -o)
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-dt|-box)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o " -- ${cur_word} ) )
+        return 0 ;;
         
     pertop)
       case "${prev_word}" in
@@ -337,7 +391,10 @@ _mdtools_completion()
           -o)
           COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
           return 0 ;;
-          -b|-e|-dt|-box|-dout|-d|-dv|-nbins|-gr|-nblock)
+          -d)
+          COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+          return 0 ;;
+          -b|-e|-dt|-box|-dout|-dv|-nbins|-gr|-nblock)
           COMPREPLY=( )
           return 0 ;;
         esac

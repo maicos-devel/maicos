@@ -8,3 +8,6 @@ __pycache__
 sfactor.c
 *.npz
 *.dat
+*.npy
+*.txt
+*.xvg

@@ -86,10 +86,8 @@ def main(firstarg=2, DEBUG=False):
 
     # ======== MAIN LOOP =========
     # ============================
-    args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        print_frameinfo(ts, args.frame)
 
         if args.bpbc:
             repairMolecules(u)
@@ -98,9 +96,7 @@ def main(firstarg=2, DEBUG=False):
         M += M_ts
         M2 += M_ts * M_ts
         V += ts.volume
-
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
+        
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output(M / args.frame, M2 / args.frame, V / args.frame)
 

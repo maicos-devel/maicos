@@ -29,6 +29,8 @@ def initilize_universe(argobj):
 
     if argobj.beginframe > argobj.endframe:
         sys.exit("Start time is larger than end time!")
+        
+    argobj.n_frames = (argobj.endframe - argobj.beginframe) // argobj.skipframes
 
     if argobj.box != None:
         assert (len(argobj.box) == 6 or len(argobj.box) == 3),\

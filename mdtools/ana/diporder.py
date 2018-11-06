@@ -94,10 +94,8 @@ def main(firstarg=2, DEBUG=False):
 
     # ======== MAIN LOOP =========
     # ============================
-    args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        print_frameinfo(ts, args.frame)
 
         if args.membrane_shift:
             # shift membrane
@@ -117,8 +115,8 @@ def main(firstarg=2, DEBUG=False):
         dz_frame = ts.dimensions[args.dim] / args.nbins
 
         chargepos = sol.atoms.positions * sol.atoms.charges[:, np.newaxis]
-        dipoles = np.sum(chargepos[i::atomsPerMolecule] for i in range(
-            atomsPerMolecule)) / 10  # convert to e nm
+        dipoles = np.sum(list(chargepos[i::atomsPerMolecule] for i in range(
+            atomsPerMolecule)), axis=0) / 10  # convert to e nm
 
         if args.binmethod == 'COM':
             # Calculate the centers of the objects ( i.e. Molecules )
@@ -153,8 +151,6 @@ def main(firstarg=2, DEBUG=False):
 
         av_box_length += ts.dimensions[args.dim]
 
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
         # call for output
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(diporder, av_box_length)

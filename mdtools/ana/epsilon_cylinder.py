@@ -152,10 +152,8 @@ def main(firstarg=2, DEBUG=False):
 
     # ======== MAIN LOOP =========
     # ============================
-    args.frame = 0
-    print("\rEvaluating frame: {:>12} time: {:>12} ps".format(
-        args.frame, round(u.trajectory.time)), end="")
-    for ts in u.trajectory[args.beginframe:args.endframe:args.skipframes]:
+    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        print_frameinfo(ts, args.frame)
 
         # make broken molecules whole again!
         repairMolecules(u.atoms)
@@ -212,8 +210,6 @@ def main(firstarg=2, DEBUG=False):
         m_ax[:, args.frame // resample_freq] += this_m_ax
         mM_ax[:, args.frame // resample_freq] += this_m_ax * this_M_ax
 
-        args.frame += 1
-        print_frameinfo(ts, args.frame)
         # call for output
         if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
             output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
