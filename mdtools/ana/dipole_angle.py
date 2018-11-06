@@ -50,7 +50,9 @@ def main(firstarg=2, DEBUG=False):
     u = initilize_universe(args)
 
     sol = u.select_atoms(args.sel)
-    atomsPerMolecule = sol.n_atoms // sol.n_residues
+    
+    n_residues = sol.residues.n_residues
+    atomsPerMolecule = sol.n_atoms // n_residues
 
     # unit normal vector
     unit = np.zeros(3)
@@ -80,8 +82,8 @@ def main(firstarg=2, DEBUG=False):
 
         trace = matrix.trace()
         cos_theta_i[args.frame] = cos_theta.mean()
-        cos_theta_ii[args.frame] = trace / len(dipoles)
-        cos_theta_ij[args.frame] = (matrix.sum() - trace) / len(dipoles)
+        cos_theta_ii[args.frame] = trace / n_residues
+        cos_theta_ij[args.frame] = (matrix.sum() - trace) / (n_residues**2 - n_residues)
 
         if (args.frame % args.outfreq == 0 and args.frame >= args.outfreq):
             output(t, cos_theta_i, cos_theta_ii, cos_theta_ij)
