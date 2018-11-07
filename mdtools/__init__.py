@@ -6,10 +6,9 @@ import os
 import sys
 
 from .version import __version__
+from . import utils
 
 sharePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
-
-__all__ = ["utils"]
 
 def initilize_parser(add_traj_arguments=False):
     """Initilize an argparsing instance.
