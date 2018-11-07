@@ -14,7 +14,9 @@ def initilize_universe(argobj):
 
     print("Loading trajectory... ", end="")
     sys.stdout.flush()
-    u = MDAnalysis.Universe(argobj.topology, argobj.trajectory)
+    u = MDAnalysis.Universe(argobj.topology)
+    if argobj.trajectory is not None:
+        u.load_new(argobj.trajectory)
     print("Done!")
 
     argobj.dt = u.trajectory.dt

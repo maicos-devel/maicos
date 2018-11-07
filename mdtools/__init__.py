@@ -26,8 +26,8 @@ def initilize_parser(add_traj_arguments=False):
     if add_traj_arguments:
         parser.add_argument("-s",   dest="topology",    type=str,
                             default="topol.tpr",            help="the topolgy file")
-        parser.add_argument("-f",   dest="trajectory",  type=str,   default=[
-                            "traj.xtc"], nargs="+", help="A single or multiple trajectory files.")
+        parser.add_argument("-f",   dest="trajectory",  type=str,   default=None,
+                            nargs="+", help="A single or multiple trajectory files.")
         parser.add_argument("-b",   dest="begin",       type=float, default=0,
                             help="start time (ps) for evaluation")
         parser.add_argument("-e",   dest="end",         type=float,
