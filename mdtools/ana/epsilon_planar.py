@@ -262,6 +262,8 @@ def main(firstarg=2, DEBUG=False):
         for i, sel in enumerate(mysels):
             bins = ((sel.atoms.positions[:, args.dim] - args.zmin) /
                     ((zmax - args.zmin) / (args.nbins))).astype(int)
+            bins[np.where(bins < 0)] = 0  # put all charges back inside box
+            bins[np.where(bins > args.nbins)] = args.nbins
             curQ = np.histogram(bins, bins=np.arange(
                 args.nbins + 1), weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / A)
@@ -290,7 +292,6 @@ def main(firstarg=2, DEBUG=False):
             testpos = sel.atoms.positions
             testpos[:, args.dim] = np.repeat(
                 centers[:, args.dim], atomsPerMolecule)
-
             binsz = (((testpos[:, args.dim] - args.zmin) % ts.dimensions[args.dim])
                      / ((zmax - args.zmin) / args.nbins)).astype(int)
 
@@ -299,7 +300,8 @@ def main(firstarg=2, DEBUG=False):
                 dx = ts.dimensions[direction] / nbinsx
                 binsx = (sel.atoms.positions[:, direction]
                          / (ts.dimensions[direction] / nbinsx)).astype(int)
-                binsx[np.where(binsx < 0)] = 0
+                binsx[np.where(binsx < 0)] = 0  # put all charges back inside box
+                binsx[np.where(binsx > nbinsx)] = nbinsx
                 curQx = np.histogram2d(binsz, binsx, bins=[np.arange(0, args.nbins + 1), np.arange(0, nbinsx + 1)],
                                        weights=sel.atoms.charges)[0]
                 curqx = np.cumsum(curQx, axis=1) / (ts.dimensions[xydims[1 - j]] * (
