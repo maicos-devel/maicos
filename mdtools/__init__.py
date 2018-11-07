@@ -5,10 +5,12 @@ import argparse
 import os
 import sys
 
+from MDAnalysis import _READERS
+
 from .version import __version__
-from . import utils
 
 sharePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
+__all__ = ["utils"]
 
 def initilize_parser(add_traj_arguments=False):
     """Initilize an argparsing instance.
@@ -28,6 +30,10 @@ def initilize_parser(add_traj_arguments=False):
                             default="topol.tpr",            help="the topolgy file")
         parser.add_argument("-f",   dest="trajectory",  type=str,   default=None,
                             nargs="+", help="A single or multiple trajectory files.")
+        parser.add_argument("-top",   dest="topology_format",   type=str, default=None,
+                            help="Override automatic topology type detection. The FORMATs " +
+                            "           {}".format(", ".join(_READERS.keys())) +
+                            "           are implemented in MDAnalysis.")
         parser.add_argument("-b",   dest="begin",       type=float, default=0,
                             help="start time (ps) for evaluation")
         parser.add_argument("-e",   dest="end",         type=float,

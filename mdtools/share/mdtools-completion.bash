@@ -41,7 +41,7 @@ _mdtools_completion()
   trajs='!*@(.chain|.crd|.dcd|.config|\
          .history|.dms|.gms|.gro|.inpcrd|.restrt|.lammps|.data|.mol2|.pdb|\
          .ent|.xpdb|.pdbqt|.pqr|.trj|.mdcrd|.crdbox|.ncdf|.nc|.trr|.trz|.xtc|\
-         .xyz|.txyz|.arc|.memory|.mmtf|.gsd|.dummy)'
+         .xyz|.txyz|.arc|.memory|.mmtf|.gsd|.dummy|.lammpstrj)'
   structs='!*@(.gro|.g96|.pdb|.brk|.ent|.esp|.tpr)'
 
   #  Complete the arguments to the module commands.
@@ -115,7 +115,7 @@ _mdtools_completion()
         return 0 ;;
       esac
       COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -d \
-                                -dz -muo -temp -zpos -dens -gr" -- ${cur_word} ) )
+                                -dz -muo -temp -zpos -dens -gr -top" -- ${cur_word} ) )
       return 0 ;;
 
     density_cylinder)
