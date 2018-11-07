@@ -10,7 +10,7 @@ underlying libraries. To install the package
 for all users type
 ```
 git clone https://gitlabph.physik.fu-berlin.de/ag-netz/mdtools.git
-cd mdana
+cd mdtools
 sudo python setup.py install
 ```
 To install it only on the user site use `python setup.py install --user`.

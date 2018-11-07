@@ -18,9 +18,6 @@ from .. import initilize_parser
 
 from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
 
-# TODO set up script to calc spectrum at intervals while calculating polarization
-# for very big-data trajectories
-
 # ========== PARSER ===========
 # =============================
 
