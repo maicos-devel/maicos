@@ -27,7 +27,7 @@ parser.add_argument('-dout', dest='outfreq',     type=float, default='1000',
 parser.add_argument('-d',   dest='dim',         type=int,   default=2,
                     help='dimension for binning (0=X, 1=Y, 2=Z)', )
 parser.add_argument('-dz',  dest='binwidth',    type=float,
-                    default=1,                      help='binwidth (nanometer)')
+                    default=0.1,                      help='binwidth (nanometer)')
 parser.add_argument('-muo', dest='muout',       type=str,   default='dens',
                     help='Prefix for output filename for chemical potential')
 parser.add_argument('-temp', dest='temperature', type=float, default=300,
