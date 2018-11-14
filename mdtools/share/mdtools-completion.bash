@@ -18,7 +18,7 @@ _mdtools_completion()
   mdtools_opts+=" carbonstructure"
   mdtools_opts+=" insert"
   mdtools_opts+=" debyer"
-  mdtools_opts+=" density"
+  mdtools_opts+=" density_planar"
   mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
   mdtools_opts+=" dipole_angle"
@@ -93,7 +93,7 @@ _mdtools_completion()
                     -endq -dq -sinc -d" -- ${cur_word} ) )
       return 0 ;;
 
-    density)
+    density_planar)
       case "${prev_word}" in
         -s)
         COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
