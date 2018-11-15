@@ -527,9 +527,6 @@ class dielectric_spectrum(AnalysisBase):
                             help='Reference temperature.')
         parser.add_argument("-o", dest="output", default="",
                             help="Prefix for the output files.")
-        parser.add_argument("-u", dest="use",
-                            help="Looks for polarization and volume files with this prefix. " +
-                                 "By default, the program looks for files with the prefix -o.")
         parser.add_argument("-segs", type=int, default=20,
                             help="Sets the number of segments the trajectory is broken into.")
         parser.add_argument("-df", type=float,
@@ -553,74 +550,30 @@ class dielectric_spectrum(AnalysisBase):
                             help="Prevents the data from being binned altogether. This can result in very large plot files and errors.")
 
     def _prepare(self):
-        if self._verbose:
-            print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======\n')
-
         if len(self.output) > 0:
             self.output += "_"
 
-        if self.use == None:
-            self.use = self.output
-        else:
-            self.use += "_"
-
-        # Check file existence
-        self.t_exists = os.path.isfile(self.use + 'tseries.npy')
-        if self.t_exists and not self.recalc:
-            if self._verbose:
-                print('Found time series files.')
-            self.results["t"] = np.load(self.use + 'tseries.npy')
-            self.Nframes = len(self.results["t"])
-            self.dt = (self.results["t"][-1]
-                       - self.results["t"][0]) / (self.Nframes - 1)
-        else:
-            if self._verbose:
-                print('Calculating time series from trajectory.')
-            self.results["t"] = self._trajectory.dt * \
-                np.arange(self.start, self.stop, self.step)
-            self.Nframes = (self.stop - self.start) // self.step
-            self.dt = self.atomgroup.universe.trajectory.dt * self.step
-
-        self.V_exists = os.path.isfile(self.use + 'V.txt')
-        if self.V_exists and not self.recalc:
-            if self._verbose:
-                print('Found volume files.')
-            with open(self.output + 'V.txt', "r") as Vfile:
-                self.results["V"] = float(Vfile.readline())
-        else:
-            if self._verbose:
-                print('Calculate volume from trajectory.')
-            self.V = 0.0
-
-        self.P_exists = os.path.isfile(self.use + 'P_tseries.npy')
-        if self.P_exists and not self.recalc:
-            if self._verbose:
-                print('Found polrization files.')
-            self.results["P"] = np.load(self.use + 'P_tseries.npy')
-        else:
-            if self._verbose:
-                print('Calculate polarization from trajectory.')
-            self.P = np.zeros((self.Nframes, 3))
+        self.Nframes = (self.stop - self.start) // self.step
+        self.dt = self.atomgroup.universe.trajectory.dt * self.step
+        self.V = 0
+        self.P = np.zeros((self.Nframes, 3))
 
     def _single_frame(self):
-        if not self.V_exists or self.recalc:
-            self.V += self._ts.volume
-        if not self.P_exists or self.recalc:
-            repairMolecules(self.atomgroup)
-            self.P[self._frame_index, :] = np.dot(
-                self.atomgroup.charges, self.atomgroup.positions)
+        self.V += self._ts.volume
+        repairMolecules(self.atomgroup)
+        self.P[self._frame_index, :] = np.dot(
+            self.atomgroup.charges, self.atomgroup.positions)
 
     def _calculate_results(self):
 
-        if not self.V_exists or self.recalc:
-            # normalization and unit conversion
-            self.results["V"] = self.V
-            self.results["V"] *= 1e-3 / (self._frame_index + 1)
-
-        if not self.P_exists or self.recalc:
-            self.results["P"] = self.P
-            # MDAnalysis gives units of Å, we use nm
-            self.results["P"] /= 10
+        self.results["t"] = self._trajectory.dt * np.arange(self.start, self.stop, self.step)
+        
+        self.results["V"] = self.V
+        self.results["V"] *= 1e-3 / (self._frame_index + 1)
+        
+        self.results["P"] = self.P
+        # MDAnalysis gives units of Å, we use nm
+        self.results["P"] /= 10
 
         # Find a suitable number of segments if it's not specified:
         if not self.df == None:
@@ -651,34 +604,34 @@ class dielectric_spectrum(AnalysisBase):
         # std deviation of susceptibility
         self.results["dsusc"] = np.zeros(self.seglen, dtype=complex)
         # susceptibility for current seg
-        self.results["ss"] = np.zeros((2 * self.seglen), dtype=complex)
+        ss = np.zeros((2 * self.seglen), dtype=complex)
 
         # loop over segs
         for s in range(0, self.segs):
             if self._verbose:
                 print('\rSegment {0} of {1}'.format(s + 1, self.segs), end='')
-            self.results["ss"] = 0 + 0j
+            ss = 0 + 0j
 
             # loop over x, y, z
             for self._i in range(0, len(self.results["P"][0, :])):
                 FP = FT(self.results["t"], np.append(
                     self.results["P"][s * self.seglen:(s + 1) * self.seglen, self._i], np.zeros(self.seglen)), False)
-                self.results["ss"] += FP.real * FP.real + FP.imag * FP.imag
+                ss += FP.real * FP.real + FP.imag * FP.imag
 
-            self.results["ss"] *= self.results["nu"] * 1j
+            ss *= self.results["nu"] * 1j
 
             # Get the real part by Kramers Kronig
-            self.results["ss"].real = iFT(self.results["t"], 1j * np.sign(self.results["nu"])
-                                          * FT(self.results["nu"], self.results["ss"], False), False).imag
+            ss.real = iFT(self.results["t"], 1j * np.sign(self.results["nu"])
+                                          * FT(self.results["nu"], ss, False), False).imag
 
             if s == 0:
-                self.results["susc"] += self.results["ss"][self.seglen:]
+                self.results["susc"] += ss[self.seglen:]
 
             else:
-                ds = self.results["ss"][self.seglen:] - \
+                ds = ss[self.seglen:] - \
                     (self.results["susc"] / s)
-                self.results["susc"] += self.results["ss"][self.seglen:]
-                dif = self.results["ss"][self.seglen:] - \
+                self.results["susc"] += ss[self.seglen:]
+                dif = ss[self.seglen:] - \
                     (self.results["susc"] / (s + 1))
                 ds.real *= dif.real
                 ds.imag *= dif.imag
@@ -701,17 +654,35 @@ class dielectric_spectrum(AnalysisBase):
                 self.seglen, self.seglen * self.dt))
             print('Frequency spacing:    ~ {0:.5f} THz'.format(
                 self.segs / (self.Nframes * self.dt)))
+                
+        # Bin data if there are too many points:
+        if not (self.nobin or self.seglen <= self.bins):
+            bins = np.logspace(np.log(self.binafter) / np.log(10), np.log(len(self.results["susc"])) /
+                               np.log(10), self.bins - self.binafter + 1).astype(int)
+            bins = np.unique(np.append(np.arange(self.binafter), bins))[:-1]
+
+            self.results["nu_binned"] = Bin(self.results["nu"], bins)
+            self.results["susc_binned"] = Bin(self.results["susc"], bins)
+            self.results["dsusc_binned"] = Bin(self.results["dsusc"], bins)
+
+            if self._verbose:
+                print(
+                    'Binning data above datapoint {0} in log-spaced bins'.format(self.binafter))
+                print('Binned data consists of {0} datapoints'.format(
+                    len(self.results["susc"])))
+        elif self._verbose:
+            # data is binned
+            print('Not binning data: there are {0} datapoints'.format(
+                len(self.results["susc"])))
+
 
     def _save_results(self):
-        if not self.t_exists or self.recalc:
-            np.save(self.output + 'tseries.npy', self.results["t"])
+        np.save(self.output + 'tseries.npy', self.results["t"])
 
-        if not self.V_exists or self.recalc:
-            with open(self.output + 'V.txt', "w") as Vfile:
-                Vfile.write(str(self.results["V"]))
+        with open(self.output + 'V.txt', "w") as Vfile:
+            Vfile.write(str(self.results["V"]))
 
-        if not self.P_exists or self.recalc:
-            np.save(self.output + 'P_tseries.npy', self.results["P"])
+        np.save(self.output + 'P_tseries.npy', self.results["P"])
 
         suscfilename = self.output + 'susc.txt'
         np.savetxt(suscfilename, np.transpose([self.results["nu"],
@@ -725,39 +696,19 @@ class dielectric_spectrum(AnalysisBase):
         if self._verbose:
             print('Susceptibility data saved as ' + suscfilename)
 
-        # Bin data if there are too many points:
         if not (self.nobin or self.seglen <= self.bins):
 
-            bins = np.logspace(np.log(self.binafter) / np.log(10), np.log(len(self.results["susc"])) /
-                               np.log(10), self.bins - self.binafter + 1).astype(int)
-            bins = np.unique(np.append(np.arange(self.binafter), bins))[:-1]
-
-            self.results["susc"] = Bin(self.results["susc"], bins)
-            self.results["dsusc"] = Bin(self.results["dsusc"], bins)
-            self.results["nu"] = Bin(self.results["nu"], bins)
-
-            if self._verbose:
-                print(
-                    'Binning data above datapoint {0} in log-spaced bins'.format(self.binafter))
-                print('Binned data consists of {0} datapoints'.format(
-                    len(self.results["susc"])))
-
             suscfilename = self.output + 'susc_binned.txt'
-            np.savetxt(suscfilename, np.transpose([self.results["nu"],
-                                                   self.results["susc"].real,
-                                                   self.results["dsusc"].real,
-                                                   self.results["susc"].imag,
-                                                   self.results["dsusc"].imag]),
+            np.savetxt(suscfilename, np.transpose([self.results["nu_binned"],
+                                                   self.results["susc_binned"].real,
+                                                   self.results["dsusc_binned"].real,
+                                                   self.results["susc_binned"].imag,
+                                                   self.results["dsusc_binned"].imag]),
                        delimiter='\t',
                        header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
 
             if self._verbose:
                 print('Binned susceptibility data saved as ' + suscfilename)
-
-        elif self._verbose:
-            # data is binned
-            print('Not binning data: there are {0} datapoints'.format(
-                len(self.results["susc"])))
 
     def _conclude(self):
         if self.noplots and self._verbose:
@@ -832,6 +783,3 @@ class dielectric_spectrum(AnalysisBase):
 
             if self._verbose:
                 print('Susceptibility plots generated -- finished :)')
-
-        if self._verbose:
-            print('\n============================================\n\n')
