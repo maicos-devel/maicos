@@ -734,7 +734,8 @@ class dielectric_spectrum(AnalysisBase):
             cpp = '$\chi^{{\prime \prime}}$'
             width = 3.5  # inches
 
-            def my_plot():
+            def my_plot(binned=False):
+                element = binned * "_binned"
 
                 fig, ax = plt.subplots(1, figsize=[width, width / np.sqrt(2)])
                 ax.set_ylabel('$\chi$')
@@ -743,26 +744,31 @@ class dielectric_spectrum(AnalysisBase):
                             / nuBuf, self.results["nu"][-1] * nuBuf)
                 ax.set_xscale('log')
                 ax.set_yscale(yscale)
-                ax.fill_between(self.results["nu"][1:],
-                                self.results["susc"].real[1:] -
-                                self.results["dsusc"].real[1:],
-                                self.results["susc"].real[1:]
-                                + self.results["dsusc"].real[1:],
+                
+                ax.fill_between(self.results["nu" + element][1:],
+                                self.results["susc" + element].real[1:] -
+                                self.results["dsusc" + element].real[1:],
+                                self.results["susc" + element].real[1:]
+                                + self.results["dsusc" + element].real[1:],
                                 color=col2, alpha=shade)
-                ax.fill_between(self.results["nu"][1:],
-                                self.results["susc"].imag[1:] -
-                                self.results["dsusc"].imag[1:],
-                                self.results["susc"].imag[1:]
-                                + self.results["dsusc"].imag[1:],
+                ax.fill_between(self.results["nu" + element][1:],
+                                self.results["susc" + element].imag[1:] -
+                                self.results["dsusc" + element].imag[1:],
+                                self.results["susc" + element].imag[1:]
+                                + self.results["dsusc" + element].imag[1:],
                                 color=col1, alpha=shade)
 
-                ax.plot(self.results["nu"][:2], self.results["susc"].real[:2],
+                ax.plot(self.results["nu" + element][:2], 
+                        self.results["susc" + element].real[:2],
                         color=col2, alpha=curve, linestyle=':', linewidth=lw)
-                ax.plot(self.results["nu"][:2], self.results["susc"].imag[:2],
+                ax.plot(self.results["nu" + element][:2], 
+                        self.results["susc" + element].imag[:2],
                         color=col1, alpha=curve, linestyle=':', linewidth=lw)
-                ax.plot(self.results["nu"][1:], self.results["susc"].real[1:],
+                ax.plot(self.results["nu" + element][1:], 
+                        self.results["susc" + element].real[1:],
                         color=col2, alpha=curve, label=cp, linewidth=lw)
-                ax.plot(self.results["nu"][1:], self.results["susc"].imag[1:],
+                ax.plot(self.results["nu" + element][1:], 
+                        self.results["susc" + element].imag[1:],
                         color=col1, alpha=curve, label=cpp, linewidth=lw)
 
                 if self._i == 0 and (not self.ymin == None):
@@ -771,13 +777,18 @@ class dielectric_spectrum(AnalysisBase):
                 fig.tight_layout(pad=0.1)
                 fig.savefig(plotname, format=self.plotformat)
 
+            if self.nobin or self.seglen <= self.bins:
+                binned=False
+            else:
+                binned=True
+                
             yscale = 'log'
             plotname = self.output + 'susc_log.' + self.plotformat
-            my_plot()  # log-log
+            my_plot(binned)  # log-log
 
             yscale = 'linear'
             plotname = self.output + 'susc_linlog.' + self.plotformat
-            my_plot()  # lin-log
+            my_plot(binned)  # lin-log
 
             plt.close('all')
 
