@@ -81,8 +81,8 @@ class kinetic_energy(AnalysisBase):
     def _calculate_results(self):
         self.results["t"] = self._trajectory.dt * \
             np.arange(self.start, self.stop, self.step)
-        self.results["trans"] = 100 * self.E_center / 2
-        self.results["rot"] = 100 * (self.E_kin - self.E_center) / 2
+        self.results["trans"] = self.E_center / 2 / 100
+        self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
         np.savetxt("{}.dat".format(self.output),
