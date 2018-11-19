@@ -13,7 +13,7 @@ from .base import AnalysisBase
 
 class kinetic_energy(AnalysisBase):
     """Calculates the timeseries for the molecular center
-       translational and rotational kinetic energy."""
+       translational and rotational kinetic energy (kJ/mole)."""
 
     def __init__(self, atomgroup, output="output", refpoint="COM", **kwargs):
         # Inherit all classes from AnalysisBase
@@ -81,11 +81,11 @@ class kinetic_energy(AnalysisBase):
     def _calculate_results(self):
         self.results["t"] = self._trajectory.dt * \
             np.arange(self.start, self.stop, self.step)
-        self.results["trans"] = self.E_center / 2
-        self.results["rot"] = (self.E_kin - self.E_center) / 2
+        self.results["trans"] = 100 * self.E_center / 2
+        self.results["rot"] = 100 * (self.E_kin - self.E_center) / 2
 
     def _save_results(self):
         np.savetxt("{}.dat".format(self.output),
                    np.vstack(
                        [self.results["t"], self.results["trans"], self.results["rot"]]).T,
-                   fmt='%.8e', header="t / ps \t E_kin^trans \t E_kin^rot")
+                   fmt='%.8e', header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
