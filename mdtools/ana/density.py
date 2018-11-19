@@ -38,7 +38,7 @@ class density_planar(AnalysisBase):
     """Computes partial densities or temperature profiles across the box.
        For group selections use strings in the MDAnalysis selection command style"""
 
-    def __init__(self, atomgroup, output="density", dim=2, binwidth=0.1, muout="muout",
+    def __init__(self, atomgroup, output="density", outfreq=1000, dim=2, binwidth=0.1, muout="muout",
                  temperature=300, zpos=None, dens="mass", groups=['all'], **kwargs):
         # Inherit all classes from AnalysisBase
         super(density_planar, self).__init__(atomgroup.universe.trajectory,
@@ -46,6 +46,7 @@ class density_planar(AnalysisBase):
 
         self.atomgroup = atomgroup
         self.output = output
+        self.outfreq = outfreq
         self.dim = dim
         self.binwidth = binwidth
         self.muout = muout
@@ -62,7 +63,7 @@ class density_planar(AnalysisBase):
         parser.description = self.__doc__
         parser.add_argument('-o', dest='output', type=str, default='density',
                             help='Prefix for output filenames')
-        parser.add_argument('-dout', dest='outfreq', type=float, default='1000',
+        parser.add_argument('-dout', dest='outfreq', type=float, default=1000,
                             help='Default time after which output files are refreshed (1000 ps).')
         parser.add_argument('-d', dest='dim', type=int, default=2,
                             help='dimension for binning (0=X, 1=Y, 2=Z)', )
