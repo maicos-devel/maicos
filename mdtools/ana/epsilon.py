@@ -14,7 +14,7 @@ constants["electric_constant"] = 5.526350e-3
 
 class epsilon_bulk(AnalysisBase):
     """Computes the dipole moment flcutuations and from this the
-    dielectric constant. 
+    dielectric constant.
     For group selections use strings in the MDAnalysis selection command style"""
 
     def __init__(self, atomgroup, sel="all", outfreq=100, temperature=300,
@@ -27,7 +27,7 @@ class epsilon_bulk(AnalysisBase):
         self.temperature = temperature
         self.bpbc = bpbc
         self.output = output
-        
+
     def _configure_parser(self, parser):
         parser.description = self.__doc__
         parser.add_argument('-sel', dest='sel', type=str, default='all',
@@ -119,19 +119,18 @@ class epsilon_bulk(AnalysisBase):
                    np.hstack([self.results["eps_mean"],
                               self.results["eps"]]).T,
                    fmt='%1.2f', header='eps\teps_x\teps_y\teps_z')
-                   
+
 class epsilon_planar(AnalysisBase):
     """Calculate the dielectric profile. See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details."""
 
     def __init__(self, atomgroup, output="eps", binwidth=0.05, dim=2, zmin=0,
                  zmax=-1, temperature=300, groups=['resname SOL', 'not resname SOL'],
-                 outfreq=10000, b2d=True, vac=False, membrane_shift=False, com=False,
+                 outfreq=10000, b2d=False, bsym=False, vac=False, membrane_shift=False, com=False,
                  bpbc=True, **kwself):
 
         # Inherit all classes from AnalysisBase
         super(epsilon_planar, self).__init__(atomgroup.universe.trajectory,
                                              **kwself)
-
         self.atomgroup = atomgroup
         self.output = output
         self.binwidth = binwidth
@@ -142,11 +141,12 @@ class epsilon_planar(AnalysisBase):
         self.groups = groups
         self.outfreq = outfreq
         self.b2d = b2d
+        self.bsym = bsym
         self.vac = vac
         self.membrane_shift = membrane_shift
         self.com = com
         self.bpbc = bpbc
-    
+
     def _configure_parser(self, parser):
         parser.description = self.__doc__
         parser.add_argument('-dz', dest='binwidth', type=float, default=0.05,
@@ -179,7 +179,7 @@ class epsilon_planar(AnalysisBase):
                             help='shift system such that the water COM is centered')
         parser.add_argument('-nopbcrepair', dest='bpbc', action='store_false',
                             help='do not make broken molecules whole again (only works if molecule is smaller than shortest box vector')
-    
+
     def _prepare(self):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
@@ -421,34 +421,31 @@ class epsilon_planar(AnalysisBase):
             self.results["eps_perp_coll"] = (- eps0inv * beta * pref * cov_perp_coll) \
                 / (1 + eps0inv * beta * pref / self.results["V"] * var_perp)
 
-            if (self.zmax == -1):
-                self.results["z"] = np.linspace(
-                    self.zmin, self.Lz / self._index, len(self.results["eps_par"])) / 10
-            else:
-                self.results["z"] = np.linspace(
-                    self.zmin, self.zmax, len(self.results["eps_par"])) / 10.
+        if (self.zmax == -1):
+            self.results["z"] = np.linspace(
+                self.zmin, self.Lz / self._index, len(self.results["eps_par"])) / 10
+        else:
+            self.results["z"] = np.linspace(
+                self.zmin, self.zmax, len(self.results["eps_par"])) / 10.
 
     def _save_results(self):
-
-
-        outdata_perp = np.hstack([self.results["z"][:, np.newaxis], 
-                                  self.results["eps_perp"].sum(axis=1)[:, np.newaxis], 
+        outdata_perp = np.hstack([self.results["z"][:, np.newaxis],
+                                  self.results["eps_perp"].sum(axis=1)[:, np.newaxis],
                                   self.results["eps_perp"],
-                                  np.linalg.norm(self.results["deps_perp"], axis=1)[:, np.newaxis], 
+                                  np.linalg.norm(self.results["deps_perp"], axis=1)[:, np.newaxis],
                                   self.results["deps_perp"],
-                                  self.results["eps_perp_self"].sum(axis=1)[:, np.newaxis], 
+                                  self.results["eps_perp_self"].sum(axis=1)[:, np.newaxis],
                                   self.results["eps_perp_coll"].sum(axis=1)[:, np.newaxis],
-                                  self.results["eps_perp_self"], 
+                                  self.results["eps_perp_self"],
                                   self.results["eps_perp_coll"]])
-
-        outdata_par = np.hstack([self.results["z"][:, np.newaxis], 
-                                 self.results["eps_par"].sum(axis=1)[:, np.newaxis], 
+        outdata_par = np.hstack([self.results["z"][:, np.newaxis],
+                                 self.results["eps_par"].sum(axis=1)[:, np.newaxis],
                                  self.results["eps_par"],
-                                 np.linalg.norm(self.results["deps_par"], axis=1)[:, np.newaxis], 
+                                 np.linalg.norm(self.results["deps_par"], axis=1)[:, np.newaxis],
                                  self.results["deps_par"],
-                                 self.results["eps_par_self"].sum(axis=1)[:, np.newaxis], 
+                                 self.results["eps_par_self"].sum(axis=1)[:, np.newaxis],
                                  self.results["eps_par_coll"].sum(axis=1)[:, np.newaxis],
-                                 self.results["eps_par_self"], 
+                                 self.results["eps_par_self"],
                                  self.results["eps_par_coll"]])
 
         if (self.bsym):
@@ -463,4 +460,3 @@ class epsilon_planar(AnalysisBase):
                             self._index * self.atomgroup.universe.trajectory.dt)
         np.savetxt(self.output + '_perp.dat', outdata_perp, header=header)
         np.savetxt(self.output + '_par.dat', outdata_par, header=header)
-
