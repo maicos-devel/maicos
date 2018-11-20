@@ -36,7 +36,7 @@ def dmu(rho, drho, temperature):
 
 class density_planar(AnalysisBase):
     """Computes partial densities or temperature profiles across the box.
-       For group selections use strings in the MDAnalysis selection command style"""
+       For group selections use strings in the MDAnalysis selection command style."""
 
     def __init__(self, atomgroup, output="density", outfreq=1000, dim=2, binwidth=0.1, muout="muout",
                  temperature=300, zpos=None, dens="mass", groups=['all'], **kwargs):
@@ -58,7 +58,7 @@ class density_planar(AnalysisBase):
             self.groups = [groups]
         else:
             self.groups = groups
-            
+
     def _configure_parser(self, parser):
         parser.description = self.__doc__
         parser.add_argument('-o', dest='output', type=str, default='density',
