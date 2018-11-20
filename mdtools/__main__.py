@@ -29,14 +29,14 @@ except ImportError:
 
 
 def main():
-    """The mdtools main function including the argument parser and universe 
+    """The mdtools main function including the argument parser and universe
        initialization."""
     # Dictionary containing the app name and the directory
     apps = {}
     for module in anamodules:
         # Load all classes in each module but ignore first one since this is
         # the basemodule.
-        clsmembers = inspect.getmembers(sys.modules["mdtools.ana." + module], 
+        clsmembers = inspect.getmembers(sys.modules["mdtools.ana." + module],
                                         inspect.isclass)[1:]
         for cls in clsmembers:
             apps[cls[0]] = "ana." + module
