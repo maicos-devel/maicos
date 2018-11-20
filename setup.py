@@ -29,7 +29,7 @@ if __name__ == "__main__":
               author_email="ploche@physik.fu-berlin.de",
               package_data={'': ['share/*']},
               include_package_data=True,
-              install_requires=['GromacsWrapper>=0.7', 'MDAnalysis>=0.17.0',
+              install_requires=['GromacsWrapper>=0.7', 'MDAnalysis>=0.19.0',
                                 'matplotlib>=2.0.0', 'numba>=0.38.0',
                                  'numpy>=1.10.4', 'scipy>=0.17'],
               entry_points={
