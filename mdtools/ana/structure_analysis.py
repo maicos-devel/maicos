@@ -93,6 +93,11 @@ class debye(AnalysisBase):
         # create tmp directory for saving datafiles
         self._tmp = tempfile.mkdtemp()
 
+        try:
+            subprocess.call(self.debyer)
+        except FileNotFoundError:
+            raise RuntimeError("{}: command not found".format(self.debyer))
+
         self._OUT = open(os.devnull, 'w')
 
         if self._verbose:
