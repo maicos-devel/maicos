@@ -242,7 +242,7 @@ class debye(AnalysisBase):
        profile is calculated. For group selections use strings in the MDAnalysis selection command style."""
 
     def __init__(self, atomgroup, sel="all", outfreq=100, output="sq",
-                 startq=0, endq=6, dq=0.02, sinc=False, debyer="debyer", **kwargs):
+                 startq=0, endq=60, dq=0.05, sinc=False, debyer="debyer", **kwargs):
         # Inherit all classes from AnalysisBase
         super(debye, self).__init__(atomgroup.universe.trajectory, **kwargs)
 
@@ -260,22 +260,27 @@ class debye(AnalysisBase):
         parser.description = self.__doc__
         parser.add_argument('-sel', dest='sel', type=str, default='all',
                             help='Atoms for which to compute the profile', )
-        parser.add_argument('-dout', dest='outfreq', type=float, default='100',
+        parser.add_argument('-dout', dest='outfreq', type=float, default=100,
                             help='Number of frames after which the output is updated.')
         parser.add_argument('-sq', dest='output', type=str, default='sq',
                             help='Prefix/Path for output file')
         parser.add_argument('-startq', dest='startq', type=float, default=0,
-                            help='Starting q (1/Å)')
-        parser.add_argument('-endq', dest='endq', type=float, default=6,
-                            help='Ending q (1/Å)')
-        parser.add_argument('-dq', dest='dq', type=float, default=0.02,
-                            help='binwidth (1/Å)')
+                            help='Starting q (1/nm)')
+        parser.add_argument('-endq', dest='endq', type=float, default=60,
+                            help='Ending q (1/nm)')
+        parser.add_argument('-dq', dest='dq', type=float, default=0.05,
+                            help='binwidth (1/nm)')
         parser.add_argument('-sinc', dest='sinc', action='store_true',
                             help='apply sinc damping')
         parser.add_argument('-d', dest='debyer', type=str, default="debyer",
                             help='path to the debyer executable')
 
     def _prepare(self):
+
+        # Convert 1/nm to 1/Å
+        self.startq /= 10
+        self.endq /= 10
+        self.dq /= 10
 
         self.selection = self.atomgroup.select_atoms(
             self.sel + " and not name DUM and not name MW")
@@ -309,12 +314,12 @@ class debye(AnalysisBase):
         # create tmp directory for saving datafiles
         self._tmp = tempfile.mkdtemp()
 
+        self._OUT = open(os.devnull, 'w')
+
         try:
-            subprocess.call(self.debyer)
+            subprocess.call(self.debyer, stdout=self._OUT, stderr=self._OUT)
         except FileNotFoundError:
             raise RuntimeError("{}: command not found".format(self.debyer))
-
-        self._OUT = open(os.devnull, 'w')
 
         if self._verbose:
             print("{} is the tempory directory for all files.\n".format(self._tmp))
@@ -376,7 +381,7 @@ class debye(AnalysisBase):
         nonzeros = np.where(s_out != 0)[0]
 
         self.results["q"] = q[nonzeros]
-        self.results["I"] = s_out[nonzeros] / len(datfiles)
+        self.results["scat_factor"] = s_out[nonzeros] / len(datfiles)
 
     def _conclude(self):
         for f in os.listdir(self._tmp):
@@ -386,5 +391,5 @@ class debye(AnalysisBase):
 
     def _save_results(self):
         np.savetxt(self.output + '.dat',
-                   np.vstack([self.results["q"], self.results["I"]]).T,
+                   np.vstack([self.results["q"], self.results["scat_factor"]]).T,
                    header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
