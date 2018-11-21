@@ -82,14 +82,14 @@ def main():
     if "ana" in apps[sys.argv[1]]:
         parser.add_argument("-s", dest="topology", type=str, default="topol.tpr",
                             help="The topolgy file. The FORMATs " +
-                            "           {}".format(", ".join(_READERS.keys())) +
+                            "           {}".format(", ".join(_PARSERS.keys())) +
                             "           are implemented in MDAnalysis.")
         parser.add_argument("-top", dest="topology_format", type=str, default=None,
                             help="Override automatic topology type detection." +
                             "See topology for implemented formats")
         parser.add_argument("-f", dest="trajectory", type=str, default=None, nargs="+",
                             help="A single or multiple trajectory files. The FORMATs " +
-                            "           {}".format(", ".join(_PARSERS.keys())) +
+                            "           {}".format(", ".join(_READERS.keys())) +
                             "           are implemented in MDAnalysis.")
         parser.add_argument("-traj", dest="trajectory_format", type=str, default=None,
                             help="Override automatic trajectory type detection." +
