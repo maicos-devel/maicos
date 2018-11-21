@@ -17,7 +17,7 @@ _mdtools_completion()
   mdtools_opts=""
   mdtools_opts+=" carbonstructure"
   mdtools_opts+=" insert"
-  mdtools_opts+=" debyer"
+  mdtools_opts+=" debye"
   mdtools_opts+=" density_planar"
   mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
@@ -73,7 +73,7 @@ _mdtools_completion()
       COMPREPLY=( $( compgen -W "-h -cp -cs -zmin -zmax -Nw -d -o" -- ${cur_word} ) )
       return 0 ;;
 
-    debyer)
+    debye)
       case "${prev_word}" in
         -s)
         COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
@@ -84,7 +84,10 @@ _mdtools_completion()
         -sq)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-sel|-dout|-startq|-endq|-dq|-d)
+        -d)
+        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+        return 0 ;;
+        -b|-e|-dt|-box|-sel|-dout|-startq|-endq|-dq)
         COMPREPLY=( )
         return 0
         ;;
@@ -189,7 +192,7 @@ _mdtools_completion()
       COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -d -sel \
                                 -dout" -- ${cur_word} ) )
       return 0 ;;
-      
+
     diporder)
       case "${prev_word}" in
         -s)
@@ -278,7 +281,7 @@ _mdtools_completion()
                                 -zmax -temp -groups -2d -vac -sym -com -nopbcrepair"\
                                                           -- ${cur_word} ) )
       return 0 ;;
-    
+
     free-energy)
       case "${prev_word}" in
         -f)
@@ -293,7 +296,7 @@ _mdtools_completion()
         -p)
         COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
         return 0 ;;
-        -sub)   
+        -sub)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
         -sp|-mdrun|-d)
@@ -302,7 +305,7 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -mdrun -d" -- ${cur_word} ) )
       return 0 ;;
-      
+
       kinetic_energy)
         case "${prev_word}" in
           -s)
@@ -320,7 +323,7 @@ _mdtools_completion()
         esac
         COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o " -- ${cur_word} ) )
         return 0 ;;
-        
+
     pertop)
       case "${prev_word}" in
         -p)
@@ -335,7 +338,7 @@ _mdtools_completion()
       esac
       COMPREPLY=( $( compgen -W "-h -p -l -v" -- ${cur_word} ) )
       return 0 ;;
-      
+
       rerun-free-energy)
         case "${prev_word}" in
           -f)
@@ -350,7 +353,7 @@ _mdtools_completion()
           -p)
           COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
           return 0 ;;
-          -sub)   
+          -sub)
           COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
           return 0 ;;
           -b|-e|-q|-nl|-d|-x|-o|-mdrun)
@@ -360,7 +363,7 @@ _mdtools_completion()
         COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -d -b -e -q -nl\
                                     -x -o -mdrun" -- ${cur_word} ) )
         return 0 ;;
-      
+
       saxs)
         case "${prev_word}" in
           -s)
