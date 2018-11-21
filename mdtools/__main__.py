@@ -94,6 +94,9 @@ def main():
         parser.add_argument("-traj", dest="trajectory_format", type=str, default=None,
                             help="Override automatic trajectory type detection." +
                             "See trajectory for implemented formats")
+        parser.add_argument("-atom_style", dest="atom_style", type=str, default='None',
+                            help="Manually set the atom_style information (currently only LAMMPS parser)." +
+                            "E.g. atom_style='id type x y z'.")
         parser.add_argument("-b", dest="begin", type=float, default=0,
                             help="start time (ps) for evaluation")
         parser.add_argument("-e", dest="end", type=float, default=None,
@@ -119,8 +122,14 @@ def main():
 
         print("Loading trajectory... ", end="")
         sys.stdout.flush()
+
+        # prepare kwargs dictionary for other optional arguments
+        ukwargs = {}
+        if args.atom_style is not None:
+            ukwargs['atom_style'] = args.atom_style
+
         u = MDAnalysis.Universe(
-            args.topology, topology_format=args.topology_format)
+            args.topology, topology_format=args.topology_format, **ukwargs)
         if args.trajectory is not None:
             u.load_new(args.trajectory, format=args.trajectory_format)
         print("Done!")
