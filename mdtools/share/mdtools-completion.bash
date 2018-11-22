@@ -115,7 +115,7 @@ _mdtools_completion()
         return 0 ;;
       esac
       COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -d \
-                                -dz -muo -temp -zpos -dens -gr -top" -- ${cur_word} ) )
+                                -dz -muo -temp -zpos -dens -gr -top -atom_style" -- ${cur_word} ) )
       return 0 ;;
 
     density_cylinder)
@@ -140,7 +140,7 @@ _mdtools_completion()
         return 0 ;;
       esac
       COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o —dout \
-                                -center -r -dr -l -dens -gr" -- ${cur_word} ) )
+                                -center -r -dr -l -dens -gr -top -atom_style" -- ${cur_word} ) )
       return 0 ;;
   dielectric_spectrum)
     case "${prev_word}" in
