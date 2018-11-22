@@ -137,7 +137,7 @@ def main():
         args.begin = int(math.ceil(args.begin // u.trajectory.dt))
 
         if args.end != None:
-            args.end = int(math.ceil(end // u.trajectory.dt))
+            args.end = int(math.ceil(args.end // u.trajectory.dt))
         else:
             args.end = int(
                 math.ceil(u.trajectory.totaltime // u.trajectory.dt))
