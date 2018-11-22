@@ -39,7 +39,8 @@ class density_planar(AnalysisBase):
        For group selections use strings in the MDAnalysis selection command style."""
 
     def __init__(self, atomgroup, output="density", outfreq=1000, dim=2, binwidth=0.1, muout="muout",
-                 temperature=300, zpos=None, dens="mass", groups=['all'], **kwargs):
+                 temperature=300, zpos=None, dens="mass", groups=['all'],
+                 comgroup=None, center=False, **kwargs):
         # Inherit all classes from AnalysisBase
         super(density_planar, self).__init__(atomgroup.universe.trajectory,
                                       **kwargs)
@@ -53,6 +54,8 @@ class density_planar(AnalysisBase):
         self.temperature = temperature
         self.zpos = zpos
         self.dens = dens
+        self.comgroup = comgroup
+        self.center = center
 
         if not hasattr(groups, "__iter__") and type(groups) not in (str):
             self.groups = [groups]
@@ -78,8 +81,13 @@ class density_planar(AnalysisBase):
         parser.add_argument('-dens', dest='dens', type=str, default='mass',
                             choices=["mass", "number", "charge", "temp"],
                             help='Density')
-        parser.add_argument('-gr', dest='groups', type=str,   default=['all'], nargs='+',
+        parser.add_argument('-gr', dest='groups', type=str, default=['all'], nargs='+',
                             help='Atoms for which to compute the density profile', )
+        parser.add_argument('-com', dest='comgroup', type=str,   default=None,
+                            help='Perform the binning relative to the center of mass of the selected group.')
+        parser.add_argument('-center', dest='center',
+                            action='store_const', const=True, default=False,
+                            help='Perform the binning relative to the center of the (changing) box.')
 
     def _prepare(self):
         if self._verbose:
@@ -109,6 +117,14 @@ class density_planar(AnalysisBase):
             if self.sel[i].n_atoms == 0:
                 raise ValueError(
                     "{} does not contain any atoms. Please adjust 'group' selection.".format(gr))
+        if self.comgroup is not None:
+            self.comsel = self.atomgroup.select_atoms(self.comgroup)
+            if self._verbose:
+                print("{:>15}: {:>10} atoms".format(self.comgroup, self.comsel.n_atoms))
+            if self.comsel.n_atoms == 0:
+                raise ValueError(
+                        "{} does not contain any atoms. Please adjust 'com' selection.".format(gr))
+        if self.comgroup is not None: self.center = True # always center when COM
         if self._verbose:
             print("\n")
             print('Using', self.nbins, 'bins.')
@@ -130,11 +146,27 @@ class density_planar(AnalysisBase):
         curV = self._ts.volume / 1000
         self.av_box_length += self._ts.dimensions[self.dim] / 10
 
+        """ center of mass calculation with generalization to periodic systems
+        see Bai, Linge; Breen, David (2008). "Calculating Center of Mass in an
+        Unbounded 2D Environment". Journal of Graphics, GPU, and Game Tools. 13
+        (4): 53–60. doi:10.1080/2151237X.2008.10129266,
+        https://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
+        """
+        if self.comgroup is None:
+            comshift= 0
+        else:
+            Theta = self.comsel.positions[:,self.dim] / self._ts.dimensions[self.dim] * 2*np.pi
+            Xi = (np.cos(Theta) * self.comsel.masses).sum() / self.comsel.masses.sum()
+            Zeta = (np.sin(Theta) * self.comsel.masses).sum() / self.comsel.masses.sum()
+            ThetaCOM = np.arctan2(-Zeta,-Xi) + np.pi
+            comshift = self._ts.dimensions[self.dim] * ( 0.5 - ThetaCOM / (2*np.pi))
+
+        dz = self._ts.dimensions[self.dim] / self.nbins
+
         for index, selection in enumerate(self.sel):
-            bins = (selection.atoms.positions[:, self.dim] /
-                    (self._ts.dimensions[self.dim] / self.nbins)).astype(int) % self.nbins
-            density_ts = np.histogram(bins, bins=np.arange(
-                self.nbins + 1), weights=self.weight(selection))[0]
+            bins = ((selection.atoms.positions[:, self.dim] + comshift) / dz + dz/2).astype(int) % self.nbins
+            density_ts = np.histogram(bins, bins=np.arange(self.nbins+1),
+                    weights=self.weight(selection))[0]
 
             bincount = np.bincount(bins, minlength=self.nbins)
 
@@ -162,7 +194,12 @@ class density_planar(AnalysisBase):
             np.sqrt(self._index)
 
         dz = self.av_box_length / (self._index * self.nbins)
-        self.results["z"] = np.linspace(0, self.av_box_length / self._index,
+        if self.center:
+            self.results["z"] = np.linspace(-self.av_box_length / self._index / 2,
+                                        self.av_box_length / self._index / 2,
+                                        self.nbins, endpoint=False) + dz / 2
+        else:
+            self.results["z"] = np.linspace(0, self.av_box_length / self._index,
                                         self.nbins, endpoint=False) + dz / 2
 
         # chemical potential
