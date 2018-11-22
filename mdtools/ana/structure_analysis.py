@@ -307,7 +307,7 @@ class debye(AnalysisBase):
                     self.atom_names.append("H")
                     # add a extra atom to universe. It got the wrong type but we only
                     # need the position, since we maintain our own atom type list.
-                    sel += sel.atoms[i]
+                    self.selection += self.selection.atoms[i]
             else:
                 self.atom_names[i] = element
 
@@ -380,7 +380,7 @@ class debye(AnalysisBase):
 
         nonzeros = np.where(s_out != 0)[0]
 
-        self.results["q"] = q[nonzeros]
+        self.results["q"] = 10 * q[nonzeros]
         self.results["scat_factor"] = s_out[nonzeros] / len(datfiles)
 
     def _conclude(self):
