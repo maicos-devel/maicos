@@ -6,4 +6,5 @@ __all__ = [
     'dipole',
     'epsilon',
     'kinetic_energy',
+    'structure_analysis',
 ]

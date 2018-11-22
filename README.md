@@ -32,12 +32,11 @@ by typing `mdtools <package> -h`.
 
 ### SAXS using debyer library
 
-For using the debyer app you need to download and build
+For using the debye module you need to download and build
 the debyer library see
 https://github.com/wojdyr/debyer.
 
 # Contributing
 
 Contribution via pull requests are always welcome. Example code for an
-analyis script can be found in the example folder.
-
+analysis module can be found in the example folder.
