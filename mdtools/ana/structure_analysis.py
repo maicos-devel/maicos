@@ -131,8 +131,8 @@ class saxs(AnalysisBase):
                             help='Number of frames after which the output is updated.')
         parser.add_argument('-sq', dest='output', type=str, default='sq',
                             help='Prefix/Path for output file')
-        parser.add_argument('-bin', dest='bindata', action="store_false",
-                            help='Use data binning')
+        parser.add_argument('-nobin', dest='nobindata', action="store_true",
+                            help='Do not bin data')
         parser.add_argument('-startq', dest='startq', type=float,default=0,
                             help='Starting q (1/nm)')
         parser.add_argument('-endq', dest='endq', type=float, default=60,
@@ -190,14 +190,14 @@ class saxs(AnalysisBase):
         if self._verbose:
             print("\n")
 
-        if self.bindata:
-            self.nbins = int(np.ceil((self.endq - self.startq) / self.dq))
-            self.struct_factor = np.zeros([self.nbins, len(self.groups)])
-        else:
+        if self.nobindata:
             self.box = np.diag(mda.lib.mdamath.triclinic_vectors(self.selection.universe.dimensions)) / 10
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
             self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
+        else:
+            self.nbins = int(np.ceil((self.endq - self.startq) / self.dq))
+            self.struct_factor = np.zeros([self.nbins, len(self.groups)])
 
     def _single_frame(self):
         for i, t in enumerate(self.groups):
@@ -212,7 +212,9 @@ class saxs(AnalysisBase):
 
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
-            if self.bindata:
+            if self.nobindata:
+                self.S_array[:, :, :, i] += S_ts
+            else:
                 q_ts = q_ts.flatten()
                 S_ts = S_ts.flatten()
                 nonzeros = np.where(S_ts != 0)[0]
@@ -227,8 +229,6 @@ class saxs(AnalysisBase):
                 with np.errstate(divide='ignore', invalid='ignore'):
                     struct_ts /= np.bincount(bins, minlength=self.nbins)
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
-            else:
-                self.S_array[:, :, :, i] += S_ts
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -236,38 +236,38 @@ class saxs(AnalysisBase):
 
     def _calculate_results(self):
         self._index = self._frame_index + 1
-        if self.bindata:
+        if self.nobindata:
+            self.results["scat_factor"] = self.S_array.sum(axis=3)
+            self.results["q_indices"] = np.array(list(np.ndindex(tuple(self.maxn))))
+            self.results["q"] = np.linalg.norm(self.results["q_indices"] * self.q_factor[np.newaxis,:],
+                                               axis=1)
+        else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
             nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
             scat_factor = self.struct_factor[nonzeros]
 
             self.results["q"] = q[nonzeros]
             self.results["scat_factor"] = scat_factor.sum(axis=1)
-        else:
-            self.results["scat_factor"] = self.S_array.sum(axis=3)
-            self.results["q_indices"] = np.array(list(np.ndindex(tuple(self.maxn))))
-            self.results["q"] = np.linalg.norm(self.results["q_indices"] * self.q_factor[np.newaxis,:],
-                                               axis=1)
 
         self.results["scat_factor"] /= (self._index * self.selection.n_atoms)
 
     def _save_results(self):
         """Saves the current profiles to a file."""
 
-        if self.bindata:
-            np.savetxt(self.output + '.dat',
-                       np.vstack([self.results["q"], self.results["scat_factor"]]).T,
-                       header="q (1/nm)\tS(q) (arb. units)", fmt='%.4e')
-        else:
+        if self.nobindata:
             out = np.hstack([self.results["q"][:,np.newaxis],
                              self.results["q_indices"],
                              self.results["scat_factor"].flatten()[:,np.newaxis]])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
-
-            np.savetxt(self.output + '.dat', out[nonzeros],
+            np.savetxt(self.output + '.dat', out,
                         header="q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
                         fmt='%.4e')
+        else:
+            np.savetxt(self.output + '.dat',
+                       np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+                       header="q (1/nm)\tS(q) (arb. units)",
+                       fmt='%.4e')
 
 
 class debye(AnalysisBase):
