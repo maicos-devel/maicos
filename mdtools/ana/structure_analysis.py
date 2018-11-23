@@ -188,7 +188,7 @@ class saxs(AnalysisBase):
                 print("{:>14} --> {:>5}".format(atom_type, element))
 
         if self._verbose:
-            print("\n")
+            print("")
 
         if self.nobindata:
             self.box = np.diag(mda.lib.mdamath.triclinic_vectors(self.selection.universe.dimensions)) / 10
@@ -260,8 +260,12 @@ class saxs(AnalysisBase):
                              self.results["scat_factor"].flatten()[:,np.newaxis]])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
+            argsort = np.argsort(out[:, 0])
+            out = out[argsort]
+
+            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(*self.box)
             np.savetxt(self.output + '.dat', out,
-                        header="q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
+                        header=boxinfo + "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
                         fmt='%.4e')
         else:
             np.savetxt(self.output + '.dat',
