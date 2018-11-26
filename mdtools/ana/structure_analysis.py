@@ -97,9 +97,10 @@ def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta,
     return (q_array, S_array)
 
 class saxs(AnalysisBase):
-    """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory. Using the -bin option
-    the q vectors are binned
-    by their length using a binwidth given by -dq. Without the raw intensity for each q_{i,j,k} vector
+    """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory.
+    The q vectors are binned
+    by their length using a binwidth given by -dq. Using the -nobin option
+    the raw intensity for each q_{i,j,k} vector
     is saved using. Note that this only works reliable using constant box vectors!
     The possible scattering vectors q can be restricted by a miminal and maximal angle with the z-axis.
     For 0 and 180 all possible vectors are taken into account.
@@ -107,7 +108,7 @@ class saxs(AnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands."""
 
-    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq", raw=False,
+    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq", nobin=False,
                 startq=0, endq=60, dq=0.05, mintheta=0, maxtheta=180, **kwargs):
         # Inherit all classes from AnalysisBase
         super(saxs, self).__init__(atomgroup.universe.trajectory, **kwargs)
@@ -116,7 +117,7 @@ class saxs(AnalysisBase):
         self.sel = sel
         self.outfreq = outfreq
         self.output = output
-        self.bin = bin
+        self.nobindata = nobin
         self.startq = startq
         self.endq = endq
         self.dq = dq
