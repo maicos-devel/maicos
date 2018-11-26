@@ -97,14 +97,18 @@ def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta,
     return (q_array, S_array)
 
 class saxs(AnalysisBase):
-    """Computes SAXS scattering intensities for all atom types from the given trajectory. The possible scattering
-    vectors q can be restricted by a miminal and maximal angle with the z-axis. For 0 and 180 all possible vectors
-    are taken into account.
+    """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory.
+    The q vectors are binned
+    by their length using a binwidth given by -dq. Using the -nobin option
+    the raw intensity for each q_{i,j,k} vector
+    is saved using. Note that this only works reliable using constant box vectors!
+    The possible scattering vectors q can be restricted by a miminal and maximal angle with the z-axis.
+    For 0 and 180 all possible vectors are taken into account.
     For the scattering factor the structure fator is multiplied by a atom type specific form factor
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands."""
 
-    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq",
+    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq", nobin=False,
                 startq=0, endq=60, dq=0.05, mintheta=0, maxtheta=180, **kwargs):
         # Inherit all classes from AnalysisBase
         super(saxs, self).__init__(atomgroup.universe.trajectory, **kwargs)
@@ -113,6 +117,7 @@ class saxs(AnalysisBase):
         self.sel = sel
         self.outfreq = outfreq
         self.output = output
+        self.nobindata = nobin
         self.startq = startq
         self.endq = endq
         self.dq = dq
@@ -127,6 +132,8 @@ class saxs(AnalysisBase):
                             help='Number of frames after which the output is updated.')
         parser.add_argument('-sq', dest='output', type=str, default='sq',
                             help='Prefix/Path for output file')
+        parser.add_argument('-nobin', dest='nobindata', action="store_true",
+                            help='Do not bin data')
         parser.add_argument('-startq', dest='startq', type=float,default=0,
                             help='Starting q (1/nm)')
         parser.add_argument('-endq', dest='endq', type=float, default=60,
@@ -182,10 +189,16 @@ class saxs(AnalysisBase):
                 print("{:>14} --> {:>5}".format(atom_type, element))
 
         if self._verbose:
-            print("\n")
+            print("")
 
-        self.nbins = int(np.ceil((self.endq - self.startq) / self.dq))
-        self.struct_factor = np.zeros([self.nbins, len(self.groups)])
+        if self.nobindata:
+            self.box = np.diag(mda.lib.mdamath.triclinic_vectors(self.selection.universe.dimensions)) / 10
+            self.q_factor = 2 * np.pi / self.box
+            self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
+            self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
+        else:
+            self.nbins = int(np.ceil((self.endq - self.startq) / self.dq))
+            self.struct_factor = np.zeros([self.nbins, len(self.groups)])
 
     def _single_frame(self):
         for i, t in enumerate(self.groups):
@@ -198,22 +211,25 @@ class saxs(AnalysisBase):
                                                   self.startq, self.endq,
                                                   self.mintheta, self.maxtheta)
 
-            q_ts = q_ts.flatten()
-            S_ts = S_ts.flatten()
-            nonzeros = np.where(S_ts != 0)[0]
-
-            q_ts = q_ts[nonzeros]
-            S_ts = S_ts[nonzeros]
-
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
-            bins = ((q_ts - self.startq) /
-                    ((self.endq - self.startq) / self.nbins)).astype(int)
-            struct_ts = np.histogram(bins, bins=np.arange(self.nbins + 1),
-                                     weights=S_ts)[0]
-            with np.errstate(divide='ignore', invalid='ignore'):
-                struct_ts /= np.bincount(bins, minlength=self.nbins)
-            self.struct_factor[:, i] += np.nan_to_num(struct_ts)
+            if self.nobindata:
+                self.S_array[:, :, :, i] += S_ts
+            else:
+                q_ts = q_ts.flatten()
+                S_ts = S_ts.flatten()
+                nonzeros = np.where(S_ts != 0)[0]
+
+                q_ts = q_ts[nonzeros]
+                S_ts = S_ts[nonzeros]
+
+                bins = ((q_ts - self.startq) /
+                        ((self.endq - self.startq) / self.nbins)).astype(int)
+                struct_ts = np.histogram(bins, bins=np.arange(self.nbins + 1),
+                                         weights=S_ts)[0]
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    struct_ts /= np.bincount(bins, minlength=self.nbins)
+                self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -221,19 +237,42 @@ class saxs(AnalysisBase):
 
     def _calculate_results(self):
         self._index = self._frame_index + 1
-        q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
-        nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
-        scat_factor = self.struct_factor[nonzeros]
+        if self.nobindata:
+            self.results["scat_factor"] = self.S_array.sum(axis=3)
+            self.results["q_indices"] = np.array(list(np.ndindex(tuple(self.maxn))))
+            self.results["q"] = np.linalg.norm(self.results["q_indices"] * self.q_factor[np.newaxis,:],
+                                               axis=1)
+        else:
+            q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
+            nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
+            scat_factor = self.struct_factor[nonzeros]
 
-        self.results["q"] = q[nonzeros]
-        self.results["scat_factor"] = scat_factor.sum(axis=1) / (self._index * self.selection.n_atoms)
+            self.results["q"] = q[nonzeros]
+            self.results["scat_factor"] = scat_factor.sum(axis=1)
+
+        self.results["scat_factor"] /= (self._index * self.selection.n_atoms)
 
     def _save_results(self):
         """Saves the current profiles to a file."""
 
-        np.savetxt(self.output + '.dat',
-                   np.vstack([self.results["q"], self.results["scat_factor"]]).T,
-                   header="q (1/nm)\tS(q)_tot (arb. units)", fmt='%.8e')
+        if self.nobindata:
+            out = np.hstack([self.results["q"][:,np.newaxis],
+                             self.results["q_indices"],
+                             self.results["scat_factor"].flatten()[:,np.newaxis]])
+            nonzeros = np.where(out[:, 4] != 0)[0]
+            out = out[nonzeros]
+            argsort = np.argsort(out[:, 0])
+            out = out[argsort]
+
+            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(*self.box)
+            np.savetxt(self.output + '.dat', out,
+                        header=boxinfo + "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
+                        fmt='%.4e')
+        else:
+            np.savetxt(self.output + '.dat',
+                       np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+                       header="q (1/nm)\tS(q) (arb. units)",
+                       fmt='%.4e')
 
 
 class debye(AnalysisBase):
