@@ -11,6 +11,7 @@ import numpy as np
 
 from .base import AnalysisBase
 
+
 class kinetic_energy(AnalysisBase):
     """Calculates the timeseries for the molecular center
        translational and rotational kinetic energy (kJ/mole)."""
@@ -26,27 +27,39 @@ class kinetic_energy(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument('-o', dest='output', type=str, default='ke', 
-                            help='Prefix for output filenames')
-        parser.add_argument('-r', dest='refpoint', type=str, default='COM', choices=["COM", "COC", "OXY"],
-                            help='reference point for molecular center: center of' +
-                                 ' mass (COM), center of charge (COC), or oxygen position (OXY)' +
-                                 'Note: The oxygen position only works for systems of pure water')
-                                
+        parser.add_argument(
+            '-o',
+            dest='output',
+            type=str,
+            default='ke',
+            help='Prefix for output filenames')
+        parser.add_argument(
+            '-r',
+            dest='refpoint',
+            type=str,
+            default='COM',
+            choices=["COM", "COC", "OXY"],
+            help='reference point for molecular center: center of' +
+            ' mass (COM), center of charge (COC), or oxygen position (OXY)' +
+            'Note: The oxygen position only works for systems of pure water')
+
     def _prepare(self):
         """Set things up before the analysis loop begins"""
         self.atomsPerMolecule = []
         self.seg_masses = []
         self.seg_abscharges = []
         for j, seg in enumerate(self.atomgroup.segments):
-            self.atomsPerMolecule.append(seg.atoms.n_atoms // seg.atoms.n_residues)
+            self.atomsPerMolecule.append(
+                seg.atoms.n_atoms // seg.atoms.n_residues)
             self.seg_masses.append(seg.residues.masses)
-            self.seg_abscharges.append(sum(np.abs(seg.atoms.charges)[
-                i::self.atomsPerMolecule[j]] for i in range(self.atomsPerMolecule[j])))
+            self.seg_abscharges.append(
+                sum(
+                    np.abs(seg.atoms.charges)[i::self.atomsPerMolecule[j]]
+                    for i in range(self.atomsPerMolecule[j])))
 
         if self.refpoint == "OXY":
             self.oxy = self.atomgroup.select_atoms("name OW*")
-        
+
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -55,28 +68,30 @@ class kinetic_energy(AnalysisBase):
 
     def _single_frame(self):
         self.E_kin[self._frame_index] = np.dot(
-            self.atomgroup.masses, np.linalg.norm(self.atomgroup.velocities, axis=1)**2)
+            self.atomgroup.masses,
+            np.linalg.norm(self.atomgroup.velocities, axis=1)**2)
 
         for j, seg in enumerate(self.atomgroup.segments):
             if self.refpoint == "COM":
                 massvel = seg.atoms.velocities * \
                     seg.atoms.masses[:, np.newaxis]
                 v = sum(massvel[i::self.atomsPerMolecule[j]]
-                           for i in range(self.atomsPerMolecule[j]))
+                        for i in range(self.atomsPerMolecule[j]))
                 v /= self.seg_masses[j][:, np.newaxis]
 
             elif self.refpoint == "COC":
                 abschargevel = seg.atoms.velocities * \
                     np.abs(seg.atoms.charges)[:, np.newaxis]
                 v = sum(abschargevel[i::self.atomsPerMolecule[j]]
-                           for i in range(self.atomsPerMolecule[j]))
+                        for i in range(self.atomsPerMolecule[j]))
                 v /= self.seg_abscharges[j][:, np.newaxis]
-                
+
             elif self.refpoint == "OXY":
                 v = self.oxy.velocities
-                    
+
             self.E_center[self._frame_index] += np.dot(
-                self.seg_masses[j], np.linalg.norm(v, axis=1)**2)
+                self.seg_masses[j],
+                np.linalg.norm(v, axis=1)**2)
 
     def _calculate_results(self):
         self.results["t"] = self._trajectory.dt * \
@@ -85,7 +100,10 @@ class kinetic_energy(AnalysisBase):
         self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
-        np.savetxt("{}.dat".format(self.output),
-                   np.vstack(
-                       [self.results["t"], self.results["trans"], self.results["rot"]]).T,
-                   fmt='%.8e', header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
+        np.savetxt(
+            "{}.dat".format(self.output),
+            np.vstack(
+                [self.results["t"], self.results["trans"],
+                 self.results["rot"]]).T,
+            fmt='%.8e',
+            header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")

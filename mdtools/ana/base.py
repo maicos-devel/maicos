@@ -6,12 +6,13 @@ from __future__ import absolute_import
 import logging
 
 from MDAnalysis.analysis import base
-    
-    
+
 logger = logging.getLogger(__name__)
+
 
 class AnalysisBase(base.AnalysisBase):
     """Extends the MDAnalysis base class for defining multi frame analysis."""
+
     def __init__(self, trajectory, verbose=False, save=False, **kwargs):
         """
         Parameters
@@ -24,12 +25,12 @@ class AnalysisBase(base.AnalysisBase):
            Save results to a file, default ``False``
         """
         super(AnalysisBase, self).__init__(self, **kwargs)
-        
+
         self._trajectory = trajectory
         self._verbose = verbose
         self._save = save
         self.results = {}
-        
+
     def _configure_parser(self, parser):
         """Adds parser options using an argparser object"""
         parser.description = self.__doc__
@@ -41,7 +42,7 @@ class AnalysisBase(base.AnalysisBase):
     def _save_results(self):
         """Saves the results you've gatherd to a file."""
         pass
-        
+
     def run(self, start=None, stop=None, step=None, verbose=None):
         """Perform the calculation
 
@@ -58,7 +59,8 @@ class AnalysisBase(base.AnalysisBase):
         """
         logger.info("Choosing frames to analyze")
         # if verbose unchanged, use class default
-        verbose = getattr(self, '_verbose', False) if verbose is None else verbose
+        verbose = getattr(self, '_verbose',
+                          False) if verbose is None else verbose
 
         self._setup_frames(self._trajectory, start, stop, step)
         logger.info("Starting preparation")
@@ -76,4 +78,3 @@ class AnalysisBase(base.AnalysisBase):
         if self._save:
             self._save_results()
         return self
-

@@ -17,20 +17,42 @@ from .. import initilize_parser, sharePath
 parser = initilize_parser()
 parser.description = """Inserts Nw watermolecules in a given
 z distance."""
-parser.add_argument('-cp', '--refstructure', type=str, required=True,
-                    default="protein.gro", help='Structure file: gro, pdb, ...')
-parser.add_argument('-cs', '--addstructure', type=str,
-                    default=os.path.join(sharePath, 'watermolecule.gro'), help='Structure file for added molecules: gro, pdb, ...')
-parser.add_argument('-o', '--output', type=str,
-                    default='out.gro', help='Output file')
-parser.add_argument('-zmin', '--zmin', type=float,
-                    default=0, help='Minimal z coordinate [Å] for insertion.')
-parser.add_argument('-zmax', '--zmax', type=float,
-                    default=None, help='Maximal z coordinate [Å] for insertion. If None box dimensions are taken.')
-parser.add_argument('-Nw', '--Nw', type=int,
-                    default=1, help='Number of molecules to insert.')
-parser.add_argument('-d', '--dist', type=float,
-                    default=1.25, help='Minimal distance [Å] between two molecules.')
+parser.add_argument(
+    '-cp',
+    '--refstructure',
+    type=str,
+    required=True,
+    default="protein.gro",
+    help='Structure file: gro, pdb, ...')
+parser.add_argument(
+    '-cs',
+    '--addstructure',
+    type=str,
+    default=os.path.join(sharePath, 'watermolecule.gro'),
+    help='Structure file for added molecules: gro, pdb, ...')
+parser.add_argument(
+    '-o', '--output', type=str, default='out.gro', help='Output file')
+parser.add_argument(
+    '-zmin',
+    '--zmin',
+    type=float,
+    default=0,
+    help='Minimal z coordinate [Å] for insertion.')
+parser.add_argument(
+    '-zmax',
+    '--zmax',
+    type=float,
+    default=None,
+    help=
+    'Maximal z coordinate [Å] for insertion. If None box dimensions are taken.')
+parser.add_argument(
+    '-Nw', '--Nw', type=int, default=1, help='Number of molecules to insert.')
+parser.add_argument(
+    '-d',
+    '--dist',
+    type=float,
+    default=1.25,
+    help='Minimal distance [Å] between two molecules.')
 
 
 def main(firstarg=2, DEBUG=False):
@@ -42,8 +64,8 @@ def main(firstarg=2, DEBUG=False):
     if args.zmax == None:
         args.zmax = u.dimensions[2]
 
-    print("Inserting", args.Nw, "water molecules bewteen z=",
-          args.zmin, "Å and z=", args.zmax, "Å")
+    print("Inserting", args.Nw, "water molecules bewteen z=", args.zmin,
+          "Å and z=", args.zmax, "Å")
 
     water = MDAnalysis.Universe(args.addstructure)
     for i in range(args.Nw):
@@ -57,11 +79,11 @@ def main(firstarg=2, DEBUG=False):
 
     print(" ")
 
-
     if DEBUG:
         # Inject local variables into global namespace for debugging.
         for key, value in locals().items():
             globals()[key] = value
+
 
 if __name__ == "__main__":
     main(firstarg=1)

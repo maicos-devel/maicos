@@ -20,28 +20,67 @@ parser.description = """
     For group selections use strings in the MDAnalysis selection command style
     found here:
     https://pythonhosted.org/MDAnalysis/documentation_pages/selections.html"""
-parser.add_argument('-o', dest='output', type=str,
-                    default='density_cylinder', help='Prefix for output filenames')
-parser.add_argument('-dout', dest='outfreq', type=float,
-                    default='1000', help='Default time after which output files are refreshed (1000 ps).')
-parser.add_argument('-d', dest='dim', type=int,
-                    help='dimension for binning (0=X, 1=Y, 2=Z)', default=2)
-parser.add_argument('-center', dest='center', type=str,
-                    default=None, help="Perform the binning relative to the center of this group. If None center of box is used.")
-parser.add_argument('-r', dest='radius', type=float,
-                    default=None, help='Radius of the cylinder (nm). If None smallest box extension is taken.')
-parser.add_argument('-dr', dest='binwidth', type=float,
-                    default=1, help='binwidth (nm).')
-parser.add_argument('-l', dest='length', type=float,
-                    default=None, help='Length of the cylinder (nm). If None length of box in the binning dimension is taken.')
-parser.add_argument('-dens', dest='density',     type=str,   default='mass',
-                    choices=["mass", "number", "charge", "temp"], help='Density')
-parser.add_argument('-gr', dest='groups', type=str, nargs='+', default=['all'],
-                    help='Atoms for which to compute the density profile')
-
+parser.add_argument(
+    '-o',
+    dest='output',
+    type=str,
+    default='density_cylinder',
+    help='Prefix for output filenames')
+parser.add_argument(
+    '-dout',
+    dest='outfreq',
+    type=float,
+    default='1000',
+    help='Default time after which output files are refreshed (1000 ps).')
+parser.add_argument(
+    '-d',
+    dest='dim',
+    type=int,
+    help='dimension for binning (0=X, 1=Y, 2=Z)',
+    default=2)
+parser.add_argument(
+    '-center',
+    dest='center',
+    type=str,
+    default=None,
+    help=
+    "Perform the binning relative to the center of this group. If None center of box is used."
+)
+parser.add_argument(
+    '-r',
+    dest='radius',
+    type=float,
+    default=None,
+    help='Radius of the cylinder (nm). If None smallest box extension is taken.'
+)
+parser.add_argument(
+    '-dr', dest='binwidth', type=float, default=1, help='binwidth (nm).')
+parser.add_argument(
+    '-l',
+    dest='length',
+    type=float,
+    default=None,
+    help=
+    'Length of the cylinder (nm). If None length of box in the binning dimension is taken.'
+)
+parser.add_argument(
+    '-dens',
+    dest='density',
+    type=str,
+    default='mass',
+    choices=["mass", "number", "charge", "temp"],
+    help='Density')
+parser.add_argument(
+    '-gr',
+    dest='groups',
+    type=str,
+    nargs='+',
+    default=['all'],
+    help='Atoms for which to compute the density profile')
 
 # ======== DEFINITIONS ========
 # =============================
+
 
 def output(density_mean, density_mean_sq):
     """Saves the current profiles to a file."""
@@ -70,10 +109,11 @@ def output(density_mean, density_mean_sq):
     for group in args.groups:
         columns += "\t" + group + " error"
 
-    np.savetxt(args.output + '.dat',
-               np.hstack(((args.r[:, np.newaxis]) / 10,
-                          dens_mean * 1000, dens_err * 1000)),
-               header=columns)
+    np.savetxt(
+        args.output + '.dat',
+        np.hstack(((args.r[:, np.newaxis]) / 10, dens_mean * 1000,
+                   dens_err * 1000)),
+        header=columns)
 
 
 def weight(selection):
@@ -86,6 +126,7 @@ def weight(selection):
     elif args.density == "charge":
         return selection.atoms.charges
 
+
 # ========== MAIN ============
 # ============================
 
@@ -96,8 +137,8 @@ def main(firstarg=2, DEBUG=False):
     args = parser.parse_args(args=sys.argv[firstarg:])
     u = initilize_universe(args)
 
-    print (
-        'Computing radial {} density profile along {}-axes.'.format(args.density, 'XYZ'[args.dim]))
+    print('Computing radial {} density profile along {}-axes.'.format(
+        args.density, 'XYZ' [args.dim]))
 
     dim = args.dim
     odims = np.roll(np.arange(3), -dim)[1:]
@@ -109,18 +150,20 @@ def main(firstarg=2, DEBUG=False):
         center = u.dimensions[:3] / 2
 
     print("Initial center at {}={:.3f} nm and {}={:.3f} nm.".format(
-        'XYZ'[odims[0]], center[odims[0]]/10, 'XYZ'[odims[1]], center[odims[1]]/10))
+        'XYZ' [odims[0]], center[odims[0]] / 10, 'XYZ' [odims[1]],
+        center[odims[1]] / 10))
 
     if args.radius != None:
         args.radius /= 10
     else:
         args.radius = u.dimensions[odims].min() / 2
-        print("No radius given --> Take smallest box extension (r={:.2f} nm).".format(args.radius/10))
+        print("No radius given --> Take smallest box extension (r={:.2f} nm).".
+              format(args.radius / 10))
 
     if args.length != None:
         args.length /= 10
     else:
-        print("No length given --> Take length in {}.".format('XYZ'[dim]))
+        print("No length given --> Take length in {}.".format('XYZ' [dim]))
         args.length = u.dimensions[dim]
 
     ngroups = len(args.groups)
@@ -141,14 +184,16 @@ def main(firstarg=2, DEBUG=False):
         print("{:>15}: {:>10} atoms".format(gr, sel[i].n_atoms))
         if sel[i].n_atoms == 0:
             sys.exit(
-                "\n Error: {} does not contain any atoms. Please adjust '-gr' selection.".format(gr))
+                "\n Error: {} does not contain any atoms. Please adjust '-gr' selection."
+                .format(gr))
     print("\n")
 
     print('Using', nbins, 'bins.')
 
     # ======== MAIN LOOP =========
     # ============================
-    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+    for args.frame, ts in enumerate(
+            u.trajectory[args.beginframe:args.endframe:args.skipframes]):
         print_frameinfo(ts, args.frame)
 
         # calculater center of cylinder.
@@ -160,32 +205,35 @@ def main(firstarg=2, DEBUG=False):
         for index, selection in enumerate(sel):
 
             # select cylinder of the given length and radius
-            cut = selection.atoms[np.where(np.absolute(
-                selection.atoms.positions[:, dim] - center[dim]) < args.length / 2)[0]]
-            cylinder = cut.atoms[np.where(np.linalg.norm(
-                (cut.atoms.positions[:, odims] - center[odims]), axis=1) < args.radius)[0]]
+            cut = selection.atoms[np.where(
+                np.absolute(selection.atoms.positions[:, dim] -
+                            center[dim]) < args.length / 2)[0]]
+            cylinder = cut.atoms[np.where(
+                np.linalg.norm((cut.atoms.positions[:, odims] - center[odims]),
+                               axis=1) < args.radius)[0]]
 
             radial_positions = np.linalg.norm(
                 (cylinder.atoms.positions[:, odims] - center[odims]), axis=1)
             bins = np.digitize(radial_positions, r_bins)
-            density_ts = np.histogram(bins, bins=np.arange(
-                nbins + 1), weights=weight(cylinder))[0]
+            density_ts = np.histogram(
+                bins, bins=np.arange(nbins + 1), weights=weight(cylinder))[0]
 
             density_mean[:, index] += density_ts
             density_mean_sq[:, index] += density_ts**2
 
         # call for output
-        if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
+        if (int(ts.time) % args.outfreq == 0 and
+                ts.time - args.begin >= args.outfreq):
             output(density_mean, density_mean_sq)
 
     output(density_mean, density_mean_sq)
     print("\n")
 
-
     if DEBUG:
         # Inject local variables into global namespace for debugging.
         for key, value in locals().items():
             globals()[key] = value
+
 
 if __name__ == "__main__":
     main(firstarg=1)

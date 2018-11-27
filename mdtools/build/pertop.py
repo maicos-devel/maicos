@@ -17,14 +17,23 @@ the input topolgy must contain THREE extra
 residues on each end of the peptide: '(b-c-d-)A-B-C-D-A-B ... B-C-D-(a-b-c)'.
 The peptide in the numbering in the topolgy must start with 1!"""
 
-parser.add_argument('-p', '--topology', type=str, required=True,
-                    default="topol.top", help='topolgy file: top, itp')
-parser.add_argument('-l', '--length', type=int, required=True,
-                    help='Length of the final peptide.')
-parser.add_argument('-o', '--output', type=str,
-                    default='topol_per', help='Output topolgy')
-parser.add_argument('-v', dest='verbose',
-                    action='store_true', help='Be loud and noisy.')
+parser.add_argument(
+    '-p',
+    '--topology',
+    type=str,
+    required=True,
+    default="topol.top",
+    help='topolgy file: top, itp')
+parser.add_argument(
+    '-l',
+    '--length',
+    type=int,
+    required=True,
+    help='Length of the final peptide.')
+parser.add_argument(
+    '-o', '--output', type=str, default='topol_per', help='Output topolgy')
+parser.add_argument(
+    '-v', dest='verbose', action='store_true', help='Be loud and noisy.')
 
 # currently not used
 
@@ -47,32 +56,40 @@ def main(firstarg=2, DEBUG=False):
 
     # what to keep, what to replace? ---
     keepres_orig = np.arange(4, args.length + 4)
-    replaceres_orig = {3: args.length + 3, 2: args.length +
-                       2, args.length + 4: 4, args.length + 5: 5}
+    replaceres_orig = {
+        3: args.length + 3,
+        2: args.length + 2,
+        args.length + 4: 4,
+        args.length + 5: 5
+    }
 
     keepres_orig = np.arange(4, 24)
     replaceres_orig = {3: 23, 2: 22, 24: 4, 25: 5}
 
     substractres = min(keepres_orig) - 1
 
-    nvalues = {'moleculetype': [],
-               'atoms': [0, 5],
-               'bonds': range(0, 2),
-               'pairs': range(0, 2),
-               'angles': range(0, 3),
-               'dihedrals': range(0, 4),
-               'cmap': range(0, 5),
-               'position_restraints': [],
-               'system': [],
-               'molecules': []}
+    nvalues = {
+        'moleculetype': [],
+        'atoms': [0, 5],
+        'bonds': range(0, 2),
+        'pairs': range(0, 2),
+        'angles': range(0, 3),
+        'dihedrals': range(0, 4),
+        'cmap': range(0, 5),
+        'position_restraints': [],
+        'system': [],
+        'molecules': []
+    }
 
-    rjusts = {'moleculetype': [1, 8],
-              'atoms': [6, 11, 7, 7, 7, 7, 11, 11],
-              'bonds': [5, 6, 6, 11, 11, 11, 11],
-              'pairs': [5, 6, 6, 11, 11, 11, 11],
-              'angles': [5, 6, 6, 6, 11, 11, 11, 11],
-              'dihedrals': [5, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11, 11],
-              'cmap': [5, 6, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11]}
+    rjusts = {
+        'moleculetype': [1, 8],
+        'atoms': [6, 11, 7, 7, 7, 7, 11, 11],
+        'bonds': [5, 6, 6, 11, 11, 11, 11],
+        'pairs': [5, 6, 6, 11, 11, 11, 11],
+        'angles': [5, 6, 6, 6, 11, 11, 11, 11],
+        'dihedrals': [5, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11, 11],
+        'cmap': [5, 6, 6, 6, 6, 6, 11, 11, 11, 11, 11, 11]
+    }
     # , 'position_restraints':[4,5,11,11,11]}
 
     # atomnumberpos, resnumberpos in [ atoms ]
@@ -163,7 +180,8 @@ def main(firstarg=2, DEBUG=False):
                             ncurrentres = nline[1]
                             if ncurrentres in nresidue:
                                 raise RuntimeError(
-                                    "Currently residues atoms must be next to each other")
+                                    "Currently residues atoms must be next to each other"
+                                )
     # WARNING: we start with zero in this skript!!
                             nresidue.append(ncurrentres - 1)
                         currentres.append(nline[0])
@@ -198,8 +216,10 @@ def main(firstarg=2, DEBUG=False):
             raise RuntimeError("Residues to replace do not match.")
 
         for jatom in range(0, len(residues[ires])):
-            replace.update(
-                {residues[ires][jatom]: residues[replaceres[ires]][jatom]})
+            replace.update({
+                residues[ires][jatom]:
+                residues[replaceres[ires]][jatom]
+            })
 
     # now add renumbering
     firstatom = min(keep)
@@ -243,7 +263,8 @@ def main(firstarg=2, DEBUG=False):
                         for j in range(0, len(nline)):
                             if nline[j] not in replace:
                                 raise RuntimeError(
-                                    "There is an atom which is neither to be kept nor to be replaced. {}".format(j))
+                                    "There is an atom which is neither to be kept nor to be replaced. {}"
+                                    .format(j))
                             tmpline.append(replace[nline[j]])
                             # check if the new number
                         #
@@ -255,7 +276,8 @@ def main(firstarg=2, DEBUG=False):
 
                         # now print approrpiate string
                         newline = ""
-                        for j in range(0, min(len(rjusts[keys[i]]), len(sline))):
+                        for j in range(0, min(len(rjusts[keys[i]]),
+                                              len(sline))):
                             newline = newline + \
                                 sline[j].rjust(rjusts[keys[i]][j])
                         newline = newline + "\n"
@@ -270,11 +292,11 @@ def main(firstarg=2, DEBUG=False):
         for line in newlines:
             f.write(line)
 
-
     if DEBUG:
         # Inject local variables into global namespace for debugging.
         for key, value in locals().items():
             globals()[key] = value
+
 
 if __name__ == "__main__":
     main(firstarg=1)

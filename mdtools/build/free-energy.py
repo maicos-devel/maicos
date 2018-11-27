@@ -13,7 +13,7 @@ import sys
 
 import gromacs
 
-from ..import initilize_parser
+from .. import initilize_parser
 from ..utils import copy_itp, nlambdas, replace, submit_job, append
 
 # ===================================================================================================
@@ -28,22 +28,50 @@ The first simulation will use the given gro file. All following files are taken 
 
 If the -sub flag is choosen all commands will be appended to the given file and 
 submitted to the SLURM workload manager otherwise a single executable file will be created."""
-parser.add_argument('-f',     dest='mdp',   type=str,  default=[
-                    'grompp.mdp'], nargs='+', help="One or several grompp input files with MD parameters")
-parser.add_argument('-c',     dest='gro',   type=str,  default='conf.gro',
-                    help="Structure file: gro g96 pdb brk ent esp tpr")
-parser.add_argument('-n',     dest='index', type=str,
-                    default=None,           help="Index file")
-parser.add_argument('-p',     dest='top',   type=str,
-                    default='topol.top',    help="Topology file")
-parser.add_argument('-sub',   dest='sub',   type=str,
-                    default=None,           help="Use a SLURM submission script.")
-parser.add_argument('-sp',    dest='split', action="store_true",
-                    help="Split each lambda state into a single submission using SLURMS Job Array Support.")
-parser.add_argument('-mdrun', dest='mdrun', type=str,  default="gmx mdrun",
-                    help="Command line to run a simulation, e.g. 'gmx mdrun' or 'mdrun_mpi'")
-parser.add_argument('-d',     dest='fdepth', type=int,  default=1,
-                    help="Number of folders from the file tree to include in the name for the submission.")
+parser.add_argument(
+    '-f',
+    dest='mdp',
+    type=str,
+    default=['grompp.mdp'],
+    nargs='+',
+    help="One or several grompp input files with MD parameters")
+parser.add_argument(
+    '-c',
+    dest='gro',
+    type=str,
+    default='conf.gro',
+    help="Structure file: gro g96 pdb brk ent esp tpr")
+parser.add_argument(
+    '-n', dest='index', type=str, default=None, help="Index file")
+parser.add_argument(
+    '-p', dest='top', type=str, default='topol.top', help="Topology file")
+parser.add_argument(
+    '-sub',
+    dest='sub',
+    type=str,
+    default=None,
+    help="Use a SLURM submission script.")
+parser.add_argument(
+    '-sp',
+    dest='split',
+    action="store_true",
+    help=
+    "Split each lambda state into a single submission using SLURMS Job Array Support."
+)
+parser.add_argument(
+    '-mdrun',
+    dest='mdrun',
+    type=str,
+    default="gmx mdrun",
+    help="Command line to run a simulation, e.g. 'gmx mdrun' or 'mdrun_mpi'")
+parser.add_argument(
+    '-d',
+    dest='fdepth',
+    type=int,
+    default=1,
+    help=
+    "Number of folders from the file tree to include in the name for the submission."
+)
 
 # ===================================================================================================
 # MAIN
@@ -73,13 +101,15 @@ def main(firstarg=2, DEBUG=False):
     if nlambda == 0:
         sys.exit("No lambda states found. Can't continue...")
 
-    print("Create input folders and files for {} lambda states...".format(nlambda))
+    print("Create input folders and files for {} lambda states...".format(
+        nlambda))
 
     projectname = "-".join(os.getcwd().split('/')[-args.fdepth:])
 
     command = ""
     if not args.split or args.sub == None:
-        command += "for SLURM_ARRAY_TASK_ID in $(seq 0 {});do\n".format(nlambda - 1)
+        command += "for SLURM_ARRAY_TASK_ID in $(seq 0 {});do\n".format(
+            nlambda - 1)
     command += "\ncd lambda_${SLURM_ARRAY_TASK_ID}\n"
 
     for l in range(nlambda):
@@ -90,7 +120,7 @@ def main(firstarg=2, DEBUG=False):
             os.mkdir(workdir)
         except OSError:
             pass
-            
+
         os.chdir(workdir)
 
         for mdp_path in args.mdp:
@@ -104,7 +134,7 @@ def main(firstarg=2, DEBUG=False):
 
             # only add commands in first lambda loop
             if l == 0:
-                
+
                 # grompp
                 command += "gmx grompp -maxwarn 3 -f {} -c {} -p {} -o {}_{}".format(
                     os.path.relpath(mdp_name), os.path.relpath(gro),
@@ -121,7 +151,7 @@ def main(firstarg=2, DEBUG=False):
                 else:
                     command += "{}".format(os.path.relpath(args.mdrun))
                 command += " -deffnm {}_{}\n".format(mdp_split[0],
-                                                     "${SLURM_ARRAY_TASK_ID}")                         
+                                                     "${SLURM_ARRAY_TASK_ID}")
                 command += "\n"
 
                 # set new gro file
@@ -136,8 +166,12 @@ def main(firstarg=2, DEBUG=False):
     runfile = "srun.sh"
     if args.sub != None:
         slurm_opts = args.split * "--array 0-{}".format(nlambda - 1)
-        submit_job(args.sub, "{}".format(projectname), command, 
-                   new_subfile_path = runfile, slurm_options = slurm_opts)
+        submit_job(
+            args.sub,
+            "{}".format(projectname),
+            command,
+            new_subfile_path=runfile,
+            slurm_options=slurm_opts)
     else:
         append(runfile, command)
         print("Run file written to {}".format(runfile))

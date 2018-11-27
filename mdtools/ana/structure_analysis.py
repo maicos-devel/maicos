@@ -16,14 +16,14 @@ import MDAnalysis as mda
 from .base import AnalysisBase
 from .. import tables
 
+
 def compute_form_factor(q, atom_type):
     """Calculates the form factor for the given element for given q (1/nm).
        Handles united atom types like CH4 etc ..."""
     element = tables.atomtypes[atom_type]
 
     if element == "CH1":
-        form_factor = compute_form_factor(
-            q, "C") + compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
     elif element == "CH2":
         form_factor = compute_form_factor(
             q, "C") + 2 * compute_form_factor(q, "H")
@@ -34,8 +34,7 @@ def compute_form_factor(q, atom_type):
         form_factor = compute_form_factor(
             q, "C") + 4 * compute_form_factor(q, "H")
     elif element == "NH1":
-        form_factor = compute_form_factor(
-            q, "N") + compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "N") + compute_form_factor(q, "H")
     elif element == "NH2":
         form_factor = compute_form_factor(
             q, "N") + 2 * compute_form_factor(q, "H")
@@ -52,9 +51,16 @@ def compute_form_factor(q, atom_type):
 
     return form_factor
 
-@nb.jit(nb.types.UniTuple(nb.float32[:, :, :], 2)(nb.float32[:, :], nb.float32[:], nb.float32, nb.float32, nb.float32, nb.float32),
-        nopython=True, nogil=True, parallel=True)
-def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta, maxtheta):
+
+@nb.jit(
+    nb.types.UniTuple(nb.float32[:, :, :],
+                      2)(nb.float32[:, :], nb.float32[:], nb.float32,
+                         nb.float32, nb.float32, nb.float32),
+    nopython=True,
+    nogil=True,
+    parallel=True)
+def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta,
+                             maxtheta):
     """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
 
     maxn = [0, 0, 0]
@@ -96,6 +102,7 @@ def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta,
 
     return (q_array, S_array)
 
+
 class saxs(AnalysisBase):
     """Computes SAXS scattering intensities for all atom types from the given trajectory. The possible scattering
     vectors q can be restricted by a miminal and maximal angle with the z-axis. For 0 and 180 all possible vectors
@@ -104,8 +111,17 @@ class saxs(AnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands."""
 
-    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq",
-                startq=0, endq=60, dq=0.05, mintheta=0, maxtheta=180, **kwargs):
+    def __init__(self,
+                 atomgroup,
+                 sel="all",
+                 outfreq=100,
+                 output="sq",
+                 startq=0,
+                 endq=60,
+                 dq=0.05,
+                 mintheta=0,
+                 maxtheta=180,
+                 **kwargs):
         # Inherit all classes from AnalysisBase
         super(saxs, self).__init__(atomgroup.universe.trajectory, **kwargs)
 
@@ -121,22 +137,51 @@ class saxs(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument('-sel', dest='sel', type=str, default='all',
-                            help='Atoms for which to compute the profile', )
-        parser.add_argument('-dout', dest='outfreq',type=float, default=100,
-                            help='Number of frames after which the output is updated.')
-        parser.add_argument('-sq', dest='output', type=str, default='sq',
-                            help='Prefix/Path for output file')
-        parser.add_argument('-startq', dest='startq', type=float,default=0,
-                            help='Starting q (1/nm)')
-        parser.add_argument('-endq', dest='endq', type=float, default=60,
-                            help='Ending q (1/nm)')
-        parser.add_argument('-dq', dest='dq', type=float, default=0.05,
-                            help='binwidth (1/nm)')
-        parser.add_argument('-mintheta', dest='mintheta', type=float, default=0,
-                            help='Minimal angle (°) between the q vectors and the z-axis.')
-        parser.add_argument('-maxtheta', dest='maxtheta', type=float, default=180,
-                            help='Maximal angle (°) between the q vectors and the z-axis.')
+        parser.add_argument(
+            '-sel',
+            dest='sel',
+            type=str,
+            default='all',
+            help='Atoms for which to compute the profile',
+        )
+        parser.add_argument(
+            '-dout',
+            dest='outfreq',
+            type=float,
+            default=100,
+            help='Number of frames after which the output is updated.')
+        parser.add_argument(
+            '-sq',
+            dest='output',
+            type=str,
+            default='sq',
+            help='Prefix/Path for output file')
+        parser.add_argument(
+            '-startq',
+            dest='startq',
+            type=float,
+            default=0,
+            help='Starting q (1/nm)')
+        parser.add_argument(
+            '-endq',
+            dest='endq',
+            type=float,
+            default=60,
+            help='Ending q (1/nm)')
+        parser.add_argument(
+            '-dq', dest='dq', type=float, default=0.05, help='binwidth (1/nm)')
+        parser.add_argument(
+            '-mintheta',
+            dest='mintheta',
+            type=float,
+            default=0,
+            help='Minimal angle (°) between the q vectors and the z-axis.')
+        parser.add_argument(
+            '-maxtheta',
+            dest='maxtheta',
+            type=float,
+            default=180,
+            help='Maximal angle (°) between the q vectors and the z-axis.')
 
     def _prepare(self):
 
@@ -161,8 +206,8 @@ class saxs(AnalysisBase):
             raise RuntimeError("Selection does not contain any atoms.")
 
         if self._verbose:
-            print("\nSelection '{}' contains {} atoms.".format(self.sel, self.selection.n_atoms))
-
+            print("\nSelection '{}' contains {} atoms.".format(
+                self.sel, self.selection.n_atoms))
 
         self.groups = []
         self.atom_types = []
@@ -172,10 +217,13 @@ class saxs(AnalysisBase):
             try:
                 element = tables.atomtypes[atom_type]
             except KeyError:
-                raise RuntimeError("No suitable element for '{0}' found. You can add '{0}' together with a suitable element to 'share/atomtypes.dat'.".format(atom_type))
+                raise RuntimeError(
+                    "No suitable element for '{0}' found. You can add '{0}' together with a suitable element to 'share/atomtypes.dat'."
+                    .format(atom_type))
             if element == "DUM":
                 continue
-            self.groups.append(self.atomgroup.select_atoms("type {}*".format(atom_type)))
+            self.groups.append(
+                self.atomgroup.select_atoms("type {}*".format(atom_type)))
             self.atom_types.append(atom_type)
 
             if self._verbose:
@@ -190,7 +238,8 @@ class saxs(AnalysisBase):
     def _single_frame(self):
         for i, t in enumerate(self.groups):
             # convert everything to cartesian coordinates
-            box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
+            box = np.diag(
+                mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
@@ -207,10 +256,10 @@ class saxs(AnalysisBase):
 
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
-            bins = ((q_ts - self.startq) /
-                    ((self.endq - self.startq) / self.nbins)).astype(int)
-            struct_ts = np.histogram(bins, bins=np.arange(self.nbins + 1),
-                                     weights=S_ts)[0]
+            bins = ((q_ts - self.startq) / (
+                (self.endq - self.startq) / self.nbins)).astype(int)
+            struct_ts = np.histogram(
+                bins, bins=np.arange(self.nbins + 1), weights=S_ts)[0]
             with np.errstate(divide='ignore', invalid='ignore'):
                 struct_ts /= np.bincount(bins, minlength=self.nbins)
             self.struct_factor[:, i] += np.nan_to_num(struct_ts)
@@ -226,14 +275,17 @@ class saxs(AnalysisBase):
         scat_factor = self.struct_factor[nonzeros]
 
         self.results["q"] = q[nonzeros]
-        self.results["scat_factor"] = scat_factor.sum(axis=1) / (self._index * self.selection.n_atoms)
+        self.results["scat_factor"] = scat_factor.sum(
+            axis=1) / (self._index * self.selection.n_atoms)
 
     def _save_results(self):
         """Saves the current profiles to a file."""
 
-        np.savetxt(self.output + '.dat',
-                   np.vstack([self.results["q"], self.results["scat_factor"]]).T,
-                   header="q (1/nm)\tS(q)_tot (arb. units)", fmt='%.8e')
+        np.savetxt(
+            self.output + '.dat',
+            np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+            header="q (1/nm)\tS(q)_tot (arb. units)",
+            fmt='%.8e')
 
 
 class debye(AnalysisBase):
@@ -241,8 +293,17 @@ class debye(AnalysisBase):
        By using the -sel option atoms can be selected for which the
        profile is calculated. For group selections use strings in the MDAnalysis selection command style."""
 
-    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq",
-                 startq=0, endq=60, dq=0.05, sinc=False, debyer="debyer", **kwargs):
+    def __init__(self,
+                 atomgroup,
+                 sel="all",
+                 outfreq=100,
+                 output="sq",
+                 startq=0,
+                 endq=60,
+                 dq=0.05,
+                 sinc=False,
+                 debyer="debyer",
+                 **kwargs):
         # Inherit all classes from AnalysisBase
         super(debye, self).__init__(atomgroup.universe.trajectory, **kwargs)
 
@@ -258,22 +319,50 @@ class debye(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument('-sel', dest='sel', type=str, default='all',
-                            help='Atoms for which to compute the profile', )
-        parser.add_argument('-dout', dest='outfreq', type=float, default=100,
-                            help='Number of frames after which the output is updated.')
-        parser.add_argument('-sq', dest='output', type=str, default='sq',
-                            help='Prefix/Path for output file')
-        parser.add_argument('-startq', dest='startq', type=float, default=0,
-                            help='Starting q (1/nm)')
-        parser.add_argument('-endq', dest='endq', type=float, default=60,
-                            help='Ending q (1/nm)')
-        parser.add_argument('-dq', dest='dq', type=float, default=0.05,
-                            help='binwidth (1/nm)')
-        parser.add_argument('-sinc', dest='sinc', action='store_true',
-                            help='apply sinc damping')
-        parser.add_argument('-d', dest='debyer', type=str, default="debyer",
-                            help='path to the debyer executable')
+        parser.add_argument(
+            '-sel',
+            dest='sel',
+            type=str,
+            default='all',
+            help='Atoms for which to compute the profile',
+        )
+        parser.add_argument(
+            '-dout',
+            dest='outfreq',
+            type=float,
+            default=100,
+            help='Number of frames after which the output is updated.')
+        parser.add_argument(
+            '-sq',
+            dest='output',
+            type=str,
+            default='sq',
+            help='Prefix/Path for output file')
+        parser.add_argument(
+            '-startq',
+            dest='startq',
+            type=float,
+            default=0,
+            help='Starting q (1/nm)')
+        parser.add_argument(
+            '-endq',
+            dest='endq',
+            type=float,
+            default=60,
+            help='Ending q (1/nm)')
+        parser.add_argument(
+            '-dq', dest='dq', type=float, default=0.05, help='binwidth (1/nm)')
+        parser.add_argument(
+            '-sinc',
+            dest='sinc',
+            action='store_true',
+            help='apply sinc damping')
+        parser.add_argument(
+            '-d',
+            dest='debyer',
+            type=str,
+            default="debyer",
+            help='path to the debyer executable')
 
     def _prepare(self):
 
@@ -322,13 +411,13 @@ class debye(AnalysisBase):
             raise RuntimeError("{}: command not found".format(self.debyer))
 
         if self._verbose:
-            print("{} is the tempory directory for all files.\n".format(self._tmp))
+            print("{} is the tempory directory for all files.\n".format(
+                self._tmp))
 
     def _writeXYZ(self, filename):
         """Writes the positions of the current frame to the given xyz file"""
-        write = mda.coordinates.XYZ.XYZWriter(filename,
-                                              n_atoms=len(self.atom_names),
-                                              atoms=self.atom_names)
+        write = mda.coordinates.XYZ.XYZWriter(
+            filename, n_atoms=len(self.atom_names), atoms=self.atom_names)
 
         ts = self.selection.universe.trajectory.ts.copy_slice(
             self.selection.atoms.indices)
@@ -350,13 +439,17 @@ class debye(AnalysisBase):
             self.startq = ref_q
 
         command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
-            round(self.startq, 3), self.endq, self.dq, self._tmp, self._frame_index,
-            box[0], box[1], box[2], np.min(box) / 2.001)
+            round(self.startq, 3), self.endq, self.dq, self._tmp,
+            self._frame_index, box[0], box[1], box[2],
+            np.min(box) / 2.001)
 
         command += self.sinc * " --sinc"
 
-        subprocess.call("{} {}".format(self.debyer, command),
-                        stdout=self._OUT, stderr=self._OUT, shell=True)
+        subprocess.call(
+            "{} {}".format(self.debyer, command),
+            stdout=self._OUT,
+            stderr=self._OUT,
+            shell=True)
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -367,16 +460,15 @@ class debye(AnalysisBase):
 
         s_tmp = np.loadtxt("{}/{}".format(self._tmp, datfiles[0]))
         for f in datfiles[1:]:
-            s_tmp = np.vstack(
-                [s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
+            s_tmp = np.vstack([s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
 
         nbins = int(np.ceil((self.endq - self.startq) / self.dq))
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
 
-        bins = ((s_tmp[:, 0] - self.startq) /
-                ((self.endq - self.startq) / nbins)).astype(int)
-        s_out = np.histogram(bins, bins=np.arange(
-            nbins + 1), weights=s_tmp[:, 1])[0]
+        bins = ((s_tmp[:, 0] - self.startq) / (
+            (self.endq - self.startq) / nbins)).astype(int)
+        s_out = np.histogram(
+            bins, bins=np.arange(nbins + 1), weights=s_tmp[:, 1])[0]
 
         nonzeros = np.where(s_out != 0)[0]
 
@@ -390,6 +482,8 @@ class debye(AnalysisBase):
         os.rmdir(self._tmp)
 
     def _save_results(self):
-        np.savetxt(self.output + '.dat',
-                   np.vstack([self.results["q"], self.results["scat_factor"]]).T,
-                   header="q (1/A)\tS(q)_tot (arb. units)", fmt='%.8e')
+        np.savetxt(
+            self.output + '.dat',
+            np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+            header="q (1/A)\tS(q)_tot (arb. units)",
+            fmt='%.8e')

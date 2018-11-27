@@ -36,36 +36,64 @@ parser.description = """This script, given molecular dynamics trajectory data, s
     By default, the polarization trajectory, time series array and the average system volume are
     saved in the working directory, and the data are reloaded from these files if they are present.
     Lin-log and log-log plots of the susceptibility are also produced by default."""
-parser.add_argument("-recalc",
-                    help="Forces to recalculate the polarization, regardless if it is already present.",
+parser.add_argument(
+    "-recalc",
+    help=
+    "Forces to recalculate the polarization, regardless if it is already present.",
     action="store_true")
-parser.add_argument('-temp',   dest='temperature',      type=float,
-                    default=300, help='Reference temperature.')
-parser.add_argument("-o", dest="output",
-                    default="", help="Prefix for the output files.")
-parser.add_argument("-u", dest="use",
-                    help="Looks for polarization and volume files with this prefix.\
+parser.add_argument(
+    '-temp',
+    dest='temperature',
+    type=float,
+    default=300,
+    help='Reference temperature.')
+parser.add_argument(
+    "-o", dest="output", default="", help="Prefix for the output files.")
+parser.add_argument(
+    "-u",
+    dest="use",
+    help="Looks for polarization and volume files with this prefix.\
     By default, the program looks for files with the prefix -o.")
-parser.add_argument("-segs", type=int, default=20,
-                    help="Sets the number of segments the trajectory is broken into.")
-parser.add_argument("-df", type=float,
-                    help="The desired frequency spacing in THz. This determines the minimum\
+parser.add_argument(
+    "-segs",
+    type=int,
+    default=20,
+    help="Sets the number of segments the trajectory is broken into.")
+parser.add_argument(
+    "-df",
+    type=float,
+    help="The desired frequency spacing in THz. This determines the minimum\
     frequency about which there is data. Overrides -segs option.")
-parser.add_argument("-noplots",
-                    help="Prevents plots from being generated.", action="store_true")
-parser.add_argument("-plotformat", default="pdf", choices=["png", "pdf", "ps", "eps", "svg"],
-                    help="Allows the user to choose the format of generated plots.")
-parser.add_argument("-ymin", type=float,
-                    help="Manually sets the minimum lower bound for the log-log plot.")
-parser.add_argument("-bins", type=int, default=200,
-                    help="Determines the number of bins used for data averaging;\
+parser.add_argument(
+    "-noplots",
+    help="Prevents plots from being generated.",
+    action="store_true")
+parser.add_argument(
+    "-plotformat",
+    default="pdf",
+    choices=["png", "pdf", "ps", "eps", "svg"],
+    help="Allows the user to choose the format of generated plots.")
+parser.add_argument(
+    "-ymin",
+    type=float,
+    help="Manually sets the minimum lower bound for the log-log plot.")
+parser.add_argument(
+    "-bins",
+    type=int,
+    default=200,
+    help="Determines the number of bins used for data averaging;\
     (this parameter sets the upper limit).\
     The data are by default binned logarithmically. This helps to reduce noise, particularly in\
-    the high-frequency domain, and also prevents plot files from being too large.")
-parser.add_argument("-binafter", type=int, default=20,
-                    help="The number of low-frequency data points that are left unbinned.")
-parser.add_argument("-nobin",
-                    help="Prevents the data from being binned altogether.\
+    the high-frequency domain, and also prevents plot files from being too large."
+)
+parser.add_argument(
+    "-binafter",
+    type=int,
+    default=20,
+    help="The number of low-frequency data points that are left unbinned.")
+parser.add_argument(
+    "-nobin",
+    help="Prevents the data from being binned altogether.\
     This can result in very large plot files and errors.",
     action="store_true")
 
@@ -97,10 +125,10 @@ def Bin(a, bins):
 # ========== MAIN ============
 # ============================
 
+
 def main(firstarg=2, DEBUG=False):
 
     print('\n====== DIELECTRIC SPECTRUM CALCULATOR ======\n')
-
 
     # ====== INITIALIZATION ======
     # ============================
@@ -115,7 +143,7 @@ def main(firstarg=2, DEBUG=False):
 
     if args.use == None:
         args.use = args.output
-    else:        
+    else:
         args.use += "_"
 
     # Check file existence
@@ -133,7 +161,9 @@ def main(firstarg=2, DEBUG=False):
         P = np.load(args.use + 'P_tseries.npy')
 
     if args.recalc or not t_exists or not V_exists or not P_exists:
-        print('Loading universe and generating polarization trajectory,\nvolume and time series array:')
+        print(
+            'Loading universe and generating polarization trajectory,\nvolume and time series array:'
+        )
         # the MDAnalysis universe given by the user for analysis
         u = initilize_universe(args)
 
@@ -145,7 +175,8 @@ def main(firstarg=2, DEBUG=False):
         V = 0.0
         t = (np.arange(args.beginframe, args.endframe) - args.beginframe) * dt
 
-        for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+        for args.frame, ts in enumerate(
+                u.trajectory[args.beginframe:args.endframe:args.skipframes]):
             print_frameinfo(ts, args.frame)
             if not V_exists or args.recalc:
                 V += ts.volume
@@ -197,31 +228,31 @@ def main(firstarg=2, DEBUG=False):
 
     nu = FT(t, np.append(P[:seglen, 0], np.zeros(seglen)))[0]  # get freqs
 
-    susc = np.zeros(seglen, dtype=complex) # susceptibility
-    dsusc = np.zeros(seglen, dtype=complex) # std deviation of susceptibility
+    susc = np.zeros(seglen, dtype=complex)  # susceptibility
+    dsusc = np.zeros(seglen, dtype=complex)  # std deviation of susceptibility
     ss = np.zeros((2 * seglen), dtype=complex)  # susceptibility for current seg
 
-    for s in range(0, args.segs): # loop over segs
+    for s in range(0, args.segs):  # loop over segs
 
         print('\rSegment {0} of {1}'.format(s + 1, args.segs), end='')
         ss = 0 + 0j
 
-        for i in range(0, len(P[0, :])): # loop over x, y, z
+        for i in range(0, len(P[0, :])):  # loop over x, y, z
 
-            FP = FT(t, np.append(
-                P[s * seglen:(s + 1) * seglen, i], np.zeros(seglen)), False)
+            FP = FT(
+                t, np.append(P[s * seglen:(s + 1) * seglen, i],
+                             np.zeros(seglen)), False)
             ss += FP.real * FP.real + FP.imag * FP.imag
 
         ss *= nu * 1j
 
         # Get the real part by Kramers Kronig:
-        ss.real = iFT(t, 1j * np.sign(nu) *
-                            FT(nu, ss, False), False).imag
+        ss.real = iFT(t, 1j * np.sign(nu) * FT(nu, ss, False), False).imag
 
         if s == 0:
 
             susc += ss[seglen:]
-        
+
         else:
 
             ds = ss[seglen:] - (susc / s)
@@ -229,26 +260,28 @@ def main(firstarg=2, DEBUG=False):
             dif = ss[seglen:] - (susc / (s + 1))
             ds.real *= dif.real
             ds.imag *= dif.imag
-            dsusc += ds # variance by Welford's Method
+            dsusc += ds  # variance by Welford's Method
 
     dsusc.real = np.sqrt(dsusc.real)
     dsusc.imag = np.sqrt(dsusc.imag)
 
-    susc *= pref / (2 * seglen * args.segs * dt) # 1/2 b/c it's the full FT, not only half-domain
+    susc *= pref / (2 * seglen * args.segs * dt
+                   )  # 1/2 b/c it's the full FT, not only half-domain
     dsusc *= pref / (2 * seglen * args.segs * dt)
 
     # Discard negative-frequency data; contains the same information as positive regime:
 
-    nu = nu[seglen:] / (2 * np.pi) # now nu represents positive f instead of omega
+    nu = nu[seglen:] / (2 * np.pi
+                       )  # now nu represents positive f instead of omega
 
     t_1 = time.clock()
 
-    print('\nSusceptibility and errors calculated - took {0:.3} s'.format(t_1 - t_0))
+    print('\nSusceptibility and errors calculated - took {0:.3} s'.format(t_1 -
+                                                                          t_0))
     print('Length of segments:    {0} frames, {1:.0f} ps'.format(
         seglen, seglen * dt))
     print('Frequency spacing:    ~ {0:.5f} THz'.format(
         args.segs / (Nframes * dt)))
-
 
     # ========= SAVE DATA ========
     # ============================
@@ -257,11 +290,11 @@ def main(firstarg=2, DEBUG=False):
 
     suscfilename = args.output + 'susc.txt'
 
-    np.savetxt(suscfilename,
-               np.transpose(
-                   [nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
-               delimiter='\t',
-               header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
+    np.savetxt(
+        suscfilename,
+        np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
+        delimiter='\t',
+        header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
 
     print('Susceptibility data saved as ' + suscfilename)
 
@@ -269,31 +302,32 @@ def main(firstarg=2, DEBUG=False):
 
     if not (args.nobin or seglen <= args.bins):
 
-        bins = np.logspace(np.log(args.binafter) / np.log(10), np.log(len(susc)) / 
-            np.log(10), args.bins - args.binafter + 1).astype(int)
+        bins = np.logspace(
+            np.log(args.binafter) / np.log(10),
+            np.log(len(susc)) / np.log(10),
+            args.bins - args.binafter + 1).astype(int)
         bins = np.unique(np.append(np.arange(args.binafter), bins))[:-1]
 
         susc = Bin(susc, bins)
         dsusc = Bin(dsusc, bins)
         nu = Bin(nu, bins)
 
-        print('Binning data above datapoint {0} in log-spaced bins'.format(args.binafter))
+        print('Binning data above datapoint {0} in log-spaced bins'.format(
+            args.binafter))
         print('Binned data consists of {0} datapoints'.format(len(susc)))
 
         suscfilename = args.output + 'susc_binned.txt'
 
-        np.savetxt(suscfilename,
-                   np.transpose(
-                       [nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
-                   delimiter='\t',
-                   header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
+        np.savetxt(
+            suscfilename,
+            np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
+            delimiter='\t',
+            header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
 
         print('Binned susceptibility data saved as ' + suscfilename)
 
-
     else:  # data is binned
         print('Not binning data: there are {0} datapoints'.format(len(susc)))
-
 
     # ==== OPTIONAL PLOTTING =====
     # ============================
@@ -318,26 +352,58 @@ def main(firstarg=2, DEBUG=False):
         nuBuf = 1.4  # buffer factor for extra room in the x direction
         cp = '$\chi^{{\prime}}$'
         cpp = '$\chi^{{\prime \prime}}$'
-        width = 3.5 # width in inches
+        width = 3.5  # width in inches
 
         # Plots:
 
         def my_plot():
 
-            fig, ax = plt.subplots(1, figsize=[width,width/np.sqrt(2)])
+            fig, ax = plt.subplots(1, figsize=[width, width / np.sqrt(2)])
             ax.set_ylabel('$\chi$')
             ax.set_xlabel('$\\nu$ [THz]')
             ax.set_xlim(nu[1] / nuBuf, nu[-1] * nuBuf)
             ax.set_xscale('log')
             ax.set_yscale(yscale)
-            ax.fill_between(nu[1:], susc.real[1:] - dsusc.real[1:], susc.real[1:] +
-                dsusc.real[1:], color=col2, alpha=shade)
-            ax.fill_between(nu[1:], susc.imag[1:] - dsusc.imag[1:], susc.imag[1:] +
-                dsusc.imag[1:], color=col1, alpha=shade)
-            ax.plot(nu[:2], susc.real[:2], color=col2, alpha=curve, linestyle=':', linewidth=lw)
-            ax.plot(nu[:2], susc.imag[:2], color=col1, alpha=curve, linestyle=':', linewidth=lw)
-            ax.plot(nu[1:], susc.real[1:], color=col2, alpha=curve, label=cp, linewidth=lw)
-            ax.plot(nu[1:], susc.imag[1:], color=col1, alpha=curve, label=cpp, linewidth=lw)
+            ax.fill_between(
+                nu[1:],
+                susc.real[1:] - dsusc.real[1:],
+                susc.real[1:] + dsusc.real[1:],
+                color=col2,
+                alpha=shade)
+            ax.fill_between(
+                nu[1:],
+                susc.imag[1:] - dsusc.imag[1:],
+                susc.imag[1:] + dsusc.imag[1:],
+                color=col1,
+                alpha=shade)
+            ax.plot(
+                nu[:2],
+                susc.real[:2],
+                color=col2,
+                alpha=curve,
+                linestyle=':',
+                linewidth=lw)
+            ax.plot(
+                nu[:2],
+                susc.imag[:2],
+                color=col1,
+                alpha=curve,
+                linestyle=':',
+                linewidth=lw)
+            ax.plot(
+                nu[1:],
+                susc.real[1:],
+                color=col2,
+                alpha=curve,
+                label=cp,
+                linewidth=lw)
+            ax.plot(
+                nu[1:],
+                susc.imag[1:],
+                color=col1,
+                alpha=curve,
+                label=cpp,
+                linewidth=lw)
 
             if i == 0 and (not args.ymin == None):
                 plt.set_ylim(ymin=args.ymin)
@@ -347,11 +413,11 @@ def main(firstarg=2, DEBUG=False):
 
         yscale = 'log'
         plotname = args.output + 'susc_log.' + args.plotformat
-        my_plot() # log-log
+        my_plot()  # log-log
 
         yscale = 'linear'
         plotname = args.output + 'susc_linlog.' + args.plotformat
-        my_plot() # lin-log
+        my_plot()  # lin-log
 
         plt.close('all')
 

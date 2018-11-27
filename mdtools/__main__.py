@@ -47,15 +47,22 @@ def main():
     applist = list(apps.keys())
     applist.sort()
 
-    parser = argparse.ArgumentParser(description="""
+    parser = argparse.ArgumentParser(
+        description="""
         A collection of scripts to analyse and build systems for molecular dynamics simulations.""",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("program", type=str, help="Program to start",
-                        choices=applist)
-    parser.add_argument('--debug', action='store_true',
-                        help="Run with debug options. Will start an interactive Python interpreter at the end of the program.")
-    parser.add_argument('--version', action='version',
-                        version="mdtools {}".format(version.__version__))
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        "program", type=str, help="Program to start", choices=applist)
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help=
+        "Run with debug options. Will start an interactive Python interpreter at the end of the program."
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version="mdtools {}".format(version.__version__))
 
     try:
         sys.argv.remove("--debug")
@@ -66,7 +73,8 @@ def main():
 
     try:
         if sys.argv[1] in applist:
-            app = importlib.import_module("mdtools.{}".format(apps[sys.argv[1]]))
+            app = importlib.import_module("mdtools.{}".format(
+                apps[sys.argv[1]]))
             met = getattr(app, sys.argv[1])
         else:
             parser.parse_args()
@@ -76,40 +84,84 @@ def main():
     print('\nCommand line was: mdtools {}\n'.format(' '.join(sys.argv[1:])))
     parser = argparse.ArgumentParser(
         prog="mdtools " + sys.argv[1],
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     if "ana" in apps[sys.argv[1]]:
-        parser.add_argument("-s", dest="topology", type=str, default="topol.tpr",
-                            help="The topolgy file. The FORMATs " +
-                            "           {}".format(", ".join(_PARSERS.keys())) +
-                            "           are implemented in MDAnalysis.")
-        parser.add_argument("-top", dest="topology_format", type=str, default=None,
-                            help="Override automatic topology type detection." +
-                            "See topology for implemented formats")
-        parser.add_argument("-f", dest="trajectory", type=str, default=None, nargs="+",
-                            help="A single or multiple trajectory files. The FORMATs " +
-                            "           {}".format(", ".join(_READERS.keys())) +
-                            "           are implemented in MDAnalysis.")
-        parser.add_argument("-traj", dest="trajectory_format", type=str, default=None,
-                            help="Override automatic trajectory type detection." +
-                            "See trajectory for implemented formats")
-        parser.add_argument("-atom_style", dest="atom_style", type=str, default='None',
-                            help="Manually set the atom_style information (currently only LAMMPS parser)." +
-                            "E.g. atom_style='id type x y z'.")
-        parser.add_argument("-b", dest="begin", type=float, default=0,
-                            help="start time (ps) for evaluation")
-        parser.add_argument("-e", dest="end", type=float, default=None,
-                            help="end time (ps) for evaluation")
-        parser.add_argument("-skip",  dest="skipframes",  type=int,
-                            default=1, help="skip every N frames")
-        parser.add_argument("-box", dest="box", type=float, default=None, nargs="+",
-                            help="Sets the box dimensions x y z [alpha beta gamma] (Å)." +
-                                 "If 'None' dimensions from the trajectory will be used.")
-        parser.add_argument("-nt", dest="num_threads", type=int,
-                            default=0, help="Total number of threads to start (0 is guess)")
+        parser.add_argument(
+            "-s",
+            dest="topology",
+            type=str,
+            default="topol.tpr",
+            help="The topolgy file. The FORMATs " + "           {}".format(
+                ", ".join(_PARSERS.keys())) +
+            "           are implemented in MDAnalysis.")
+        parser.add_argument(
+            "-top",
+            dest="topology_format",
+            type=str,
+            default=None,
+            help="Override automatic topology type detection." +
+            "See topology for implemented formats")
+        parser.add_argument(
+            "-f",
+            dest="trajectory",
+            type=str,
+            default=None,
+            nargs="+",
+            help="A single or multiple trajectory files. The FORMATs " +
+            "           {}".format(", ".join(
+                _READERS.keys())) + "           are implemented in MDAnalysis.")
+        parser.add_argument(
+            "-traj",
+            dest="trajectory_format",
+            type=str,
+            default=None,
+            help="Override automatic trajectory type detection." +
+            "See trajectory for implemented formats")
+        parser.add_argument(
+            "-atom_style",
+            dest="atom_style",
+            type=str,
+            default='None',
+            help=
+            "Manually set the atom_style information (currently only LAMMPS parser)."
+            + "E.g. atom_style='id type x y z'.")
+        parser.add_argument(
+            "-b",
+            dest="begin",
+            type=float,
+            default=0,
+            help="start time (ps) for evaluation")
+        parser.add_argument(
+            "-e",
+            dest="end",
+            type=float,
+            default=None,
+            help="end time (ps) for evaluation")
+        parser.add_argument(
+            "-skip",
+            dest="skipframes",
+            type=int,
+            default=1,
+            help="skip every N frames")
+        parser.add_argument(
+            "-box",
+            dest="box",
+            type=float,
+            default=None,
+            nargs="+",
+            help="Sets the box dimensions x y z [alpha beta gamma] (Å)." +
+            "If 'None' dimensions from the trajectory will be used.")
+        parser.add_argument(
+            "-nt",
+            dest="num_threads",
+            type=int,
+            default=0,
+            help="Total number of threads to start (0 is guess)")
 
-    _configure_parser = [i for i in inspect.getmembers(met) if '_configure_parser' in i[0]][0][1]
+    _configure_parser = [
+        i for i in inspect.getmembers(met) if '_configure_parser' in i[0]
+    ][0][1]
     _configure_parser(met, parser)
     args = parser.parse_args(sys.argv[2:])
 
@@ -139,8 +191,7 @@ def main():
         if args.end != None:
             args.end = int(math.ceil(args.end // u.trajectory.dt))
         else:
-            args.end = int(
-                math.ceil(u.trajectory.totaltime // u.trajectory.dt))
+            args.end = int(math.ceil(u.trajectory.totaltime // u.trajectory.dt))
 
         args.end += 1  # catch also last frame in loops
 
@@ -160,7 +211,10 @@ def main():
             print("")
             # Insert parser arguments into ana_obj
             for var in vars(args):
-                if var not in ["topology", "trajectory", "topology_format", "begin", "end", "skipframes", "box"]:
+                if var not in [
+                        "topology", "trajectory", "topology_format", "begin",
+                        "end", "skipframes", "box"
+                ]:
                     vars(ana_obj)[var] = vars(args)[var]
 
             ana_obj.run(start=args.begin, stop=args.end, step=args.skipframes)

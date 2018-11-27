@@ -24,8 +24,7 @@ with open(os.path.join(sharePath, "sfactor.dat")) as f:
     for line in f:
         if line[0] != '#':
             elements = line.split()
-            CM_parameters[elements[0]] = type(
-                'CM_parameter', (object,), {})()
+            CM_parameters[elements[0]] = type('CM_parameter', (object,), {})()
             CM_parameters[elements[0]].a = np.array(
                 elements[2:6], dtype=np.double)
             CM_parameters[elements[0]].b = np.array(
