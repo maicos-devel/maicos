@@ -25,7 +25,7 @@ if __name__ == "__main__":
               license='MIT',
               description='A collection of scripts to analyse and build systems '
               'for molecular dynamics simulations.',
-              author="Philip Loche",
+              author="Philip Loche et. al.",
               author_email="ploche@physik.fu-berlin.de",
               package_data={'': ['share/*']},
               include_package_data=True,
