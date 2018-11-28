@@ -62,7 +62,7 @@ fi
 echo 'Formatting staged Python files . . .'
 
 ########## PIP VERSION #############
-yapf --style google -i -r ${PYTHON_FILES[@]}
+yapf -i -r ${PYTHON_FILES[@]}
 ######### END PIP VERSION ##########
 
 ########## PIPENV VERSION ##########
