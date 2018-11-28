@@ -115,9 +115,19 @@ class saxs(AnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands."""
 
-    def __init__(self, atomgroup, sel="all", outfreq=100, output="sq", nobin=False,
-                startq=0, endq=60, dq=0.05, mintheta=0, maxtheta=180, **kwargs):
-       # Inherit all classes from AnalysisBase
+    def __init__(self,
+                 atomgroup,
+                 sel="all",
+                 outfreq=100,
+                 output="sq",
+                 nobin=False,
+                 startq=0,
+                 endq=60,
+                 dq=0.05,
+                 mintheta=0,
+                 maxtheta=180,
+                 **kwargs):
+        # Inherit all classes from AnalysisBase
         super(saxs, self).__init__(atomgroup.universe.trajectory, **kwargs)
 
         self.atomgroup = atomgroup
@@ -178,6 +188,7 @@ class saxs(AnalysisBase):
             type=float,
             default=180,
             help='Maximal angle (°) between the q vectors and the z-axis.')
+
     def _prepare(self):
 
         self.mintheta = min(self.mintheta, self.maxtheta)
@@ -228,7 +239,9 @@ class saxs(AnalysisBase):
             print("")
 
         if self.nobindata:
-            self.box = np.diag(mda.lib.mdamath.triclinic_vectors(self.selection.universe.dimensions)) / 10
+            self.box = np.diag(
+                mda.lib.mdamath.triclinic_vectors(
+                    self.selection.universe.dimensions)) / 10
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
             self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
@@ -260,10 +273,10 @@ class saxs(AnalysisBase):
                 q_ts = q_ts[nonzeros]
                 S_ts = S_ts[nonzeros]
 
-                bins = ((q_ts - self.startq) /
-                        ((self.endq - self.startq) / self.nbins)).astype(int)
-                struct_ts = np.histogram(bins, bins=np.arange(self.nbins + 1),
-                                         weights=S_ts)[0]
+                bins = ((q_ts - self.startq) / (
+                    (self.endq - self.startq) / self.nbins)).astype(int)
+                struct_ts = np.histogram(
+                    bins, bins=np.arange(self.nbins + 1), weights=S_ts)[0]
                 with np.errstate(divide='ignore', invalid='ignore'):
                     struct_ts /= np.bincount(bins, minlength=self.nbins)
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
@@ -276,9 +289,11 @@ class saxs(AnalysisBase):
         self._index = self._frame_index + 1
         if self.nobindata:
             self.results["scat_factor"] = self.S_array.sum(axis=3)
-            self.results["q_indices"] = np.array(list(np.ndindex(tuple(self.maxn))))
-            self.results["q"] = np.linalg.norm(self.results["q_indices"] * self.q_factor[np.newaxis,:],
-                                               axis=1)
+            self.results["q_indices"] = np.array(
+                list(np.ndindex(tuple(self.maxn))))
+            self.results["q"] = np.linalg.norm(
+                self.results["q_indices"] * self.q_factor[np.newaxis, :],
+                axis=1)
         else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
             nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
@@ -293,23 +308,29 @@ class saxs(AnalysisBase):
         """Saves the current profiles to a file."""
 
         if self.nobindata:
-            out = np.hstack([self.results["q"][:,np.newaxis],
-                             self.results["q_indices"],
-                             self.results["scat_factor"].flatten()[:,np.newaxis]])
+            out = np.hstack([
+                self.results["q"][:, np.newaxis], self.results["q_indices"],
+                self.results["scat_factor"].flatten()[:, np.newaxis]
+            ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
             argsort = np.argsort(out[:, 0])
             out = out[argsort]
 
-            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(*self.box)
-            np.savetxt(self.output + '.dat', out,
-                        header=boxinfo + "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
-                        fmt='%.4e')
+            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
+                *self.box)
+            np.savetxt(
+                self.output + '.dat',
+                out,
+                header=boxinfo +
+                "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
+                fmt='%.4e')
         else:
-            np.savetxt(self.output + '.dat',
-                       np.vstack([self.results["q"], self.results["scat_factor"]]).T,
-                       header="q (1/nm)\tS(q) (arb. units)",
-                       fmt='%.4e')
+            np.savetxt(
+                self.output + '.dat',
+                np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+                header="q (1/nm)\tS(q) (arb. units)",
+                fmt='%.4e')
 
 
 class debye(AnalysisBase):
