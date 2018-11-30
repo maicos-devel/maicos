@@ -3,8 +3,7 @@
 
 __all__ = [
     'density',
-    'dipole',
     'epsilon',
-    'kinetic_energy',
     'structure_analysis',
+    'timeseries',
 ]
