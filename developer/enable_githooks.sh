@@ -1,8 +1,9 @@
 #/bin/bash
 
-if [ -e .git/hooks ]
+GITDIR=$(git rev-parse --show-toplevel)
+if [ -e ${GITDIR}/.git/hooks ]
 then
-  rm -rf .git/hooks
+  rm -rf ${GITDIR}/.git/hooks
 fi
 
-ln -s ../.githooks .git/hooks
+ln -s ${GITDIR}/.githooks ${GITDIR}/.git/hooks
