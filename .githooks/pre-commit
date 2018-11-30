@@ -7,6 +7,14 @@
 #
 # To enable this hook, rename this file to "pre-commit".
 
+# Call YAPF to check python formatting
+# ====================================
+GITDIR=`git rev-parse --show-toplevel`
+${GITDIR}/developer/yapf.sh
+
+# Standard suggested git pre-commit checks
+# ========================================
+
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
 	against=HEAD
@@ -47,5 +55,6 @@ fi
 
 # If there are whitespace errors, print the offending file names and fail.
 exec git diff-index --check --cached $against --
-
-exec ./yapf.sh
+if [ $? -neq 0 ]
+  exit 1
+fi

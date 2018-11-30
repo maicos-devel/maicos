@@ -1,3 +1,9 @@
+#!/bin/bash
+#
+# CAVE: subsitution seems to work with bash, not with sh!
+#
+#==============================================================================
+#
 # Git pre-commit hook to check staged Python files for formatting issues with
 # yapf.
 #
