@@ -20,30 +20,40 @@ import numpy as np
 
 from .base import AnalysisBase
 
+
 def _configure_parser(parser):
     parser.description = analysis_example.__doc__
 
     # Custom arguments
-    parser.add_argument('-o', dest='output', type=str, default='outfile', 
-                        help='Prefix for output filenames')
-    parser.add_argument('-temp', dest='temperature', type=float, default=300, 
-                        help='Reference temperature')
+    parser.add_argument(
+        '-o',
+        dest='output',
+        type=str,
+        default='outfile',
+        help='Prefix for output filenames')
+    parser.add_argument(
+        '-temp',
+        dest='temperature',
+        type=float,
+        default=300,
+        help='Reference temperature')
+
 
 class analysis_example(AnalysisBase):
     """Description for my awesome analysis script."""
-    def __init__(self,atomgroup,temperature=300,output="output",**kwargs):
+
+    def __init__(self, atomgroup, temperature=300, output="output", **kwargs):
         # Inherit all classes from AnalysisBase
-        super(analysis_example, self).__init__(atomgroup.universe.trajectory, 
-                                           **kwargs)
+        super(analysis_example, self).__init__(atomgroup.universe.trajectory,
+                                               **kwargs)
 
         self.atomgroup = atomgroup
         self.temperature = temperature
         self.output = output
-        
+
     def _prepare(self):
         """Set things up before the analysis loop begins"""
         self.volume = 0
-
 
     def _single_frame(self):
         """Calculate data from a single frame of trajectory
@@ -52,17 +62,17 @@ class analysis_example(AnalysisBase):
         """
         # Current frame index: self._frame_index
         # Current timestep object: self._ts
-        
+
         self.volume += self._ts.volume
-        
+
     def _calculate_results(self):
         """Calculate the results.
         
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
-        
+
         self.results["volume"] = self.volume / self.n_frames
-                       
+
     def _conclude(self):
         """Finalise the results you've gathered.
 
@@ -71,12 +81,15 @@ class analysis_example(AnalysisBase):
         if self._verbose:
             print("Average volume of the simulation box {:.2f} Å**3".format(
                 self.results["volume"]))
-            
+
     def _save_results(self):
         """Saves results to a file. 
         
         Called at the end of the run() method after _calculate_results and
         _conclude"""
-        
-        np.savetxt(self.output + '.dat', np.array([self.results["volume"]]),
-                       fmt='%1.2f', header='volume / Angstrom**3')
+
+        np.savetxt(
+            self.output + '.dat',
+            np.array([self.results["volume"]]),
+            fmt='%1.2f',
+            header='volume / Angstrom**3')

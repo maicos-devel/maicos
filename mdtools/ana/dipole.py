@@ -9,6 +9,7 @@ import numpy as np
 from ..utils import repairMolecules
 from .base import AnalysisBase
 
+
 class dipole_angle(AnalysisBase):
     """Calculates the timeseries of the dipole moment wit an axis."""
 
@@ -24,14 +25,32 @@ class dipole_angle(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument('-d', dest='dim', type=int,
-                            default=2, help='direction normal to the surface (x,y,z=0,1,2, default: z)')
-        parser.add_argument('-sel', dest='sel', type=str,
-                            help='atom group selection', default='resname SOL')
-        parser.add_argument('-dout', dest='outfreq', type=float,
-                            default='10000', help='Default number of frames after which output files are refreshed (10000)')
-        parser.add_argument('-o',   dest='output',      type=str,
-                            default='dipangle', help='Prefix for output filenames')
+        parser.add_argument(
+            '-d',
+            dest='dim',
+            type=int,
+            default=2,
+            help='direction normal to the surface (x,y,z=0,1,2, default: z)')
+        parser.add_argument(
+            '-sel',
+            dest='sel',
+            type=str,
+            help='atom group selection',
+            default='resname SOL')
+        parser.add_argument(
+            '-dout',
+            dest='outfreq',
+            type=float,
+            default='10000',
+            help=
+            'Default number of frames after which output files are refreshed (10000)'
+        )
+        parser.add_argument(
+            '-o',
+            dest='output',
+            type=str,
+            default='dipangle',
+            help='Prefix for output filenames')
 
     def _prepare(self):
 
@@ -87,8 +106,11 @@ class dipole_angle(AnalysisBase):
 
     def _save_results(self):
 
-        np.savetxt("{}.dat".format(self.output),
-                   np.vstack([self.results["t"], self.results["cos_theta_i"],
-                              self.results["cos_theta_ii"], self.results["cos_theta_ij"]]).T,
-                   header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
-                   fmt='%.5e')
+        np.savetxt(
+            "{}.dat".format(self.output),
+            np.vstack([
+                self.results["t"], self.results["cos_theta_i"],
+                self.results["cos_theta_ii"], self.results["cos_theta_ij"]
+            ]).T,
+            header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
+            fmt='%.5e')

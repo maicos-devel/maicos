@@ -16,22 +16,49 @@ from ..utils import repairMolecules
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculation of the dielectric
 profile for axial and radial direction at the system's center of geometry."""
-parser.add_argument('-g', dest='geometry', type=str,
-                    default=None, help="A structure file without water")
-parser.add_argument('-r', dest='radius', type=float,
-                    default=None, help='radius of the cylinder in Angstrom')
-parser.add_argument('-dr', dest='binwidth', type=float,
-                    default=0.05, help='specify the binwidth [Angtsrom]')
-parser.add_argument('-vr', dest='variable_dr', action='store_true',
-                    help="Use a variable binwidth, where the volume kept fixed.")
-parser.add_argument('-l', dest='length', type=float,
-                    default=None, help='length of the cylinder in Angstrom')
-parser.add_argument('-o', dest='output', type=str,
-                    default='eps_cyl', help='Prefix for output filenames')
-parser.add_argument('-dout', dest='outfreq', type=float,
-                    default='1000', help='Default time after which output files are refreshed (1000 ps)')
-parser.add_argument('-si', dest='single', action='store_true',
-                    help='Single water line?')
+parser.add_argument(
+    '-g',
+    dest='geometry',
+    type=str,
+    default=None,
+    help="A structure file without water")
+parser.add_argument(
+    '-r',
+    dest='radius',
+    type=float,
+    default=None,
+    help='radius of the cylinder in Angstrom')
+parser.add_argument(
+    '-dr',
+    dest='binwidth',
+    type=float,
+    default=0.05,
+    help='specify the binwidth [Angtsrom]')
+parser.add_argument(
+    '-vr',
+    dest='variable_dr',
+    action='store_true',
+    help="Use a variable binwidth, where the volume kept fixed.")
+parser.add_argument(
+    '-l',
+    dest='length',
+    type=float,
+    default=None,
+    help='length of the cylinder in Angstrom')
+parser.add_argument(
+    '-o',
+    dest='output',
+    type=str,
+    default='eps_cyl',
+    help='Prefix for output filenames')
+parser.add_argument(
+    '-dout',
+    dest='outfreq',
+    type=float,
+    default='1000',
+    help='Default time after which output files are refreshed (1000 ps)')
+parser.add_argument(
+    '-si', dest='single', action='store_true', help='Single water line?')
 
 # ======== DEFINITIONS ========
 # =============================
@@ -58,15 +85,17 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
             m_rad.sum(axis=1) / args.frame * M_rad.sum() / args.frame
 
         dcov_ax = np.sqrt(
-            (mM_ax.std(axis=1) / args.frame * args.resample)**2
-            + (m_ax.std(axis=1) / args.frame *
-               args.resample * M_ax.sum() / args.frame)**2
-            + (m_ax.sum(axis=1) / args.frame * M_ax.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
+            (mM_ax.std(axis=1) / args.frame * args.resample)**2 +
+            (m_ax.std(axis=1) / args.frame * args.resample * M_ax.sum() /
+             args.frame)**2 +
+            (m_ax.sum(axis=1) / args.frame * M_ax.std() / args.frame *
+             args.resample)**2) / np.sqrt(args.resample - 1)
         dcov_rad = np.sqrt(
-            (mM_rad.std(axis=1) / args.frame * args.resample)**2
-            + (m_rad.std(axis=1) / args.frame *
-               args.resample * M_rad.sum() / args.frame)**2
-            + (m_rad.sum(axis=1) / args.frame * M_rad.std() / args.frame * args.resample)**2) / np.sqrt(args.resample - 1)
+            (mM_rad.std(axis=1) / args.frame * args.resample)**2 +
+            (m_rad.std(axis=1) / args.frame * args.resample * M_rad.sum() /
+             args.frame)**2 +
+            (m_rad.sum(axis=1) / args.frame * M_rad.std() / args.frame *
+             args.resample)**2) / np.sqrt(args.resample - 1)
 
     eps_ax = 1 + cov_ax / (epsilon_0 * kb * T)
     eps_rad_inv = 1 - 2 * np.pi * r * length * cov_rad / (epsilon_0 * kb * T)
@@ -74,10 +103,8 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
     deps_ax = dcov_ax / (epsilon_0 * kb * T)
     deps_rad_inv = 2 * np.pi * r * length * dcov_rad / (epsilon_0 * kb * T)
 
-    outdata_ax = np.array(
-        [r, eps_ax, deps_ax])
-    outdata_rad = np.array(
-        [r, eps_rad_inv, deps_rad_inv])
+    outdata_ax = np.array([r, eps_ax, deps_ax])
+    outdata_rad = np.array([r, eps_rad_inv, deps_rad_inv])
 
     header = 'Command line was: {}\n'.format(' '.join(sys.argv)) +\
              "statistics over {:.1f} picoseconds\n".format(args.frame * args.dt) +\
@@ -88,6 +115,7 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
 
 # =========== MAIN ===========
 # ============================
+
 
 def main(firstarg=2, DEBUG=False):
     global args
@@ -100,7 +128,9 @@ def main(firstarg=2, DEBUG=False):
         system = MDAnalysis.Universe(args.geometry)
         cog = system.atoms.center_of_geometry()
     else:
-        print("No geometry set. Calculate center of geometry from box dimensions.")
+        print(
+            "No geometry set. Calculate center of geometry from box dimensions."
+        )
         cog = u.dimensions[:3] / 2
 
     if args.radius != None:
@@ -152,7 +182,8 @@ def main(firstarg=2, DEBUG=False):
 
     # ======== MAIN LOOP =========
     # ============================
-    for args.frame, ts in enumerate(u.trajectory[args.beginframe:args.endframe:args.skipframes]):
+    for args.frame, ts in enumerate(
+            u.trajectory[args.beginframe:args.endframe:args.skipframes]):
         print_frameinfo(ts, args.frame)
 
         # make broken molecules whole again!
@@ -168,10 +199,10 @@ def main(firstarg=2, DEBUG=False):
         # ========================================================
         bins_rad = np.digitize(positions_cyl[:, 0], r_bins)
 
-        curQ_rad = np.histogram(bins_rad, bins=np.arange(
-            nbins + 1), weights=u.atoms.charges)[0]
-        this_m_rad = -np.cumsum((curQ_rad / delta_r_sq) *
-                                r * dr) / (r * np.pi * length)
+        curQ_rad = np.histogram(
+            bins_rad, bins=np.arange(nbins + 1), weights=u.atoms.charges)[0]
+        this_m_rad = -np.cumsum(
+            (curQ_rad / delta_r_sq) * r * dr) / (r * np.pi * length)
 
         this_M_rad = np.sum(this_m_rad * dr)
         M_rad[args.frame // resample_freq] += this_M_rad
@@ -189,8 +220,8 @@ def main(firstarg=2, DEBUG=False):
         # Move all r-positions to 'center of charge' such that we avoid monopoles in r-direction.
         # We only want to cut in z direction.
         chargepos = positions_cyl * np.abs(u.atoms.charges[:, np.newaxis])
-        centers = np.sum(chargepos[i::3] for i in range(
-            3)) / np.abs(u.residues[0].atoms.charges).sum()
+        centers = np.sum(chargepos[i::3] for i in range(3)) / np.abs(
+            u.residues[0].atoms.charges).sum()
         testpos = np.empty(positions_cyl[:, 0].shape)
         testpos = np.repeat(centers[:, 0], 3)
 
@@ -201,8 +232,12 @@ def main(firstarg=2, DEBUG=False):
 
         binsz = np.digitize(positions_cyl[:, 1], z)
         binsz[np.where(binsz < 0)] = 0
-        curQz = np.histogram2d(binsr, binsz, bins=[np.arange(nbins + 1), np.arange(nbinsz + 1)],
-                               weights=u.atoms.charges)[0]
+        curQz = np.histogram2d(
+            binsr,
+            binsz,
+            bins=[np.arange(nbins + 1),
+                  np.arange(nbinsz + 1)],
+            weights=u.atoms.charges)[0]
         curqz = np.cumsum(curQz, axis=1) / (np.pi * delta_r_sq)[:, np.newaxis]
 
         this_m_ax = -curqz.mean(axis=1)
@@ -211,17 +246,18 @@ def main(firstarg=2, DEBUG=False):
         mM_ax[:, args.frame // resample_freq] += this_m_ax * this_M_ax
 
         # call for output
-        if (int(ts.time) % args.outfreq == 0 and ts.time - args.begin >= args.outfreq):
+        if (int(ts.time) % args.outfreq == 0 and
+                ts.time - args.begin >= args.outfreq):
             output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
     print("\n")
     output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad)
 
-
     if DEBUG:
         # Inject local variables into global namespace for debugging.
         for key, value in locals().items():
             globals()[key] = value
+
 
 if __name__ == "__main__":
     main(firstarg=1)
