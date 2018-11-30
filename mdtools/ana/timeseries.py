@@ -11,7 +11,7 @@ from .base import AnalysisBase
 
 
 class dipole_angle(AnalysisBase):
-    """Calculates the timeseries of the dipole moment wit an axis."""
+    """Calculates the timeseries of the dipole moment with respect to an axis."""
 
     def __init__(self, atomgroup, output="output", dim=2, sel='all', **kwargs):
         # Inherit all classes from AnalysisBase
@@ -114,6 +114,7 @@ class dipole_angle(AnalysisBase):
             ]).T,
             header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
             fmt='%.5e')
+
 
 class kinetic_energy(AnalysisBase):
     """Calculates the timeseries for the molecular center

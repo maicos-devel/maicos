@@ -13,6 +13,8 @@ The easiest use is to install the git hook module, which will automatically form
 code before commiting. To install it just run the `enable_githooks.sh` from
 the command line.
 
+Currently we only format python files.
+
 # Writing your own Analysis module
 
 Example code for an analysis module can be found in the [example folder](examples/). To deploy

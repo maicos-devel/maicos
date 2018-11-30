@@ -19,7 +19,9 @@ To install it only on the user site use `python setup.py install --user`.
 If you are using `BASH` you can add the autocompletion script
 by
 
+```sh
     source mdtools-completion.bash
+```
 
 To load the completion at every login simply paste the path **given at the end
 of the installation** to your `.bashrc` or `.profile` file.
@@ -70,7 +72,9 @@ Computes the dipole moment flcutuations and from this thedielectric constant.
 
 ### epsilon_planar
 
-Calculate the dielectric profile. See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
+Calculate the dielectric profile.
+See Bonthuis et. al., Langmuir 28, vol. 20 (2012) and
+Schlaich et. al., PRL 4, vol. 117 (2016) for details.
 
 ### dielectric_spectrum
 
@@ -92,7 +96,7 @@ the debyer library see <https://github.com/wojdyr/debyer>.
 
 ### dipole_angle
 
-Calculates the timeseries of the dipole moment wit an axis.
+Calculates the timeseries of the dipole moment with respect to an axis.
 
 ### kinetic_energy
 
@@ -101,10 +105,8 @@ and rotational kinetic energy.
 
 # Issues
 
-If you found any bugs or have improvements to mdtools feel free to raise an
-issue. If you have question please write us an Email instead of raising an
+If you found any bugs, improvements or questions to mdtools feel free to raise an
 issue.
-
 
 # Contributing
 
