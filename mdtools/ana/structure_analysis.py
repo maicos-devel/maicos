@@ -175,6 +175,13 @@ class saxs(AnalysisBase):
             default=60,
             help='Ending q (1/nm)')
         parser.add_argument(
+            '-nobin',
+            dest='nobindata',
+            action='store_const',
+            const=True,
+            default=False,
+            help='Do not bin the data. Only works reliable for NVT!')
+        parser.add_argument(
             '-dq', dest='dq', type=float, default=0.05, help='binwidth (1/nm)')
         parser.add_argument(
             '-mintheta',
