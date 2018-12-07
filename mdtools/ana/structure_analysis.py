@@ -257,10 +257,9 @@ class saxs(AnalysisBase):
             self.struct_factor = np.zeros([self.nbins, len(self.groups)])
 
     def _single_frame(self):
+        # convert everything to cartesian coordinates
+        box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
         for i, t in enumerate(self.groups):
-            # convert everything to cartesian coordinates
-            box = np.diag(
-                mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
@@ -285,7 +284,8 @@ class saxs(AnalysisBase):
                 struct_ts = np.histogram(
                     bins, bins=np.arange(self.nbins + 1), weights=S_ts)[0]
                 with np.errstate(divide='ignore', invalid='ignore'):
-                    struct_ts /= np.bincount(bins, minlength=self.nbins)
+                    struct_ts /= np.histogram(
+                        bins, bins=np.arange(self.nbins + 1))[0]
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:

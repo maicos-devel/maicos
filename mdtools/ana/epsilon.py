@@ -422,7 +422,7 @@ class epsilon_planar(AnalysisBase):
             bins = ((sel.atoms.positions[:, self.dim] - self.zmin) / (
                 (zmax - self.zmin) / (self.nbins))).astype(int)
             bins[np.where(bins < 0)] = 0  # put all charges back inside box
-            bins[np.where(bins > self.nbins)] = self.nbins
+            bins[np.where(bins >= self.nbins)] = self.nbins - 1
             curQ = np.histogram(
                 bins, bins=np.arange(self.nbins + 1),
                 weights=sel.atoms.charges)[0]
@@ -464,7 +464,7 @@ class epsilon_planar(AnalysisBase):
                          (self._ts.dimensions[direction] / nbinsx)).astype(int)
                 # put all charges back inside box
                 binsx[np.where(binsx < 0)] = 0
-                binsx[np.where(binsx > nbinsx)] = nbinsx
+                binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
                 curQx = np.histogram2d(
                     binsz,
                     binsx,
