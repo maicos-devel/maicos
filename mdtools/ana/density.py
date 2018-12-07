@@ -237,8 +237,8 @@ class density_planar(AnalysisBase):
         dz = self._ts.dimensions[self.dim] / self.nbins
 
         for index, selection in enumerate(self.sel):
-            bins = ((selection.atoms.positions[:, self.dim] + comshift) / dz +
-                    dz / 2).astype(int) % self.nbins
+            bins = ((selection.atoms.positions[:, self.dim] + comshift + dz / 2)
+                    / dz).astype(int) % self.nbins
             density_ts = np.histogram(
                 bins,
                 bins=np.arange(self.nbins + 1),
