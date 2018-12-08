@@ -254,7 +254,7 @@ class epsilon_planar(AnalysisBase):
             default='eps',
             help='Prefix for output filenames')
         parser.add_argument(
-            '-groups',
+            '-gr',
             dest='groups',
             type=str,
             nargs='+',
@@ -318,15 +318,20 @@ class epsilon_planar(AnalysisBase):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
 
-        self.mysels = []
+        self.sel = []
         for i, gr in enumerate(self.groups):
-            self.mysels.append(self.atomgroup.select_atoms(gr))
+            sel = self.atomgroup.select_atoms(gr)
             if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, self.mysels[i].n_atoms))
-            if self.mysels[i].n_atoms == 0:
-                raise RuntimeError(
-                    "\n '{}' does not contain any atoms. Please adjust group selection."
-                    .format(gr))
+                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
+            if sel.n_atoms > 0:
+                self.sel.append(sel)
+                print("")
+            else:
+                print(" - not taken for profile")
+
+        if len(self.sel) == 0:
+            raise RuntimeError(
+                "No atoms found in selection. Please adjust group selection")
 
         print("\n")
 
@@ -418,7 +423,7 @@ class epsilon_planar(AnalysisBase):
         # sum up the averages
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
-        for i, sel in enumerate(self.mysels):
+        for i, sel in enumerate(self.sel):
             bins = ((sel.atoms.positions[:, self.dim] - self.zmin) / (
                 (zmax - self.zmin) / (self.nbins))).astype(int)
             bins[np.where(bins < 0)] = 0  # put all charges back inside box
@@ -442,7 +447,7 @@ class epsilon_planar(AnalysisBase):
         # ========================================================
         nbinsx = 250  # number of virtual cuts ("many")
 
-        for i, sel in enumerate(self.mysels):
+        for i, sel in enumerate(self.sel):
             # Move all z-positions to 'center of charge' such that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y direction)
             chargepos=sel.atoms.positions * \

@@ -176,13 +176,19 @@ class density_planar(AnalysisBase):
 
         self.sel = []
         for i, gr in enumerate(self.groups):
-            self.sel.append(self.atomgroup.select_atoms(gr))
+            sel = self.atomgroup.select_atoms(gr)
             if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, self.sel[i].n_atoms))
-            if self.sel[i].n_atoms == 0:
-                raise ValueError(
-                    "{} does not contain any atoms. Please adjust 'group' selection."
-                    .format(gr))
+                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
+            if sel.n_atoms > 0:
+                self.sel.append(sel)
+                print("")
+            else:
+                print(" - not taken for profile")
+
+        if len(self.sel) == 0:
+            raise RuntimeError(
+                "No atoms found in selection. Please adjust group selection")
+
         if self.comgroup is not None:
             self.comsel = self.atomgroup.select_atoms(self.comgroup)
             if self._verbose:
