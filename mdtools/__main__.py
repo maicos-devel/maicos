@@ -16,7 +16,6 @@ from MDAnalysis import _PARSERS, _READERS
 
 from . import version
 from .ana import __all__ as anamodules
-from .ana import *
 from .build import __all__ as buildmodules
 
 # Try to use IPython shell for debug
@@ -34,15 +33,11 @@ def main():
     # Dictionary containing the app name and the directory
     apps = {}
     for module in anamodules:
-        # Load all classes in each module but ignore first one since this is
-        # the basemodule.
-        clsmembers = inspect.getmembers(sys.modules["mdtools.ana." + module],
-                                        inspect.isclass)[1:]
-        for cls in clsmembers:
-            apps[cls[0]] = "ana." + module
-
+        module = module.split(".")
+        apps[module[-1]] = "ana." + ".".join(module[:-1])
     for module in buildmodules:
-        apps[module] = "build"
+        module = module.split(".")
+        apps[module[-1]] = "build." + ".".join(module[:-1])
 
     applist = list(apps.keys())
     applist.sort()
