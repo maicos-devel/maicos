@@ -17,14 +17,13 @@ for all users type
 
 To install it only on the user site use `python setup.py install --user`.
 If you are using `BASH` you can add the autocompletion script
-by
+by adding
 
 ```sh
-    source mdtools-completion.bash
+    source $(mdtools --bash_completion)
 ```
 
-To load the completion at every login simply paste the path **given at the end
-of the installation** to your `.bashrc` or `.profile` file.
+to your `.bashrc` or `.profile` file.
 
 # Usage
 

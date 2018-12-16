@@ -6,22 +6,21 @@ from __future__ import absolute_import, division, print_function
 import os
 import subprocess
 
-from setuptools import find_packages, setup
-
 from mdtools.version import __version__
+from setuptools import find_packages, setup
 
 
 def get_git_revision_hash():
     try:
         hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-        return "-dev"
+        return ".dev0"
     except:
         # no git repo
         return ""
 
 
 if __name__ == "__main__":
-    s = setup(
+    setup(
         name='mdtools',
         packages=find_packages(),
         version=__version__ + get_git_revision_hash(),
@@ -42,15 +41,3 @@ if __name__ == "__main__":
             ],
         },
         zip_safe=False)
-
-    installation_path = s.command_obj['install'].install_lib
-    # Get newest installation folder
-    mdtools_path = max([
-        os.path.join(installation_path, i)
-        for i in os.listdir(installation_path)
-        if "mdtools" in i
-    ],
-                       key=os.path.getctime)
-    print("\nTo use the BASH autocompletion add")
-    print("  source {}\nto your .bashr or .profile file".format(
-        os.path.join(mdtools_path, "mdtools/share/mdtools-completion.bash")))

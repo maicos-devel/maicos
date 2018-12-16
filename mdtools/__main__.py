@@ -59,6 +59,12 @@ def main():
         action='version',
         version="mdtools {}".format(version.__version__))
 
+    if '--bash_completion' in sys.argv:
+        print(
+            os.path.join(
+                os.path.dirname(__file__), "share/mdtools-completion.bash"))
+        sys.exit(0)
+
     try:
         sys.argv.remove("--debug")
         debug = True
