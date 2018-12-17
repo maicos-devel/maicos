@@ -70,9 +70,9 @@ def main():
 
     try:
         if sys.argv[1] in modules.keys():
-            selected_module_group = importlib.import_module("mdtools.{}".format(
+            selected_metamodule = importlib.import_module("mdtools.{}".format(
                 modules[sys.argv[1]]))
-            selected_module = getattr(selected_module_group, sys.argv[1])
+            selected_module = getattr(selected_metamodule, sys.argv[1])
         else:
             parser.parse_args()
     except IndexError:
@@ -173,7 +173,7 @@ def main():
     if args.atom_style is not None:
         ukwargs['atom_style'] = args.atom_style
 
-    u = MDAnalysis.Universe(
+    u = mda.Universe(
         args.topology, topology_format=args.topology_format, **ukwargs)
     if args.trajectory is not None:
         u.load_new(args.trajectory, format=args.trajectory_format)
@@ -200,7 +200,7 @@ def main():
             u.dimensions[:2] = np.array(args.box)
 
     try:
-        ana_obj = met(u.atoms, verbose=True, save=True)
+        ana_obj = selected_module(u.atoms, verbose=True, save=True)
         print("")
         # Insert parser arguments into ana_obj
         for var in vars(args):
