@@ -1,6 +1,6 @@
 # MDTOOLS
 
-A collection of scripts to analyse and build systems for molecular dynamics simulations.
+A collection of scripts to analyse molecular dynamics simulations.
 Usually these scripts offer more flexibility and/or are faster than the original implementations.
 
 # Installation

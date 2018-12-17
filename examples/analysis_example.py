@@ -6,7 +6,7 @@
 # script do the following steps:
 # 1. Copy it to the "mdtsools/ana" folder and add your code.
 # 2. Choose an unique name and add <"analysis_example"> to the __all__ list
-#    in "mdtools/ana/__init__.py".
+#    in "mdtools/modules/__init__.py".
 # 3. OPTIONAL: Add bash completion commands to "mdtools/share/mdtools_completion.bash".
 # ==================================
 
@@ -67,7 +67,7 @@ class analysis_example(AnalysisBase):
 
     def _calculate_results(self):
         """Calculate the results.
-        
+
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
 
@@ -76,15 +76,15 @@ class analysis_example(AnalysisBase):
     def _conclude(self):
         """Finalise the results you've gathered.
 
-        Called at the end of the run() method after _calculate_results 
+        Called at the end of the run() method after _calculate_results
         to finish everything up."""
         if self._verbose:
             print("Average volume of the simulation box {:.2f} Å**3".format(
                 self.results["volume"]))
 
     def _save_results(self):
-        """Saves results to a file. 
-        
+        """Saves results to a file.
+
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 

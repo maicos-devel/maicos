@@ -1,7 +1,7 @@
 # Developing for mdtools
 
 Contribution via pull requests are always welcome. Before submitting a pull
-request please open an issue
+request please open an issue.
 
 # Code formatting
 
@@ -31,5 +31,5 @@ the script do the following steps.
                      `_calculate_results` mnethod instead.
     -   `_save_results` Save your results to a file. This is especially needed to use it from the command line.
 2.  Choose an unique name and add `<analysis_example>` to the `__all__` list
-    in `mdtools/ana/__init__.py`.
+    in `mdtools/modules/__init__.py`.
 3.  OPTIONAL Add bash completion commands to `mdtools/share/mdtools_completion.bash`.

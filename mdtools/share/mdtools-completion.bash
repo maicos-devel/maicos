@@ -16,7 +16,6 @@ _mdtools_completion()
   #  The mdtools options we will complete.
   mdtools_opts=""
   mdtools_opts+=" carbonstructure"
-  mdtools_opts+=" insert"
   mdtools_opts+=" debye"
   mdtools_opts+=" density_planar"
   mdtools_opts+=" density_cylinder"
@@ -26,10 +25,7 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
-  mdtools_opts+=" free-energy"
   mdtools_opts+=" kinetic_energy"
-  mdtools_opts+=" pertop"
-  mdtools_opts+=" rerun-free-energy"
   mdtools_opts+=" saxs"
   mdtools_opts+=" velocity"
   mdtools_opts+=" --debug --help --version"
@@ -46,33 +42,6 @@ _mdtools_completion()
 
   #  Complete the arguments to the module commands.
   case "$module" in
-    carbonstructure)
-      case "${prev_word}" in
-        -s)
-        COMPREPLY=( $( compgen -W "armcnt hopg hopgcnt" -- ${cur_word}) )
-        return 0 ;;
-        -i|-l|-w|-d|-x)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -s -i -l -w -d -x -o" -- ${cur_word} ) )
-      return 0 ;;
-
-    insert)
-      case "${prev_word}" in
-        -o)
-        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-        return 0 ;;
-        -cp|-cs)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
-        return 0 ;;
-        -zmin|-zmax|-Nw|-d)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -cp -cs -zmin -zmax -Nw -d -o" -- ${cur_word} ) )
-      return 0 ;;
-
     debye)
       case "${prev_word}" in
         -s)
@@ -282,30 +251,6 @@ _mdtools_completion()
                                                           -- ${cur_word} ) )
       return 0 ;;
 
-    free-energy)
-      case "${prev_word}" in
-        -f)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.mdp)" -- ${cur_word}) )
-        return 0 ;;
-        -c)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$structs" -- ${cur_word}) )
-        return 0 ;;
-        -n)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.ndx)" -- ${cur_word}) )
-        return 0 ;;
-        -p)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
-        return 0 ;;
-        -sub)
-        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-        return 0 ;;
-        -sp|-mdrun|-d)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -mdrun -d" -- ${cur_word} ) )
-      return 0 ;;
-
       kinetic_energy)
         case "${prev_word}" in
           -s)
@@ -322,46 +267,6 @@ _mdtools_completion()
           return 0 ;;
         esac
         COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o " -- ${cur_word} ) )
-        return 0 ;;
-
-    pertop)
-      case "${prev_word}" in
-        -p)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top|.itp)" -- ${cur_word}) )
-        return 0 ;;
-        -o)
-        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-        return 0 ;;
-        -l)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -p -l -v" -- ${cur_word} ) )
-      return 0 ;;
-
-      rerun-free-energy)
-        case "${prev_word}" in
-          -f)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.mdp)" -- ${cur_word}) )
-          return 0 ;;
-          -c)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "$structs" -- ${cur_word}) )
-          return 0 ;;
-          -n)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.ndx)" -- ${cur_word}) )
-          return 0 ;;
-          -p)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "!*@(.top)" -- ${cur_word}) )
-          return 0 ;;
-          -sub)
-          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-          return 0 ;;
-          -b|-e|-q|-nl|-d|-x|-o|-mdrun)
-          COMPREPLY=( )
-          return 0 ;;
-        esac
-        COMPREPLY=( $( compgen -W "-h -f -c -n -p -sub -sp -d -b -e -q -nl\
-                                    -x -o -mdrun" -- ${cur_word} ) )
         return 0 ;;
 
       saxs)

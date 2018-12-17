@@ -89,7 +89,7 @@ parser.add_argument(
 
 
 def Bin(a, bins):
-    """Averages array values in bins for easier plotting. 
+    """Averages array values in bins for easier plotting.
     Note: "bins" array should contain the INDEX (integer) where that bin begins"""
 
     if np.iscomplex(a).any():
