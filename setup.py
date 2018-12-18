@@ -32,8 +32,8 @@ if __name__ == "__main__":
         package_data={'': ['share/*']},
         include_package_data=True,
         install_requires=[
-            'MDAnalysis>=0.19.0', 'matplotlib>=2.0.0',
-            'numba>=0.38.0', 'numpy>=1.10.4', 'scipy>=0.17'
+            'MDAnalysis>=0.19.0', 'matplotlib>=2.0.0', 'numba>=0.38.0',
+            'numpy>=1.10.4', 'scipy>=0.17'
         ],
         entry_points={
             'console_scripts': [
