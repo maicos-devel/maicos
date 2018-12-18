@@ -4,9 +4,9 @@
 # ========== DESCRIPTION ===========
 # This is an example for an analysis script. To use this
 # script do the following steps:
-# 1. Copy it to the "mdtsools/ana" folder and add your code.
-# 2. Choose an unique name and add <"analysis_example"> to the __all__ list
-#    in "mdtools/modules/__init__.py".
+# 1. Copy it to the "mdtsools/modules" folder and add your code.
+# 2. Choose an unique name and add <"analysis_example. analysis_example">
+#    to the __all__ list in "mdtools/modules/__init__.py".
 # 3. OPTIONAL: Add bash completion commands to "mdtools/share/mdtools_completion.bash".
 # ==================================
 
@@ -15,24 +15,6 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from .base import AnalysisBase
-
-
-def _configure_parser(parser):
-    parser.description = analysis_example.__doc__
-
-    # Custom arguments
-    parser.add_argument(
-        '-o',
-        dest='output',
-        type=str,
-        default='outfile',
-        help='Prefix for output filenames')
-    parser.add_argument(
-        '-temp',
-        dest='temperature',
-        type=float,
-        default=300,
-        help='Reference temperature')
 
 
 class analysis_example(AnalysisBase):
@@ -46,6 +28,22 @@ class analysis_example(AnalysisBase):
         self.atomgroup = atomgroup
         self.temperature = temperature
         self.output = output
+
+    def _configure_parser(self, parser):
+        parser.description = self.__doc__
+        # Custom arguments
+        parser.add_argument(
+            '-o',
+            dest='output',
+            type=str,
+            default='outfile',
+            help='Prefix for output filenames')
+        parser.add_argument(
+            '-temp',
+            dest='temperature',
+            type=float,
+            default=300,
+            help='Reference temperature')
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
