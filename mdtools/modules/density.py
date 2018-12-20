@@ -2,6 +2,7 @@
 # coding: utf-8
 
 from __future__ import absolute_import, division, print_function
+from scipy import constants
 
 import os
 import sys
@@ -11,12 +12,17 @@ import numpy as np
 from .base import AnalysisBase
 
 
-def mu(rho, temperature):
-    """Returns the chemical potential calculated from the density: mu = k_B T log(rho.)"""
-    # db = 1.00394e-1  # De Broglie (converted to nm)
-    kT = 0.00831446215 * temperature
+def mu(rho, temperature, m):
+    """Returns the chemical potential calculated from the density: mu = k_B T log(rho. / m)"""
+
+    # De Broglie (converted to nm)
+    db = np.sqrt(constants.h**2 / (2 * np.pi * m * constants.atomic_mass * constants.Boltzmann * temperature))
+
+    # kT in KJ/mol
+    kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
+
     if np.all(rho > 0):
-        return kT * np.log(rho)
+        return kT * np.log(rho * db**3 / (m * constants.atomic_mass))
     elif np.any(rho == 0):
         return np.float64("-inf")
     else:
@@ -25,7 +31,10 @@ def mu(rho, temperature):
 
 def dmu(rho, drho, temperature):
     """Returns the error of the chemical potential calculated from the density using propagation of uncertainty."""
-    kT = 0.00831446215 * temperature
+
+    # kT in KJ/mol
+    kT = temperature * constants.Avogadro / constants.kilo
+
     if np.all(rho > 0):
         return (kT / rho * drho)
     elif np.any(rho == 0):
@@ -46,6 +55,7 @@ class density_planar(AnalysisBase):
                  binwidth=0.1,
                  muout="muout",
                  temperature=300,
+                 mass=np.nan,
                  zpos=None,
                  dens="mass",
                  groups=['all'],
@@ -63,6 +73,7 @@ class density_planar(AnalysisBase):
         self.binwidth = binwidth
         self.muout = muout
         self.temperature = temperature
+        self.mass = mass
         self.zpos = zpos
         self.dens = dens
         self.comgroup = comgroup
@@ -181,6 +192,8 @@ class density_planar(AnalysisBase):
                 print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
             if sel.n_atoms > 0:
                 self.sel.append(sel)
+                if len(self.groups) == 1:
+                    self.mass = sel.atoms.total_mass() / sel.atoms.n_residues
                 print("")
             else:
                 print(" - not taken for profile")
@@ -292,16 +305,11 @@ class density_planar(AnalysisBase):
         if (self.zpos != None):
             this = (self.zpos / (self.av_box_length / self._index) *
                     self.nbins).astype(int)
-            self.results["mu"] = [
-                mu(self.results["dens_mean"][this], self.temperature)
-            ]
-            self.results["dmu"] = [
-                dmu(self.results["dens_mean"][this],
-                    self.results["dens_err"][this], self.temperature)
-            ]
+            self.results["mu"] = mu(self.results["dens_mean"][this], self.temperature, self.mass)
+            self.results["dmu"] = dmu(self.results["dens_mean"][this], self.results["dens_err"][this], self.temperature)
         else:
             self.results["mu"] = np.mean(
-                mu(self.results["dens_mean"], self.temperature))
+                mu(self.results["dens_mean"], self.temperature, self.mass))
             self.results["dmu"] = np.mean(
                 dmu(self.results["dens_mean"], self.results["dens_err"],
                     self.temperature))
