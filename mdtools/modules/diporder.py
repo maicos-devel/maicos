@@ -10,7 +10,7 @@ import numpy as np
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
-from ..utils import repairMolecules
+from ..utils import repairMolecules, savetxt
 
 # parse command line options
 
@@ -97,7 +97,7 @@ def output(diporder, av_box_length):
         for i in range(len(outdata) - 1):
             outdata[i + 1] = .5 * (outdata[i + 1] + outdata[i + 1][-1::-1])
 
-    np.savetxt(
+    savetxt(
         args.output + '.dat',
         outdata,
         header="z\tP_0 rho(z) cos(Theta(z))\tcos(Theta(z))\trho(z)")

@@ -16,6 +16,7 @@ import MDAnalysis as mda
 from .base import AnalysisBase
 from .. import tables
 from ..lib import sfactor
+from ..utils import savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -279,14 +280,14 @@ class saxs(AnalysisBase):
 
             boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
                 *self.box)
-            np.savetxt(
+            savetxt(
                 self.output + '.dat',
                 out,
                 header=boxinfo +
                 "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
                 fmt='%.4e')
         else:
-            np.savetxt(
+            savetxt(
                 self.output + '.dat',
                 np.vstack([self.results["q"], self.results["scat_factor"]]).T,
                 header="q (1/nm)\tS(q) (arb. units)",
@@ -487,7 +488,7 @@ class debye(AnalysisBase):
         os.rmdir(self._tmp)
 
     def _save_results(self):
-        np.savetxt(
+        savetxt(
             self.output + '.dat',
             np.vstack([self.results["q"], self.results["scat_factor"]]).T,
             header="q (1/A)\tS(q)_tot (arb. units)",

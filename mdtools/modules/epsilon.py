@@ -10,7 +10,7 @@ from MDAnalysis.units import constants, convert
 import scipy.constants
 
 from .base import AnalysisBase
-from ..utils import FT, iFT, ScalarProdCorr, repairMolecules
+from ..utils import FT, iFT, ScalarProdCorr, repairMolecules, savetxt
 
 constants["Boltzman_constant"] = 8.314462159e-3
 constants["electric_constant"] = 5.526350e-3
@@ -168,7 +168,7 @@ class epsilon_bulk(AnalysisBase):
             print("")
 
     def _save_results(self):
-        np.savetxt(
+        savetxt(
             self.output + '.dat',
             np.hstack([self.results["eps_mean"], self.results["eps"]]).T,
             fmt='%1.2f',
@@ -620,8 +620,8 @@ class epsilon_planar(AnalysisBase):
 
         header = "statistics over {:.1f} picoseconds".format(
             self._index * self.atomgroup.universe.trajectory.dt)
-        np.savetxt(self.output + '_perp.dat', outdata_perp, header=header)
-        np.savetxt(self.output + '_par.dat', outdata_par, header=header)
+        savetxt(self.output + '_perp.dat', outdata_perp, header=header)
+        savetxt(self.output + '_par.dat', outdata_par, header=header)
 
 
 class dielectric_spectrum(AnalysisBase):
@@ -882,7 +882,7 @@ class dielectric_spectrum(AnalysisBase):
         np.save(self.output + 'P_tseries.npy', self.results["P"])
 
         suscfilename = self.output + 'susc.txt'
-        np.savetxt(
+        savetxt(
             suscfilename,
             np.transpose([
                 self.results["nu"], self.results["susc"].real,
@@ -898,7 +898,7 @@ class dielectric_spectrum(AnalysisBase):
         if not (self.nobin or self.seglen <= self.bins):
 
             suscfilename = self.output + 'susc_binned.txt'
-            np.savetxt(
+            savetxt(
                 suscfilename,
                 np.transpose([
                     self.results["nu_binned"], self.results["susc_binned"].real,

@@ -15,6 +15,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 
 from .base import AnalysisBase
+from ..utils import savetxt
 
 
 class analysis_example(AnalysisBase):
@@ -82,7 +83,7 @@ class analysis_example(AnalysisBase):
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
-        np.savetxt(
+        savetxt(
             self.output + '.dat',
             np.array([self.results["volume"]]),
             fmt='%1.2f',

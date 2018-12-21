@@ -4,7 +4,9 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import os
 import subprocess
+import sys
 
 import MDAnalysis
 import numpy as np
@@ -256,3 +258,18 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
             corr[:] += Correlation(a[:, i], b[:, i], subtract_mean)
 
     return corr
+
+
+def get_cli_input():
+    """Returns a proper fomatted string of the command line input"""
+    program_name = os.path.basename(sys.argv[0])
+    return "Command line was: {} {}".format(program_name,
+                                            " ".join(sys.argv[1:]))
+
+
+def savetxt(fname, X, header='', **kwargs):
+    """An extension of the numpy savetxt function to add the command line
+    input to the header"""
+    header = "{}\n{}".format(get_cli_input(), header)
+
+    np.savetxt(fname, X, header=header, **kwargs)
