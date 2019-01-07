@@ -32,11 +32,8 @@ def mu(rho, temperature, m):
 def dmu(rho, drho, temperature):
     """Returns the error of the chemical potential calculated from the density using propagation of uncertainty."""
 
-    # kT in KJ/mol
-    kT = temperature * constants.Avogadro / constants.kilo
-
     if np.all(rho > 0):
-        return (kT / rho * drho)
+        return (drho / rho)
     elif np.any(rho == 0):
         return np.float64("-inf")
     else:
@@ -53,6 +50,7 @@ class density_planar(AnalysisBase):
                  outfreq=1000,
                  dim=2,
                  binwidth=0.1,
+                 mu=False,
                  muout="muout",
                  temperature=300,
                  mass=np.nan,
@@ -71,6 +69,7 @@ class density_planar(AnalysisBase):
         self.outfreq = outfreq
         self.dim = dim
         self.binwidth = binwidth
+        self.mu = mu
         self.muout = muout
         self.temperature = temperature
         self.mass = mass
@@ -112,6 +111,12 @@ class density_planar(AnalysisBase):
             type=float,
             default=0.1,
             help='binwidth (nanometer)')
+        parser.add_argument(
+            '-mu',
+            dest='mu',
+            default=False,
+            action='store_true',
+            help='Calculate the chemical potential')
         parser.add_argument(
             '-muo',
             dest='muout',
@@ -186,13 +191,20 @@ class density_planar(AnalysisBase):
             print("\nCalcualate profile for the following group(s):")
 
         self.sel = []
+
+        if self.mu and self.dens != 'mass':
+            raise Exception('Calculation of the chemical potential is only possible when mass density is selected')
+
+        if self.mu and len(self.groups) != 1:
+            raise Exception('Calculation of the chemical potential is supported for one group only')
+
         for i, gr in enumerate(self.groups):
             sel = self.atomgroup.select_atoms(gr)
             if self._verbose:
                 print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
             if sel.n_atoms > 0:
                 self.sel.append(sel)
-                if len(self.groups) == 1:
+                if self.mu:
                     self.mass = sel.atoms.total_mass() / sel.atoms.n_residues
                 print("")
             else:
@@ -302,17 +314,18 @@ class density_planar(AnalysisBase):
                 endpoint=False) + dz / 2
 
         # chemical potential
-        if (self.zpos != None):
-            this = (self.zpos / (self.av_box_length / self._index) *
-                    self.nbins).astype(int)
-            self.results["mu"] = mu(self.results["dens_mean"][this], self.temperature, self.mass)
-            self.results["dmu"] = dmu(self.results["dens_mean"][this], self.results["dens_err"][this], self.temperature)
-        else:
-            self.results["mu"] = np.mean(
-                mu(self.results["dens_mean"], self.temperature, self.mass))
-            self.results["dmu"] = np.mean(
-                dmu(self.results["dens_mean"], self.results["dens_err"],
-                    self.temperature))
+        if self.mu:
+            if (self.zpos != None):
+                this = (self.zpos / (self.av_box_length / self._index) *
+                        self.nbins).astype(int)
+                self.results["mu"] = mu(self.results["dens_mean"][this], self.temperature, self.mass)
+                self.results["dmu"] = dmu(self.results["dens_mean"][this], self.results["dens_err"][this], self.temperature)
+            else:
+                self.results["mu"] = np.mean(
+                    mu(self.results["dens_mean"], self.temperature, self.mass))
+                self.results["dmu"] = np.mean(
+                    dmu(self.results["dens_mean"], self.results["dens_err"],
+                        self.temperature))
 
     def _save_results(self):
         # write header
@@ -343,6 +356,7 @@ class density_planar(AnalysisBase):
                        self.results["dens_mean"], self.results["dens_err"])),
             header=columns)
 
-        # save chemical potential
-        np.savetxt(self.muout + '.dat',
-                   np.hstack((self.results["mu"], self.results["dmu"]))[None])
+        if self.mu:
+            # save chemical potential
+            np.savetxt(self.muout + '.dat',
+                       np.hstack((self.results["mu"], self.results["dmu"]))[None])
