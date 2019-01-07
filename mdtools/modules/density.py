@@ -10,6 +10,7 @@ import sys
 import numpy as np
 
 from .base import AnalysisBase
+from ..utils import savetxt
 
 
 def mu(rho, temperature, m):
@@ -350,7 +351,7 @@ class density_planar(AnalysisBase):
             columns += "\t" + group + " error"
 
         # save density profile
-        np.savetxt(
+        savetxt(
             self.output + '.dat',
             np.hstack(((self.results["z"][:, np.newaxis]),
                        self.results["dens_mean"], self.results["dens_err"])),
@@ -358,5 +359,5 @@ class density_planar(AnalysisBase):
 
         if self.mu:
             # save chemical potential
-            np.savetxt(self.muout + '.dat',
+            savetxt(self.muout + '.dat',
                        np.hstack((self.results["mu"], self.results["dmu"]))[None])

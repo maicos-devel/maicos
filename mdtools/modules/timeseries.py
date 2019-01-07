@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from ..utils import repairMolecules
+from ..utils import repairMolecules, savetxt
 from .base import AnalysisBase
 
 
@@ -106,7 +106,7 @@ class dipole_angle(AnalysisBase):
 
     def _save_results(self):
 
-        np.savetxt(
+        savetxt(
             "{}.dat".format(self.output),
             np.vstack([
                 self.results["t"], self.results["cos_theta_i"],
@@ -204,7 +204,7 @@ class kinetic_energy(AnalysisBase):
         self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
-        np.savetxt(
+        savetxt(
             "{}.dat".format(self.output),
             np.vstack(
                 [self.results["t"], self.results["trans"],

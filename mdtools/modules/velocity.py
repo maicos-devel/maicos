@@ -12,6 +12,7 @@ from scipy.optimize import curve_fit
 
 from . import initilize_universe, pbctools, print_frameinfo
 from .. import initilize_parser
+from ..utils import savetxt
 
 # ========== PARSER ===========
 # =============================
@@ -132,12 +133,12 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
         1)
 
     header = "statistics over {:.1f} picoseconds".format(args.frame * args.dt)
-    np.savetxt(
+    savetxt(
         'vel_sym_' + args.output + '.dat',
         np.vstack((symz[np.sum(symbinframes, axis=1) > minframes], vsym,
                    dvsym)).T,
         header=header)
-    np.savetxt(
+    savetxt(
         'vel_' + args.output + '.dat',
         np.vstack((z[np.sum(binframes, axis=1) > minframes], v, dv)).T,
         header=header)
@@ -171,11 +172,11 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
                 params.append([pref, alpha, tau1, tau2])
                 count += 1
 
-        np.savetxt(
+        savetxt(
             'vel_' + args.output + '.dat',
             np.vstack((z[np.sum(binframes, axis=1) > minframes], v,
                        np.array(ees), dv)).T)
-        np.savetxt(
+        savetxt(
             'errest_' + args.output + '.dat',
             np.concatenate(
                 (ee_out[:, 0].reshape(len(ee_out), 1),
@@ -183,7 +184,7 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
                 axis=1),
             header='z ' + ' '.join(
                 map(str, z[np.sum(binframes, axis=1) > minframes])))
-        np.savetxt('errparams_' + args.output + '.dat', np.array(params))
+        savetxt('errparams_' + args.output + '.dat', np.array(params))
 
         # Same for symmetrized
         bee = blockee(np.nan_to_num(symvel / symbinframes))
@@ -214,11 +215,11 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
                 ees.append(errest)
                 count += 1
 
-        np.savetxt(
+        savetxt(
             'vel_sym_' + args.output + '.dat',
             np.vstack((symz[np.sum(symbinframes, axis=1) > minframes], vsym,
                        np.array(ees))).T)
-        np.savetxt(
+        savetxt(
             'errest_sym_' + args.output + '.dat',
             np.concatenate(
                 (ee_out[:, 0].reshape(len(ee_out), 1),
@@ -226,7 +227,7 @@ def output(L, av_vel, av_vel_sq, binframes, isFinal=False):
                 axis=1),
             header='z ' + ' '.join(
                 map(str, symz[np.sum(symbinframes, axis=1) > minframes])))
-        np.savetxt('errparams_sym_' + args.output + '.dat', np.array(params))
+        savetxt('errparams_sym_' + args.output + '.dat', np.array(params))
 
 
 # ========== MAIN ============

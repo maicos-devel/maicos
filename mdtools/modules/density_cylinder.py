@@ -11,6 +11,7 @@ import numpy as np
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
+from ..utils import savetxt
 
 # ========== PARSER ===========
 # =============================
@@ -109,7 +110,7 @@ def output(density_mean, density_mean_sq):
     for group in args.groups:
         columns += "\t" + group + " error"
 
-    np.savetxt(
+    savetxt(
         args.output + '.dat',
         np.hstack(((args.r[:, np.newaxis]) / 10, dens_mean * 1000,
                    dens_err * 1000)),

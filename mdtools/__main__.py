@@ -16,6 +16,7 @@ import MDAnalysis as mda
 
 from . import version
 from .modules import __all__ as available_modules
+from .utils import get_cli_input
 
 # Try to use IPython shell for debug
 try:
@@ -78,7 +79,7 @@ def main():
     except IndexError:
         parser.parse_args()
 
-    print('\nCommand line was: mdtools {}\n'.format(' '.join(sys.argv[1:])))
+    print('\n{}\n'.format(get_cli_input()))
     parser = argparse.ArgumentParser(
         prog="mdtools " + sys.argv[1],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)

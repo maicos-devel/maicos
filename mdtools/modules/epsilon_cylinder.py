@@ -11,7 +11,7 @@ import numpy as np
 
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
-from ..utils import repairMolecules
+from ..utils import repairMolecules, savetxt
 
 parser = initilize_parser(add_traj_arguments=True)
 parser.description = """Calculation of the dielectric
@@ -109,8 +109,8 @@ def output(r, length, M_ax, M_rad, m_ax, m_rad, mM_ax, mM_rad):
     header = 'Command line was: {}\n'.format(' '.join(sys.argv)) +\
              "statistics over {:.1f} picoseconds\n".format(args.frame * args.dt) +\
              'r [Angtsroms]\t eps \t eps_err'
-    np.savetxt(args.output + '_ax.dat', outdata_ax.T, header=header)
-    np.savetxt(args.output + '_rad.dat', outdata_rad.T, header=header)
+    savetxt(args.output + '_ax.dat', outdata_ax.T, header=header)
+    savetxt(args.output + '_rad.dat', outdata_rad.T, header=header)
 
 
 # =========== MAIN ===========

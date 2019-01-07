@@ -15,6 +15,8 @@ import MDAnalysis as mda
 
 from .base import AnalysisBase
 from .. import tables
+from ..lib import sfactor
+from ..utils import savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -50,57 +52,6 @@ def compute_form_factor(q, atom_type):
                 np.exp(-tables.CM_parameters[element].b[i] * q2)
 
     return form_factor
-
-
-@nb.jit(
-    nb.types.UniTuple(nb.float32[:, :, :],
-                      2)(nb.float32[:, :], nb.float32[:], nb.float32,
-                         nb.float32, nb.float32, nb.float32),
-    nopython=True,
-    nogil=True,
-    parallel=True)
-def compute_structure_factor(positions, boxdimensions, start_q, end_q, mintheta,
-                             maxtheta):
-    """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
-
-    maxn = [0, 0, 0]
-    q_factor = np.zeros(3, dtype=nb.float32)
-
-    n_atoms = positions.shape[0]
-    for i in range(3):
-        q_factor[i] = 2 * np.pi / boxdimensions[i]
-        maxn[i] = math.ceil(end_q / q_factor[i])
-
-    S_array = np.zeros((maxn[0], maxn[1], maxn[2]), dtype=nb.float32)
-    q_array = np.zeros((maxn[0], maxn[1], maxn[2]), dtype=nb.float32)
-
-    for i in nb.prange(maxn[0]):
-        qx = i * q_factor[0]
-
-        for j in range(maxn[1]):
-            qy = j * q_factor[1]
-
-            for k in range(maxn[2]):
-                if (i + j + k != 0):
-                    qz = k * q_factor[2]
-                    qrr = math.sqrt(qx * qx + qy * qy + qz * qz)
-                    theta = math.acos(qz / qrr)
-
-                    if (qrr >= start_q and qrr <= end_q and
-                            theta >= mintheta and theta <= maxtheta):
-                        q_array[i, j, k] = qrr
-
-                        sin = 0
-                        cos = 0
-                        for l in range(n_atoms):
-                            qdotr = positions[l, 0] * qx + \
-                                positions[l, 1] * qy + positions[l, 2] * qz
-                            sin += math.sin(qdotr)
-                            cos += math.cos(qdotr)
-
-                        S_array[i, j, k] += sin * sin + cos * cos
-
-    return (q_array, S_array)
 
 
 class saxs(AnalysisBase):
@@ -263,9 +214,12 @@ class saxs(AnalysisBase):
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)  # minimum image
 
-            q_ts, S_ts = compute_structure_factor(positions / 10, box / 10,
-                                                  self.startq, self.endq,
-                                                  self.mintheta, self.maxtheta)
+            q_ts, S_ts = sfactor.compute_structure_factor(
+                np.double(positions / 10), np.double(box / 10), self.startq,
+                self.endq, self.mintheta, self.maxtheta)
+
+            q_ts = np.asarray(q_ts)
+            S_ts = np.asarray(S_ts)
 
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
@@ -326,14 +280,14 @@ class saxs(AnalysisBase):
 
             boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
                 *self.box)
-            np.savetxt(
+            savetxt(
                 self.output + '.dat',
                 out,
                 header=boxinfo +
                 "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
                 fmt='%.4e')
         else:
-            np.savetxt(
+            savetxt(
                 self.output + '.dat',
                 np.vstack([self.results["q"], self.results["scat_factor"]]).T,
                 header="q (1/nm)\tS(q) (arb. units)",
@@ -534,7 +488,7 @@ class debye(AnalysisBase):
         os.rmdir(self._tmp)
 
     def _save_results(self):
-        np.savetxt(
+        savetxt(
             self.output + '.dat',
             np.vstack([self.results["q"], self.results["scat_factor"]]).T,
             header="q (1/A)\tS(q)_tot (arb. units)",

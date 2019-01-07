@@ -16,7 +16,7 @@ import time
 from . import initilize_universe, print_frameinfo
 from .. import initilize_parser
 
-from ..utils import repairMolecules, FT, iFT, ScalarProdCorr
+from ..utils import repairMolecules, FT, iFT, ScalarProdCorr, savetxt
 
 # ========== PARSER ===========
 # =============================
@@ -346,7 +346,7 @@ def main(firstarg=2, DEBUG=False):
 
     suscfilename = args.output + 'suscM.txt'
 
-    np.savetxt(
+    savetxt(
         suscfilename,
         np.transpose([nu, susc.real, dsusc.real, susc.imag, dsusc.imag]),
         delimiter='\t',
