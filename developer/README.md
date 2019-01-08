@@ -1,7 +1,15 @@
 # Developing for mdtools
 
-Contribution via pull requests are always welcome. Before submitting a pull
-request please open an issue.
+Contribution via pull requests are always welcome. 
+Before submitting a pull request please open an issue to discuss your 
+changes. 
+
+The main feauture branch is 
+the `develop` branch. Use this for submitting your requests. The `master` branch 
+contains  all commits of the latest release. 
+More information on the branching model we used is given in this 
+[nice blog post](https://nvie.com/posts/a-successful-git-branching-model/).
+
 
 # Code formatting
 
