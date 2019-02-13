@@ -16,7 +16,6 @@ import platform
 import Cython
 import numpy as np
 from Cython.Build import cythonize
-from mdtools.version import __version__
 from setuptools import Extension, find_packages, setup
 
 
@@ -111,7 +110,7 @@ if __name__ == "__main__":
     setup(
         name='mdtools',
         packages=find_packages(),
-        version=__version__ + get_git_revision_hash(),
+        version="0.1" + get_git_revision_hash(),
         license='MIT',
         description='A collection of scripts to analyse and build systems '
         'for molecular dynamics simulations.',
