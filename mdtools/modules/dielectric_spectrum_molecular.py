@@ -1,8 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
-
-# Mandatory imports
-from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -374,8 +371,9 @@ def main(firstarg=2, DEBUG=False):
                 np.log(len(susc)) / np.log(10), Npp - Lpp + 1).astype(int)
             bins = np.unique(np.append(np.arange(Lpp), bins))[:-1]
 
-            print('Averaging data above datapoint {0} in log-spaced bins'.
-                  format(Lpp))
+            print(
+                'Averaging data above datapoint {0} in log-spaced bins'.format(
+                    Lpp))
             print('Binning data... ', end='')
             susc = Bin(susc, bins)
             dsusc = Bin(dsusc, bins)

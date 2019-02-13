@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf8
 
-from __future__ import absolute_import, division, print_function
-
 import os
 
 import numpy as np
@@ -152,8 +150,8 @@ class epsilon_bulk(AnalysisBase):
 
             print("")
             print(" <|M|²> = {:.4f} (eÅ)²".format(self.results["M2"].mean()))
-            print(" |<M>|² = {:.4f} (eÅ)²".format((self.results["M"]
-                                                   **2).mean()))
+            print(" |<M>|² = {:.4f} (eÅ)²".format(
+                (self.results["M"]**2).mean()))
 
             print("")
             print(" <|M|²> - |<M>|² = {:.4f} (eÅ)²".format(

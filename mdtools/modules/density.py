@@ -1,13 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
-
-from __future__ import absolute_import, division, print_function
-from scipy import constants
 
 import os
 import sys
 
 import numpy as np
+from scipy import constants
 
 from .base import AnalysisBase
 from ..utils import savetxt
@@ -17,7 +15,8 @@ def mu(rho, temperature, m):
     """Returns the chemical potential calculated from the density: mu = k_B T log(rho. / m)"""
 
     # De Broglie (converted to nm)
-    db = np.sqrt(constants.h**2 / (2 * np.pi * m * constants.atomic_mass * constants.Boltzmann * temperature))
+    db = np.sqrt(constants.h**2 / (2 * np.pi * m * constants.atomic_mass *
+                                   constants.Boltzmann * temperature))
 
     # kT in KJ/mol
     kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
@@ -194,10 +193,14 @@ class density_planar(AnalysisBase):
         self.sel = []
 
         if self.mu and self.dens != 'mass':
-            raise Exception('Calculation of the chemical potential is only possible when mass density is selected')
+            raise Exception(
+                'Calculation of the chemical potential is only possible when mass density is selected'
+            )
 
         if self.mu and len(self.groups) != 1:
-            raise Exception('Calculation of the chemical potential is supported for one group only')
+            raise Exception(
+                'Calculation of the chemical potential is supported for one group only'
+            )
 
         for i, gr in enumerate(self.groups):
             sel = self.atomgroup.select_atoms(gr)
@@ -319,8 +322,11 @@ class density_planar(AnalysisBase):
             if (self.zpos != None):
                 this = (self.zpos / (self.av_box_length / self._index) *
                         self.nbins).astype(int)
-                self.results["mu"] = mu(self.results["dens_mean"][this], self.temperature, self.mass)
-                self.results["dmu"] = dmu(self.results["dens_mean"][this], self.results["dens_err"][this], self.temperature)
+                self.results["mu"] = mu(self.results["dens_mean"][this],
+                                        self.temperature, self.mass)
+                self.results["dmu"] = dmu(self.results["dens_mean"][this],
+                                          self.results["dens_err"][this],
+                                          self.temperature)
             else:
                 self.results["mu"] = np.mean(
                     mu(self.results["dens_mean"], self.temperature, self.mass))
@@ -360,4 +366,4 @@ class density_planar(AnalysisBase):
         if self.mu:
             # save chemical potential
             savetxt(self.muout + '.dat',
-                       np.hstack((self.results["mu"], self.results["dmu"]))[None])
+                    np.hstack((self.results["mu"], self.results["dmu"]))[None])
