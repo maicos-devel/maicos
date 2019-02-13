@@ -13,9 +13,10 @@ import traceback
 import warnings
 
 import MDAnalysis as mda
+import mdtools
 
 from . import version
-from .modules import __all__ as available_modules
+from . import __all__ as available_modules
 from .utils import get_cli_input
 
 # Try to use IPython shell for debug
@@ -30,21 +31,19 @@ except ImportError:
 def main():
     """The mdtools main function including the argument parser and universe
        initialization."""
-    # Dictionary containing the app name and the directory
-    modules = {}
-    for m in available_modules:
-        m = m.split(".")
-        modules[m[-1]] = "modules." + ".".join(m[:-1])
+
+    if '--bash_completion' in sys.argv:
+        print(
+            os.path.join(
+                os.path.dirname(__file__), "share/mdtools-completion.bash"))
+        sys.exit(0)
 
     parser = argparse.ArgumentParser(
         description="""
         A collection of scripts to analyse molecular dynamics simulations.""",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "program",
-        type=str,
-        help="Program to start",
-        choices=list(modules.keys()))
+        "program", type=str, help="Program to start", choices=available_modules)
     parser.add_argument(
         '--debug',
         action='store_true',
@@ -56,12 +55,6 @@ def main():
         action='version',
         version="mdtools {}".format(version.__version__))
 
-    if '--bash_completion' in sys.argv:
-        print(
-            os.path.join(
-                os.path.dirname(__file__), "share/mdtools-completion.bash"))
-        sys.exit(0)
-
     try:
         sys.argv.remove("--debug")
         debug = True
@@ -70,10 +63,8 @@ def main():
         warnings.filterwarnings("ignore")
 
     try:
-        if sys.argv[1] in modules.keys():
-            selected_metamodule = importlib.import_module("mdtools.{}".format(
-                modules[sys.argv[1]]))
-            selected_module = getattr(selected_metamodule, sys.argv[1])
+        if sys.argv[1] in available_modules:
+            selected_module = getattr(mdtools, sys.argv[1])
         else:
             parser.parse_args()
     except IndexError:

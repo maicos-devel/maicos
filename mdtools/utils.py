@@ -11,6 +11,8 @@ import sys
 import MDAnalysis
 import numpy as np
 
+_share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
+
 
 def box(TargetUniverse,
         ProjectileUniverse,

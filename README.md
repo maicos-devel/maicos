@@ -5,17 +5,18 @@ Usually these scripts offer more flexibility and/or are faster than the original
 
 # Installation
 
-You'll need [Python](https://www.python.org) and a C-compiler to build the
+You'll need [Python3](https://www.python.org) and a C-compiler to build the
 underlying libraries. To install the package  
 for all users type
 
 ```sh
     git clone https://gitlabph.physik.fu-berlin.de/ag-netz/mdtools.git
     cd mdtools
-    sudo python setup.py install
+    pip3 install numpy cython
+    pip3 install .
 ```
 
-To install it only on the user site use `python setup.py install --user`.
+To install only on the user site use pip's `--user` flag.
 If you are using `BASH` you can add the autocompletion script
 by adding
 
@@ -35,7 +36,7 @@ code. All available modules are briefly described below.
 To run mdtools from the command line use
 
 ```sh
-mdtools <package> <paramaters>
+mdtools <module> <paramaters>
 ```
 
 You can get a help page by typing `mdtools -h` or package specific help page
@@ -47,9 +48,9 @@ To use mdtools with the python interpreter create `analysis` object,
 by supplying an MDAnalysis AtomGroup then use the `run` method
 
 ```python
-import mdtools.ana
+import mdtools
 
-ana_obj = mdtools.ana.<metamodule>.<module>(atomgroup, <paramaters>)
+ana_obj = mdtools.<module>(atomgroup, <paramaters>)
 ana_obj.run()
 ```
 

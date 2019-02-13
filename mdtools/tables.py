@@ -7,11 +7,11 @@ import os
 
 import numpy as np
 
-from . import sharePath
+from .utils import _share_path
 
 # Translation of atomnames to types/element
 atomtypes = {}
-with open(os.path.join(sharePath, "atomtypes.dat")) as f:
+with open(os.path.join(_share_path, "atomtypes.dat")) as f:
     for line in f:
         if line[0] != '#':
             elements = line.split()
@@ -20,7 +20,7 @@ with open(os.path.join(sharePath, "atomtypes.dat")) as f:
 # Cromer-Mann X-ray scattering factors computed from numerical Hartree-Fock wave functions
 # See Acta Cryst. A 24 (1968) p. 321
 CM_parameters = {}
-with open(os.path.join(sharePath, "sfactor.dat")) as f:
+with open(os.path.join(_share_path, "sfactor.dat")) as f:
     for line in f:
         if line[0] != '#':
             elements = line.split()
