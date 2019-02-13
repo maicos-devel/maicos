@@ -4,9 +4,10 @@
 # ========== DESCRIPTION ===========
 # This is an example for an analysis script. To use this
 # script do the following steps:
-# 1. Copy it to the "mdtsools/modules" folder and add your code.
-# 2. Choose an unique name and add <"analysis_example. analysis_example">
-#    to the __all__ list in "mdtools/modules/__init__.py".
+# 1. Copy it to the `mdtsools/modules` folder and add your code.
+# 3. Choose an unique name, add `<analysis_example>`
+#    to the `__all__` list in `mdtools/__init__.py` and add
+#    'from .<analysis_example> import *' to `mdtools/modules/__init__.py`
 # 3. OPTIONAL: Add bash completion commands to "mdtools/share/mdtools_completion.bash".
 # ==================================
 
