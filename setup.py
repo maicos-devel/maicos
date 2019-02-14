@@ -19,15 +19,6 @@ from Cython.Build import cythonize
 from setuptools import Extension, find_packages, setup
 
 
-def get_git_revision_hash():
-    try:
-        hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-        return ".dev0"
-    except:
-        # no git repo
-        return ""
-
-
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
     # From MDAnalysis setup.py
     tmpdir = tempfile.mkdtemp(prefix='hasfunction-')
@@ -84,6 +75,8 @@ def detect_openmp():
     return hasopenmp
 
 
+VERSION = "0.1-dev" # NOTE: keep in sync with __version__ in mdtools.__init__.py
+
 if __name__ == "__main__":
 
     # Windows automatically handles math library linking
@@ -110,7 +103,7 @@ if __name__ == "__main__":
     setup(
         name='mdtools',
         packages=find_packages(),
-        version="0.1" + get_git_revision_hash(),
+        version=VERSION,
         license='MIT',
         description='A collection of scripts to analyse and build systems '
         'for molecular dynamics simulations.',
