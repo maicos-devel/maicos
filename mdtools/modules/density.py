@@ -3,6 +3,7 @@
 
 import os
 import sys
+import warnings
 
 import numpy as np
 from scipy import constants
@@ -205,14 +206,17 @@ class density_planar(AnalysisBase):
         for i, gr in enumerate(self.groups):
             sel = self.atomgroup.select_atoms(gr)
             if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
+                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
             if sel.n_atoms > 0:
                 self.sel.append(sel)
                 if self.mu:
                     self.mass = sel.atoms.total_mass() / sel.atoms.n_residues
-                print("")
             else:
-                print(" - not taken for profile")
+                with warnings.catch_warnings():
+                    warnings.simplefilter('always')
+                    warnings.warn(
+                        "Selection '{}' not taken for profile, "
+                        "since it does not contain any atoms.".format(gr))
 
         if len(self.sel) == 0:
             raise RuntimeError(

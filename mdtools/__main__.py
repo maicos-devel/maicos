@@ -26,6 +26,13 @@ except ImportError:
     use_IPython = False
 
 
+def _warning(message, category=UserWarning, filename='', lineno=-1):
+    print(message)
+
+
+warnings.showwarning = _warning
+
+
 def main():
     """The mdtools main function including the argument parser and universe
        initialization."""
@@ -206,7 +213,7 @@ def main():
         if debug:
             traceback.print_exc()
         else:
-            raise e
+            print(e)
 
     if args.num_threads > 0:
         del os.environ["OMP_NUM_THREADS"]

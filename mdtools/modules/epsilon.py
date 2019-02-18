@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf8
 
-import os
+import warnings
 
 import numpy as np
 from MDAnalysis.units import constants, convert
@@ -150,8 +150,8 @@ class epsilon_bulk(AnalysisBase):
 
             print("")
             print(" <|M|²> = {:.4f} (eÅ)²".format(self.results["M2"].mean()))
-            print(" |<M>|² = {:.4f} (eÅ)²".format(
-                (self.results["M"]**2).mean()))
+            print(" |<M>|² = {:.4f} (eÅ)²".format((self.results["M"]
+                                                   **2).mean()))
 
             print("")
             print(" <|M|²> - |<M>|² = {:.4f} (eÅ)²".format(
@@ -320,18 +320,19 @@ class epsilon_planar(AnalysisBase):
         for i, gr in enumerate(self.groups):
             sel = self.atomgroup.select_atoms(gr)
             if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms), end="")
+                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
             if sel.n_atoms > 0:
                 self.sel.append(sel)
-                print("")
             else:
-                print(" - not taken for profile")
+                with warnings.catch_warnings():
+                    warnings.simplefilter('always')
+                    warnings.warn(
+                        "Selection '{}' not taken for profile, "
+                        "since it does not contain any atoms.".format(gr))
 
         if len(self.sel) == 0:
             raise RuntimeError(
                 "No atoms found in selection. Please adjust group selection")
-
-        print("\n")
 
         self.sol = self.atomgroup.select_atoms('resname SOL')
 
