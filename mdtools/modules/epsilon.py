@@ -10,8 +10,8 @@ import scipy.constants
 from .base import AnalysisBase
 from ..utils import FT, iFT, ScalarProdCorr, repairMolecules, savetxt
 
-constants["Boltzman_constant"] = 8.314462159e-3
-constants["electric_constant"] = 5.526350e-3
+eps0inv = 1. / scipy.constants.epsilon_0
+pref = (scipy.constants.elementary_charge)**2 / 1e-10
 
 
 def Bin(a, bins):
@@ -119,19 +119,18 @@ class epsilon_bulk(AnalysisBase):
 
     def _calculate_results(self):
         index = self._frame_index + 1
+        beta = 1. / (scipy.constants.Boltzmann * self.temperature)
 
         self.results["M"] = self.M / index
         self.results["M2"] = self.M2 / index
         self.results["volume"] = self.volume / index
         self.results["fluct"] = self.results["M2"] - self.results["M"]**2
-        self.results["eps"] = 1 + self.results["fluct"] / (
-            convert(constants["Boltzman_constant"], "kJ/mol",
-                    "eV") * self.temperature * self.results["volume"] *
-            constants["electric_constant"])
-        self.results["eps_mean"] = 1 + self.results["fluct"].mean() / (
-            convert(constants["Boltzman_constant"], "kJ/mol",
-                    "eV") * self.temperature * self.results["volume"] *
-            constants["electric_constant"])
+        self.results["eps"] = beta * eps0inv * pref * self.results["fluct"] / \
+                              self.results["volume"]
+        self.results["eps_mean"] = self.results["eps"].mean()
+
+        self.results["eps"] += 1
+        self.results["eps_mean"] += 1
 
     def _conclude(self):
         if self._verbose:
@@ -150,8 +149,8 @@ class epsilon_bulk(AnalysisBase):
 
             print("")
             print(" <|M|²> = {:.4f} (eÅ)²".format(self.results["M2"].mean()))
-            print(" |<M>|² = {:.4f} (eÅ)²".format((self.results["M"]
-                                                   **2).mean()))
+            print(" |<M>|² = {:.4f} (eÅ)²".format(
+                (self.results["M"]**2).mean()))
 
             print("")
             print(" <|M|²> - |<M>|² = {:.4f} (eÅ)²".format(
@@ -543,10 +542,7 @@ class epsilon_planar(AnalysisBase):
                            + (self.m_par.sum(axis=2) / self._index * self.M_par.std() / \
                             self._index * self.resample)**2) / np.sqrt(self.resample - 1)
 
-        eps0inv = 1. / 8.854e-12
-        pref = (1.6e-19)**2 / 1e-10
-        kB = 1.3806488e-23
-        beta = 1. / (kB * self.temperature)
+        beta = 1. / (scipy.constants.Boltzmann * self.temperature)
 
         self.results["eps_par"] = beta * eps0inv * pref / 2 * cov_par
         self.results["deps_par"] = beta * eps0inv * pref / 2 * dcov_par
