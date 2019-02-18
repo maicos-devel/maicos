@@ -9,7 +9,6 @@ import numpy as np
 
 _share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
 
-
 def repairMolecules(selection):
     """Repairs molecules that are broken due to peridodic boundaries.
     To this end the center of mass is reset into the central box.
@@ -40,8 +39,7 @@ def repairMolecules(selection):
         seg.atoms.positions += np.repeat(
             (centers % selection.dimensions[:3]) - centers,
             atomsPerMolecule,
-            axis
-
+            axis=0)
 
 dt_dk_tolerance = 1e-8  # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
 
