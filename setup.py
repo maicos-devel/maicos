@@ -113,7 +113,7 @@ if __name__ == "__main__":
         include_package_data=True,
         ext_modules=cythonize(extensions),
         install_requires=[
-            'MDAnalysis>=0.19.0', 'matplotlib>=2.0.0'
+            'MDAnalysis>=0.19.0', 'matplotlib>=2.0.0',
             'numpy>=1.10.4', 'scipy>=0.17'
         ],
         entry_points={
