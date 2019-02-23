@@ -3,7 +3,6 @@
 
 import os
 
-from .version import __version__
 from .modules import *
 
 __all__ = [
