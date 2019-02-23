@@ -7,7 +7,6 @@ import sys
 import tempfile
 import math
 
-import numba as nb
 import numpy as np
 import MDAnalysis as mda
 
