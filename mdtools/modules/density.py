@@ -199,9 +199,11 @@ class density_planar(AnalysisBase):
             )
 
         if self.mu and len(self.groups) != 1:
-            raise Exception(
-                'Calculation of the chemical potential is supported for one group only'
-            )
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn(
+                    "Performing chemical potential analysis for 1st selection"
+                    "group '{}'".format(self.groups[0]))
 
         for i, gr in enumerate(self.groups):
             sel = self.atomgroup.select_atoms(gr)
@@ -209,7 +211,7 @@ class density_planar(AnalysisBase):
                 print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
             if sel.n_atoms > 0:
                 self.sel.append(sel)
-                if self.mu:
+                if self.mu and i == 0:
                     self.mass = sel.atoms.total_mass() / sel.atoms.n_residues
             else:
                 with warnings.catch_warnings():
@@ -326,10 +328,12 @@ class density_planar(AnalysisBase):
             if (self.zpos != None):
                 this = (self.zpos / (self.av_box_length / self._index) *
                         self.nbins).astype(int)
-                self.results["mu"] = mu(self.results["dens_mean"][this],
+                if self.center:
+                    this += self.nbins // 2
+                self.results["mu"] = mu(self.results["dens_mean"][this][0],
                                         self.temperature, self.mass)
-                self.results["dmu"] = dmu(self.results["dens_mean"][this],
-                                          self.results["dens_err"][this],
+                self.results["dmu"] = dmu(self.results["dens_mean"][this][0],
+                                          self.results["dens_err"][this][0],
                                           self.temperature)
             else:
                 self.results["mu"] = np.mean(
