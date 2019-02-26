@@ -26,7 +26,12 @@ except ImportError:
     use_IPython = False
 
 
-def _warning(message, category=UserWarning, filename='', lineno=-1):
+def _warning(message,
+             category=UserWarning,
+             filename='',
+             lineno=-1,
+             file=None,
+             line=None):
     print(message)
 
 
@@ -56,9 +61,7 @@ def main():
         "Run with debug options. Will start an interactive Python interpreter at the end of the program."
     )
     parser.add_argument(
-        '--version',
-        action='version',
-        version="mdtools {}".format(__version__))
+        '--version', action='version', version="mdtools {}".format(__version__))
 
     try:
         sys.argv.remove("--debug")
