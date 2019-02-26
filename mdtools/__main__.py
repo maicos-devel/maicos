@@ -13,7 +13,7 @@ import warnings
 import MDAnalysis as mda
 import mdtools
 
-from . import version
+from . import __version__
 from . import __all__ as available_modules
 from .utils import get_cli_input
 
@@ -58,7 +58,7 @@ def main():
     parser.add_argument(
         '--version',
         action='version',
-        version="mdtools {}".format(version.__version__))
+        version="mdtools {}".format(__version__))
 
     try:
         sys.argv.remove("--debug")
