@@ -26,13 +26,18 @@ except ImportError:
     use_IPython = False
 
 
+class bcolors:
+    warning = '\033[93m'
+    fail = '\033[91m'
+    endc = '\033[0m'
+
 def _warning(message,
              category=UserWarning,
              filename='',
              lineno=-1,
              file=None,
              line=None):
-    print(message)
+    print("{}Warning: {}{}".format(bcolors.warning, message, bcolors.endc))
 
 
 warnings.showwarning = _warning
@@ -180,12 +185,14 @@ def main():
     print("Done!\n")
 
     if args.box != None:
-        assert (len(args.box) == 6 or len(args.box) == 3),\
-            'The boxdimensions must contain 3 entries for the box vectors and possibly 3 more for the angles.'
         if len(args.box) == 6:
-            u.dimensions = np.array(args.box)
+            u.dimensions = args.box
+        if len(args.box) == 3:
+            u.dimensions[:3] = args.box
         else:
-            u.dimensions[:2] = np.array(args.box)
+            sys.exit("{}Error: The boxdimensions must contain 3 entries for "
+                     "the box vectors and possibly 3 more for the angles.{}"
+                     "".format(bcolors.fail, bcolors.endc))
 
     try:
         ana_obj = selected_module(u.atoms, verbose=True, save=True)
@@ -203,7 +210,7 @@ def main():
         if debug:
             traceback.print_exc()
         else:
-            print(e)
+            print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))
 
     if args.num_threads > 0:
         del os.environ["OMP_NUM_THREADS"]
