@@ -2,8 +2,11 @@
 # coding: utf-8
 
 import logging
+import math
+import warnings
 
 from MDAnalysis.analysis import base
+from MDAnalysis.lib.log import ProgressMeter
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,64 @@ class AnalysisBase(base.AnalysisBase):
         self._save = save
         self.results = {}
 
+    def _setup_frames(self, trajectory, begin=0, end=None, dt=0):
+        """
+        Pass a Reader object and define the desired iteration pattern
+        through the trajectory
+
+        Parameters
+        ----------
+        trajectory : mda.Reader
+            A trajectory Reader
+        begin : float, optional
+            start time (ps) for evaluation
+        stop : float, optional
+            end time (ps) for evaluation
+        dt : float, optional
+            time step (ps) to read analysis frame
+        """
+        self._trajectory = trajectory
+
+        self.begin = begin
+        self.end = end
+        self.dt = dt
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('always')
+            if self.begin > trajectory.totaltime:
+                raise ValueError("Start ({:.2f} ps) is larer than total time "
+                                 "({:.2f} ps).".format(self.begin,
+                                                       trajectory.totaltime))
+            elif self.begin > 0:
+                startframe = int(begin // trajectory.dt)
+            else:
+                startframe = 0
+            if self.end is not None:
+                stopframe = int(end // trajectory.dt)
+                self.end += 1  # catch also last frame in loops
+            else:
+                stopframe = None
+            if self.dt > 0:
+                step = int(dt // trajectory.dt)
+            else:
+                step = 1
+
+        startframe, stopframe, step = trajectory.check_slice_indices(
+            startframe, stopframe, step)
+        self.startframe = startframe
+        self.stopframe = stopframe
+        self.step = step
+        self.n_frames = len(range(startframe, stopframe, step))
+        interval = int(self.n_frames // 100)
+        if interval == 0:
+            interval = 1
+
+        verbose = getattr(self, '_verbose', False)
+        self._pm = ProgressMeter(
+            self.n_frames if self.n_frames else 1,
+            interval=interval,
+            verbose=verbose)
+
     def _configure_parser(self, parser):
         """Adds parser options using an argparser object"""
         parser.description = self.__doc__
@@ -41,17 +102,17 @@ class AnalysisBase(base.AnalysisBase):
         """Saves the results you've gatherd to a file."""
         pass
 
-    def run(self, start=None, stop=None, step=None, verbose=None):
+    def run(self, begin=0, end=None, dt=0, verbose=None):
         """Perform the calculation
 
         Parameters
         ----------
-        start : int, optional
-            start frame of analysis
-        stop : int, optional
-            stop frame of analysis
-        step : int, optional
-            number of frames to skip between each analysed frame
+        begin : float, optional
+            start time (ps) for evaluation
+        stop : float, optional
+            end time (ps) for evaluation
+        dt : float, optional
+            time step (ps) to read analysis frame
         verbose : bool, optional
             Turn on verbosity
         """
@@ -60,11 +121,11 @@ class AnalysisBase(base.AnalysisBase):
         verbose = getattr(self, '_verbose',
                           False) if verbose is None else verbose
 
-        self._setup_frames(self._trajectory, start, stop, step)
+        self._setup_frames(self._trajectory, begin, end, dt)
         logger.info("Starting preparation")
         self._prepare()
         for i, ts in enumerate(
-                self._trajectory[self.start:self.stop:self.step]):
+                self._trajectory[self.startframe:self.stopframe:self.step]):
             self._frame_index = i
             self._ts = ts
             # logger.info("--> Doing frame {} of {}".format(i+1, self.n_frames))

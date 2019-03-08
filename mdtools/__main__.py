@@ -127,19 +127,19 @@ def main():
         dest="begin",
         type=float,
         default=0,
-        help="start time (ps) for evaluation")
+        help="start time (ps) for evaluation.")
     parser.add_argument(
         "-e",
         dest="end",
         type=float,
         default=None,
-        help="end time (ps) for evaluation")
+        help="end time (ps) for evaluation.")
     parser.add_argument(
-        "-skip",
-        dest="skipframes",
-        type=int,
-        default=1,
-        help="skip every N frames")
+        "-dt",
+        dest="dt",
+        type=float,
+        default=0,
+        help="time step (ps) to read analysis frame. If `0` take all frames")
     parser.add_argument(
         "-box",
         dest="box",
@@ -177,19 +177,7 @@ def main():
         args.topology, topology_format=args.topology_format, **ukwargs)
     if args.trajectory is not None:
         u.load_new(args.trajectory, format=args.trajectory_format)
-    print("Done!")
-
-    args.begin = int(math.ceil(args.begin // u.trajectory.dt))
-
-    if args.end != None:
-        args.end = int(math.ceil(args.end // u.trajectory.dt))
-    else:
-        args.end = int(math.ceil(u.trajectory.totaltime // u.trajectory.dt))
-
-    args.end += 1  # catch also last frame in loops
-
-    if args.begin > args.end:
-        sys.exit("Start time is larger than end time!")
+    print("Done!\n")
 
     if args.box != None:
         assert (len(args.box) == 6 or len(args.box) == 3),\
@@ -201,7 +189,6 @@ def main():
 
     try:
         ana_obj = selected_module(u.atoms, verbose=True, save=True)
-        print("")
         # Insert parser arguments into ana_obj
         for var in vars(args):
             if var not in [
@@ -210,7 +197,7 @@ def main():
             ]:
                 vars(ana_obj)[var] = vars(args)[var]
 
-        ana_obj.run(start=args.begin, stop=args.end, step=args.skipframes)
+        ana_obj.run(begin=args.begin, end=args.end, dt=args.dt)
 
     except Exception as e:
         if debug:
