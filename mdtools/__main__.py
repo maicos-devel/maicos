@@ -160,10 +160,7 @@ def main():
         default=0,
         help="Total number of threads to start (0 is guess)")
 
-    _configure_parser = [
-        i for i in inspect.getmembers(selected_module)
-        if '_configure_parser' in i[0]
-    ][0][1]
+    _configure_parser = getattr(selected_module, "_configure_parser")
     _configure_parser(selected_module, parser)
     args = parser.parse_args(sys.argv[2:])
 
