@@ -3,9 +3,7 @@
 
 import os
 import subprocess
-import sys
 import tempfile
-import math
 
 import numpy as np
 import MDAnalysis as mda

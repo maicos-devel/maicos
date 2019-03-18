@@ -4,11 +4,10 @@
 import warnings
 
 import numpy as np
-from MDAnalysis.units import constants, convert
 import scipy.constants
 
 from .base import AnalysisBase
-from ..utils import FT, iFT, ScalarProdCorr, repairMolecules, savetxt
+from ..utils import FT, iFT, repairMolecules, savetxt
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
@@ -989,7 +988,7 @@ class dielectric_spectrum(AnalysisBase):
                     label=cpp,
                     linewidth=lw)
 
-                if self._i == 0 and (not self.ymin == None):
+                if self._i == 0 and (not self.ymin is None):
                     plt.set_ylim(ymin=self.ymin)
                 ax.legend(loc='best', frameon=False)
                 fig.tight_layout(pad=0.1)

@@ -2,7 +2,6 @@
 # coding: utf-8
 
 import logging
-import math
 import warnings
 
 from MDAnalysis.analysis import base

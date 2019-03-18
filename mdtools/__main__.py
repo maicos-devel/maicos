@@ -2,9 +2,6 @@
 # coding: utf-8
 
 import argparse
-import importlib
-import inspect
-import math
 import os
 import sys
 import traceback
@@ -30,6 +27,7 @@ class bcolors:
     warning = '\033[93m'
     fail = '\033[91m'
     endc = '\033[0m'
+
 
 def _warning(message,
              category=UserWarning,
@@ -181,7 +179,7 @@ def main():
         u.load_new(args.trajectory, format=args.trajectory_format)
     print("Done!\n")
 
-    if args.box != None:
+    if args.box is not None:
         if len(args.box) == 6:
             u.dimensions = args.box
         if len(args.box) == 3:

@@ -60,8 +60,6 @@ class dipole_angle(AnalysisBase):
         self.unit = np.zeros(3)
         self.unit[self.dim] += 1
 
-        dt = self.sol.universe.trajectory.dt * self.step
-
         self.cos_theta_i = np.empty(self.n_frames)
         self.cos_theta_ii = np.empty(self.n_frames)
         self.cos_theta_ij = np.empty(self.n_frames)
