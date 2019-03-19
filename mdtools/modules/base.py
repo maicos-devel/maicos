@@ -4,6 +4,7 @@
 import logging
 import warnings
 
+import numpy as np
 from MDAnalysis.analysis import base
 from MDAnalysis.lib.log import ProgressMeter
 
@@ -136,3 +137,36 @@ class AnalysisBase(base.AnalysisBase):
         if self._save:
             self._save_results()
         return self
+
+
+class SingleGroupAnalysisBase(AnalysisBase):
+    """The base class for analysing a single AtomGroup only."""
+
+    _allow_multiple_atomgroups = False
+
+    def __init__(self, atomgroup, **kwargs):
+        super(SingleGroupAnalysisBase, self).__init__(
+            atomgroup.universe.trajectory, **kwargs)
+        self.atomgroup = atomgroup
+        self._universe = atomgroup.universe
+
+
+class MultiGroupAnalysisBase(AnalysisBase):
+    """The base class for analysing a single or multiple AtomGroups."""
+
+    _allow_multiple_atomgroups = True
+
+    def __init__(self, atomgroups, **kwargs):
+        if type(atomgroups) not in [list, tuple, np.ndarray]:
+            atomgroups = [atomgroups]
+        else:
+            #Check that all atomgroups are from same universe
+            for ag in atomgroups[:1]:
+                if ag.universe != atomgroups[0].universe:
+                    raise ValueError(
+                        "Given Atomgroups are not from the same Universe.")
+        super(MultiGroupAnalysisBase, self).__init__(
+            atomgroups[0].universe.trajectory, **kwargs)
+
+        self.atomgroups = atomgroups
+        self._universe = atomgroups[0].universe

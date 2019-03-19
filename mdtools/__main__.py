@@ -158,44 +158,91 @@ def main():
         default=0,
         help="Total number of threads to start (0 is guess)")
 
-    _configure_parser = getattr(selected_module, "_configure_parser")
-    _configure_parser(selected_module, parser)
-    args = parser.parse_args(sys.argv[2:])
-
-    if args.num_threads > 0:
-        os.environ["OMP_NUM_THREADS"] = str(args.num_threads)
-
-    print("Loading trajectory... ", end="")
-    sys.stdout.flush()
-
-    # prepare kwargs dictionary for other optional arguments
-    ukwargs = {}
-    if args.atom_style is not None:
-        ukwargs['atom_style'] = args.atom_style
-
-    u = mda.Universe(
-        args.topology, topology_format=args.topology_format, **ukwargs)
-    if args.trajectory is not None:
-        u.load_new(args.trajectory, format=args.trajectory_format)
-    print("Done!\n")
-
-    if args.box is not None:
-        if len(args.box) == 6:
-            u.dimensions = args.box
-        if len(args.box) == 3:
-            u.dimensions[:3] = args.box
-        else:
-            sys.exit("{}Error: The boxdimensions must contain 3 entries for "
-                     "the box vectors and possibly 3 more for the angles.{}"
-                     "".format(bcolors.fail, bcolors.endc))
-
     try:
-        ana_obj = selected_module(u.atoms, verbose=True, save=True)
+        _configure_parser = getattr(selected_module, "_configure_parser")
+        _allow_multiple_atomgroups = getattr(selected_module,
+                                             "_allow_multiple_atomgroups")
+
+        if _allow_multiple_atomgroups:
+            parser.add_argument(
+                '-sel',
+                dest='selection',
+                type=str,
+                default=['all'],
+                nargs='+',
+                help='Atomgroup(s) for which to perform the analysis.',
+            )
+        else:
+            parser.add_argument(
+                '-sel',
+                dest='selection',
+                type=str,
+                default='all',
+                help='Atomgroup for which to perform the analysis.',
+            )
+
+        _configure_parser(selected_module, parser)
+        args = parser.parse_args(sys.argv[2:])
+
+        if args.num_threads > 0:
+            os.environ["OMP_NUM_THREADS"] = str(args.num_threads)
+
+        print("Loading trajectory... ", end="")
+        sys.stdout.flush()
+
+        # prepare kwargs dictionary for other optional arguments
+        ukwargs = {}
+        if args.atom_style is not None:
+            ukwargs['atom_style'] = args.atom_style
+
+        u = mda.Universe(
+            args.topology, topology_format=args.topology_format, **ukwargs)
+        if args.trajectory is not None:
+            u.load_new(args.trajectory, format=args.trajectory_format)
+        print("Done!\n")
+
+        if args.box != None:
+            if len(args.box) == 6:
+                u.dimensions = args.box
+            if len(args.box) == 3:
+                u.dimensions[:3] = args.box
+            else:
+                sys.exit(
+                    "{}Error: The boxdimensions must contain 3 entries for "
+                    "the box vectors and possibly 3 more for the angles.{}"
+                    "".format(bcolors.fail, bcolors.endc))
+
+        print("Performing analysis for the following group(s):")
+
+        if type(args.selection) is str:
+            args.selection = [args.selection]
+
+        atomgroups = []
+        for i, gr in enumerate(args.selection):
+            sel = u.select_atoms(gr)
+            print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
+            if sel.n_atoms > 0:
+                atomgroups.append(sel)
+            else:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('always')
+                    warnings.warn(
+                        "Selection '{}' not taken for profile, "
+                        "since it does not contain any atoms.".format(gr))
+
+        if len(atomgroups) == 0:
+            sys.exit("{}No atoms found in selection. Please adjust group"
+                     "selection.{}".format(bcolors.fail, bcolors.endc))
+
+        if not _allow_multiple_atomgroups:
+            atomgroups = atomgroups[0]
+
+        ana_obj = selected_module(atomgroups, verbose=True, save=True)
         # Insert parser arguments into ana_obj
         for var in vars(args):
             if var not in [
                     "topology", "trajectory", "topology_format", "begin", "end",
-                    "skipframes", "box"
+                    "skipframes", "box", "selection"
             ]:
                 vars(ana_obj)[var] = vars(args)[var]
 
