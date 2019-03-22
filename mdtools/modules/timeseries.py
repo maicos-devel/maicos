@@ -4,18 +4,15 @@
 import numpy as np
 
 from ..utils import repairMolecules, savetxt
-from .base import AnalysisBase
+from .base import SingleGroupAnalysisBase
 
 
-class dipole_angle(AnalysisBase):
+class dipole_angle(SingleGroupAnalysisBase):
     """Calculates the timeseries of the dipole moment with respect to an axis."""
 
     def __init__(self, atomgroup, output="output", dim=2, sel='all', **kwargs):
         # Inherit all classes from AnalysisBase
-        super(dipole_angle, self).__init__(atomgroup.universe.trajectory,
-                                           **kwargs)
-
-        self.atomgroup = atomgroup
+        super(dipole_angle, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.dim = dim
         self.sel = sel
@@ -28,12 +25,6 @@ class dipole_angle(AnalysisBase):
             type=int,
             default=2,
             help='direction normal to the surface (x,y,z=0,1,2, default: z)')
-        parser.add_argument(
-            '-sel',
-            dest='sel',
-            type=str,
-            help='atom group selection',
-            default='resname SOL')
         parser.add_argument(
             '-dout',
             dest='outfreq',
@@ -50,11 +41,8 @@ class dipole_angle(AnalysisBase):
             help='Prefix for output filenames')
 
     def _prepare(self):
-
-        self.sol = self.atomgroup.select_atoms(self.sel)
-
-        self.n_residues = self.sol.residues.n_residues
-        self.atomsPerMolecule = self.sol.n_atoms // self.n_residues
+        self.n_residues = self.atomgroup.residues.n_residues
+        self.atomsPerMolecule = self.atomgroup.n_atoms // self.n_residues
 
         # unit normal vector
         self.unit = np.zeros(3)
@@ -69,8 +57,8 @@ class dipole_angle(AnalysisBase):
         # make broken molecules whole again!
         repairMolecules(self.atomgroup)
 
-        chargepos = self.sol.atoms.positions * \
-            self.sol.atoms.charges[:, np.newaxis]
+        chargepos = self.atomgroup.positions * \
+            self.atomgroup.charges[:, np.newaxis]
         dipoles = sum(chargepos[i::self.atomsPerMolecule]
                       for i in range(self.atomsPerMolecule))
 
@@ -111,16 +99,13 @@ class dipole_angle(AnalysisBase):
             fmt='%.5e')
 
 
-class kinetic_energy(AnalysisBase):
+class kinetic_energy(SingleGroupAnalysisBase):
     """Calculates the timeseries for the molecular center
        translational and rotational kinetic energy (kJ/mole)."""
 
     def __init__(self, atomgroup, output="output", refpoint="COM", **kwargs):
         # Inherit all classes from AnalysisBase
-        super(kinetic_energy, self).__init__(atomgroup.universe.trajectory,
-                                             **kwargs)
-
-        self.atomgroup = atomgroup
+        super(kinetic_energy, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint
 
