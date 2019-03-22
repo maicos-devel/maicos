@@ -201,7 +201,7 @@ def main():
             u.load_new(args.trajectory, format=args.trajectory_format)
         print("Done!\n")
 
-        if args.box != None:
+        if args.box is not None:
             if len(args.box) == 6:
                 u.dimensions = args.box
             if len(args.box) == 3:
