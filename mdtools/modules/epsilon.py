@@ -350,7 +350,7 @@ class epsilon_planar(AnalysisBase):
         # Use 10 hardoced blocks for resampling
         self.resample = 10
         self.resample_freq = int(
-            np.ceil((self.stop - self.start) / self.resample))
+            np.ceil((self.stopframe - self.startframe) / self.resample))
 
         self.V = 0
         self.Lz = 0
@@ -734,7 +734,7 @@ class dielectric_spectrum(AnalysisBase):
         if len(self.output) > 0:
             self.output += "_"
 
-        self.Nframes = (self.stop - self.start) // self.step
+        self.Nframes = (self.stopframe - self.startframe) // self.step
         self.dt = self.atomgroup.universe.trajectory.dt * self.step
         self.V = 0
         self.P = np.zeros((self.Nframes, 3))
@@ -748,7 +748,7 @@ class dielectric_spectrum(AnalysisBase):
     def _calculate_results(self):
 
         self.results["t"] = self._trajectory.dt * np.arange(
-            self.start, self.stop, self.step)
+            self.startframe, self.stopframe, self.step)
 
         self.results["V"] = self.V
         self.results["V"] *= 1e-3 / (self._frame_index + 1)

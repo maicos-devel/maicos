@@ -93,7 +93,7 @@ class dipole_angle(AnalysisBase):
         self._index = self._frame_index + 1
 
         self.results["t"] = self._trajectory.dt * \
-            np.arange(self.start, self.stop, self.step)
+            np.arange(self.startframe, self.stopframe, self.step)
 
         self.results["cos_theta_i"] = self.cos_theta_i[:self._index]
         self.results["cos_theta_ii"] = self.cos_theta_ii[:self._index]
@@ -194,7 +194,7 @@ class kinetic_energy(AnalysisBase):
 
     def _calculate_results(self):
         self.results["t"] = self._trajectory.dt * \
-            np.arange(self.start, self.stop, self.step)
+            np.arange(self.startframe, self.stopframe, self.step)
         self.results["trans"] = self.E_center / 2 / 100
         self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
