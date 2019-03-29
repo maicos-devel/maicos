@@ -4,8 +4,9 @@ _mdtools_completion()
 {
   local cur_word
   local prev_word
-  local mdtools_opts
   local module
+  local mdtools_opts
+  local mdtools_default_args
   local topols
   local trajs
 
@@ -18,17 +19,16 @@ _mdtools_completion()
   mdtools_opts+=" carbonstructure"
   mdtools_opts+=" debye"
   mdtools_opts+=" density_planar"
-  mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
   mdtools_opts+=" dipole_angle"
   mdtools_opts+=" diporder"
   mdtools_opts+=" epsilon_bulk"
-  mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" epsilon_planar"
   mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" saxs"
-  mdtools_opts+=" velocity"
   mdtools_opts+=" --debug --help --version"
+
+  mdtools_default_args="-h -s -top -f -traj -atom_style -b -e -dt -box -nt -sel"
 
   #  Define knowing topology, trajectory, structure formats.
   topols='!*@(.txyz|.top|.dms|.gsd|.crd\
@@ -56,12 +56,12 @@ _mdtools_completion()
         -d)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-sel|-dout|-startq|-endq|-dq)
+        -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-startq|-endq|-dq)
         COMPREPLY=( )
         return 0
         ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -sel -dout -sq -startq \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -dout -sq -startq \
                     -endq -dq -sinc -d" -- ${cur_word} ) )
       return 0 ;;
 
@@ -82,38 +82,14 @@ _mdtools_completion()
         -d)
         COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-dz|-temp|-zpos|-gr)
+        -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-dz|-temp|-zpos|-gr)
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -d \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d \
                                 -dz -muo -temp -zpos -dens -gr -top -atom_style" -- ${cur_word} ) )
       return 0 ;;
 
-    density_cylinder)
-      case "${prev_word}" in
-        -s)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
-        return 0 ;;
-        -f)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
-        return 0 ;;
-        -o|-muo)
-        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-        return 0 ;;
-        -dens)
-        COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
-        return 0 ;;
-        -d)
-        COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
-        return 0 ;;
-        -b|-e|-dt|-box|-o|—dout|-center|-r|-dr|-l|-gr)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o —dout \
-                                -center -r -dr -l -dens -gr -top -atom_style" -- ${cur_word} ) )
-      return 0 ;;
   dielectric_spectrum)
     case "${prev_word}" in
       -s)
@@ -131,11 +107,11 @@ _mdtools_completion()
       -plotformat)
       COMPREPLY=( $( compgen -W "png pdf ps eps svg" -- ${cur_word}) )
       return 0 ;;
-      -b|-e|-dt|-box|-temp|-o|-truncfac|-trunclen|-Nsegments|-noplots|-nobin)
+      -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-temp|-o|-truncfac|-trunclen|-Nsegments|-noplots|-nobin)
       COMPREPLY=( )
       return 0 ;;
     esac
-    COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -recalc -temp -o -u \
+    COMPREPLY=( $( compgen -W "$mdtools_default_args -recalc -temp -o -u \
                                -truncfac -trunclen -segs -df -noplots ⁠\
                                -plotformat -ymin -nobin" -- ${cur_word} ) )
     return 0 ;;
@@ -158,7 +134,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -d -sel \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -d -sel \
                                 -dout" -- ${cur_word} ) )
       return 0 ;;
 
@@ -179,11 +155,11 @@ _mdtools_completion()
         -d)
         COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-dz|-sel|-shift)
+        -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-dz|-sel|-shift)
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dz -d -sel \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dz -d -sel \
                                 -dout -sym -shift -com -bin" -- ${cur_word} ) )
       return 0 ;;
 
@@ -198,34 +174,12 @@ _mdtools_completion()
         -o)
         COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-sel|-temp)
+        -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-sel|-temp)
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -temp \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -temp \
                                 -nopbcrepair" -- ${cur_word} ) )
-      return 0 ;;
-
-    epsilon_cylinder)
-      case "${prev_word}" in
-        -s)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
-        return 0 ;;
-        -f)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
-        return 0 ;;
-        -g)
-        COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
-        return 0 ;;
-        -o)
-        COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-        return 0 ;;
-        -b|-e|-dt|-box|-dout|-r|-dr|-l)
-        COMPREPLY=( )
-        return 0 ;;
-      esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -g -r -dr -vr \
-                                -l -si" -- ${cur_word} ) )
       return 0 ;;
 
     epsilon_planar)
@@ -242,11 +196,11 @@ _mdtools_completion()
         -d)
         COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
         return 0 ;;
-        -b|-e|-dt|-box|-dout|-dz|-zmin|-zmax|-temp|-groups)
+        -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-dz|-zmin|-zmax|-temp|-groups)
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -dz -d -zmin \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -dz -d -zmin \
                                 -zmax -temp -groups -2d -vac -sym -com -nopbcrepair"\
                                                           -- ${cur_word} ) )
       return 0 ;;
@@ -266,7 +220,7 @@ _mdtools_completion()
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o " -- ${cur_word} ) )
+        COMPREPLY=( $( compgen -W "$mdtools_default_args -o " -- ${cur_word} ) )
         return 0 ;;
 
       saxs)
@@ -280,34 +234,12 @@ _mdtools_completion()
           -sq)
           COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
           return 0 ;;
-          -b|-e|-dt|-box|-dout|-sel|-startq|-endq|-dq|-mintheta|-maxtheta)
+          -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-startq|-endq|-dq|-mintheta|-maxtheta)
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -sel -dout -sq\
+        COMPREPLY=( $( compgen -W "$mdtools_default_args -dout -sq\
                                   -startq -endq -dq -mintheta -maxtheta" -- ${cur_word} ) )
-        return 0 ;;
-
-      velocity)
-        case "${prev_word}" in
-          -s)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
-          return 0 ;;
-          -f)
-          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
-          return 0 ;;
-          -o)
-          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
-          return 0 ;;
-          -d)
-          COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
-          return 0 ;;
-          -b|-e|-dt|-box|-dout|-dv|-nbins|-gr|-nblock)
-          COMPREPLY=( )
-          return 0 ;;
-        esac
-        COMPREPLY=( $( compgen -W "-h -s -f -b -e -dt -box -o -dout -d -dv -nbins \
-                                  -gr -nblock" -- ${cur_word} ) )
         return 0 ;;
   esac
 
