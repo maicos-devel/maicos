@@ -8,7 +8,7 @@ import tempfile
 import numpy as np
 import MDAnalysis as mda
 
-from .base import AnalysisBase
+from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
 from ..utils import savetxt
@@ -49,7 +49,7 @@ def compute_form_factor(q, atom_type):
     return form_factor
 
 
-class saxs(AnalysisBase):
+class saxs(SingleGroupAnalysisBase):
     """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory.
     The q vectors are binned
     by their length using a binwidth given by -dq. Using the -nobin option
@@ -63,7 +63,6 @@ class saxs(AnalysisBase):
 
     def __init__(self,
                  atomgroup,
-                 sel="all",
                  outfreq=100,
                  output="sq",
                  nobin=False,
@@ -74,10 +73,7 @@ class saxs(AnalysisBase):
                  maxtheta=180,
                  **kwargs):
         # Inherit all classes from AnalysisBase
-        super(saxs, self).__init__(atomgroup.universe.trajectory, **kwargs)
-
-        self.atomgroup = atomgroup
-        self.sel = sel
+        super(saxs, self).__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.nobindata = nobin
@@ -89,13 +85,6 @@ class saxs(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            '-sel',
-            dest='sel',
-            type=str,
-            default='all',
-            help='Atoms for which to compute the profile',
-        )
         parser.add_argument(
             '-dout',
             dest='outfreq',
@@ -159,20 +148,11 @@ class saxs(AnalysisBase):
         self.mintheta *= np.pi / 180
         self.maxtheta *= np.pi / 180
 
-        self.selection = self.atomgroup.select_atoms(self.sel)
-
-        if self.selection.n_atoms == 0:
-            raise RuntimeError("Selection does not contain any atoms.")
-
-        if self._verbose:
-            print("\nSelection '{}' contains {} atoms.".format(
-                self.sel, self.selection.n_atoms))
-
         self.groups = []
         self.atom_types = []
         if self._verbose:
             print("\nMap the following atomtypes:")
-        for atom_type in np.unique(self.selection.atoms.types).astype(str):
+        for atom_type in np.unique(self.atomgroup.types).astype(str):
             try:
                 element = tables.atomtypes[atom_type]
             except KeyError:
@@ -194,7 +174,7 @@ class saxs(AnalysisBase):
         if self.nobindata:
             self.box = np.diag(
                 mda.lib.mdamath.triclinic_vectors(
-                    self.selection.universe.dimensions)) / 10
+                    self._universe.dimensions)) / 10
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
             self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
@@ -258,7 +238,7 @@ class saxs(AnalysisBase):
             self.results["q"] = q[nonzeros]
             self.results["scat_factor"] = scat_factor.sum(axis=1)
 
-        self.results["scat_factor"] /= (self._index * self.selection.n_atoms)
+        self.results["scat_factor"] /= (self._index * self.atomgroup.n_atoms)
 
     def _save_results(self):
         """Saves the current profiles to a file."""
@@ -289,7 +269,7 @@ class saxs(AnalysisBase):
                 fmt='%.4e')
 
 
-class debye(AnalysisBase):
+class debye(SingleGroupAnalysisBase):
     """Calculates scattering intensities using the debye equation.
        By using the -sel option atoms can be selected for which the
        profile is calculated. For group selections use strings in the MDAnalysis selection command style."""
@@ -306,10 +286,7 @@ class debye(AnalysisBase):
                  debyer="debyer",
                  **kwargs):
         # Inherit all classes from AnalysisBase
-        super(debye, self).__init__(atomgroup.universe.trajectory, **kwargs)
-
-        self.atomgroup = atomgroup
-        self.sel = sel
+        super(debye, self).__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.startq = startq
@@ -372,22 +349,16 @@ class debye(AnalysisBase):
         self.endq /= 10
         self.dq /= 10
 
-        self.selection = self.atomgroup.select_atoms(
-            self.sel + " and not name DUM and not name MW")
-
-        if self._verbose:
-            print("Selection '{}' contains {} atoms.\n".format(
-                self.sel, self.selection.n_atoms))
-        if self.selection.n_atoms == 0:
-            raise RuntimeError("Selection does not contain any atoms.")
+        self.atomgroup = self.atomgroup.select_atoms(
+            "not name DUM and not name MW")
 
         # Create an extra list for the atom names.
         # This is necessary since it is not possible to efficently add axtra atoms to
         # a MDAnalysis universe, necessary for the hydrogens in united atom forcefields.
 
-        self.atom_names = self.selection.n_atoms * ['']
+        self.atom_names = self.atomgroup.n_atoms * ['']
 
-        for i, atom_type in enumerate(self.selection.types.astype(str)):
+        for i, atom_type in enumerate(self.atomgroup.types.astype(str)):
             element = tables.atomtypes[atom_type]
 
             # add hydrogens in the case of united atom forcefields
@@ -397,7 +368,7 @@ class debye(AnalysisBase):
                     self.atom_names.append("H")
                     # add a extra atom to universe. It got the wrong type but we only
                     # need the position, since we maintain our own atom type list.
-                    self.selection += self.selection.atoms[i]
+                    self.atomgroup += self.atomgroup.atoms[i]
             else:
                 self.atom_names[i] = element
 
@@ -420,8 +391,7 @@ class debye(AnalysisBase):
         write = mda.coordinates.XYZ.XYZWriter(
             filename, n_atoms=len(self.atom_names), atoms=self.atom_names)
 
-        ts = self.selection.universe.trajectory.ts.copy_slice(
-            self.selection.atoms.indices)
+        ts = self._trajectory.ts.copy_slice(self.atomgroup.indices)
         write.write_next_timestep(ts)
         write.close()
 
@@ -429,8 +399,8 @@ class debye(AnalysisBase):
 
         # convert coordinates in a rectengular box
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
-        self.selection.atoms.positions = self.selection.atoms.positions \
-            - box * np.round(self.selection.atoms.positions /
+        self.atomgroup.positions = self.atomgroup.positions \
+            - box * np.round(self.atomgroup.positions /
                              box)  # minimum image
 
         self._writeXYZ("{}/{}.xyz".format(self._tmp, self._frame_index))

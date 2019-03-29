@@ -6,8 +6,8 @@ import warnings
 import numpy as np
 from scipy import constants
 
-from .base import AnalysisBase
-from ..utils import savetxt
+from .base import MultiGroupAnalysisBase
+from ..utils import savetxt, atomgroup_header
 
 
 def mu(rho, temperature, m):
@@ -39,12 +39,12 @@ def dmu(rho, drho, temperature):
         return np.float("nan")
 
 
-class density_planar(AnalysisBase):
+class density_planar(MultiGroupAnalysisBase):
     """Computes partial densities or temperature profiles across the box.
        For group selections use strings in the MDAnalysis selection command style."""
 
     def __init__(self,
-                 atomgroup,
+                 atomgroups,
                  output="density",
                  outfreq=1000,
                  dim=2,
@@ -55,15 +55,11 @@ class density_planar(AnalysisBase):
                  mass=np.nan,
                  zpos=None,
                  dens="mass",
-                 groups=['all'],
                  comgroup=None,
                  center=False,
                  **kwargs):
         # Inherit all classes from AnalysisBase
-        super(density_planar, self).__init__(atomgroup.universe.trajectory,
-                                             **kwargs)
-
-        self.atomgroup = atomgroup
+        super(density_planar, self).__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
         self.dim = dim
@@ -76,11 +72,6 @@ class density_planar(AnalysisBase):
         self.dens = dens
         self.comgroup = comgroup
         self.center = center
-
-        if not hasattr(groups, "__iter__") and type(groups) not in (str):
-            self.groups = [groups]
-        else:
-            self.groups = groups
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
@@ -144,14 +135,6 @@ class density_planar(AnalysisBase):
             choices=["mass", "number", "charge", "temp"],
             help='Density')
         parser.add_argument(
-            '-gr',
-            dest='groups',
-            type=str,
-            default=['all'],
-            nargs='+',
-            help='Atoms for which to compute the density profile',
-        )
-        parser.add_argument(
             '-com',
             dest='comgroup',
             type=str,
@@ -177,50 +160,27 @@ class density_planar(AnalysisBase):
                 print('Computing {} density profile along {}-axes.'.format(
                     self.dens, 'XYZ' [self.dim]))
 
-        self.ngroups = len(self.groups)
+        self.ngroups = len(self.atomgroups)
         self.nbins = int(
-            np.ceil(self.atomgroup.universe.dimensions[self.dim] / 10 /
-                    self.binwidth))
+            np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
 
         self.density_mean = np.zeros((self.nbins, self.ngroups))
         self.density_mean_sq = np.zeros((self.nbins, self.ngroups))
         self.av_box_length = 0
 
-        if self._verbose:
-            print("\nCalcualate profile for the following group(s):")
-
-        self.sel = []
-
         if self.mu and self.dens != 'mass':
             raise Exception(
-                'Calculation of the chemical potential is only possible when mass density is selected'
-            )
+                "Calculation of the chemical potential is only possible when "
+                "mass density is selected")
 
-        if self.mu and len(self.groups) != 1:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn(
-                    "Performing chemical potential analysis for 1st selection"
-                    "group '{}'".format(self.groups[0]))
-
-        for i, gr in enumerate(self.groups):
-            sel = self.atomgroup.select_atoms(gr)
-            if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
-            if sel.n_atoms > 0:
-                self.sel.append(sel)
-                if self.mu and i == 0:
-                    self.mass = sel.atoms.total_mass() / sel.atoms.n_residues
-            else:
+        if self.mu:
+            if len(self.atomgroups) != 1:
                 with warnings.catch_warnings():
                     warnings.simplefilter('always')
                     warnings.warn(
-                        "Selection '{}' not taken for profile, "
-                        "since it does not contain any atoms.".format(gr))
-
-        if len(self.sel) == 0:
-            raise RuntimeError(
-                "No atoms found in selection. Please adjust group selection")
+                        "Performing chemical potential analysis for 1st selection"
+                        "group '{}'".format(self.atomgroups[0]))
+            self.mass = self.atomgroups[0].total_mass() / sel.atoms.n_residues
 
         if self.comgroup is not None:
             self.comsel = self.atomgroup.select_atoms(self.comgroup)
@@ -275,7 +235,7 @@ class density_planar(AnalysisBase):
 
         dz = self._ts.dimensions[self.dim] / self.nbins
 
-        for index, selection in enumerate(self.sel):
+        for index, selection in enumerate(self.atomgroups):
             bins = ((selection.atoms.positions[:, self.dim] + comshift + dz / 2)
                     / dz).astype(int) % self.nbins
             density_ts = np.histogram(
@@ -356,11 +316,11 @@ class density_planar(AnalysisBase):
         else:
             columns = "{} density profile [{}]".format(self.dens, units)
         columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
-            self._index * self.atomgroup.universe.trajectory.dt)
-        for group in self.groups:
-            columns += "\t" + group
-        for group in self.groups:
-            columns += "\t" + group + " error"
+            self._index * self._universe.trajectory.dt)
+        for group in self.atomgroups:
+            columns += "\t" + atomgroup_header(group)
+        for group in self.atomgroups:
+            columns += "\t" + atomgroup_header(group) + " error"
 
         # save density profile
         savetxt(

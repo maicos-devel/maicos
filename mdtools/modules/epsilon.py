@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # coding: utf8
 
-import warnings
-
 import numpy as np
 import scipy.constants
 
-from .base import AnalysisBase
+from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 from ..utils import FT, iFT, repairMolecules, savetxt
 
 eps0inv = 1. / scipy.constants.epsilon_0
@@ -34,23 +32,19 @@ def Bin(a, bins):
     return avg / count
 
 
-class epsilon_bulk(AnalysisBase):
+class epsilon_bulk(SingleGroupAnalysisBase):
     """Computes the dipole moment flcutuations and from this the
     dielectric constant.
     For group selections use strings in the MDAnalysis selection command style"""
 
     def __init__(self,
                  atomgroup,
-                 sel="all",
                  outfreq=100,
                  temperature=300,
                  bpbc=True,
                  output="eps",
                  **kwargs):
-        super(epsilon_bulk, self).__init__(atomgroup.universe.trajectory,
-                                           **kwargs)
-        self.atomgroup = atomgroup
-        self.sel = sel
+        super(epsilon_bulk, self).__init__(atomgroup, **kwargs)
         self.outfreq = 100
         self.temperature = temperature
         self.bpbc = bpbc
@@ -58,12 +52,6 @@ class epsilon_bulk(AnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            '-sel',
-            dest='sel',
-            type=str,
-            default='all',
-            help='Atoms for which to compute the profile')
         parser.add_argument(
             '-dout',
             dest='outfreq',
@@ -93,22 +81,16 @@ class epsilon_bulk(AnalysisBase):
         self.volume = 0
         self.M = np.zeros(3)
         self.M2 = np.zeros(3)
-
-        self.selection = self.atomgroup.select_atoms(self.sel)
-        self.charges = self.selection.charges
-
-        if self._verbose:
-            print("There are {} atoms in the selection '{}'.".format(
-                self.selection.n_atoms, self.sel))
+        self.charges = self.atomgroup.charges
 
     def _single_frame(self):
         # Make molecules whole
         if self.bpbc:
-            repairMolecules(self.selection)
+            repairMolecules(self.atomgroup)
 
-        self.volume += self.selection.universe.trajectory.ts.volume
+        self.volume += self._ts.volume
 
-        M = np.dot(self.charges, self.selection.positions)
+        M = np.dot(self.charges, self.atomgroup.positions)
         self.M += M
         self.M2 += M * M
 
@@ -171,18 +153,17 @@ class epsilon_bulk(AnalysisBase):
             header='eps\teps_x\teps_y\teps_z')
 
 
-class epsilon_planar(AnalysisBase):
+class epsilon_planar(MultiGroupAnalysisBase):
     """Calculate the dielectric profile. See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details."""
 
     def __init__(self,
-                 atomgroup,
+                 atomgroups,
                  output="eps",
                  binwidth=0.05,
                  dim=2,
                  zmin=0,
                  zmax=-1,
                  temperature=300,
-                 groups=['resname SOL', 'not resname SOL'],
                  outfreq=10000,
                  b2d=False,
                  bsym=False,
@@ -193,16 +174,13 @@ class epsilon_planar(AnalysisBase):
                  **kwself):
 
         # Inherit all classes from AnalysisBase
-        super(epsilon_planar, self).__init__(atomgroup.universe.trajectory,
-                                             **kwself)
-        self.atomgroup = atomgroup
+        super(epsilon_planar, self).__init__(atomgroups, **kwself)
         self.output = output
         self.binwidth = binwidth
         self.dim = dim
         self.zmin = zmin
         self.zmax = zmax
         self.temperature = temperature
-        self.groups = groups
         self.outfreq = outfreq
         self.b2d = b2d
         self.bsym = bsym
@@ -249,13 +227,6 @@ class epsilon_planar(AnalysisBase):
             type=str,
             default='eps',
             help='Prefix for output filenames')
-        parser.add_argument(
-            '-gr',
-            dest='groups',
-            type=str,
-            nargs='+',
-            default=['resname SOL', 'not resname SOL'],
-            help='atom group selection')
         parser.add_argument(
             '-dout',
             dest='outfreq',
@@ -314,32 +285,14 @@ class epsilon_planar(AnalysisBase):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
 
-        self.sel = []
-        for i, gr in enumerate(self.groups):
-            sel = self.atomgroup.select_atoms(gr)
-            if self._verbose:
-                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
-            if sel.n_atoms > 0:
-                self.sel.append(sel)
-            else:
-                with warnings.catch_warnings():
-                    warnings.simplefilter('always')
-                    warnings.warn(
-                        "Selection '{}' not taken for profile, "
-                        "since it does not contain any atoms.".format(gr))
-
-        if len(self.sel) == 0:
-            raise RuntimeError(
-                "No atoms found in selection. Please adjust group selection")
-
-        self.sol = self.atomgroup.select_atoms('resname SOL')
+        self.sol = self._universe.select_atoms('resname SOL')
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
         dz = self.binwidth * 10  # Convert to Angstroms
 
         if (self.zmax == -1):
-            self.zmax = self.atomgroup.universe.dimensions[self.dim]
+            self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax *= 10
 
@@ -354,26 +307,27 @@ class epsilon_planar(AnalysisBase):
 
         self.V = 0
         self.Lz = 0
-        self.A = np.prod(self.atomgroup.universe.dimensions[self.xydims])
+        self.A = np.prod(self._universe.dimensions[self.xydims])
 
-        self.m_par = np.zeros((self.nbins, len(self.groups), self.resample))
-        self.mM_par = np.zeros((self.nbins, len(self.groups),
+        self.m_par = np.zeros((self.nbins, len(self.atomgroups), self.resample))
+        self.mM_par = np.zeros((self.nbins, len(self.atomgroups),
                                 self.resample))  # total fluctuations
-        self.mm_par = np.zeros((self.nbins, len(self.groups)))  # self
-        self.cmM_par = np.zeros((self.nbins,
-                                 len(self.groups)))  # collective contribution
-        self.cM_par = np.zeros((self.nbins, len(self.groups)))
+        self.mm_par = np.zeros((self.nbins, len(self.atomgroups)))  # self
+        self.cmM_par = np.zeros(
+            (self.nbins, len(self.atomgroups)))  # collective contribution
+        self.cM_par = np.zeros((self.nbins, len(self.atomgroups)))
         self.M_par = np.zeros((self.resample))
 
         # Same for perpendicular
-        self.m_perp = np.zeros((self.nbins, len(self.groups), self.resample))
-        self.mM_perp = np.zeros((self.nbins, len(self.groups),
+        self.m_perp = np.zeros((self.nbins, len(self.atomgroups),
+                                self.resample))
+        self.mM_perp = np.zeros((self.nbins, len(self.atomgroups),
                                  self.resample))  # total fluctuations
-        self.mm_perp = np.zeros((self.nbins, len(self.groups)))  # self
-        self.cmM_perp = np.zeros((self.nbins,
-                                  len(self.groups)))  # collective contribution
-        self.cM_perp = np.zeros((self.nbins,
-                                 len(self.groups)))  # collective contribution
+        self.mm_perp = np.zeros((self.nbins, len(self.atomgroups)))  # self
+        self.cmM_perp = np.zeros(
+            (self.nbins, len(self.atomgroups)))  # collective contribution
+        self.cM_perp = np.zeros(
+            (self.nbins, len(self.atomgroups)))  # collective contribution
         self.M_perp = np.zeros((self.resample))
         self.M_perp_2 = np.zeros((self.resample))
 
@@ -404,15 +358,15 @@ class epsilon_planar(AnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            repairMolecules(self.atomgroup)
+            repairMolecules(self._universe.atoms)
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
         # precalculate total polarization of the box
         this_M_perp, this_M_par = np.split(
             np.roll(
-                np.dot(self.atomgroup.charges, self.atomgroup.positions),
-                -self.dim), [1])
+                np.dot(self._universe.atoms.charges,
+                       self._universe.atoms.positions), -self.dim), [1])
 
         # Use polarization density ( for perpendicular component )
         # ========================================================
@@ -420,7 +374,7 @@ class epsilon_planar(AnalysisBase):
         # sum up the averages
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
-        for i, sel in enumerate(self.sel):
+        for i, sel in enumerate(self.atomgroups):
             bins = ((sel.atoms.positions[:, self.dim] - self.zmin) / (
                 (zmax - self.zmin) / (self.nbins))).astype(int)
             bins[np.where(bins < 0)] = 0  # put all charges back inside box
@@ -444,13 +398,13 @@ class epsilon_planar(AnalysisBase):
         # ========================================================
         nbinsx = 250  # number of virtual cuts ("many")
 
-        for i, sel in enumerate(self.sel):
+        for i, sel in enumerate(self.atomgroups):
             # Move all z-positions to 'center of charge' such that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y direction)
-            chargepos=sel.atoms.positions * \
+            chargepos = sel.atoms.positions * \
                 np.abs(sel.atoms.charges[:, np.newaxis])
             atomsPerMolecule = sel.n_atoms // sel.n_residues
-            centers=sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
+            centers = sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
                 / np.abs(sel.residues[0].atoms.charges).sum()
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim],
@@ -461,7 +415,6 @@ class epsilon_planar(AnalysisBase):
 
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
-                dx = self._ts.dimensions[direction] / nbinsx
                 binsx = (sel.atoms.positions[:, direction] /
                          (self._ts.dimensions[direction] / nbinsx)).astype(int)
                 # put all charges back inside box
@@ -511,11 +464,12 @@ class epsilon_planar(AnalysisBase):
         cov_perp = self.mM_perp.sum(axis=2) / self._index - \
             self.m_perp.sum(axis=2) / self._index * \
             self.M_perp.sum() / self._index
-        dcov_perp = np.sqrt((self.mM_perp.std(axis=2) / self._index * self.resample)**2
-                            + (self.m_perp.std(axis=2) / self._index
-                             * self.resample * self.M_perp.sum() / self._index)**2 +
-                            (self.m_perp.sum(axis=2) / self._index * self.M_perp.std() \
-                               / self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+        dcov_perp = np.sqrt(
+            (self.mM_perp.std(axis=2) / self._index * self.resample)**2 +
+            (self.m_perp.std(axis=2) / self._index * self.resample *
+             self.M_perp.sum() / self._index)**2 +
+            (self.m_perp.sum(axis=2) / self._index * self.M_perp.std() /
+             self._index * self.resample)**2) / np.sqrt(self.resample - 1)
         cov_perp_self = self.mm_perp / self._index - \
             (self.m_perp.sum(axis=2) / self._index * self.m_perp.sum(axis=2)
              / self._index * self.A * self.Lz / self.nbins / self._index)
@@ -535,11 +489,12 @@ class epsilon_planar(AnalysisBase):
                                                     self.Lz / self.nbins / self._index * self.A) / self._index
         cov_par_coll = self.cmM_par / self._index - \
             self.m_par.sum(axis=2) / self._index * self.cM_par / self._index
-        dcov_par = np.sqrt((self.mM_par.std(axis=2) / self._index * self.resample)**2
-                           + (self.m_par.std(axis=2) / self._index
-                              * self.resample * self.M_par.sum() / self._index)**2
-                           + (self.m_par.sum(axis=2) / self._index * self.M_par.std() / \
-                            self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+        dcov_par = np.sqrt(
+            (self.mM_par.std(axis=2) / self._index * self.resample)**2 +
+            (self.m_par.std(axis=2) / self._index * self.resample *
+             self.M_par.sum() / self._index)**2 +
+            (self.m_par.sum(axis=2) / self._index * self.M_par.std() /
+             self._index * self.resample)**2) / np.sqrt(self.resample - 1)
 
         beta = 1. / (scipy.constants.Boltzmann * self.temperature)
 
@@ -613,12 +568,12 @@ class epsilon_planar(AnalysisBase):
                     (outdata_perp[i + 1] + outdata_perp[i + 1][-1::-1])
 
         header = "statistics over {:.1f} picoseconds".format(
-            self._index * self.atomgroup.universe.trajectory.dt)
+            self._index * self._universe.trajectory.dt)
         savetxt(self.output + '_perp.dat', outdata_perp, header=header)
         savetxt(self.output + '_par.dat', outdata_par, header=header)
 
 
-class dielectric_spectrum(AnalysisBase):
+class dielectric_spectrum(SingleGroupAnalysisBase):
     """This module, given molecular dynamics trajectory data, produces a
         .txt file containing the complex dielectric function as a function of the (linear, not radial -
         i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
@@ -648,10 +603,7 @@ class dielectric_spectrum(AnalysisBase):
                  nobin=False,
                  **kwargs):
         # Inherit all classes from AnalysisBase
-        super(dielectric_spectrum, self).__init__(atomgroup.universe.trajectory,
-                                                  **kwargs)
-
-        self.atomgroup = atomgroup
+        super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
         self.temperature = temperature
         self.output = output
         self.use = use
@@ -735,7 +687,7 @@ class dielectric_spectrum(AnalysisBase):
             self.output += "_"
 
         self.Nframes = (self.stopframe - self.startframe) // self.step
-        self.dt = self.atomgroup.universe.trajectory.dt * self.step
+        self.dt = self._trajectory.dt * self.step
         self.V = 0
         self.P = np.zeros((self.Nframes, 3))
 
@@ -758,7 +710,7 @@ class dielectric_spectrum(AnalysisBase):
         self.results["P"] /= 10
 
         # Find a suitable number of segments if it's not specified:
-        if not self.df == None:
+        if self.df is not None:
             self.segs = np.max([int(self.Nframes * self.dt * self.df), 2])
 
         self.seglen = int(self.Nframes / self.segs)
@@ -988,7 +940,7 @@ class dielectric_spectrum(AnalysisBase):
                     label=cpp,
                     linewidth=lw)
 
-                if self._i == 0 and (not self.ymin is None):
+                if self._i == 0 and (self.ymin is not None):
                     plt.set_ylim(ymin=self.ymin)
                 ax.legend(loc='best', frameon=False)
                 fig.tight_layout(pad=0.1)

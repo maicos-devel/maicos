@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+import functools
 import os
 import sys
 
-import MDAnalysis
 import numpy as np
 
 _share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
@@ -149,3 +149,15 @@ def savetxt(fname, X, header='', **kwargs):
     header = "{}\n{}".format(get_cli_input(), header)
 
     np.savetxt(fname, X, header=header, **kwargs)
+
+
+def atomgroup_header(AtomGroup):
+    """Returns a string containing infos about the AtmGroup containing
+    the total number of atoms, the including residues and the number of residues.
+    Useful for writing output file headers."""
+
+    unq_res, n_unq_res = np.unique(
+        AtomGroup.residues.resnames, return_counts=True)
+    return "{} atom(s): {}".format(
+        AtomGroup.n_atoms, ", ".join(
+            "{} {}".format(*i) for i in np.vstack([n_unq_res, unq_res]).T))
