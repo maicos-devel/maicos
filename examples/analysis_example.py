@@ -14,19 +14,16 @@
 # Mandatory imports
 import numpy as np
 
-from .base import AnalysisBase
+from .base import SingleGroupAnalysisBase
 from ..utils import savetxt
 
 
-class analysis_example(AnalysisBase):
-    """Description for my awesome analysis script."""
+class analysis_example(SingleGroupAnalysisBase):
+    """Description for my awesome single group analysis script."""
 
     def __init__(self, atomgroup, temperature=300, output="output", **kwargs):
-        # Inherit all classes from AnalysisBase
-        super(analysis_example, self).__init__(atomgroup.universe.trajectory,
-                                               **kwargs)
+        super(analysis_example, self).__init__(atomgroup, **kwargs)
 
-        self.atomgroup = atomgroup
         self.temperature = temperature
         self.output = output
 
@@ -48,6 +45,8 @@ class analysis_example(AnalysisBase):
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
+        # self.atomgroup - given atomgroup
+        # self._universe - full universe of given atomgroup
         self.volume = 0
 
     def _single_frame(self):

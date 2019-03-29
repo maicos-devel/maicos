@@ -58,7 +58,6 @@ class density_planar(MultiGroupAnalysisBase):
                  comgroup=None,
                  center=False,
                  **kwargs):
-        # Inherit all classes from AnalysisBase
         super(density_planar, self).__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
@@ -283,7 +282,7 @@ class density_planar(MultiGroupAnalysisBase):
 
         # chemical potential
         if self.mu:
-            if (self.zpos != None):
+            if (self.zpos is not None):
                 this = (self.zpos / (self.av_box_length / self._index) *
                         self.nbins).astype(int)
                 if self.center:

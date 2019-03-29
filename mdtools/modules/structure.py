@@ -72,7 +72,6 @@ class saxs(SingleGroupAnalysisBase):
                  mintheta=0,
                  maxtheta=180,
                  **kwargs):
-        # Inherit all classes from AnalysisBase
         super(saxs, self).__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
@@ -285,7 +284,6 @@ class debye(SingleGroupAnalysisBase):
                  sinc=False,
                  debyer="debyer",
                  **kwargs):
-        # Inherit all classes from AnalysisBase
         super(debye, self).__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output

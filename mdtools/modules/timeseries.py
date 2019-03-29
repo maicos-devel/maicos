@@ -11,7 +11,6 @@ class dipole_angle(SingleGroupAnalysisBase):
     """Calculates the timeseries of the dipole moment with respect to an axis."""
 
     def __init__(self, atomgroup, output="output", dim=2, sel='all', **kwargs):
-        # Inherit all classes from AnalysisBase
         super(dipole_angle, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.dim = dim
@@ -104,7 +103,6 @@ class kinetic_energy(SingleGroupAnalysisBase):
        translational and rotational kinetic energy (kJ/mole)."""
 
     def __init__(self, atomgroup, output="output", refpoint="COM", **kwargs):
-        # Inherit all classes from AnalysisBase
         super(kinetic_energy, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint

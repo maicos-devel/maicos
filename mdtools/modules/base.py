@@ -11,7 +11,7 @@ from MDAnalysis.lib.log import ProgressMeter
 logger = logging.getLogger(__name__)
 
 
-class AnalysisBase(base.AnalysisBase):
+class _AnalysisBase(base.AnalysisBase):
     """Extends the MDAnalysis base class for defining multi frame analysis."""
 
     def __init__(self, trajectory, verbose=False, save=False, **kwargs):
@@ -25,7 +25,7 @@ class AnalysisBase(base.AnalysisBase):
         save : bool, optional
            Save results to a file, default ``False``
         """
-        super(AnalysisBase, self).__init__(self, **kwargs)
+        super(_AnalysisBase, self).__init__(self, **kwargs)
 
         self._trajectory = trajectory
         self._verbose = verbose
@@ -139,7 +139,7 @@ class AnalysisBase(base.AnalysisBase):
         return self
 
 
-class SingleGroupAnalysisBase(AnalysisBase):
+class SingleGroupAnalysisBase(_AnalysisBase):
     """The base class for analysing a single AtomGroup only."""
 
     _allow_multiple_atomgroups = False
@@ -151,7 +151,7 @@ class SingleGroupAnalysisBase(AnalysisBase):
         self._universe = atomgroup.universe
 
 
-class MultiGroupAnalysisBase(AnalysisBase):
+class MultiGroupAnalysisBase(_AnalysisBase):
     """The base class for analysing a single or multiple AtomGroups."""
 
     _allow_multiple_atomgroups = True

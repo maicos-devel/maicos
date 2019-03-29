@@ -172,8 +172,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  com=False,
                  bpbc=True,
                  **kwself):
-
-        # Inherit all classes from AnalysisBase
         super(epsilon_planar, self).__init__(atomgroups, **kwself)
         self.output = output
         self.binwidth = binwidth
@@ -602,7 +600,6 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                  binafter=20,
                  nobin=False,
                  **kwargs):
-        # Inherit all classes from AnalysisBase
         super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
         self.temperature = temperature
         self.output = output
