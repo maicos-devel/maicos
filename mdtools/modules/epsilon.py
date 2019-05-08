@@ -289,7 +289,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
         dz = self.binwidth * 10  # Convert to Angstroms
 
-        if (self.zmax == -1):
+        if self.zmax == -1:
             self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax *= 10
@@ -533,7 +533,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                                             len(self.results["eps_par"])) / 10
         else:
             self.results["z"] = np.linspace(self.zmin, self.zmax,
-                                            len(self.results["eps_par"])) / 10.
+                                            len(self.results["eps_par"])) / 10
 
     def _save_results(self):
         outdata_perp = np.hstack([
