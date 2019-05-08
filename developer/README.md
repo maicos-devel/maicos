@@ -10,7 +10,6 @@ contains  all commits of the latest release.
 More information on the branching model we used is given in this 
 [nice blog post](https://nvie.com/posts/a-successful-git-branching-model/).
 
-
 # Code formatting
 
 We use [yapf](https//github.com/google/yapf) using the
@@ -41,3 +40,17 @@ the script do the following steps.
 2.  Choose an unique name and add `<analysis_example>` to the `__all__` list
     in `mdtools/modules/__init__.py`.
 3.  OPTIONAL Add bash completion commands to `mdtools/share/mdtools_completion.bash`.
+
+# UnitTests
+
+The tests also rely on the `pytest` library and use some work flows
+ from `numpy` and `MDAnalysisTests`. In order to run the tests you need those packages.
+
+To start the test process just simply type from the root of the repository
+
+    cd test
+    pytest  --disable-pytest-warnings
+
+Whenever you add a new feature to the code you should also add a test case.
+Furthermore test cases are also useful if a bug is fixed or anything you
+ think worthwhile. Follow the philosophy - the more the better!
