@@ -92,6 +92,10 @@ Calculates scattering intensities using the debye equation.
 For using the debye module you need to download and build
 the debyer library see <https://github.com/wojdyr/debyer>.
 
+### diporder
+
+Calculates dipolar order parameters
+
 ## Timeseries
 
 ### dipole_angle
