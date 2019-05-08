@@ -11,6 +11,8 @@ from numpy.testing import assert_equal, assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
+water_chemical_potential = -19.27
+
 
 class Test_density_planar(object):
 
@@ -37,16 +39,48 @@ class Test_density_planar(object):
         dens = density_planar(ag_single_frame, binwidth=0.1).run()
         # Divide by 10: Å -> nm
         n_bins = ag_single_frame.universe.dimensions[dim] / 10 // 0.1
-        assert_almost_equal(
-            dens.results["z"][1] - dens.results["z"][0], 0.1, decimal=2)
+        assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
+                            0.1,
+                            decimal=2)
         assert_equal(len(dens.results["z"]), n_bins)
+
+    def test_mu(self, ag):
+        dens = density_planar(ag, mu=True).run()
+        assert_almost_equal(dens.results["mu"],
+                            water_chemical_potential,
+                            decimal=1)
+
+    def test_mu_temp(self, ag):
+        dens = density_planar(ag, mu=True, temperature=200).run()
+        assert_almost_equal(dens.results["mu"], -11.8, decimal=1)
+
+    def test_mu_zpos(self, ag):
+        dens = density_planar(ag, mu=True, zpos=0).run()
+        assert_almost_equal(dens.results["mu"],
+                            water_chemical_potential,
+                            decimal=1)
+
+    def test_mu_not_mass(self, ag):
+        with pytest.raises(ValueError):
+            density_planar(ag, mu=True, dens="number").run()
+
+    def test_mu_two_groups(self, ag):
+        with pytest.warns(UserWarning):
+            density_planar([ag, ag], mu=True).run()
 
     def test_output(self, ag):
         with tempdir.in_tempdir():
             dens = density_planar(ag, save=True).run()
             res = np.loadtxt("{}.dat".format(dens.output))
-            assert_almost_equal(
-                dens.results["dens_mean"][:, 0], res[:, 1], decimal=2)
+            assert_almost_equal(dens.results["dens_mean"][:, 0],
+                                res[:, 1],
+                                decimal=2)
+
+    def test_output_mu(self, ag):
+        with tempdir.in_tempdir():
+            dens = density_planar(ag, mu=True, save=True).run()
+            res = np.loadtxt("{}.dat".format(dens.muout))
+            assert_almost_equal(dens.results["mu"], res[0], decimal=2)
 
     def test_verbose(self, ag):
         density_planar(ag, verbose=True).run()

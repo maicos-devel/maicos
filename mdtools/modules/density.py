@@ -74,12 +74,11 @@ class density_planar(MultiGroupAnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            '-o',
-            dest='output',
-            type=str,
-            default='density',
-            help='Prefix for output filenames')
+        parser.add_argument('-o',
+                            dest='output',
+                            type=str,
+                            default='density',
+                            help='Prefix for output filenames')
         parser.add_argument(
             '-dout',
             dest='outfreq',
@@ -94,30 +93,27 @@ class density_planar(MultiGroupAnalysisBase):
             default=2,
             help='dimension for binning (0=X, 1=Y, 2=Z)',
         )
-        parser.add_argument(
-            '-dz',
-            dest='binwidth',
-            type=float,
-            default=0.1,
-            help='binwidth (nanometer)')
-        parser.add_argument(
-            '-mu',
-            dest='mu',
-            default=False,
-            action='store_true',
-            help='Calculate the chemical potential')
+        parser.add_argument('-dz',
+                            dest='binwidth',
+                            type=float,
+                            default=0.1,
+                            help='binwidth (nanometer)')
+        parser.add_argument('-mu',
+                            dest='mu',
+                            default=False,
+                            action='store_true',
+                            help='Calculate the chemical potential')
         parser.add_argument(
             '-muo',
             dest='muout',
             type=str,
             default='dens',
             help='Prefix for output filename for chemical potential')
-        parser.add_argument(
-            '-temp',
-            dest='temperature',
-            type=float,
-            default=300,
-            help='temperature (K) for chemical potential')
+        parser.add_argument('-temp',
+                            dest='temperature',
+                            type=float,
+                            default=300,
+                            help='temperature (K) for chemical potential')
         parser.add_argument(
             '-zpos',
             dest='zpos',
@@ -126,13 +122,12 @@ class density_planar(MultiGroupAnalysisBase):
             help=
             'position at which the chemical potential will be computed. By default average over box.'
         )
-        parser.add_argument(
-            '-dens',
-            dest='dens',
-            type=str,
-            default='mass',
-            choices=["mass", "number", "charge", "temp"],
-            help='Density')
+        parser.add_argument('-dens',
+                            dest='dens',
+                            type=str,
+                            default='mass',
+                            choices=["mass", "number", "charge", "temp"],
+                            help='Density')
         parser.add_argument(
             '-com',
             dest='comgroup',
@@ -168,7 +163,7 @@ class density_planar(MultiGroupAnalysisBase):
         self.av_box_length = 0
 
         if self.mu and self.dens != 'mass':
-            raise Exception(
+            raise ValueError(
                 "Calculation of the chemical potential is only possible when "
                 "mass density is selected")
 
@@ -179,7 +174,8 @@ class density_planar(MultiGroupAnalysisBase):
                     warnings.warn(
                         "Performing chemical potential analysis for 1st selection"
                         "group '{}'".format(self.atomgroups[0]))
-            self.mass = self.atomgroups[0].total_mass() / sel.atoms.n_residues
+            self.mass = self.atomgroups[0].total_mass(
+            ) / self.atomgroups[0].atoms.n_residues
 
         if self.comgroup is not None:
             self.comsel = self.atomgroup.select_atoms(self.comgroup)
@@ -235,12 +231,12 @@ class density_planar(MultiGroupAnalysisBase):
         dz = self._ts.dimensions[self.dim] / self.nbins
 
         for index, selection in enumerate(self.atomgroups):
-            bins = ((selection.atoms.positions[:, self.dim] + comshift + dz / 2)
-                    / dz).astype(int) % self.nbins
-            density_ts = np.histogram(
-                bins,
-                bins=np.arange(self.nbins + 1),
-                weights=self.weight(selection))[0]
+            bins = (
+                (selection.atoms.positions[:, self.dim] + comshift + dz / 2) /
+                dz).astype(int) % self.nbins
+            density_ts = np.histogram(bins,
+                                      bins=np.arange(self.nbins + 1),
+                                      weights=self.weight(selection))[0]
 
             bincount = np.bincount(bins, minlength=self.nbins)
 
@@ -249,8 +245,8 @@ class density_planar(MultiGroupAnalysisBase):
                 self.density_mean_sq[:, index] += (density_ts / bincount)**2
             else:
                 self.density_mean[:, index] += density_ts / curV * self.nbins
-                self.density_mean_sq[:, index] += (
-                    density_ts / curV * self.nbins)**2
+                self.density_mean_sq[:, index] += (density_ts / curV *
+                                                   self.nbins)**2
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -322,13 +318,14 @@ class density_planar(MultiGroupAnalysisBase):
             columns += "\t" + atomgroup_header(group) + " error"
 
         # save density profile
-        savetxt(
-            self.output + '.dat',
-            np.hstack(((self.results["z"][:, np.newaxis]),
-                       self.results["dens_mean"], self.results["dens_err"])),
-            header=columns)
+        savetxt(self.output + '.dat',
+                np.hstack(
+                    ((self.results["z"][:, np.newaxis]),
+                     self.results["dens_mean"], self.results["dens_err"])),
+                header=columns)
 
         if self.mu:
             # save chemical potential
             savetxt(self.muout + '.dat',
-                    np.hstack((self.results["mu"], self.results["dmu"]))[None])
+                    np.hstack((self.results["mu"], self.results["dmu"]))[None],
+                    header="μ [kJ/mol]\t μ error [kJ/mol]")
