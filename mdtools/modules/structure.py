@@ -11,7 +11,7 @@ import MDAnalysis as mda
 from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
-from ..utils import savetxt
+from ..utils import repairMolecules, savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -249,8 +249,8 @@ class saxs(SingleGroupAnalysisBase):
             ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
-            argsort = np.argsort(out[:, 0])
-            out = out[argsort]
+            selfort = np.selfort(out[:, 0])
+            out = out[selfort]
 
             boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
                 *self.box)
@@ -456,3 +456,256 @@ class debye(SingleGroupAnalysisBase):
             np.vstack([self.results["q"], self.results["scat_factor"]]).T,
             header="q (1/A)\tS(q)_tot (arb. units)",
             fmt='%.8e')
+
+
+class diporder(SingleGroupAnalysisBase):
+    """Calculates dipolar order parameters.
+
+    diporder saves the (summed) projected polarization density in the results
+    dictionary containing the following attributes: z; diporder
+
+    diporder:
+        0 P_0 rho(z) cos(Theta(z))
+        1 cos(Theta(z))
+        2 rho(z)
+    """
+
+    def __init__(self,
+                 atomgroup,
+                 binwidth=0.01,
+                 dim=2,
+                 output="diporder",
+                 outfreq=10000,
+                 bsym=False,
+                 center=False,
+                 com=False,
+                 binmethod='com',
+                 bpbc=False,
+                 **kwargs):
+        super(diporder, self).__init__(atomgroup, **kwargs)
+
+        self.binwidth = binwidth
+        self.dim = dim
+        self.output = output
+        self.outfreq = outfreq
+        self.bsym = bsym
+        self.center = center
+        self.com = com
+        self.binmethod = binmethod
+        self.bpbc = bpbc
+
+    def _configure_parser(self, parser):
+        parser.description = self.__doc__
+        parser.add_argument(
+            '-dz',
+            dest='binwidth',
+            type=float,
+            default=0.01,
+            help='specify the binwidth [nm]')
+        parser.add_argument(
+            '-d',
+            dest='dim',
+            type=int,
+            default=2,
+            help='direction normal to the surface (x,y,z=0,1,2, default: z)')
+        parser.add_argument(
+            '-o',
+            dest='output',
+            type=str,
+            default='diporder',
+            help='Prefix for output filenames')
+        parser.add_argument(
+            '-dout',
+            dest='outfreq',
+            type=float,
+            default='10000',
+            help=
+            'Default number of frames after which output files are refreshed (10000)'
+        )
+        parser.add_argument(
+            '-sym',
+            dest='bsym',
+            action='store_const',
+            const=True,
+            default=False,
+            help='symmetrize the profiles')
+        parser.add_argument(
+            '-shift',
+            dest='center',
+            action='store_const',
+            const=True,
+            default=False,
+            help=
+            'shift system by half a box length (useful for membrane simulations)'
+        )
+        parser.add_argument(
+            '-com',
+            dest='com',
+            action='store_const',
+            const=True,
+            default=False,
+            help='shift system such that the water COM is centered')
+        parser.add_argument(
+            '-bin',
+            dest='binmethod',
+            type=str,
+            default='COM',
+            choices=["COM", "COC", "OXY"],
+            help=
+            'binning method: center of Mass (COM), center of charge (COC) or oxygen position (OXY)'
+        )
+        parser.add_argument(
+            '-nopbcrepair',
+            dest='bpbc',
+            action='store_false',
+            help='do not make broken molecules whole again ' +
+            '(only works if molecule is smaller than shortest box vector')
+
+    def _prepare(self):
+        """Set things up before the analysis loop begins"""
+
+        if self.binmethod not in ["COM", "COC", "OXY"]:
+            raise ValueError('Unknown binning method: {}'.format(
+                self.binmethod))
+
+        # Check if all residues are identical. Choose first residue as reference.
+        residue_names = [ag.names for ag in self.atomgroup.split("residue")]
+        for names in residue_names[1:]:
+            if len(residue_names[0]) != len(names) and np.all(
+                    residue_names[0] != names):
+                raise ValueError("Not all residues are identical. Please adjust"
+                                 "selection.")
+
+        self.atomsPerMolecule = self.atomgroup.n_atoms // self.atomgroup.n_residues
+
+        # Assume a threedimensional universe...
+        self.xydims = np.roll(np.arange(3), -self.dim)[1:]
+        dz = self.binwidth * 10  # Convert to Angstroms
+        # CAVE: binwidth varies in NPT !
+        self.nbins = int(self.atomgroup.dimensions[self.dim] / dz)
+        self.diporder = np.zeros((self.nbins, 3))
+        self.av_box_length = 0
+
+        # unit normal vector
+        self.unit = np.zeros(3)
+        self.unit[self.dim] += 1
+
+    def _single_frame(self):
+
+        if self.center:
+            # shift membrane
+            self._ts.positions[:, self.dim] += self._ts.dimensions[self.dim] / 2
+            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
+        if self.com:
+            # put water COM into center
+            waterCOM = np.sum(self.atomgroup.atoms.positions[:, 2] *
+                              self.atomgroup.atoms.masses
+                             ) / self.atomgroup.atoms.masses.sum()
+            self._ts.positions[:, self.dim] += self._ts.dimensions[
+                self.dim] / 2 - waterCOM
+            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
+
+        # Make molecules whole
+        if self.bpbc:
+            repairMolecules(self.atomgroup)
+
+        dz_frame = self._ts.dimensions[self.dim] / self.nbins
+
+        chargepos = self.atomgroup.atoms.positions \
+                    * self.atomgroup.atoms.charges[:, np.newaxis]
+        dipoles = np.sum(
+            list(chargepos[i::self.atomsPerMolecule]
+                 for i in range(self.atomsPerMolecule)),
+            axis=0) / 10  # convert to e nm
+
+        if self.binmethod == 'COM':
+            # Calculate the centers of the objects ( i.e. Molecules )
+            masses = np.sum(
+                self.atomgroup.atoms.masses[i::self.atomsPerMolecule]
+                for i in range(self.atomsPerMolecule))
+            masspos = self.atomgroup.atoms.positions \
+                      * self.atomgroup.atoms.masses[:,np.newaxis]
+            coms = np.sum(
+                masspos[i::self.atomsPerMolecule]
+                for i in range(self.atomsPerMolecule)) / masses[:, np.newaxis]
+            bins = ((coms[:, self.dim] % self._ts.dimensions[self.dim]) /
+                    dz_frame).astype(int)
+        elif self.binmethod == 'COC':
+            abschargepos = self.atomgroup.atoms.positions * \
+                np.abs(self.atomgroup.atoms.charges)[:, np.newaxis]
+            charges = np.sum(
+                np.abs(self.atomgroup.atoms.charges)[i::self.atomsPerMolecule]
+                for i in range(self.atomsPerMolecule))
+            cocs = np.sum(
+                abschargepos[i::self.atomsPerMolecule]
+                for i in range(self.atomsPerMolecule)) / charges[:, np.newaxis]
+            bins = ((cocs[:, self.dim] % self._ts.dimensions[self.dim]) /
+                    dz_frame).astype(int)
+        elif self.binmethod == 'OXY':
+            bins = ((self.atomgroup.atoms.positions[::3, self.dim] %
+                     self._ts.dimensions[self.dim]) / dz_frame).astype(int)
+
+        bincount = np.bincount(bins, minlength=self.nbins)
+        A = np.prod(self._ts.dimensions[self.xydims])
+
+        self.diporder[:, 0] += np.histogram(
+            bins,
+            bins=np.arange(self.nbins + 1),
+            weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            self.diporder[:, 1] += np.nan_to_num(
+                np.histogram(
+                    bins,
+                    bins=np.arange(self.nbins + 1),
+                    weights=np.dot(
+                        dipoles / np.linalg.norm(
+                            dipoles, axis=1)[:, np.newaxis], self.unit))[0] /
+                bincount)
+        self.diporder[:, 2] += bincount / (A * dz_frame / 1e3)
+
+        self.av_box_length += self._ts.dimensions[self.dim] / 10
+
+        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
+            self._calculate_results()
+            self._save_results()
+
+    def _calculate_results(self):
+        """Calculate the results.
+
+        Called at the end of the run() method to before the _conclude function.
+        Can also called during a run to update the results during processing."""
+        self._index = self._frame_index + 1
+
+        dz = self.av_box_length / (self._index * self.nbins)
+        if self.center:
+            self.results["z"] = np.linspace(
+                -self.av_box_length / self._index / 2,
+                self.av_box_length / self._index / 2,
+                self.nbins,
+                endpoint=False) + dz / 2
+        else:
+            self.results["z"] = np.linspace(
+                0, self.av_box_length / self._index, self.nbins,
+                endpoint=False) + dz / 2
+
+        self.results["diporder"] = self.diporder / self._frame_index
+
+        if self.bsym:
+            for i in range(len(self.results["z"]) - 1):
+                self.results["z"][i + 1] = .5 * (
+                    self.results["z"][i + 1] + self.results["z"][i + 1][-1::-1])
+                self.results["diporder"][
+                    i + 1] = .5 * (self.results["diporder"][i + 1] +
+                                   self.results["diporder"][i + 1][-1::-1])
+
+    def _save_results(self):
+        """Saves results to a file.
+
+        Called at the end of the run() method after _calculate_results and
+        _conclude"""
+
+        savetxt(
+            self.output + '.dat',
+            np.hstack(
+                [self.results["z"][:, np.newaxis], self.results["diporder"]]),
+            header="z\tP_0 rho(z) cos(Theta(z))\tcos(Theta(z))\trho(z)")
