@@ -60,9 +60,8 @@ def main():
     parser.add_argument(
         '--debug',
         action='store_true',
-        help=
-        "Run with debug options. Will start an interactive Python interpreter at the end of the program."
-    )
+        help="Run with debug options. Will start an interactive Python "
+        "interpreter at the end of the program.")
     parser.add_argument(
         '--version', action='version', version="mdtools {}".format(__version__))
 
@@ -122,9 +121,8 @@ def main():
         dest="atom_style",
         type=str,
         default='None',
-        help=
-        "Manually set the atom_style information (currently only LAMMPS parser)."
-        + "E.g. atom_style='id type x y z'.")
+        help="Manually set the atom_style information (currently only LAMMPS "
+        "parser). E.g. atom_style='id type x y z'.")
     parser.add_argument(
         "-b",
         dest="begin",

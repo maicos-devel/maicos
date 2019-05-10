@@ -519,9 +519,8 @@ class diporder(SingleGroupAnalysisBase):
             dest='outfreq',
             type=float,
             default='10000',
-            help=
-            'Default number of frames after which output files are refreshed (10000)'
-        )
+            help="Default number of frames after which output files are "
+            "refreshed (10000)")
         parser.add_argument(
             '-sym',
             dest='bsym',
@@ -535,9 +534,8 @@ class diporder(SingleGroupAnalysisBase):
             action='store_const',
             const=True,
             default=False,
-            help=
-            'shift system by half a box length (useful for membrane simulations)'
-        )
+            help="Shift system by half a box length (useful for "
+            "membrane simulations)")
         parser.add_argument(
             '-com',
             dest='com',
@@ -551,9 +549,8 @@ class diporder(SingleGroupAnalysisBase):
             type=str,
             default='COM',
             choices=["COM", "COC", "OXY"],
-            help=
-            'binning method: center of Mass (COM), center of charge (COC) or oxygen position (OXY)'
-        )
+            help="binning method: center of Mass (COM), center of charge (COC) "
+            "or oxygen position (OXY)")
         parser.add_argument(
             '-nopbcrepair',
             dest='bpbc',
@@ -624,7 +621,7 @@ class diporder(SingleGroupAnalysisBase):
                 self.atomgroup.atoms.masses[i::self.atomsPerMolecule]
                 for i in range(self.atomsPerMolecule))
             masspos = self.atomgroup.atoms.positions \
-                      * self.atomgroup.atoms.masses[:,np.newaxis]
+                      * self.atomgroup.atoms.masses[:, np.newaxis]
             coms = np.sum(
                 masspos[i::self.atomsPerMolecule]
                 for i in range(self.atomsPerMolecule)) / masses[:, np.newaxis]

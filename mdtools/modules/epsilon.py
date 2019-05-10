@@ -230,9 +230,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             dest='outfreq',
             type=float,
             default=10000,
-            help=
-            'Default number of frames after which output files are refreshed (10000)'
-        )
+            help="Default number of frames after which output "
+            "files are refreshed (10000)")
         parser.add_argument(
             '-2d',
             dest='b2d',
@@ -261,9 +260,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             action='store_const',
             const=True,
             default=False,
-            help=
-            'shift system by half a box length (useful for membrane simulations)'
-        )
+            help="shift system by half a box length "
+            "(useful for membrane simulations)")
         parser.add_argument(
             '-com',
             dest='com',
@@ -275,9 +273,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             '-nopbcrepair',
             dest='bpbc',
             action='store_false',
-            help=
-            'do not make broken molecules whole again (only works if molecule is smaller than shortest box vector'
-        )
+            help="Do not make broken molecules whole again (only works if "
+            "molecule is smaller than shortest box vector")
 
     def _prepare(self):
         if self._verbose:
@@ -618,9 +615,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument(
             "-recalc",
             action="store_true",
-            help=
-            "Forces to recalculate the polarization, regardless if it is already present."
-        )
+            help="Forces to recalculate the polarization, "
+            "regardless if it is already present.")
         parser.add_argument(
             '-temp',
             dest='temperature',
@@ -640,9 +636,9 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument(
             "-df",
             type=float,
-            help=
-            "The desired frequency spacing in THz. This determines the minimum "
-            + "frequency about which there is data. Overrides -segs option.")
+            help="The desired frequency spacing in THz. "
+            "This determines the minimum frequency about which there "
+            "is data. Overrides -segs option.")
         parser.add_argument(
             "-noplots",
             action="store_true",
@@ -660,24 +656,23 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
             "-bins",
             type=int,
             default=200,
-            help="Determines the number of bins used for data averaging;" +
-            "(this parameter sets the upper limit)." +
-            "The data are by default binned logarithmically. " +
-            "This helps to reduce noise, particularly in" +
+            help="Determines the number of bins used for data averaging;"
+            "(this parameter sets the upper limit)."
+            "The data are by default binned logarithmically. "
+            "This helps to reduce noise, particularly in"
             "the high-frequency domain, and also prevents plot files from being too large."
         )
         parser.add_argument(
             "-binafter",
             type=int,
             default=20,
-            help=
-            "The number of low-frequency data points that are left unbinned.")
+            help="The number of low-frequency data points that are "
+            "left unbinned.")
         parser.add_argument(
             "-nobin",
             action="store_true",
-            help=
-            "Prevents the data from being binned altogether. This can result in very large plot files and errors."
-        )
+            help="Prevents the data from being binned altogether. This "
+            "can result in very large plot files and errors.")
 
     def _prepare(self):
         if len(self.output) > 0:
@@ -850,8 +845,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                     self.results["dsusc_binned"].imag
                 ]),
                 delimiter='\t',
-                header=
-                'freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
+                header="freq\tsusc\'\tstd_dev_susc\'\t-"
+                "susc\'\'\tstd_dev_susc\'\'")
 
             if self._verbose:
                 print('Binned susceptibility data saved as ' + suscfilename)
@@ -876,15 +871,15 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
             shade = 0.15
             lw = 1.0
             nuBuf = 1.4  # buffer factor for extra room in the x direction
-            cp = '$\chi^{{\prime}}$'
-            cpp = '$\chi^{{\prime \prime}}$'
+            cp = r'$\chi^{{\prime}}$'
+            cpp = r'$\chi^{{\prime \prime}}$'
             width = 3.5  # inches
 
             def my_plot(binned=False):
                 element = binned * "_binned"
 
                 fig, ax = plt.subplots(1, figsize=[width, width / np.sqrt(2)])
-                ax.set_ylabel('$\chi$')
+                ax.set_ylabel(r'$\chi$')
                 ax.set_xlabel('$\\nu$ [THz]')
                 ax.set_xlim(self.results["nu"][1] / nuBuf,
                             self.results["nu"][-1] * nuBuf)

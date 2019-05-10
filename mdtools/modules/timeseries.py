@@ -29,9 +29,8 @@ class dipole_angle(SingleGroupAnalysisBase):
             dest='outfreq',
             type=float,
             default='10000',
-            help=
-            'Default number of frames after which output files are refreshed (10000)'
-        )
+            help="Default number of frames after which output files "
+            "are refreshed (10000)")
         parser.add_argument(
             '-o',
             dest='output',
