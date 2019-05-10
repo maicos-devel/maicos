@@ -35,10 +35,10 @@ class Test_epsilon_bulk(object):
         with tempdir.in_tempdir():
             eps = epsilon_bulk(ag, save=True).run()
             res = np.loadtxt("{}.dat".format(eps.output))
-            assert_almost_equal(
-                np.hstack([eps.results["eps_mean"], eps.results["eps"]]).T,
-                res,
-                decimal=2)
+            assert_almost_equal(np.hstack(
+                [eps.results["eps_mean"], eps.results["eps"]]).T,
+                                res,
+                                decimal=2)
 
     def test_verbose(self, ag):
         epsilon_bulk(ag, verbose=True).run()
@@ -74,25 +74,22 @@ class Test_epsilon_planar(object):
         eps = epsilon_planar(ag_single_frame, binwidth=0.1).run()
         # Divide by 10: Å -> nm
         n_bins = ag_single_frame.universe.dimensions[dim] / 10 // 0.1
-        assert_almost_equal(
-            eps.results["z"][1] - eps.results["z"][0], 0.1, decimal=2)
+        assert_almost_equal(eps.results["z"][1] - eps.results["z"][0],
+                            0.1,
+                            decimal=2)
         assert_equal(len(eps.results["z"]), n_bins)
-
-    def test_membrane_shift(self, ag_single_frame):
-        eps = epsilon_planar(ag_single_frame, membrane_shift=True).run()
-        # Divide by 10: Å -> nm
-        pos_shift = ag_single_frame.universe.dimensions[2] / 10 / 2
-        assert_equal(eps.results["z"][0], pos_shift)
 
     def test_output(self, ag):
         with tempdir.in_tempdir():
             eps = epsilon_planar(ag, save=True).run()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output))
-            assert_almost_equal(
-                eps.results["eps_perp"][:, 0], res_perp[:, 1], decimal=1)
+            assert_almost_equal(eps.results["eps_perp"][:, 0],
+                                res_perp[:, 1],
+                                decimal=1)
             res_par = np.loadtxt("{}_par.dat".format(eps.output))
-            assert_almost_equal(
-                eps.results["eps_par"][:, 0], res_par[:, 1], decimal=2)
+            assert_almost_equal(eps.results["eps_par"][:, 0],
+                                res_par[:, 1],
+                                decimal=2)
 
     def test_verbose(self, ag):
         epsilon_bulk(ag, verbose=True).run()

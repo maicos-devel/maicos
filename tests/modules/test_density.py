@@ -38,7 +38,7 @@ class Test_density_planar(object):
     def test_binwidth(self, ag_single_frame, dim):
         dens = density_planar(ag_single_frame, binwidth=0.1).run()
         # Divide by 10: Å -> nm
-        n_bins = ag_single_frame.universe.dimensions[dim] / 10 // 0.1
+        n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 10 / 0.1
         assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
                             0.1,
                             decimal=2)
