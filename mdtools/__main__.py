@@ -13,6 +13,7 @@ import mdtools
 from . import __version__
 from . import __all__ as available_modules
 from .utils import get_cli_input
+from .arg_completion import complete_parser
 
 # Try to use IPython shell for debug
 try:
@@ -180,6 +181,7 @@ def main():
             )
 
         _configure_parser(selected_module, parser)
+        complete_parser(parser, selected_module)
         args = parser.parse_args(sys.argv[2:])
 
         if args.num_threads > 0:

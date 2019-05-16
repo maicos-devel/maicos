@@ -8,35 +8,34 @@ from .base import SingleGroupAnalysisBase
 
 
 class dipole_angle(SingleGroupAnalysisBase):
-    """Calculates the timeseries of the dipole moment with respect to an axis."""
+    """Calculates the timeseries of the dipole moment with respect to an axis.
 
-    def __init__(self, atomgroup, output="output", dim=2, sel='all', **kwargs):
+    :param dim (int): refernce vector for angle (x,y,z=0,1,2)
+    :param outfreq (float): Default number of frames after which output files are refreshed
+    :param output (str): Prefix for output filenames
+
+    :returns (dict): * t: time (ps)
+                     * cos_theta_i: Average cos between dipole and axis
+                     * cos_theta_ii: Average cos^2 of the same between dipole and axis
+                     * cos_theta_ij: Product cos of dipole i and cos of dipole j (i!=j)
+    """
+
+    def __init__(self,
+                 atomgroup,
+                 output="dipangle",
+                 outfreq=10000,
+                 dim=2,
+                 **kwargs):
         super(dipole_angle, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.dim = dim
-        self.sel = sel
+        self.outfreq = outfreq
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            '-d',
-            dest='dim',
-            type=int,
-            default=2,
-            help='direction normal to the surface (x,y,z=0,1,2, default: z)')
-        parser.add_argument(
-            '-dout',
-            dest='outfreq',
-            type=float,
-            default='10000',
-            help="Default number of frames after which output files "
-            "are refreshed (10000)")
-        parser.add_argument(
-            '-o',
-            dest='output',
-            type=str,
-            default='dipangle',
-            help='Prefix for output filenames')
+        parser.add_argument('-d', dest='dim')
+        parser.add_argument('-dout', dest='outfreq')
+        parser.add_argument('-o', dest='output')
 
     def _prepare(self):
         self.n_residues = self.atomgroup.residues.n_residues
@@ -68,8 +67,8 @@ class dipole_angle(SingleGroupAnalysisBase):
         self.cos_theta_i[self._frame_index] = cos_theta.mean()
         self.cos_theta_ii[self._frame_index] = trace / self.n_residues
         self.cos_theta_ij[self._frame_index] = (matrix.sum() - trace)
-        self.cos_theta_ij[self._frame_index] /= (
-            self.n_residues**2 - self.n_residues)
+        self.cos_theta_ij[self._frame_index] /= (self.n_residues**2 -
+                                                 self.n_residues)
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -87,19 +86,28 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     def _save_results(self):
 
-        savetxt(
-            "{}.dat".format(self.output),
-            np.vstack([
-                self.results["t"], self.results["cos_theta_i"],
-                self.results["cos_theta_ii"], self.results["cos_theta_ij"]
-            ]).T,
-            header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
-            fmt='%.5e')
+        savetxt("{}.dat".format(self.output),
+                np.vstack([
+                    self.results["t"], self.results["cos_theta_i"],
+                    self.results["cos_theta_ii"], self.results["cos_theta_ij"]
+                ]).T,
+                header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
+                fmt='%.5e')
 
 
 class kinetic_energy(SingleGroupAnalysisBase):
     """Calculates the timeseries for the molecular center
-       translational and rotational kinetic energy (kJ/mole)."""
+       translational and rotational kinetic energy (kJ/mole).
+
+       :param output (str): Prefix for output filenames.
+       :param refpoint (str): reference point for molecular center: center of
+                              mass (COM), center of charge (COC), or oxygen position (OXY)
+                              Note: The oxygen position only works for systems of pure water
+
+        :returns (dict): * t: time (ps)
+                         * trans: translational kinetic energy (kJ/mole)
+                         * rot: rotational kinetic energy (kJ/mole)
+        """
 
     def __init__(self, atomgroup, output="output", refpoint="COM", **kwargs):
         super(kinetic_energy, self).__init__(atomgroup, **kwargs)
@@ -107,31 +115,25 @@ class kinetic_energy(SingleGroupAnalysisBase):
         self.refpoint = refpoint
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
         parser.add_argument(
             '-o',
             dest='output',
-            type=str,
-            default='ke',
-            help='Prefix for output filenames')
-        parser.add_argument(
-            '-r',
-            dest='refpoint',
-            type=str,
-            default='COM',
-            choices=["COM", "COC", "OXY"],
-            help='reference point for molecular center: center of' +
-            ' mass (COM), center of charge (COC), or oxygen position (OXY)' +
-            'Note: The oxygen position only works for systems of pure water')
+        )
+        parser.add_argument('-r', dest='refpoint')
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
+        if self.refpoint not in ["COM", "COC", "OXY"]:
+            raise ValueError(
+                "Invalid choice for dens: '{}' (choose from 'COM', "
+                "'COC', 'OXY')".format(self.refpoint))
+
         self.atomsPerMolecule = []
         self.seg_masses = []
         self.seg_abscharges = []
         for j, seg in enumerate(self.atomgroup.segments):
-            self.atomsPerMolecule.append(
-                seg.atoms.n_atoms // seg.atoms.n_residues)
+            self.atomsPerMolecule.append(seg.atoms.n_atoms //
+                                         seg.atoms.n_residues)
             self.seg_masses.append(seg.residues.masses)
             self.seg_abscharges.append(
                 sum(
@@ -181,10 +183,10 @@ class kinetic_energy(SingleGroupAnalysisBase):
         self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
-        savetxt(
-            "{}.dat".format(self.output),
-            np.vstack(
-                [self.results["t"], self.results["trans"],
-                 self.results["rot"]]).T,
-            fmt='%.8e',
-            header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
+        savetxt("{}.dat".format(self.output),
+                np.vstack([
+                    self.results["t"], self.results["trans"],
+                    self.results["rot"]
+                ]).T,
+                fmt='%.8e',
+                header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")

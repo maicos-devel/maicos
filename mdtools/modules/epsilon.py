@@ -33,9 +33,26 @@ def Bin(a, bins):
 
 
 class epsilon_bulk(SingleGroupAnalysisBase):
-    """Computes the dipole moment flcutuations and from this the
+    r"""Computes the dipole moment flcutuations and from this the
     dielectric constant.
-    For group selections use strings in the MDAnalysis selection command style"""
+
+    :param outfreq (float): Number of frames after which the output is updated.
+    :param output (str): Prefix for output filenames.
+    :param temperature (float): temperature (K)
+    :param bpbc (bool): do not make broken molecules whole again
+                               (only works if molecule is smaller than shortest
+                                box vector
+
+   :returns (dict): * M: Directional dependant dipole moment
+                        :math:`\langle \boldsymbol M \rangle` in :math:`eÅ`.
+                    * M2: Directional dependant squared dipole moment
+                        :math:`\langle \boldsymbol M^2 \rangle` in :math:`(eÅ)^2`
+                    * fluct: Directional dependant dipole moment fluctuation
+                            :math:`\langle \boldsymbol M^2 \rangle - \langle \boldsymbol M \rangle^2`
+                            in :math:`(eÅ)^2`
+                    * eps: Directional dependant static dielectric constant
+                    * eps_mean: Static dielectric constant
+    """
 
     def __init__(self,
                  atomgroup,
@@ -51,31 +68,10 @@ class epsilon_bulk(SingleGroupAnalysisBase):
         self.output = output
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
-        parser.add_argument(
-            '-dout',
-            dest='outfreq',
-            type=float,
-            default=100,
-            help='Number of frames after which the output is updated.')
-        parser.add_argument(
-            '-o',
-            dest='output',
-            type=str,
-            default='eps',
-            help='Prefix for output filenames')
-        parser.add_argument(
-            '-temp',
-            dest='temperature',
-            type=float,
-            default=300,
-            help='temperature (K)')
-        parser.add_argument(
-            '-nopbcrepair',
-            dest='bpbc',
-            action='store_false',
-            help='do not make broken molecules whole again ' +
-            '(only works if molecule is smaller than shortest box vector')
+        parser.add_argument('-dout', dest='outfreq')
+        parser.add_argument('-o', dest='output')
+        parser.add_argument('-temp', dest='temperature')
+        parser.add_argument('-nopbcrepair', dest='bpbc')
 
     def _prepare(self):
         self.volume = 0
@@ -146,15 +142,40 @@ class epsilon_bulk(SingleGroupAnalysisBase):
             print("")
 
     def _save_results(self):
-        savetxt(
-            self.output + '.dat',
-            np.hstack([self.results["eps_mean"], self.results["eps"]]).T,
-            fmt='%1.2f',
-            header='eps\teps_x\teps_y\teps_z')
+        savetxt(self.output + '.dat',
+                np.hstack([self.results["eps_mean"], self.results["eps"]]).T,
+                fmt='%1.2f',
+                header='eps\teps_x\teps_y\teps_z')
 
 
 class epsilon_planar(MultiGroupAnalysisBase):
-    """Calculate the dielectric profile. See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details."""
+    """Calculate the dielectric profile.
+       See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
+
+        :param output (str): Prefix for output filenames
+        :param binwidth (float): binwidth (nm)
+        :param dim (int): direction normal to the surface (x,y,z=0,1,2, default: z)
+        :param zmin (float): minimal z-coordinate for evaluation (nm)
+        :param zmax (float): maximal z-coordinate for evaluation (nm)
+        :param temperature (float): temperature (K)
+        :param outfreq (int): Default number of frames after which output files are refreshed.
+        :param b2d (bool): Use 2d slab geometry
+        :param vac (bool): Use vacuum boundary conditions instead of metallic (2D only!).
+        :param bsym (bool): symmetrize the profiles
+        :param membrane_shift (bool): shift system by half a box length
+                                      (useful for membrane simulations)
+        :param com (bool): Shift system such that the water COM is centered
+        :param bpbc (bool): Do not make broken molecules whole again (only works if
+                            molecule is smaller than shortest box vector
+
+        :returns (dict): * z: Bin positions
+                         * eps_par: Parallel dielectric profile (ε_∥ - 1)
+                         * eps_par_self: Self contribution of parallel dielectric profile
+                         * eps_par_coll: Collective contribution of parallel dielectric profile
+                         * eps_perp: Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
+                         * eps_par_self: Self contribution of Inverse perpendicular dielectric profile
+                         * eps_perp_coll: Collective contribution of Inverse perpendicular dielectric profile
+    """
 
     def __init__(self,
                  atomgroups,
@@ -189,92 +210,19 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            '-dz',
-            dest='binwidth',
-            type=float,
-            default=0.05,
-            help='specify the binwidth [nm]')
-        parser.add_argument(
-            '-d',
-            dest='dim',
-            type=int,
-            default=2,
-            help='direction normal to the surface (x,y,z=0,1,2, default: z)')
-        parser.add_argument(
-            '-zmin',
-            dest='zmin',
-            type=float,
-            default=0,
-            help='minimal z-coordinate for evaluation [nm]')
-        parser.add_argument(
-            '-zmax',
-            dest='zmax',
-            type=float,
-            default=-1,
-            help='maximal z-coordinate for evaluation [nm]')
-        parser.add_argument(
-            '-temp',
-            dest='temperature',
-            type=float,
-            default=300,
-            help='temperature [K]')
-        parser.add_argument(
-            '-o',
-            dest='output',
-            type=str,
-            default='eps',
-            help='Prefix for output filenames')
-        parser.add_argument(
-            '-dout',
-            dest='outfreq',
-            type=float,
-            default=10000,
-            help="Default number of frames after which output "
-            "files are refreshed (10000)")
-        parser.add_argument(
-            '-2d',
-            dest='b2d',
-            action='store_const',
-            const=True,
-            default=False,
-            help='use 2d slab geometry')
-        parser.add_argument(
-            '-vac',
-            dest='vac',
-            action='store_const',
-            const=True,
-            default=False,
-            help='use vacuum boundary conditions instead of metallic (2D only!).'
-        )
-        parser.add_argument(
-            '-sym',
-            dest='bsym',
-            action='store_const',
-            const=True,
-            default=False,
-            help='symmetrize the profiles')
-        parser.add_argument(
-            '-shift',
-            dest='membrane_shift',
-            action='store_const',
-            const=True,
-            default=False,
-            help="shift system by half a box length "
-            "(useful for membrane simulations)")
-        parser.add_argument(
-            '-com',
-            dest='com',
-            action='store_const',
-            const=True,
-            default=False,
-            help='shift system such that the water COM is centered')
-        parser.add_argument(
-            '-nopbcrepair',
-            dest='bpbc',
-            action='store_false',
-            help="Do not make broken molecules whole again (only works if "
-            "molecule is smaller than shortest box vector")
+        parser.add_argument('-o', dest='output')
+        parser.add_argument('-dz', dest='binwidth')
+        parser.add_argument('-d', dest='dim')
+        parser.add_argument('-zmin', dest='zmin')
+        parser.add_argument('-zmax', dest='zmax')
+        parser.add_argument('-temp', dest='temperature')
+        parser.add_argument('-dout', dest='outfreq')
+        parser.add_argument('-2d', dest='b2d')
+        parser.add_argument('-vac', dest='vac')
+        parser.add_argument('-sym', dest='bsym')
+        parser.add_argument('-shift', dest='membrane_shift')
+        parser.add_argument('-com', dest='com')
+        parser.add_argument('-nopbcrepair', dest='bpbc')
 
     def _prepare(self):
         if self._verbose:
@@ -314,8 +262,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.M_par = np.zeros((self.resample))
 
         # Same for perpendicular
-        self.m_perp = np.zeros((self.nbins, len(self.atomgroups),
-                                self.resample))
+        self.m_perp = np.zeros(
+            (self.nbins, len(self.atomgroups), self.resample))
         self.mM_perp = np.zeros((self.nbins, len(self.atomgroups),
                                  self.resample))  # total fluctuations
         self.mm_perp = np.zeros((self.nbins, len(self.atomgroups)))  # self
@@ -370,13 +318,13 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            bins = ((sel.atoms.positions[:, self.dim] - self.zmin) / (
-                (zmax - self.zmin) / (self.nbins))).astype(int)
+            bins = ((sel.atoms.positions[:, self.dim] - self.zmin) /
+                    ((zmax - self.zmin) / (self.nbins))).astype(int)
             bins[np.where(bins < 0)] = 0  # put all charges back inside box
             bins[np.where(bins >= self.nbins)] = self.nbins - 1
-            curQ = np.histogram(
-                bins, bins=np.arange(self.nbins + 1),
-                weights=sel.atoms.charges)[0]
+            curQ = np.histogram(bins,
+                                bins=np.arange(self.nbins + 1),
+                                weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / self.A)
             self.m_perp[:, i, self._frame_index //
                         self.resample_freq] += this_m_perp
@@ -405,8 +353,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             testpos[:, self.dim] = np.repeat(centers[:, self.dim],
                                              atomsPerMolecule)
             binsz = (((testpos[:, self.dim] - self.zmin) %
-                      self._ts.dimensions[self.dim]) / (
-                          (zmax - self.zmin) / self.nbins)).astype(int)
+                      self._ts.dimensions[self.dim]) /
+                     ((zmax - self.zmin) / self.nbins)).astype(int)
 
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
@@ -415,19 +363,17 @@ class epsilon_planar(MultiGroupAnalysisBase):
                 # put all charges back inside box
                 binsx[np.where(binsx < 0)] = 0
                 binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
-                curQx = np.histogram2d(
-                    binsz,
-                    binsx,
-                    bins=[
-                        np.arange(0, self.nbins + 1),
-                        np.arange(0, nbinsx + 1)
-                    ],
-                    weights=sel.atoms.charges)[0]
-                curqx = np.cumsum(
-                    curQx,
-                    axis=1) / (self._ts.dimensions[self.xydims[1 - j]] *
-                               (self._ts.dimensions[self.dim] / self.nbins)
-                              )  # integral over x, so uniself._ts of area
+                curQx = np.histogram2d(binsz,
+                                       binsx,
+                                       bins=[
+                                           np.arange(0, self.nbins + 1),
+                                           np.arange(0, nbinsx + 1)
+                                       ],
+                                       weights=sel.atoms.charges)[0]
+                curqx = np.cumsum(curQx, axis=1) / (
+                    self._ts.dimensions[self.xydims[1 - j]] *
+                    (self._ts.dimensions[self.dim] / self.nbins)
+                )  # integral over x, so uniself._ts of area
                 this_m_par = -curqx.mean(axis=1)
 
                 self.m_par[:, i, self._frame_index //
@@ -471,8 +417,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
         cov_perp_coll = self.cmM_perp / self._index - \
             self.m_perp.sum(axis=2) / self._index * self.cM_perp / self._index
 
-        var_perp = self.M_perp_2.sum() / self._index - (
-            self.M_perp.sum() / self._index)**2
+        var_perp = self.M_perp_2.sum() / self._index - (self.M_perp.sum() /
+                                                        self._index)**2
         dvar_perp = (self.M_perp_2 / self._index - (self.M_perp / self._index)**2).std() \
             / np.sqrt(self.resample - 1)
 
@@ -569,14 +515,41 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
 
 class dielectric_spectrum(SingleGroupAnalysisBase):
-    """This module, given molecular dynamics trajectory data, produces a
+    """Computes the linear dielectric spectrum.
+
+        This module, given molecular dynamics trajectory data, produces a
         .txt file containing the complex dielectric function as a function of the (linear, not radial -
         i.e. nu or f, rather than omega) frequency, along with the associated standard deviations.
-        The algorithm is based on the Fluctuation Dissipation Relation (FDR):\
-        chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.\
+        The algorithm is based on the Fluctuation Dissipation Relation (FDR):
+        chi(f) = -1/(3 V k_B T epsilon_0) FT{theta(t) <P(0) dP(t)/dt>}.
         By default, the polarization trajectory, time series array and the average system volume are
         saved in the working directory, and the data are reloaded from these files if they are present.
-        Lin-log and log-log plots of the susceptibility are also produced by default."""
+        Lin-log and log-log plots of the susceptibility are also produced by default.
+
+        :param recalc (bool): Forces to recalculate the polarization,
+                              regardless if it is already present.
+        :param temperature (float): Reference temperature.
+        :param output (str): Prefix for the output files.
+        :param segs (int): Sets the number of segments the trajectory is broken into.
+        :param df (float): The desired frequency spacing in THz.
+                           This determines the minimum frequency about which there
+                           is data. Overrides -segs option.
+        :param noplots (bool): Prevents plots from being generated.
+        :param plotformat (bool): Allows the user to choose the format of generated plots.
+        :param ymin (float): Manually sets the minimum lower bound for the log-log plot.
+        :param bins (int): Determines the number of bins used for data averaging;
+                           (this parameter sets the upper limit).
+                           The data are by default binned logarithmically.
+                           This helps to reduce noise, particularly in
+                           the high-frequency domain, and also prevents plot
+                           files from being too large.
+        :param binafter (int): The number of low-frequency data points that are
+                              left unbinned.
+        :param nobin (bool): Prevents the data from being binned altogether. This
+                             can result in very large plot files and errors.
+
+        :returns (dict): TODO
+    """
 
     # TODO set up script to calc spectrum at intervals while calculating polarization
     # for very big-data trajectories
@@ -585,9 +558,9 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
     def __init__(self,
                  atomgroup,
+                 recalc=False,
                  temperature=300,
                  output="",
-                 use=None,
                  segs=20,
                  df=None,
                  noplots=False,
@@ -600,7 +573,6 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
         self.temperature = temperature
         self.output = output
-        self.use = use
         self.segs = segs
         self.df = df
         self.noplots = noplots
@@ -612,69 +584,24 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
     def _configure_parser(self, parser):
         parser.description = self.__doc__
-        parser.add_argument(
-            "-recalc",
-            action="store_true",
-            help="Forces to recalculate the polarization, "
-            "regardless if it is already present.")
-        parser.add_argument(
-            '-temp',
-            dest='temperature',
-            type=float,
-            default=300,
-            help='Reference temperature.')
-        parser.add_argument(
-            "-o",
-            dest="output",
-            default="",
-            help="Prefix for the output files.")
-        parser.add_argument(
-            "-segs",
-            type=int,
-            default=20,
-            help="Sets the number of segments the trajectory is broken into.")
-        parser.add_argument(
-            "-df",
-            type=float,
-            help="The desired frequency spacing in THz. "
-            "This determines the minimum frequency about which there "
-            "is data. Overrides -segs option.")
-        parser.add_argument(
-            "-noplots",
-            action="store_true",
-            help="Prevents plots from being generated.")
-        parser.add_argument(
-            "-plotformat",
-            default="pdf",
-            choices=["png", "pdf", "ps", "eps", "svg"],
-            help="Allows the user to choose the format of generated plots.")
-        parser.add_argument(
-            "-ymin",
-            type=float,
-            help="Manually sets the minimum lower bound for the log-log plot.")
-        parser.add_argument(
-            "-bins",
-            type=int,
-            default=200,
-            help="Determines the number of bins used for data averaging;"
-            "(this parameter sets the upper limit)."
-            "The data are by default binned logarithmically. "
-            "This helps to reduce noise, particularly in"
-            "the high-frequency domain, and also prevents plot files from being too large."
-        )
-        parser.add_argument(
-            "-binafter",
-            type=int,
-            default=20,
-            help="The number of low-frequency data points that are "
-            "left unbinned.")
-        parser.add_argument(
-            "-nobin",
-            action="store_true",
-            help="Prevents the data from being binned altogether. This "
-            "can result in very large plot files and errors.")
+        parser.add_argument("-recalc", dest="recalc")
+        parser.add_argument('-temp', dest='temperature')
+        parser.add_argument("-o", dest="output")
+        parser.add_argument("-segs", dest="segs")
+        parser.add_argument("-df", dest="df")
+        parser.add_argument("-noplots", dest="noplots")
+        parser.add_argument("-plotformat", dest="plotformat")
+        parser.add_argument("-ymin", dest="ymin")
+        parser.add_argument("-bins", dest="bins")
+        parser.add_argument("-binafter", dest="binafter")
+        parser.add_argument("-nobin", dest="nobin")
 
     def _prepare(self):
+        if self.plotformat not in ["pdf, png, jpg"]:
+            raise ValueError(
+                "Invalid choice for potformat: '{}' (choose from 'pdf', "
+                "'png', 'jpg')".format(self.plotformat))
+
         if len(self.output) > 0:
             self.output += "_"
 
@@ -755,8 +682,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
             # Get the real part by Kramers Kronig
             ss.real = iFT(
-                self.results["t"], 1j * np.sign(self.results["nu"]) * FT(
-                    self.results["nu"], ss, False), False).imag
+                self.results["t"], 1j * np.sign(self.results["nu"]) *
+                FT(self.results["nu"], ss, False), False).imag
 
             if s == 0:
                 self.results["susc"] += ss[self.seglen:]
@@ -836,17 +763,17 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         if not (self.nobin or self.seglen <= self.bins):
 
             suscfilename = self.output + 'susc_binned.txt'
-            savetxt(
-                suscfilename,
-                np.transpose([
-                    self.results["nu_binned"], self.results["susc_binned"].real,
-                    self.results["dsusc_binned"].real,
-                    self.results["susc_binned"].imag,
-                    self.results["dsusc_binned"].imag
-                ]),
-                delimiter='\t',
-                header="freq\tsusc\'\tstd_dev_susc\'\t-"
-                "susc\'\'\tstd_dev_susc\'\'")
+            savetxt(suscfilename,
+                    np.transpose([
+                        self.results["nu_binned"],
+                        self.results["susc_binned"].real,
+                        self.results["dsusc_binned"].real,
+                        self.results["susc_binned"].imag,
+                        self.results["dsusc_binned"].imag
+                    ]),
+                    delimiter='\t',
+                    header="freq\tsusc\'\tstd_dev_susc\'\t-"
+                    "susc\'\'\tstd_dev_susc\'\'")
 
             if self._verbose:
                 print('Binned susceptibility data saved as ' + suscfilename)
@@ -886,51 +813,45 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                 ax.set_xscale('log')
                 ax.set_yscale(yscale)
 
-                ax.fill_between(
-                    self.results["nu" + element][1:],
-                    self.results["susc" + element].real[1:] -
-                    self.results["dsusc" + element].real[1:],
-                    self.results["susc" + element].real[1:] +
-                    self.results["dsusc" + element].real[1:],
-                    color=col2,
-                    alpha=shade)
-                ax.fill_between(
-                    self.results["nu" + element][1:],
-                    self.results["susc" + element].imag[1:] -
-                    self.results["dsusc" + element].imag[1:],
-                    self.results["susc" + element].imag[1:] +
-                    self.results["dsusc" + element].imag[1:],
-                    color=col1,
-                    alpha=shade)
+                ax.fill_between(self.results["nu" + element][1:],
+                                self.results["susc" + element].real[1:] -
+                                self.results["dsusc" + element].real[1:],
+                                self.results["susc" + element].real[1:] +
+                                self.results["dsusc" + element].real[1:],
+                                color=col2,
+                                alpha=shade)
+                ax.fill_between(self.results["nu" + element][1:],
+                                self.results["susc" + element].imag[1:] -
+                                self.results["dsusc" + element].imag[1:],
+                                self.results["susc" + element].imag[1:] +
+                                self.results["dsusc" + element].imag[1:],
+                                color=col1,
+                                alpha=shade)
 
-                ax.plot(
-                    self.results["nu" + element][:2],
-                    self.results["susc" + element].real[:2],
-                    color=col2,
-                    alpha=curve,
-                    linestyle=':',
-                    linewidth=lw)
-                ax.plot(
-                    self.results["nu" + element][:2],
-                    self.results["susc" + element].imag[:2],
-                    color=col1,
-                    alpha=curve,
-                    linestyle=':',
-                    linewidth=lw)
-                ax.plot(
-                    self.results["nu" + element][1:],
-                    self.results["susc" + element].real[1:],
-                    color=col2,
-                    alpha=curve,
-                    label=cp,
-                    linewidth=lw)
-                ax.plot(
-                    self.results["nu" + element][1:],
-                    self.results["susc" + element].imag[1:],
-                    color=col1,
-                    alpha=curve,
-                    label=cpp,
-                    linewidth=lw)
+                ax.plot(self.results["nu" + element][:2],
+                        self.results["susc" + element].real[:2],
+                        color=col2,
+                        alpha=curve,
+                        linestyle=':',
+                        linewidth=lw)
+                ax.plot(self.results["nu" + element][:2],
+                        self.results["susc" + element].imag[:2],
+                        color=col1,
+                        alpha=curve,
+                        linestyle=':',
+                        linewidth=lw)
+                ax.plot(self.results["nu" + element][1:],
+                        self.results["susc" + element].real[1:],
+                        color=col2,
+                        alpha=curve,
+                        label=cp,
+                        linewidth=lw)
+                ax.plot(self.results["nu" + element][1:],
+                        self.results["susc" + element].imag[1:],
+                        color=col1,
+                        alpha=curve,
+                        label=cpp,
+                        linewidth=lw)
 
                 if self._i == 0 and (self.ymin is not None):
                     plt.set_ylim(ymin=self.ymin)
