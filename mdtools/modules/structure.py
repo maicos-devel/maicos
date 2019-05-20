@@ -462,7 +462,7 @@ class diporder(SingleGroupAnalysisBase):
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.add_argument('-dz',dest='binwidth')
+        parser.add_argument('-dz', dest='binwidth')
         parser.add_argument('-d', dest='dim')
         parser.add_argument('-o', dest='output')
         parser.add_argument('-dout', dest="outfreq")
