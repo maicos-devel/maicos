@@ -416,10 +416,25 @@ class diporder(SingleGroupAnalysisBase):
     diporder saves the (summed) projected polarization density in the results
     dictionary containing the following attributes: z; diporder
 
-    diporder:
-        0 P_0 rho(z) cos(Theta(z))
-        1 cos(Theta(z))
-        2 rho(z)
+    :param binwidth (float): specify the binwidth [nm]
+    :param dim (int): direction normal to the surface (x,y,z=0,1,2)
+    :param output (str): Prefix for output filenames
+    :param outfreq (int): Default number of frames after which output files are
+                         refreshed
+    :param bsym (bool): symmetrize the profiles
+    :param center (bool): Shift system by half a box length (useful for
+                          membrane simulations
+    :param com (bool): shift system such that the water COM is centered
+    :param binmethod (str): binning method: center of Mass (COM), center of charge (COC)
+                            or oxygen position (OXY)
+    :param bpbc (bool): do not make broken molecules whole again
+                       (only works if molecule is smaller than shortest box vector
+
+
+   :returns (dict): * z: bins
+                    * diporder: 0: P_0 rho(z) cos(Theta(z))
+                                1: cos(Theta(z))
+                                2: rho(z)
     """
 
     def __init__(self,
@@ -431,7 +446,7 @@ class diporder(SingleGroupAnalysisBase):
                  bsym=False,
                  center=False,
                  com=False,
-                 binmethod='com',
+                 binmethod='COM',
                  bpbc=False,
                  **kwargs):
         super(diporder, self).__init__(atomgroup, **kwargs)
@@ -447,69 +462,20 @@ class diporder(SingleGroupAnalysisBase):
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
-        parser.add_argument('-dz',
-                            dest='binwidth',
-                            type=float,
-                            default=0.01,
-                            help='specify the binwidth [nm]')
-        parser.add_argument(
-            '-d',
-            dest='dim',
-            type=int,
-            default=2,
-            help='direction normal to the surface (x,y,z=0,1,2, default: z)')
-        parser.add_argument('-o',
-                            dest='output',
-                            type=str,
-                            default='diporder',
-                            help='Prefix for output filenames')
-        parser.add_argument(
-            '-dout',
-            dest='outfreq',
-            type=float,
-            default='10000',
-            help="Default number of frames after which output files are "
-            "refreshed (10000)")
-        parser.add_argument('-sym',
-                            dest='bsym',
-                            action='store_const',
-                            const=True,
-                            default=False,
-                            help='symmetrize the profiles')
-        parser.add_argument(
-            '-shift',
-            dest='center',
-            action='store_const',
-            const=True,
-            default=False,
-            help="Shift system by half a box length (useful for "
-            "membrane simulations)")
-        parser.add_argument(
-            '-com',
-            dest='com',
-            action='store_const',
-            const=True,
-            default=False,
-            help='shift system such that the water COM is centered')
-        parser.add_argument(
-            '-bin',
-            dest='binmethod',
-            type=str,
-            default='COM',
-            choices=["COM", "COC", "OXY"],
-            help="binning method: center of Mass (COM), center of charge (COC) "
-            "or oxygen position (OXY)")
-        parser.add_argument(
-            '-nopbcrepair',
-            dest='bpbc',
-            action='store_false',
-            help='do not make broken molecules whole again ' +
-            '(only works if molecule is smaller than shortest box vector')
+        parser.add_argument('-dz',dest='binwidth')
+        parser.add_argument('-d', dest='dim')
+        parser.add_argument('-o', dest='output')
+        parser.add_argument('-dout', dest="outfreq")
+        parser.add_argument('-sym', dest='bsym')
+        parser.add_argument('-shift', dest='center')
+        parser.add_argument('-com', dest='com')
+        parser.add_argument('-bin', dest='binmethod')
+        parser.add_argument('-nopbcrepair', dest='bpbc')
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
 
+        self.binmethod = self.binmethod.upper()
         if self.binmethod not in ["COM", "COC", "OXY"]:
             raise ValueError('Unknown binning method: {}'.format(
                 self.binmethod))
