@@ -152,29 +152,29 @@ class epsilon_planar(MultiGroupAnalysisBase):
     """Calculate the dielectric profile.
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
 
-        :param output (str): Prefix for output filenames
-        :param binwidth (float): binwidth (nm)
-        :param dim (int): direction normal to the surface (x,y,z=0,1,2, default: z)
-        :param zmin (float): minimal z-coordinate for evaluation (nm)
-        :param zmax (float): maximal z-coordinate for evaluation (nm)
-        :param temperature (float): temperature (K)
-        :param outfreq (int): Default number of frames after which output files are refreshed.
-        :param b2d (bool): Use 2d slab geometry
-        :param vac (bool): Use vacuum boundary conditions instead of metallic (2D only!).
-        :param bsym (bool): symmetrize the profiles
-        :param membrane_shift (bool): shift system by half a box length
-                                      (useful for membrane simulations)
-        :param com (bool): Shift system such that the water COM is centered
-        :param bpbc (bool): Do not make broken molecules whole again (only works if
-                            molecule is smaller than shortest box vector
+    :param output (str): Prefix for output filenames
+    :param binwidth (float): binwidth (nm)
+    :param dim (int): direction normal to the surface (x,y,z=0,1,2, default: z)
+    :param zmin (float): minimal z-coordinate for evaluation (nm)
+    :param zmax (float): maximal z-coordinate for evaluation (nm)
+    :param temperature (float): temperature (K)
+    :param outfreq (int): Default number of frames after which output files are refreshed.
+    :param b2d (bool): Use 2d slab geometry
+    :param vac (bool): Use vacuum boundary conditions instead of metallic (2D only!).
+    :param bsym (bool): symmetrize the profiles
+    :param membrane_shift (bool): shift system by half a box length
+                                  (useful for membrane simulations)
+    :param com (bool): Shift system such that the water COM is centered
+    :param bpbc (bool): Do not make broken molecules whole again (only works if
+                        molecule is smaller than shortest box vector
 
-        :returns (dict): * z: Bin positions
-                         * eps_par: Parallel dielectric profile (ε_∥ - 1)
-                         * eps_par_self: Self contribution of parallel dielectric profile
-                         * eps_par_coll: Collective contribution of parallel dielectric profile
-                         * eps_perp: Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
-                         * eps_par_self: Self contribution of Inverse perpendicular dielectric profile
-                         * eps_perp_coll: Collective contribution of Inverse perpendicular dielectric profile
+    :returns (dict): * z: Bin positions
+                     * eps_par: Parallel dielectric profile (ε_∥ - 1)
+                     * eps_par_self: Self contribution of parallel dielectric profile
+                     * eps_par_coll: Collective contribution of parallel dielectric profile
+                     * eps_perp: Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
+                     * eps_par_self: Self contribution of Inverse perpendicular dielectric profile
+                     * eps_perp_coll: Collective contribution of Inverse perpendicular dielectric profile
     """
 
     def __init__(self,
@@ -209,7 +209,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
         parser.add_argument('-o', dest='output')
         parser.add_argument('-dz', dest='binwidth')
         parser.add_argument('-d', dest='dim')
@@ -583,7 +582,6 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         self.nobin = nobin
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
         parser.add_argument("-recalc", dest="recalc")
         parser.add_argument('-temp', dest='temperature')
         parser.add_argument("-o", dest="output")
