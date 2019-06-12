@@ -53,18 +53,18 @@ def main():
         sys.exit(0)
 
     parser = argparse.ArgumentParser(
-        description="""
-        A collection of scripts to analyse molecular dynamics simulations.""",
+        description="A collection of scripts to analyse molecular "
+        "dynamics simulations.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("program",
                         type=str,
                         help="Program to start",
                         choices=available_modules)
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help="Run with debug options. Will start an interactive Python "
-        "interpreter at the end of the program.")
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help="Run with debug options. Will start an "
+                        "interactive Python interpreter at the end of "
+                        "the program.")
     parser.add_argument('--version',
                         action='version',
                         version="mdtools {}".format(__version__))
@@ -93,37 +93,36 @@ def main():
                         dest="topology",
                         type=str,
                         default="topol.tpr",
-                        help="The topolgy file. The FORMATs " +
-                        "           {}".format(", ".join(mda._PARSERS.keys())) +
-                        "           are implemented in MDAnalysis.")
+                        help="The topolgy file. "
+                        "The FORMATs {} are implemented in MDAnalysis."
+                        "".format(", ".join(mda._PARSERS.keys())))
     parser.add_argument("-top",
                         dest="topology_format",
                         type=str,
                         default=None,
-                        help="Override automatic topology type detection." +
+                        help="Override automatic topology type detection. "
                         "See topology for implemented formats")
-    parser.add_argument(
-        "-f",
-        dest="trajectory",
-        type=str,
-        default=None,
-        nargs="+",
-        help="A single or multiple trajectory files. The FORMATs " +
-        "           {}".format(", ".join(mda._READERS.keys())) +
-        "           are implemented in MDAnalysis.")
+    parser.add_argument("-f",
+                        dest="trajectory",
+                        type=str,
+                        default=None,
+                        nargs="+",
+                        help="A single or multiple trajectory files. "
+                        "The FORMATs {} are implemented in MDAnalysis."
+                        "".format(", ".join(mda._READERS.keys())))
     parser.add_argument("-traj",
                         dest="trajectory_format",
                         type=str,
                         default=None,
-                        help="Override automatic trajectory type detection." +
+                        help="Override automatic trajectory type detection. "
                         "See trajectory for implemented formats")
-    parser.add_argument(
-        "-atom_style",
-        dest="atom_style",
-        type=str,
-        default='None',
-        help="Manually set the atom_style information (currently only LAMMPS "
-        "parser). E.g. atom_style='id type x y z'.")
+    parser.add_argument("-atom_style",
+                        dest="atom_style",
+                        type=str,
+                        default='None',
+                        help="Manually set the atom_style information"
+                        "(currently only LAMMPS parser)."
+                        "E.g. atom_style='id type x y z'.")
     parser.add_argument("-b",
                         dest="begin",
                         type=float,
@@ -134,20 +133,20 @@ def main():
                         type=float,
                         default=None,
                         help="end time (ps) for evaluation.")
-    parser.add_argument(
-        "-dt",
-        dest="dt",
-        type=float,
-        default=0,
-        help="time step (ps) to read analysis frame. If `0` take all frames")
-    parser.add_argument(
-        "-box",
-        dest="box",
-        type=float,
-        default=None,
-        nargs="+",
-        help="Sets the box dimensions x y z [alpha beta gamma] (Å)." +
-        "If 'None' dimensions from the trajectory will be used.")
+    parser.add_argument("-dt",
+                        dest="dt",
+                        type=float,
+                        default=0,
+                        help="time step (ps) to read analysis frame. "
+                        "If `0` take all frames")
+    parser.add_argument("-box",
+                        dest="box",
+                        type=float,
+                        default=None,
+                        nargs="+",
+                        help="Sets the box dimensions x y z [alpha beta gamma]"
+                        "(Å). If 'None' dimensions from the trajectory "
+                        "will be used.")
     parser.add_argument("-nt",
                         dest="num_threads",
                         type=int,
@@ -247,14 +246,14 @@ def main():
 
         ana_obj.run(begin=args.begin, end=args.end, dt=args.dt)
 
+        if args.num_threads > 0:
+            del os.environ["OMP_NUM_THREADS"]
+
     except Exception as e:
         if debug:
             traceback.print_exc()
         else:
             print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))
-
-    if args.num_threads > 0:
-        del os.environ["OMP_NUM_THREADS"]
 
     if debug:
         # Inject local variables into global namespace for debugging.
