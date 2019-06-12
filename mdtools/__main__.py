@@ -48,23 +48,26 @@ def main():
 
     if '--bash_completion' in sys.argv:
         print(
-            os.path.join(
-                os.path.dirname(__file__), "share/mdtools-completion.bash"))
+            os.path.join(os.path.dirname(__file__),
+                         "share/mdtools-completion.bash"))
         sys.exit(0)
 
     parser = argparse.ArgumentParser(
         description="""
         A collection of scripts to analyse molecular dynamics simulations.""",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        "program", type=str, help="Program to start", choices=available_modules)
+    parser.add_argument("program",
+                        type=str,
+                        help="Program to start",
+                        choices=available_modules)
     parser.add_argument(
         '--debug',
         action='store_true',
         help="Run with debug options. Will start an interactive Python "
         "interpreter at the end of the program.")
-    parser.add_argument(
-        '--version', action='version', version="mdtools {}".format(__version__))
+    parser.add_argument('--version',
+                        action='version',
+                        version="mdtools {}".format(__version__))
 
     try:
         sys.argv.remove("--debug")
@@ -86,21 +89,19 @@ def main():
         prog="mdtools " + sys.argv[1],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument(
-        "-s",
-        dest="topology",
-        type=str,
-        default="topol.tpr",
-        help="The topolgy file. The FORMATs " + "           {}".format(
-            ", ".join(mda._PARSERS.keys())) +
-        "           are implemented in MDAnalysis.")
-    parser.add_argument(
-        "-top",
-        dest="topology_format",
-        type=str,
-        default=None,
-        help="Override automatic topology type detection." +
-        "See topology for implemented formats")
+    parser.add_argument("-s",
+                        dest="topology",
+                        type=str,
+                        default="topol.tpr",
+                        help="The topolgy file. The FORMATs " +
+                        "           {}".format(", ".join(mda._PARSERS.keys())) +
+                        "           are implemented in MDAnalysis.")
+    parser.add_argument("-top",
+                        dest="topology_format",
+                        type=str,
+                        default=None,
+                        help="Override automatic topology type detection." +
+                        "See topology for implemented formats")
     parser.add_argument(
         "-f",
         dest="trajectory",
@@ -108,15 +109,14 @@ def main():
         default=None,
         nargs="+",
         help="A single or multiple trajectory files. The FORMATs " +
-        "           {}".format(", ".join(
-            mda._READERS.keys())) + "           are implemented in MDAnalysis.")
-    parser.add_argument(
-        "-traj",
-        dest="trajectory_format",
-        type=str,
-        default=None,
-        help="Override automatic trajectory type detection." +
-        "See trajectory for implemented formats")
+        "           {}".format(", ".join(mda._READERS.keys())) +
+        "           are implemented in MDAnalysis.")
+    parser.add_argument("-traj",
+                        dest="trajectory_format",
+                        type=str,
+                        default=None,
+                        help="Override automatic trajectory type detection." +
+                        "See trajectory for implemented formats")
     parser.add_argument(
         "-atom_style",
         dest="atom_style",
@@ -124,18 +124,16 @@ def main():
         default='None',
         help="Manually set the atom_style information (currently only LAMMPS "
         "parser). E.g. atom_style='id type x y z'.")
-    parser.add_argument(
-        "-b",
-        dest="begin",
-        type=float,
-        default=0,
-        help="start time (ps) for evaluation.")
-    parser.add_argument(
-        "-e",
-        dest="end",
-        type=float,
-        default=None,
-        help="end time (ps) for evaluation.")
+    parser.add_argument("-b",
+                        dest="begin",
+                        type=float,
+                        default=0,
+                        help="start time (ps) for evaluation.")
+    parser.add_argument("-e",
+                        dest="end",
+                        type=float,
+                        default=None,
+                        help="end time (ps) for evaluation.")
     parser.add_argument(
         "-dt",
         dest="dt",
@@ -150,12 +148,11 @@ def main():
         nargs="+",
         help="Sets the box dimensions x y z [alpha beta gamma] (Å)." +
         "If 'None' dimensions from the trajectory will be used.")
-    parser.add_argument(
-        "-nt",
-        dest="num_threads",
-        type=int,
-        default=0,
-        help="Total number of threads to start (0 is guess)")
+    parser.add_argument("-nt",
+                        dest="num_threads",
+                        type=int,
+                        default=0,
+                        help="Total number of threads to start (0 is guess)")
 
     try:
         _configure_parser = getattr(selected_module, "_configure_parser")
@@ -195,8 +192,9 @@ def main():
         if args.atom_style is not None:
             ukwargs['atom_style'] = args.atom_style
 
-        u = mda.Universe(
-            args.topology, topology_format=args.topology_format, **ukwargs)
+        u = mda.Universe(args.topology,
+                         topology_format=args.topology_format,
+                         **ukwargs)
         if args.trajectory is not None:
             u.load_new(args.trajectory, format=args.trajectory_format)
         print("Done!\n")
@@ -241,8 +239,9 @@ def main():
         # Insert parser arguments into ana_obj
         for var in vars(args):
             if var not in [
-                    "topology", "trajectory", "topology_format", "begin", "end",
-                    "skipframes", "box", "selection"
+                    "topology", "topology_format", "trajectory",
+                    "trajectory_format", "atom_style", "begin", "end", "dt",
+                    "box", "selection"
             ]:
                 vars(ana_obj)[var] = vars(args)[var]
 

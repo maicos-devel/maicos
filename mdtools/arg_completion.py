@@ -145,8 +145,8 @@ def complete_parser(parser, module):
 
                     parser.add_argument(*option_strings,
                                         dest=action.dest,
-                                        action='store_const',
-                                        const=True,
+                                        action='store_' +
+                                        str(not param_dict["default"]).lower(),
                                         default=param_dict["default"],
                                         help=param_dict["doc"])
 
