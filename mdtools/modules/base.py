@@ -85,10 +85,9 @@ class _AnalysisBase(base.AnalysisBase):
             interval = 1
 
         verbose = getattr(self, '_verbose', False)
-        self._pm = ProgressMeter(
-            self.n_frames if self.n_frames else 1,
-            interval=interval,
-            verbose=verbose)
+        self._pm = ProgressMeter(self.n_frames if self.n_frames else 1,
+                                 interval=interval,
+                                 verbose=verbose)
 
     def _configure_parser(self, parser):
         """Adds parser options using an argparser object"""
@@ -145,8 +144,8 @@ class SingleGroupAnalysisBase(_AnalysisBase):
     _allow_multiple_atomgroups = False
 
     def __init__(self, atomgroup, **kwargs):
-        super(SingleGroupAnalysisBase, self).__init__(
-            atomgroup.universe.trajectory, **kwargs)
+        super(SingleGroupAnalysisBase,
+              self).__init__(atomgroup.universe.trajectory, **kwargs)
         self.atomgroup = atomgroup
         self._universe = atomgroup.universe
 
@@ -160,13 +159,13 @@ class MultiGroupAnalysisBase(_AnalysisBase):
         if type(atomgroups) not in [list, tuple, np.ndarray]:
             atomgroups = [atomgroups]
         else:
-            #Check that all atomgroups are from same universe
+            # Check that all atomgroups are from same universe
             for ag in atomgroups[:1]:
                 if ag.universe != atomgroups[0].universe:
                     raise ValueError(
                         "Given Atomgroups are not from the same Universe.")
-        super(MultiGroupAnalysisBase, self).__init__(
-            atomgroups[0].universe.trajectory, **kwargs)
+        super(MultiGroupAnalysisBase,
+              self).__init__(atomgroups[0].universe.trajectory, **kwargs)
 
         self.atomgroups = atomgroups
         self._universe = atomgroups[0].universe

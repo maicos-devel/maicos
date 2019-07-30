@@ -5,7 +5,7 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from mdtools import density_planar
+from mdtools import density_planar, density_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
@@ -36,7 +36,7 @@ class Test_density_planar(object):
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_binwidth(self, ag_single_frame, dim):
-        dens = density_planar(ag_single_frame, binwidth=0.1).run()
+        dens = density_planar(ag_single_frame, binwidth=0.1, dim=dim).run()
         # Divide by 10: Å -> nm
         n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 10 / 0.1
         assert_almost_equal(
@@ -45,8 +45,9 @@ class Test_density_planar(object):
 
     def test_mu(self, ag):
         dens = density_planar(ag, mu=True).run()
-        assert_almost_equal(
-            dens.results["mu"], water_chemical_potential, decimal=1)
+        assert_almost_equal(dens.results["mu"],
+                            water_chemical_potential,
+                            decimal=1)
 
     def test_mu_temp(self, ag):
         dens = density_planar(ag, mu=True, temperature=200).run()
@@ -54,8 +55,9 @@ class Test_density_planar(object):
 
     def test_mu_zpos(self, ag):
         dens = density_planar(ag, mu=True, zpos=0).run()
-        assert_almost_equal(
-            dens.results["mu"], water_chemical_potential, decimal=1)
+        assert_almost_equal(dens.results["mu"],
+                            water_chemical_potential,
+                            decimal=1)
 
     def test_mu_not_mass(self, ag):
         with pytest.raises(ValueError):
@@ -69,8 +71,9 @@ class Test_density_planar(object):
         with tempdir.in_tempdir():
             dens = density_planar(ag, save=True).run()
             res = np.loadtxt("{}.dat".format(dens.output))
-            assert_almost_equal(
-                dens.results["dens_mean"][:, 0], res[:, 1], decimal=2)
+            assert_almost_equal(dens.results["dens_mean"][:, 0],
+                                res[:, 1],
+                                decimal=2)
 
     def test_output_mu(self, ag):
         with tempdir.in_tempdir():
@@ -84,3 +87,49 @@ class Test_density_planar(object):
     def test_dens_type(self, ag):
         with pytest.raises(ValueError):
             density_planar(ag, dens="foo").run()
+
+
+class Test_density_cylinder(object):
+
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
+
+    @pytest.fixture()
+    def ag_single_frame(self):
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
+
+    @pytest.mark.parametrize('dens_type, mean',
+                             (('mass', 980.7), ('number', 99.1),
+                              ('charge', 0.0), ('temp', 291.6)))
+    def test_dens(self, ag, dens_type, mean):
+        dens = density_cylinder(ag, dens=dens_type).run()
+        assert_almost_equal(dens.results['dens_mean'].mean(), mean, decimal=0)
+
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    def test_binwidth(self, ag_single_frame, dim):
+        dens = density_cylinder(ag_single_frame, binwidth=0.1, dim=dim).run()
+        # Divide by 10: Å -> nm
+        odims = np.roll(np.arange(3), -dim)[1:]
+        n_bins = ag_single_frame.universe.dimensions[odims].min() / 20 / 0.1
+        assert_almost_equal(dens.results["r"][1] - dens.results["r"][0],
+                            0.1,
+                            decimal=2)
+        assert_equal(len(dens.results["r"]), np.ceil(n_bins))
+
+    def test_no_center_group(self, ag_single_frame):
+        with pytest.raises(RuntimeError):
+            density_cylinder(ag_single_frame, center="name foo").run()
+
+    def test_output(self, ag):
+        with tempdir.in_tempdir():
+            dens = density_planar(ag, save=True).run()
+            res = np.loadtxt("{}.dat".format(dens.output))
+            assert_almost_equal(dens.results["dens_mean"][:, 0],
+                                res[:, 1],
+                                decimal=2)
+
+    def test_verbose(self, ag):
+        density_planar(ag, verbose=True).run()

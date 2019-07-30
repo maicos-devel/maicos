@@ -19,11 +19,13 @@ _mdtools_completion()
   mdtools_opts+=" carbonstructure"
   mdtools_opts+=" debye"
   mdtools_opts+=" density_planar"
+  mdtools_opts+=" density_cylinder"
   mdtools_opts+=" dielectric_spectrum"
   mdtools_opts+=" dipole_angle"
   mdtools_opts+=" diporder"
   mdtools_opts+=" epsilon_bulk"
   mdtools_opts+=" epsilon_planar"
+  mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" saxs"
   mdtools_opts+=" --debug --help --version"
@@ -86,9 +88,34 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d \
-                                -dz -muo -temp -zpos -dens -gr -top -atom_style" -- ${cur_word} ) )
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d -dz -mu\
+                                -muo -temp -zpos -dens" -- ${cur_word} ) )
       return 0 ;;
+
+      density_cylinder)
+        case "${prev_word}" in
+          -s)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+          return 0 ;;
+          -o|-muo)
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -dens)
+          COMPREPLY=( $( compgen -W "mass number charge temp" -- ${cur_word}) )
+          return 0 ;;
+          -d)
+          COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+          return 0 ;;
+          -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-dz|-temp|-zpos|-gr)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d \
+                                  -center -r -dr -l -dens" -- ${cur_word} ) )
+        return 0 ;;
 
   dielectric_spectrum)
     case "${prev_word}" in
@@ -204,6 +231,28 @@ _mdtools_completion()
                                 -zmax -temp -groups -2d -vac -sym -com -nopbcrepair"\
                                                           -- ${cur_word} ) )
       return 0 ;;
+
+      epsilon_cylinder)
+        case "${prev_word}" in
+          -s)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -f)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+          return 0 ;;
+          -g)
+          COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+          return 0 ;;
+          -o)
+          COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+          return 0 ;;
+          -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-r|-dr-l|-dout|-temp)
+          COMPREPLY=( )
+          return 0 ;;
+        esac
+        COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -dr -vr -l \
+                                  -temp -si -nopbcrepair" -- ${cur_word} ) )
+        return 0 ;;
 
       kinetic_energy)
         case "${prev_word}" in
