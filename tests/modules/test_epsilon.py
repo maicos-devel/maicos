@@ -5,7 +5,7 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from mdtools import epsilon_bulk, epsilon_planar
+from mdtools import epsilon_bulk, epsilon_planar, epsilon_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
@@ -92,4 +92,50 @@ class Test_epsilon_planar(object):
                                 decimal=2)
 
     def test_verbose(self, ag):
-        epsilon_bulk(ag, verbose=True).run()
+        epsilon_planar(ag, verbose=True).run()
+
+
+class Test_epsilon_cylinder(object):
+
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
+
+    @pytest.fixture()
+    def ag_single_frame(self):
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
+
+    def test_broken_molecules(self, ag):
+        eps = epsilon_cylinder(ag, bpbc=False).run()
+        assert_almost_equal(eps.results['eps_ax'].mean(), 1365.9, decimal=1)
+        assert_almost_equal(eps.results['eps_rad'].mean(), -9.97, decimal=1)
+
+    def test_repaired_molecules(self, ag):
+        eps = epsilon_cylinder(ag, bpbc=True).run()
+        assert_almost_equal(eps.results['eps_ax'].mean(), 19.9, decimal=1)
+        assert_almost_equal(eps.results['eps_rad'].mean(), -9.79, decimal=1)
+
+    def test_binwidth(self, ag_single_frame):
+        eps = epsilon_cylinder(ag_single_frame, binwidth=0.1).run()
+        # Divide by 10: Å -> nm
+        n_bins = np.ceil(ag_single_frame.universe.dimensions.min() / 10 / 2 /
+                         0.1)
+        assert_almost_equal(eps.results["r"][1] - eps.results["r"][0],
+                            0.1,
+                            decimal=2)
+        assert_equal(len(eps.results["r"]), n_bins)
+
+    def test_output(self, ag):
+        with tempdir.in_tempdir():
+            eps = epsilon_cylinder(ag, save=True).run()
+            res_ax = np.loadtxt("{}_ax.dat".format(eps.output))
+            assert_almost_equal(eps.results["eps_ax"], res_ax[:, 1], decimal=1)
+            res_rad = np.loadtxt("{}_rad.dat".format(eps.output))
+            assert_almost_equal(eps.results["eps_rad"],
+                                res_rad[:, 1],
+                                decimal=2)
+
+    def test_verbose(self, ag):
+        epsilon_cylinder(ag, verbose=True).run()

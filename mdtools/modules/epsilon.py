@@ -3,6 +3,7 @@
 
 import numpy as np
 import scipy.constants
+import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 from ..utils import FT, iFT, repairMolecules, savetxt
@@ -170,9 +171,11 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     :returns (dict): * z: Bin positions
                      * eps_par: Parallel dielectric profile (ε_∥ - 1)
+                     * deps_par: Error of parallel dielectric profile
                      * eps_par_self: Self contribution of parallel dielectric profile
                      * eps_par_coll: Collective contribution of parallel dielectric profile
                      * eps_perp: Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
+                     * deps_perp: Error of inverse perpendicular dielectric profile
                      * eps_par_self: Self contribution of Inverse perpendicular dielectric profile
                      * eps_perp_coll: Collective contribution of Inverse perpendicular dielectric profile
     """
@@ -436,7 +439,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
             (self.m_par.sum(axis=2) / self._index * self.M_par.std() /
              self._index * self.resample)**2) / np.sqrt(self.resample - 1)
 
-        beta = 1. / (scipy.constants.Boltzmann * self.temperature)
+        beta = 1 / (scipy.constants.Boltzmann * self.temperature)
 
         self.results["eps_par"] = beta * eps0inv * pref / 2 * cov_par
         self.results["deps_par"] = beta * eps0inv * pref / 2 * dcov_par
@@ -511,6 +514,261 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self._index * self._universe.trajectory.dt)
         savetxt(self.output + '_perp.dat', outdata_perp, header=header)
         savetxt(self.output + '_par.dat', outdata_par, header=header)
+
+
+class epsilon_cylinder(SingleGroupAnalysisBase):
+    """Calculation of the dielectric
+    profile for axial (along z) and radial (along xy) direction
+    at the system's center of mass.
+    Currently only works for an AtomGroup containing 3 atomic watermolecules only!
+
+    :param output (str): Prefix for output filenames
+    :param geometry (str): A structure file without water from which com is calculated.
+    :param radius (float): Radius of the cylinder (nm)
+    :param binwidth (float): Bindiwdth the binwidth (nm)
+    :param variable_dr (bool): Use a variable binwidth, where the volume is kept fixed.
+    :param length (float): Length of the cylinder (nm)
+    :param outfreq (int): Default number of frames after which output files are refreshed.
+    :param temperature (float): temperature (K)
+    :param single (bool): "1D" line of watermolecules
+    :param bpbc (bool): Do not make broken molecules whole again (only works if
+                        molecule is smaller than shortest box vector
+
+    :returns (dict): * r: Bin positions
+                     * eps_ax: Parallel dielectric profile (ε_∥)
+                     * deps_ax: Error of parallel dielectric profile
+                     * eps_rad: Inverse perpendicular dielectric profile (ε^{-1}_⟂)
+                     * deps_rad: Error of inverse perpendicular dielectric profile
+    """
+
+    def __init__(self,
+                 atomgroup,
+                 output="eps_cyl",
+                 binwidth=0.05,
+                 outfreq=10000,
+                 geometry=None,
+                 radius=None,
+                 variable_dr=False,
+                 length=None,
+                 temperature=300,
+                 single=False,
+                 bpbc=True,
+                 **kwself):
+        super(epsilon_cylinder, self).__init__(atomgroup, **kwself)
+        self.output = output
+        self.binwidth = binwidth
+        self.outfreq = outfreq
+        self.geometry = geometry
+        self.radius = radius
+        self.variable_dr = variable_dr
+        self.length = length
+        self.temperature = temperature
+        self.single = single
+        self.bpbc = bpbc
+
+    def _configure_parser(self, parser):
+        parser.add_argument('-o', dest='output')
+        parser.add_argument('-g', dest='geometry')
+        parser.add_argument('-r', dest='radius')
+        parser.add_argument('-dr', dest='binwidth')
+        parser.add_argument('-vr', dest='variable_dr')
+        parser.add_argument('-l', dest='length')
+        parser.add_argument('-dout', dest='outfreq')
+        parser.add_argument('-temp', dest='temperature')
+        parser.add_argument('-si', dest='single')
+        parser.add_argument('-nopbcrepair', dest='bpbc')
+
+    def _prepare(self):
+
+        if self.geometry is not None:
+            self.com = self.system.atoms.center_of_mass(
+                mda.Universe(self.geometry))
+        else:
+            if self._verbose:
+                print("No geometry set."
+                      " Calculate center of geometry from box dimensions.")
+            self.com = self._universe.dimensions[:3] / 2
+
+        if self.radius is not None:
+            radius = 10 * self.radius
+        else:
+            if self._verbose:
+                print("No radius set. Take smallest box extension.")
+            radius = self._universe.dimensions[:2].min() / 2
+
+        if self.length is not None:
+            self.length *= 10
+        else:
+            self.length = self._universe.dimensions[2]
+
+        # Convert nm -> Å
+        self.binwidth *= 10
+
+        self.nbins = int(np.ceil(radius / self.binwidth))
+
+        if self.variable_dr:
+            # variable dr
+            sol = np.ones(self.nbins) * radius**2 / self.nbins
+            mat = np.diag(np.ones(self.nbins)) + np.diag(
+                np.ones(self.nbins - 1) * -1, k=-1)
+
+            self.r_bins = np.sqrt(np.linalg.solve(mat, sol))
+            self.dr = self.r_bins - np.insert(self.r_bins, 0, 0)[0:-1]
+        else:
+            # Constant dr
+            self.dr = np.ones(self.nbins) * radius / self.nbins
+            self.r_bins = np.arange(self.nbins) * self.dr + self.dr
+
+        self.delta_r_sq = self.r_bins**2 - np.insert(self.r_bins, 0,
+                                                     0)[0:-1]**2  # r_o^2-r_i^2
+        self.r = np.copy(self.r_bins) - self.dr / 2
+
+        # Use resampling for error estimation.
+        # We do block averaging for 10 hardcoded blocks.
+        self.resample = 10
+        self.resample_freq = int(
+            np.ceil((self.stopframe - self.startframe) / self.resample))
+
+        self.m_rad = np.zeros((self.nbins, self.resample))
+
+        self.M_rad = np.zeros((self.resample))
+        self.mM_rad = np.zeros(
+            (self.nbins, self.resample))  # total fluctuations
+
+        self.m_ax = np.zeros((self.nbins, self.resample))
+        self.M_ax = np.zeros((self.resample))
+        self.mM_ax = np.zeros((self.nbins, self.resample))  # total fluctuations
+
+        if self._verbose:
+            print('Using', self.nbins, 'bins.')
+
+    def _single_frame(self):
+
+        if self.bpbc:
+            # make broken molecules whole again!
+            repairMolecules(self.atomgroup.atoms)
+
+        # Transform from cartesian coordinates [x,y,z] to cylindrical
+        # coordinates [r,z] (skip phi because of symmetry)
+        positions_cyl = np.empty([self.atomgroup.positions.shape[0], 2])
+        positions_cyl[:, 0] = np.linalg.norm(
+            (self.atomgroup.positions[:, 0:2] - self.com[0:2]), axis=1)
+        positions_cyl[:, 1] = self.atomgroup.positions[:, 2]
+
+        # Use polarization density ( for radial component )
+        # ========================================================
+        bins_rad = np.digitize(positions_cyl[:, 0], self.r_bins)
+
+        curQ_rad = np.histogram(bins_rad,
+                                bins=np.arange(self.nbins + 1),
+                                weights=self.atomgroup.charges)[0]
+        this_m_rad = -np.cumsum(
+            (curQ_rad / self.delta_r_sq) * self.r * self.dr) / (self.r * np.pi *
+                                                                self.length)
+
+        this_M_rad = np.sum(this_m_rad * self.dr)
+        self.M_rad[self._frame_index // self.resample_freq] += this_M_rad
+
+        self.m_rad[:, self._frame_index // self.resample_freq] += this_m_rad
+        self.mM_rad[:, self._frame_index //
+                    self.resample_freq] += this_m_rad * this_M_rad
+
+        # Use virtual cutting method ( for axial component )
+        # ========================================================
+        nbinsz = 250  # number of virtual cuts ("many")
+
+        this_M_ax = np.dot(self.atomgroup.charges, positions_cyl[:, 1])
+        self.M_ax[self._frame_index // self.resample_freq] += this_M_ax
+
+        # Move all r-positions to 'center of charge' such that we avoid monopoles in r-direction.
+        # We only want to cut in z direction.
+        chargepos = positions_cyl * np.abs(
+            self.atomgroup.charges[:, np.newaxis])
+        centers = sum(chargepos[i::3] for i in range(3)) / np.abs(
+            self.atomgroup.residues[0].atoms.charges).sum()
+        testpos = np.empty(positions_cyl[:, 0].shape)
+        testpos = np.repeat(centers[:, 0], 3)
+
+        binsr = np.digitize(testpos, self.r_bins)
+
+        dz = np.ones(nbinsz) * self.length / nbinsz
+        z = np.arange(nbinsz) * dz + dz
+
+        binsz = np.digitize(positions_cyl[:, 1], z)
+        binsz[np.where(binsz < 0)] = 0
+        curQz = np.histogram2d(
+            binsr,
+            binsz,
+            bins=[np.arange(self.nbins + 1),
+                  np.arange(nbinsz + 1)],
+            weights=self.atomgroup.charges)[0]
+        curqz = np.cumsum(curQz,
+                          axis=1) / (np.pi * self.delta_r_sq)[:, np.newaxis]
+
+        this_m_ax = -curqz.mean(axis=1)
+
+        self.m_ax[:, self._frame_index // self.resample_freq] += this_m_ax
+        self.mM_ax[:, self._frame_index //
+                   self.resample_freq] += this_m_ax * this_M_ax
+
+        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
+            self._calculate_results()
+            self._save_results()
+
+    def _calculate_results(self):
+        self._index = self._frame_index + 1
+        if self.single:  # removed average of M if single line water.
+            cov_ax = self.mM_ax.sum(axis=1) / self._index
+            cov_rad = self.mM_rad.sum(axis=1) / self._index
+
+            dcov_ax = (self.mM_ax.std(axis=1) / self._index * self.resample) / \
+                np.sqrt(self.resample - 1)
+            dcov_rad = (self.mM_rad.std(axis=1) / self._index * self.resample) / \
+                np.sqrt(self.resample - 1)
+        else:
+            cov_ax = self.mM_ax.sum(axis=1) / self._index - \
+                self.m_ax.sum(axis=1) / self._index * self.M_ax.sum() / self._index
+            cov_rad = self.mM_rad.sum(axis=1) / self._index - \
+                self.m_rad.sum(axis=1) / self._index * self.M_rad.sum() / self._index
+
+            dcov_ax = np.sqrt(
+                (self.mM_ax.std(axis=1) / self._index * self.resample)**2 +
+                (self.m_ax.std(axis=1) / self._index * self.resample *
+                 self.M_ax.sum() / self._index)**2 +
+                (self.m_ax.sum(axis=1) / self._index * self.M_ax.std() /
+                 self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+            dcov_rad = np.sqrt(
+                (self.mM_rad.std(axis=1) / self._index * self.resample)**2 +
+                (self.m_rad.std(axis=1) / self._index * self.resample *
+                 self.M_rad.sum() / self._index)**2 +
+                (self.m_rad.sum(axis=1) / self._index * self.M_rad.std() /
+                 self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+
+        beta = 1 / (scipy.constants.Boltzmann * self.temperature)
+
+        self.results["eps_ax"] = 1 + beta * eps0inv * pref * cov_ax
+        self.results["deps_ax"] = beta * eps0inv * pref * dcov_ax
+
+        self.results[
+            "eps_rad"] = 1 - beta * eps0inv * pref * 2 * np.pi * self.r * self.length * cov_rad
+        self.results[
+            "deps_rad"] = beta * eps0inv * pref * 2 * np.pi * self.r * self.length * dcov_rad
+
+        self.results["r"] = self.r / 10
+
+    def _save_results(self):
+
+        outdata_ax = np.array([
+            self.results["r"], self.results["eps_ax"], self.results["deps_ax"]
+        ]).T
+        outdata_rad = np.array([
+            self.results["r"], self.results["eps_rad"], self.results["deps_rad"]
+        ]).T
+
+        header = "statistics over {:.1f} picoseconds".format(
+            self._index * self._universe.trajectory.dt)
+        savetxt(self.output + '_ax.dat', outdata_ax, header=header)
+        savetxt(self.output + '_rad.dat', outdata_rad, header=header)
 
 
 class dielectric_spectrum(SingleGroupAnalysisBase):

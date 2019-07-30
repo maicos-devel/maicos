@@ -4,8 +4,17 @@
 from .modules import *
 
 __all__ = [
-    'density_planar', 'epsilon_bulk', 'epsilon_planar', 'dielectric_spectrum',
-    'saxs', 'debye', 'dipole_angle', 'kinetic_energy', 'diporder'
+    'density_planar',
+    'density_cylinder',
+    'epsilon_bulk',
+    'epsilon_planar',
+    'epsilon_cylinder',
+    'dielectric_spectrum',
+    'saxs',
+    'debye',
+    'dipole_angle',
+    'kinetic_energy',
+    'diporder',
 ]
 
 __authors__ = "Philip Loche et. al."
