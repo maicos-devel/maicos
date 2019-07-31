@@ -34,8 +34,8 @@ def Bin(a, bins):
 
 
 class epsilon_bulk(SingleGroupAnalysisBase):
-    r"""Computes the dipole moment flcutuations and from this the
-    dielectric constant.
+    r"""Computes dipole moment fluctuations and from this the
+    static dielectric constant.
 
     :param outfreq (float): Number of frames after which the output is updated.
     :param output (str): Prefix for output filenames.
@@ -150,7 +150,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
 
 
 class epsilon_planar(MultiGroupAnalysisBase):
-    """Calculate the dielectric profile.
+    """Calculates a planar dielectric profile.
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
 
     :param output (str): Prefix for output filenames
@@ -517,9 +517,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
 
 class epsilon_cylinder(SingleGroupAnalysisBase):
-    """Calculation of the dielectric
-    profile for axial (along z) and radial (along xy) direction
-    at the system's center of mass.
+    """Calculation of the cylindrical dielectric profile for axial
+    (along z) and radial (along xy) direction at the system's center of mass.
     Currently only works for an AtomGroup containing 3 atomic watermolecules only!
 
     :param output (str): Prefix for output filenames

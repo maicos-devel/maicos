@@ -260,7 +260,9 @@ def main():
         for key, value in locals().items():
             globals()[key] = value
 
-        banner = "\nStarting interactive Python interpreter for debug.⁠.."
+        banner = "\nStarting interactive Python interpreter for debug.⁠"
+        banner += "\nYou can access all your analysis class atrributes via"
+        banner += " ana_obj.<attributes>."
         if use_IPython:
             IPython.embed(banner1=banner)
         else:
