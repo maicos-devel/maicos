@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-import functools
 import os
 import sys
+import warnings
 
 import numpy as np
 
@@ -15,6 +15,13 @@ def repairMolecules(selection):
     To this end the center of mass is reset into the central box.
     CAVE: Only works with small (< half box) molecules."""
 
+    with warnings.catch_warnings():
+        warnings.simplefilter('always', DeprecationWarning)
+        warnings.warn(
+            "repairMolecules is deprecated, "
+            "use AtomGroup.unwrap() instead.",
+            category=DeprecationWarning)
+
     # we repair each moleculetype individually for performance reasons
     for seg in selection.segments:
         atomsPerMolecule = seg.atoms.n_atoms // seg.atoms.n_residues
@@ -25,13 +32,14 @@ def repairMolecules(selection):
             distToFirst[i::atomsPerMolecule] = seg.atoms.positions[i::atomsPerMolecule] - \
                 seg.atoms.positions[0::atomsPerMolecule]
         seg.atoms.positions -= (
-            np.abs(distToFirst) > selection.dimensions[:3] / 2.
-        ) * selection.dimensions[:3] * np.sign(distToFirst)
+            np.abs(distToFirst) > selection.dimensions[:3] /
+            2.) * selection.dimensions[:3] * np.sign(distToFirst)
 
         # Calculate the centers of the objects ( i.e. Molecules )
-        masspos = (
-            seg.atoms.positions * seg.atoms.masses[:, np.newaxis]).reshape(
-                (seg.atoms.n_atoms // atomsPerMolecule, atomsPerMolecule, 3))
+        masspos = (seg.atoms.positions *
+                   seg.atoms.masses[:, np.newaxis]).reshape(
+                       (seg.atoms.n_atoms // atomsPerMolecule, atomsPerMolecule,
+                        3))
         # all molecules should have same mass
         centers = np.sum(masspos.T, axis=1).T / \
             seg.atoms.masses[:atomsPerMolecule].sum()
@@ -156,8 +164,8 @@ def atomgroup_header(AtomGroup):
     the total number of atoms, the including residues and the number of residues.
     Useful for writing output file headers."""
 
-    unq_res, n_unq_res = np.unique(
-        AtomGroup.residues.resnames, return_counts=True)
+    unq_res, n_unq_res = np.unique(AtomGroup.residues.resnames,
+                                   return_counts=True)
     return "{} atom(s): {}".format(
         AtomGroup.n_atoms, ", ".join(
             "{} {}".format(*i) for i in np.vstack([n_unq_res, unq_res]).T))

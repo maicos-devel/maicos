@@ -6,7 +6,7 @@ import scipy.constants
 import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
-from ..utils import FT, iFT, repairMolecules, savetxt
+from ..utils import FT, iFT, savetxt
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
@@ -83,7 +83,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
     def _single_frame(self):
         # Make molecules whole
         if self.bpbc:
-            repairMolecules(self.atomgroup)
+            self.atomgroup.unwrap(compound="molecules")
 
         self.volume += self._ts.volume
 
@@ -303,7 +303,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            repairMolecules(self._universe.atoms)
+            self._universe.atoms.unwrap(compound="molecules")
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
@@ -346,14 +346,11 @@ class epsilon_planar(MultiGroupAnalysisBase):
         for i, sel in enumerate(self.atomgroups):
             # Move all z-positions to 'center of charge' such that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y direction)
-            chargepos = sel.atoms.positions * \
-                np.abs(sel.atoms.charges[:, np.newaxis])
-            atomsPerMolecule = sel.n_atoms // sel.n_residues
-            centers = sum(chargepos[i::atomsPerMolecule] for i in range(atomsPerMolecule)) \
-                / np.abs(sel.residues[0].atoms.charges).sum()
+            centers = sel.center(weights=np.abs(sel.charges),
+                                 compound="molecules")
+            repeats = np.unique(sel.atoms.molnums, return_counts=True)[1]
             testpos = sel.atoms.positions
-            testpos[:, self.dim] = np.repeat(centers[:, self.dim],
-                                             atomsPerMolecule)
+            testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
             binsz = (((testpos[:, self.dim] - self.zmin) %
                       self._ts.dimensions[self.dim]) /
                      ((zmax - self.zmin) / self.nbins)).astype(int)
@@ -517,9 +514,9 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
 
 class epsilon_cylinder(SingleGroupAnalysisBase):
-    """Calculation of the cylindrical dielectric profile for axial
-    (along z) and radial (along xy) direction at the system's center of mass.
-    Currently only works for an AtomGroup containing 3 atomic watermolecules only!
+    """Calculation of the dielectric
+    profile for axial (along z) and radial (along xy) direction
+    at the system's center of mass.
 
     :param output (str): Prefix for output filenames
     :param geometry (str): A structure file without water from which com is calculated.
@@ -645,7 +642,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            repairMolecules(self.atomgroup.atoms)
+            self._universe.atoms.unwrap(compound="molecules")
 
         # Transform from cartesian coordinates [x,y,z] to cylindrical
         # coordinates [r,z] (skip phi because of symmetry)
@@ -683,10 +680,12 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         # We only want to cut in z direction.
         chargepos = positions_cyl * np.abs(
             self.atomgroup.charges[:, np.newaxis])
-        centers = sum(chargepos[i::3] for i in range(3)) / np.abs(
-            self.atomgroup.residues[0].atoms.charges).sum()
+        centers = self.atomgroup.accumulate(chargepos, compound="molecules")
+        centers /= self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound="molecules")[:, np.newaxis]
+        repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
         testpos = np.empty(positions_cyl[:, 0].shape)
-        testpos = np.repeat(centers[:, 0], 3)
+        testpos = np.repeat(centers[:, 0], repeats)
 
         binsr = np.digitize(testpos, self.r_bins)
 
@@ -867,7 +866,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
     def _single_frame(self):
         self.V += self._ts.volume
-        repairMolecules(self.atomgroup)
+        self.atomgroup.unwrap(compound='molecules')
         self.P[self._frame_index, :] = np.dot(self.atomgroup.charges,
                                               self.atomgroup.positions)
 

@@ -11,7 +11,7 @@ import MDAnalysis as mda
 from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
-from ..utils import repairMolecules, savetxt
+from ..utils import savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -426,7 +426,8 @@ class diporder(SingleGroupAnalysisBase):
                           membrane simulations
     :param com (bool): shift system such that the water COM is centered
     :param binmethod (str): binning method: center of Mass (COM), center of charge (COC)
-                            or oxygen position (OXY)
+                            or oxygen position (OXY).
+                            Note: `OXY` only works for water oxygens with name `OW*`
     :param bpbc (bool): do not make broken molecules whole again
                        (only works if molecule is smaller than shortest box vector
 
@@ -480,6 +481,9 @@ class diporder(SingleGroupAnalysisBase):
             raise ValueError('Unknown binning method: {}'.format(
                 self.binmethod))
 
+        if self.binmethod == "OXY":
+            self.oxy = self.atomgroup.select_atoms("name OW*")
+
         # Check if all residues are identical. Choose first residue as reference.
         residue_names = [ag.names for ag in self.atomgroup.split("residue")]
         for names in residue_names[1:]:
@@ -487,8 +491,6 @@ class diporder(SingleGroupAnalysisBase):
                     residue_names[0] != names):
                 raise ValueError("Not all residues are identical. Please adjust"
                                  "selection.")
-
-        self.atomsPerMolecule = self.atomgroup.n_atoms // self.atomgroup.n_residues
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
@@ -519,41 +521,27 @@ class diporder(SingleGroupAnalysisBase):
 
         # Make molecules whole
         if self.bpbc:
-            repairMolecules(self.atomgroup)
+            self.atomgroup.unwrap(compound="molecule")
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
-        chargepos = self.atomgroup.atoms.positions \
-                    * self.atomgroup.atoms.charges[:, np.newaxis]
-        dipoles = np.sum(list(chargepos[i::self.atomsPerMolecule]
-                              for i in range(self.atomsPerMolecule)),
-                         axis=0) / 10  # convert to e nm
+        chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
+                                                                      newaxis]
+        dipoles = self.atomgroup.accumulate(chargepos, compound="molecules")
+        dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
             # Calculate the centers of the objects ( i.e. Molecules )
-            masses = np.sum(
-                self.atomgroup.atoms.masses[i::self.atomsPerMolecule]
-                for i in range(self.atomsPerMolecule))
-            masspos = self.atomgroup.atoms.positions \
-                      * self.atomgroup.atoms.masses[:, np.newaxis]
-            coms = np.sum(
-                masspos[i::self.atomsPerMolecule]
-                for i in range(self.atomsPerMolecule)) / masses[:, np.newaxis]
+            coms = self.atomgroup.center_of_mass(compound="molecules")
             bins = ((coms[:, self.dim] % self._ts.dimensions[self.dim]) /
                     dz_frame).astype(int)
         elif self.binmethod == 'COC':
-            abschargepos = self.atomgroup.atoms.positions * \
-                np.abs(self.atomgroup.atoms.charges)[:, np.newaxis]
-            charges = np.sum(
-                np.abs(self.atomgroup.atoms.charges)[i::self.atomsPerMolecule]
-                for i in range(self.atomsPerMolecule))
-            cocs = np.sum(
-                abschargepos[i::self.atomsPerMolecule]
-                for i in range(self.atomsPerMolecule)) / charges[:, np.newaxis]
+            cocs = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
+                                         compound="molecules")
             bins = ((cocs[:, self.dim] % self._ts.dimensions[self.dim]) /
                     dz_frame).astype(int)
         elif self.binmethod == 'OXY':
-            bins = ((self.atomgroup.atoms.positions[::3, self.dim] %
+            bins = ((self.oxy.positions[:, self.dim] %
                      self._ts.dimensions[self.dim]) / dz_frame).astype(int)
 
         bincount = np.bincount(bins, minlength=self.nbins)

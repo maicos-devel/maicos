@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from ..utils import repairMolecules, savetxt
+from ..utils import savetxt
 from .base import SingleGroupAnalysisBase
 
 
@@ -39,7 +39,6 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     def _prepare(self):
         self.n_residues = self.atomgroup.residues.n_residues
-        self.atomsPerMolecule = self.atomgroup.n_atoms // self.n_residues
 
         # unit normal vector
         self.unit = np.zeros(3)
@@ -52,12 +51,10 @@ class dipole_angle(SingleGroupAnalysisBase):
     def _single_frame(self):
 
         # make broken molecules whole again!
-        repairMolecules(self.atomgroup)
+        self.atomgroup.unwrap(compound="molecule")
 
-        chargepos = self.atomgroup.positions * \
-            self.atomgroup.charges[:, np.newaxis]
-        dipoles = sum(chargepos[i::self.atomsPerMolecule]
-                      for i in range(self.atomsPerMolecule))
+        chargepos = self.positions * self.charges[:, np.newaxis]
+        dipoles = self.atomgroup.accumulate(chargepos, compound="molecules")
 
         cos_theta = np.dot(dipoles, self.unit) / \
             np.linalg.norm(dipoles, axis=1)
@@ -109,7 +106,7 @@ class kinetic_energy(SingleGroupAnalysisBase):
                          * rot: rotational kinetic energy (kJ/mole)
         """
 
-    def __init__(self, atomgroup, output="output", refpoint="COM", **kwargs):
+    def __init__(self, atomgroup, output="ke", refpoint="COM", **kwargs):
         super(kinetic_energy, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint
@@ -128,21 +125,14 @@ class kinetic_energy(SingleGroupAnalysisBase):
                 "Invalid choice for dens: '{}' (choose from 'COM', "
                 "'COC', 'OXY')".format(self.refpoint))
 
-        self.atomsPerMolecule = []
-        self.seg_masses = []
-        self.seg_abscharges = []
-        for j, seg in enumerate(self.atomgroup.segments):
-            self.atomsPerMolecule.append(seg.atoms.n_atoms //
-                                         seg.atoms.n_residues)
-            self.seg_masses.append(seg.residues.masses)
-            self.seg_abscharges.append(
-                sum(
-                    np.abs(seg.atoms.charges)[i::self.atomsPerMolecule[j]]
-                    for i in range(self.atomsPerMolecule[j])))
-
         if self.refpoint == "OXY":
             self.oxy = self.atomgroup.select_atoms("name OW*")
 
+        self.masses = self.atomgroup.atoms.accumulate(
+            self.atomgroup.atoms.masses, compound="molecules")
+        self.abscharges = self.atomgroup.atoms.accumulate(np.abs(
+            self.atomgroup.atoms.charges),
+                                                          compound="molecules")
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -154,27 +144,23 @@ class kinetic_energy(SingleGroupAnalysisBase):
             self.atomgroup.masses,
             np.linalg.norm(self.atomgroup.velocities, axis=1)**2)
 
-        for j, seg in enumerate(self.atomgroup.segments):
-            if self.refpoint == "COM":
-                massvel = seg.atoms.velocities * \
-                    seg.atoms.masses[:, np.newaxis]
-                v = sum(massvel[i::self.atomsPerMolecule[j]]
-                        for i in range(self.atomsPerMolecule[j]))
-                v /= self.seg_masses[j][:, np.newaxis]
+        if self.refpoint == "COM":
+            massvel = self.atomgroup.velocities * \
+                self.atomgroup.masses[:, np.newaxis]
+            v = self.atomgroup.accumulate(massvel, compound="molecules")
+            v /= self.masses[:, np.newaxis]
 
-            elif self.refpoint == "COC":
-                abschargevel = seg.atoms.velocities * \
-                    np.abs(seg.atoms.charges)[:, np.newaxis]
-                v = sum(abschargevel[i::self.atomsPerMolecule[j]]
-                        for i in range(self.atomsPerMolecule[j]))
-                v /= self.seg_abscharges[j][:, np.newaxis]
+        elif self.refpoint == "COC":
+            abschargevel = self.atomgroup.velocities * \
+                np.abs(self.atomgroup.charges)[:, np.newaxis]
+            v = self.atomgroup.accumulate(abschargevel, compound="molecules")
+            v /= self.abscharges[:, np.newaxis]
 
-            elif self.refpoint == "OXY":
-                v = self.oxy.velocities
+        elif self.refpoint == "OXY":
+            v = self.oxy.velocities
 
-            self.E_center[self._frame_index] += np.dot(
-                self.seg_masses[j],
-                np.linalg.norm(v, axis=1)**2)
+        self.E_center[self._frame_index] = np.dot(self.masses,
+                                                  np.linalg.norm(v, axis=1)**2)
 
     def _calculate_results(self):
         self.results["t"] = self._trajectory.dt * \
