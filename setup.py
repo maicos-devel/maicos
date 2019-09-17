@@ -5,18 +5,13 @@ from __future__ import print_function
 from setuptools import setup, Extension, find_packages
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
-import codecs
 import os
 import sys
 import shutil
-import subprocess
 import tempfile
-import platform
 
-import Cython
 import numpy as np
 from Cython.Build import cythonize
-from setuptools import Extension, find_packages, setup
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
@@ -63,11 +58,10 @@ def detect_openmp():
     compiler.add_library('gomp')
     include = '<omp.h>'
     extra_postargs = ['-fopenmp']
-    hasopenmp = hasfunction(
-        compiler,
-        'omp_get_num_threads()',
-        include=include,
-        extra_postargs=extra_postargs)
+    hasopenmp = hasfunction(compiler,
+                            'omp_get_num_threads()',
+                            include=include,
+                            extra_postargs=extra_postargs)
     if hasopenmp:
         print("Compiler supports OpenMP")
     else:
@@ -89,36 +83,34 @@ if __name__ == "__main__":
     has_openmp = detect_openmp()
 
     extensions = [
-        Extension(
-            "mdtools.lib.sfactor", ["mdtools/lib/sfactor.pyx"],
-            include_dirs=[np.get_include()],
-            extra_compile_args=[
-                '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
-            ] + has_openmp * ['-fopenmp'],
-            extra_link_args=has_openmp * ['-fopenmp'],
-            libraries=mathlib)
+        Extension("mdtools.lib.sfactor", ["mdtools/lib/sfactor.pyx"],
+                  include_dirs=[np.get_include()],
+                  extra_compile_args=[
+                      '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
+                  ] + has_openmp * ['-fopenmp'],
+                  extra_link_args=has_openmp * ['-fopenmp'],
+                  libraries=mathlib)
     ]
 
 if __name__ == "__main__":
-    setup(
-        name='mdtools',
-        packages=find_packages(),
-        version=VERSION,
-        license='MIT',
-        description='A collection of scripts to analyse and build systems '
-        'for molecular dynamics simulations.',
-        author="Philip Loche et. al.",
-        author_email="ploche@physik.fu-berlin.de",
-        package_data={'': ['share/*']},
-        include_package_data=True,
-        ext_modules=cythonize(extensions),
-        install_requires=[
-            'MDAnalysis>=0.19.0', 'matplotlib>=2.0.0',
-            'numpy>=1.10.4', 'scipy>=0.17'
-        ],
-        entry_points={
-            'console_scripts': [
-                'mdtools=mdtools.__main__:main',
-            ],
-        },
-        zip_safe=False)
+    setup(name='mdtools',
+          packages=find_packages(),
+          version=VERSION,
+          license='MIT',
+          description='A collection of scripts to analyse and build systems '
+          'for molecular dynamics simulations.',
+          author="Philip Loche et. al.",
+          author_email="ploche@physik.fu-berlin.de",
+          package_data={'': ['share/*']},
+          include_package_data=True,
+          ext_modules=cythonize(extensions),
+          install_requires=[
+              'MDAnalysis>0.19.2', 'matplotlib>=2.0.0', 'numpy>=1.10.4',
+              'scipy>=0.17'
+          ],
+          entry_points={
+              'console_scripts': [
+                  'mdtools=mdtools.__main__:main',
+              ],
+          },
+          zip_safe=False)
