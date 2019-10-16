@@ -63,7 +63,7 @@ class saxs(SingleGroupAnalysisBase):
     profile is calculated. The selection uses the MDAnalysis selection commands.
 
     :param outfreq (float): Number of frames after which the output is updated.
-    :param output (str): Prefix/Path for output file
+    :param output (str): Output filename
     :param noboindata (bool): Do not bin the data. Only works reliable for NVT!
     :param startq (float): Starting q (1/nm)
     :param endq (float): Ending q (1/nm)
@@ -79,7 +79,7 @@ class saxs(SingleGroupAnalysisBase):
     def __init__(self,
                  atomgroup,
                  outfreq=100,
-                 output="sq",
+                 output="sq.dat",
                  nobin=False,
                  startq=0,
                  endq=60,
@@ -232,7 +232,7 @@ class saxs(SingleGroupAnalysisBase):
 
             boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
                 *self.box)
-            savetxt(self.output + '.dat',
+            savetxt(self.output,
                     out,
                     header=boxinfo +
                     "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
@@ -249,7 +249,7 @@ class debye(SingleGroupAnalysisBase):
     """Calculates scattering intensities using the debye equation.
 
        :param outfreq (float): Number of frames after which the output is updated.
-       :param output (str): Prefix/Path for output file
+       :param output (str): Output filename
        :param startq (float): Starting q (1/nm)
        :param endq (float): Ending q (1/nm)
        :param dq (float): binwidth (1/nm)
@@ -264,7 +264,7 @@ class debye(SingleGroupAnalysisBase):
                  atomgroup,
                  sel="all",
                  outfreq=100,
-                 output="sq",
+                 output="sq.dat",
                  startq=0,
                  endq=60,
                  dq=0.05,
@@ -404,7 +404,7 @@ class debye(SingleGroupAnalysisBase):
         os.rmdir(self._tmp)
 
     def _save_results(self):
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.vstack([self.results["q"], self.results["scat_factor"]]).T,
                 header="q (1/A)\tS(q)_tot (arb. units)",
                 fmt='%.8e')
@@ -418,7 +418,7 @@ class diporder(SingleGroupAnalysisBase):
 
     :param binwidth (float): specify the binwidth [nm]
     :param dim (int): direction normal to the surface (x,y,z=0,1,2)
-    :param output (str): Prefix for output filenames
+    :param output (str): Output filename
     :param outfreq (int): Default number of frames after which output files are
                          refreshed
     :param bsym (bool): symmetrize the profiles
@@ -442,7 +442,7 @@ class diporder(SingleGroupAnalysisBase):
                  atomgroup,
                  binwidth=0.01,
                  dim=2,
-                 output="diporder",
+                 output="diporder.dat",
                  outfreq=10000,
                  bsym=False,
                  center=False,
@@ -603,7 +603,7 @@ class diporder(SingleGroupAnalysisBase):
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.hstack([
                     self.results["z"][:, np.newaxis], self.results["diporder"]
                 ]),
