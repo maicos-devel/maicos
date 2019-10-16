@@ -28,7 +28,7 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" saxs"
-  mdtools_opts+=" --debug --help --version"
+  mdtools_opts+=" --debug --help --bash_completion --version"
 
   mdtools_default_args="-h -s -top -f -traj -atom_style -b -e -dt -box -nt -sel"
 
