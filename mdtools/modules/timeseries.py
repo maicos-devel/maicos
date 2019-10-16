@@ -22,7 +22,7 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     def __init__(self,
                  atomgroup,
-                 output="dipangle",
+                 output="dipangle.dat",
                  outfreq=10000,
                  dim=2,
                  **kwargs):
@@ -83,7 +83,7 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     def _save_results(self):
 
-        savetxt("{}.dat".format(self.output),
+        savetxt(self.output,
                 np.vstack([
                     self.results["t"], self.results["cos_theta_i"],
                     self.results["cos_theta_ii"], self.results["cos_theta_ij"]
@@ -96,7 +96,7 @@ class kinetic_energy(SingleGroupAnalysisBase):
     """Calculates the timeseries for the molecular center
        translational and rotational kinetic energy (kJ/mole).
 
-       :param output (str): Prefix for output filenames.
+       :param output (str): Output filename
        :param refpoint (str): reference point for molecular center: center of
                               mass (COM), center of charge (COC), or oxygen position (OXY)
                               Note: The oxygen position only works for systems of pure water
@@ -106,16 +106,13 @@ class kinetic_energy(SingleGroupAnalysisBase):
                          * rot: rotational kinetic energy (kJ/mole)
         """
 
-    def __init__(self, atomgroup, output="ke", refpoint="COM", **kwargs):
+    def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
         super(kinetic_energy, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint
 
     def _configure_parser(self, parser):
-        parser.add_argument(
-            '-o',
-            dest='output',
-        )
+        parser.add_argument('-o', dest='output')
         parser.add_argument('-r', dest='refpoint')
 
     def _prepare(self):
@@ -169,7 +166,7 @@ class kinetic_energy(SingleGroupAnalysisBase):
         self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
-        savetxt("{}.dat".format(self.output),
+        savetxt(self.output,
                 np.vstack([
                     self.results["t"], self.results["trans"],
                     self.results["rot"]

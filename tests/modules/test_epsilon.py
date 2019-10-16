@@ -34,11 +34,16 @@ class Test_epsilon_bulk(object):
     def test_output(self, ag):
         with tempdir.in_tempdir():
             eps = epsilon_bulk(ag, save=True).run()
-            res = np.loadtxt("{}.dat".format(eps.output))
+            res = np.loadtxt(eps.output)
             assert_almost_equal(np.hstack(
                 [eps.results["eps_mean"], eps.results["eps"]]).T,
                                 res,
                                 decimal=2)
+
+    def test_output_name(self, ag):
+        with tempdir.in_tempdir():
+            epsilon_bulk(ag, output="foo", save=True).run()
+            open("foo.dat")
 
     def test_verbose(self, ag):
         epsilon_bulk(ag, verbose=True).run()
@@ -79,20 +84,27 @@ class Test_epsilon_planar(object):
                             decimal=2)
         assert_equal(len(eps.results["z"]), n_bins)
 
-    def test_output(self, ag):
+    def test_output(self, ag_single_frame):
         with tempdir.in_tempdir():
-            eps = epsilon_planar(ag, save=True).run()
-            res_perp = np.loadtxt("{}_perp.dat".format(eps.output))
+            eps = epsilon_planar(ag_single_frame, save=True).run()
+            res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_perp"][:, 0],
                                 res_perp[:, 1],
                                 decimal=1)
-            res_par = np.loadtxt("{}_par.dat".format(eps.output))
+            res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_par"][:, 0],
                                 res_par[:, 1],
                                 decimal=2)
 
-    def test_verbose(self, ag):
-        epsilon_planar(ag, verbose=True).run()
+    def test_output_name(self, ag_single_frame):
+        with tempdir.in_tempdir():
+            epsilon_planar(ag_single_frame, output_prefix="foo",
+                           save=True).run()
+            open("foo_perp.dat")
+            open("foo_par.dat")
+
+    def test_verbose(self, ag_single_frame):
+        epsilon_planar(ag_single_frame, verbose=True).run()
 
 
 class Test_epsilon_cylinder(object):
@@ -127,15 +139,22 @@ class Test_epsilon_cylinder(object):
                             decimal=2)
         assert_equal(len(eps.results["r"]), n_bins)
 
-    def test_output(self, ag):
+    def test_output(self, ag_single_frame):
         with tempdir.in_tempdir():
-            eps = epsilon_cylinder(ag, save=True).run()
-            res_ax = np.loadtxt("{}_ax.dat".format(eps.output))
+            eps = epsilon_cylinder(ag_single_frame, save=True).run()
+            res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_ax"], res_ax[:, 1], decimal=1)
-            res_rad = np.loadtxt("{}_rad.dat".format(eps.output))
+            res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_rad"],
                                 res_rad[:, 1],
                                 decimal=2)
 
-    def test_verbose(self, ag):
-        epsilon_cylinder(ag, verbose=True).run()
+    def test_output_name(self, ag_single_frame):
+        with tempdir.in_tempdir():
+            epsilon_cylinder(ag_single_frame, output_prefix="foo",
+                             save=True).run()
+            open("foo_ax.dat")
+            open("foo_rad.dat")
+
+    def test_verbose(self, ag_single_frame):
+        epsilon_cylinder(ag_single_frame, verbose=True).run()

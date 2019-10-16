@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf8
 
+import os
+
 import MDAnalysis as mda
 import pytest
 
@@ -39,8 +41,9 @@ class Test_density_planar(object):
         dens = density_planar(ag_single_frame, binwidth=0.1, dim=dim).run()
         # Divide by 10: Å -> nm
         n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 10 / 0.1
-        assert_almost_equal(
-            dens.results["z"][1] - dens.results["z"][0], 0.1, decimal=2)
+        assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
+                            0.1,
+                            decimal=2)
         assert_equal(len(dens.results["z"]), n_bins)
 
     def test_mu(self, ag):
@@ -67,19 +70,25 @@ class Test_density_planar(object):
         with pytest.warns(UserWarning):
             density_planar([ag, ag], mu=True).run()
 
-    def test_output(self, ag):
+    def test_output(self, ag_single_frame):
         with tempdir.in_tempdir():
-            dens = density_planar(ag, save=True).run()
-            res = np.loadtxt("{}.dat".format(dens.output))
+            dens = density_planar(ag_single_frame, save=True, mu=True).run()
+            res_dens = np.loadtxt(dens.output)
+            res_mu = np.loadtxt(dens.muout)
             assert_almost_equal(dens.results["dens_mean"][:, 0],
-                                res[:, 1],
+                                res_dens[:, 1],
                                 decimal=2)
+            assert_almost_equal(dens.results["mu"], res_mu[0], decimal=2)
 
-    def test_output_mu(self, ag):
+    def test_output_name(self, ag_single_frame):
         with tempdir.in_tempdir():
-            dens = density_planar(ag, mu=True, save=True).run()
-            res = np.loadtxt("{}.dat".format(dens.muout))
-            assert_almost_equal(dens.results["mu"], res[0], decimal=2)
+            density_planar(ag_single_frame,
+                           output="foo",
+                           muout="foo_mu",
+                           save=True,
+                           mu=True).run()
+            open("foo.dat")
+            open("foo_mu.dat")
 
     def test_verbose(self, ag):
         density_planar(ag, verbose=True).run()
@@ -123,13 +132,18 @@ class Test_density_cylinder(object):
         with pytest.raises(RuntimeError):
             density_cylinder(ag_single_frame, center="name foo").run()
 
-    def test_output(self, ag):
+    def test_output(self, ag_single_frame):
         with tempdir.in_tempdir():
-            dens = density_planar(ag, save=True).run()
-            res = np.loadtxt("{}.dat".format(dens.output))
+            dens = density_planar(ag_single_frame, save=True).run()
+            res = np.loadtxt(dens.output)
             assert_almost_equal(dens.results["dens_mean"][:, 0],
                                 res[:, 1],
                                 decimal=2)
 
-    def test_verbose(self, ag):
-        density_planar(ag, verbose=True).run()
+    def test_output_name(self, ag_single_frame):
+        with tempdir.in_tempdir():
+            density_planar(ag_single_frame, output="foo", save=True).run()
+            open("foo.dat")
+
+    def test_verbose(self, ag_single_frame):
+        density_planar(ag_single_frame, verbose=True).run()

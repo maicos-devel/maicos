@@ -63,7 +63,7 @@ def weight(selection, dens):
 class density_planar(MultiGroupAnalysisBase):
     """Computes partial densities or temperature profiles across the box.
 
-       :param output (str): Prefix for output filenames
+       :param output (str): Output filename
        :param outfreq (int): Default time after which output files are refreshed (1000 ps).
        :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
        :param binwidth (float): binwidth (nanometer)
@@ -85,12 +85,12 @@ class density_planar(MultiGroupAnalysisBase):
 
     def __init__(self,
                  atomgroups,
-                 output="density",
+                 output="density.dat",
                  outfreq=1000,
                  dim=2,
                  binwidth=0.1,
                  mu=False,
-                 muout="muout",
+                 muout="muout.dat",
                  temperature=300,
                  mass=np.nan,
                  zpos=None,
@@ -287,7 +287,7 @@ class density_planar(MultiGroupAnalysisBase):
             columns += "\t" + atomgroup_header(group) + " error"
 
         # save density profile
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.hstack(
                     ((self.results["z"][:, np.newaxis]),
                      self.results["dens_mean"], self.results["dens_err"])),
@@ -295,7 +295,7 @@ class density_planar(MultiGroupAnalysisBase):
 
         if self.mu:
             # save chemical potential
-            savetxt(self.muout + '.dat',
+            savetxt(self.muout,
                     np.hstack((self.results["mu"], self.results["dmu"]))[None],
                     header="μ [kJ/mol]\t μ error [kJ/mol]")
 
@@ -303,7 +303,7 @@ class density_planar(MultiGroupAnalysisBase):
 class density_cylinder(MultiGroupAnalysisBase):
     """Computes partial densities across a cylinder of given radius r and length l.
 
-   :param output (str): Prefix for output filenames
+   :param output (str): Output filename
    :param outfreq (int): Default time after which output files are refreshed (1000 ps).
    :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
    :param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup.
@@ -320,7 +320,7 @@ class density_cylinder(MultiGroupAnalysisBase):
 
     def __init__(self,
                  atomgroups,
-                 output="density_cylinder",
+                 output="density_cylinder.dat",
                  outfreq=1000,
                  dim=2,
                  center=None,
@@ -493,7 +493,7 @@ class density_cylinder(MultiGroupAnalysisBase):
             columns += "\t" + atomgroup_header(group) + " error"
 
         # save density profile
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.hstack(
                     ((self.results["r"][:, np.newaxis]),
                      self.results["dens_mean"], self.results["dens_err"])),

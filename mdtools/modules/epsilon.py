@@ -38,7 +38,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
     static dielectric constant.
 
     :param outfreq (float): Number of frames after which the output is updated.
-    :param output (str): Prefix for output filenames.
+    :param output (str): Output filename.
     :param temperature (float): temperature (K)
     :param bpbc (bool): do not make broken molecules whole again
                                (only works if molecule is smaller than shortest
@@ -60,7 +60,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                  outfreq=100,
                  temperature=300,
                  bpbc=True,
-                 output="eps",
+                 output="eps.dat",
                  **kwargs):
         super(epsilon_bulk, self).__init__(atomgroup, **kwargs)
         self.outfreq = 100
@@ -143,7 +143,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
             print("")
 
     def _save_results(self):
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.hstack([self.results["eps_mean"], self.results["eps"]]).T,
                 fmt='%1.2f',
                 header='eps\teps_x\teps_y\teps_z')
@@ -153,7 +153,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
     """Calculates a planar dielectric profile.
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
 
-    :param output (str): Prefix for output filenames
+    :param output_prefix (str): Prefix for output files
     :param binwidth (float): binwidth (nm)
     :param dim (int): direction normal to the surface (x,y,z=0,1,2, default: z)
     :param zmin (float): minimal z-coordinate for evaluation (nm)
@@ -182,7 +182,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     def __init__(self,
                  atomgroups,
-                 output="eps",
+                 output_prefix="eps",
                  binwidth=0.05,
                  dim=2,
                  zmin=0,
@@ -197,7 +197,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  bpbc=True,
                  **kwself):
         super(epsilon_planar, self).__init__(atomgroups, **kwself)
-        self.output = output
+        self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.dim = dim
         self.zmin = zmin
@@ -212,7 +212,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
+        parser.add_argument('-o', dest='output_prefix')
         parser.add_argument('-dz', dest='binwidth')
         parser.add_argument('-d', dest='dim')
         parser.add_argument('-zmin', dest='zmin')
@@ -509,8 +509,12 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
         header = "statistics over {:.1f} picoseconds".format(
             self._index * self._universe.trajectory.dt)
-        savetxt(self.output + '_perp.dat', outdata_perp, header=header)
-        savetxt(self.output + '_par.dat', outdata_par, header=header)
+        savetxt("{}{}".format(self.output_prefix, "_perp"),
+                outdata_perp,
+                header=header)
+        savetxt("{}{}".format(self.output_prefix, "_par"),
+                outdata_par,
+                header=header)
 
 
 class epsilon_cylinder(SingleGroupAnalysisBase):
@@ -518,7 +522,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
     profile for axial (along z) and radial (along xy) direction
     at the system's center of mass.
 
-    :param output (str): Prefix for output filenames
+    :param output_prefix (str): Prefix for output_prefix files
     :param geometry (str): A structure file without water from which com is calculated.
     :param radius (float): Radius of the cylinder (nm)
     :param binwidth (float): Bindiwdth the binwidth (nm)
@@ -539,7 +543,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
     def __init__(self,
                  atomgroup,
-                 output="eps_cyl",
+                 output_prefix="eps_cyl",
                  binwidth=0.05,
                  outfreq=10000,
                  geometry=None,
@@ -551,7 +555,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                  bpbc=True,
                  **kwself):
         super(epsilon_cylinder, self).__init__(atomgroup, **kwself)
-        self.output = output
+        self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.outfreq = outfreq
         self.geometry = geometry
@@ -563,7 +567,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
+        parser.add_argument('-o', dest='output_prefix')
         parser.add_argument('-g', dest='geometry')
         parser.add_argument('-r', dest='radius')
         parser.add_argument('-dr', dest='binwidth')
@@ -765,8 +769,12 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         header = "statistics over {:.1f} picoseconds".format(
             self._index * self._universe.trajectory.dt)
-        savetxt(self.output + '_ax.dat', outdata_ax, header=header)
-        savetxt(self.output + '_rad.dat', outdata_rad, header=header)
+        savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
+                outdata_ax,
+                header=header)
+        savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
+                outdata_rad,
+                header=header)
 
 
 class dielectric_spectrum(SingleGroupAnalysisBase):
@@ -784,7 +792,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         :param recalc (bool): Forces to recalculate the polarization,
                               regardless if it is already present.
         :param temperature (float): Reference temperature.
-        :param output (str): Prefix for the output files.
+        :param output_prefix (str): Prefix for the output files.
         :param segs (int): Sets the number of segments the trajectory is broken into.
         :param df (float): The desired frequency spacing in THz.
                            This determines the minimum frequency about which there
@@ -815,7 +823,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                  atomgroup,
                  recalc=False,
                  temperature=300,
-                 output="",
+                 output_prefix="",
                  segs=20,
                  df=None,
                  noplots=False,
@@ -827,7 +835,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                  **kwargs):
         super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
         self.temperature = temperature
-        self.output = output
+        self.output_prefix = output_prefix
         self.segs = segs
         self.df = df
         self.noplots = noplots
@@ -840,7 +848,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
     def _configure_parser(self, parser):
         parser.add_argument("-recalc", dest="recalc")
         parser.add_argument('-temp', dest='temperature')
-        parser.add_argument("-o", dest="output")
+        parser.add_argument("-o", dest="output_prefix")
         parser.add_argument("-segs", dest="segs")
         parser.add_argument("-df", dest="df")
         parser.add_argument("-noplots", dest="noplots")
@@ -856,8 +864,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                 "Invalid choice for potformat: '{}' (choose from 'pdf', "
                 "'png', 'jpg')".format(self.plotformat))
 
-        if len(self.output) > 0:
-            self.output += "_"
+        if len(self.output_prefix) > 0:
+            self.output_prefix += "_"
 
         self.Nframes = (self.stopframe - self.startframe) // self.step
         self.dt = self._trajectory.dt * self.step
@@ -993,14 +1001,14 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                 len(self.results["susc"])))
 
     def _save_results(self):
-        np.save(self.output + 'tseries.npy', self.results["t"])
+        np.save(self.output_prefix + 'tseries.npy', self.results["t"])
 
-        with open(self.output + 'V.txt', "w") as Vfile:
+        with open(self.output_prefix + 'V.txt', "w") as Vfile:
             Vfile.write(str(self.results["V"]))
 
-        np.save(self.output + 'P_tseries.npy', self.results["P"])
+        np.save(self.output_prefix + 'P_tseries.npy', self.results["P"])
 
-        suscfilename = self.output + 'susc.txt'
+        suscfilename = "{}{}".format(self.output_prefix, 'susc')
         savetxt(
             suscfilename,
             np.transpose([
@@ -1016,7 +1024,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
         if not (self.nobin or self.seglen <= self.bins):
 
-            suscfilename = self.output + 'susc_binned.txt'
+            suscfilename = "{}{}".format(self.output_prefix, 'susc_binned')
             savetxt(suscfilename,
                     np.transpose([
                         self.results["nu_binned"],
@@ -1119,11 +1127,11 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                 binned = True
 
             yscale = 'log'
-            plotname = self.output + 'susc_log.' + self.plotformat
+            plotname = self.output_prefix + 'susc_log.' + self.plotformat
             my_plot(binned)  # log-log
 
             yscale = 'linear'
-            plotname = self.output + 'susc_linlog.' + self.plotformat
+            plotname = self.output_prefix + 'susc_linlog.' + self.plotformat
             my_plot(binned)  # lin-log
 
             plt.close('all')

@@ -151,11 +151,12 @@ def get_cli_input():
                                             " ".join(sys.argv[1:]))
 
 
-def savetxt(fname, X, header='', **kwargs):
-    """An extension of the numpy savetxt function to add the command line
-    input to the header"""
+def savetxt(fname, X, header='', fsuffix=".dat", **kwargs):
+    """An extension of the numpy savetxt function.
+    Adds the command line input to the header and checks for a doubled defined
+    filesuffix."""
     header = "{}\n{}".format(get_cli_input(), header)
-
+    fname = "{}{}".format(fname, (not fname.endswith(fsuffix)) * fsuffix)
     np.savetxt(fname, X, header=header, **kwargs)
 
 
