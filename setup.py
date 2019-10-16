@@ -105,12 +105,13 @@ if __name__ == "__main__":
           include_package_data=True,
           ext_modules=cythonize(extensions),
           install_requires=[
-              'MDAnalysis>0.19.2', 'matplotlib>=2.0.0', 'numpy>=1.10.4',
-              'scipy>=0.17'
+              'MDAnalysis>0.19.2',
+              'matplotlib>=2.0.0',
+              'numpy>=1.10.4',
+              'scipy>=0.17',
+              'threadpoolctl>=1.1.0',
           ],
           entry_points={
-              'console_scripts': [
-                  'mdtools=mdtools.__main__:main',
-              ],
+              'console_scripts': ['mdtools=mdtools.__main__:main',],
           },
           zip_safe=False)
