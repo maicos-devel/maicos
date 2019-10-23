@@ -161,7 +161,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -d -sel \
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -d \
                                 -dout" -- ${cur_word} ) )
       return 0 ;;
 
@@ -186,8 +186,8 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dz -d -sel \
-                                -dout -sym -shift -com -bin" -- ${cur_word} ) )
+      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dz -d \
+                                -dout -sym -shift -com -bin -nopbcrepair" -- ${cur_word} ) )
       return 0 ;;
 
     epsilon_bulk)
