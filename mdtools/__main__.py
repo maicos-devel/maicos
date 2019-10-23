@@ -202,6 +202,7 @@ def main():
                     u.dimensions = args.box
                 if len(args.box) == 3:
                     u.dimensions[:3] = args.box
+                    u.dimensions[3:] = [90, 90, 90]
                 else:
                     sys.exit(
                         "{}Error: The boxdimensions must contain 3 entries for "
