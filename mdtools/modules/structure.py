@@ -411,10 +411,11 @@ class debye(SingleGroupAnalysisBase):
 
 
 class diporder(SingleGroupAnalysisBase):
-    """Calculates dipolar order parameters.
-
-    diporder saves the (summed) projected polarization density in the results
-    dictionary containing the following attributes: z; diporder
+    """Calculates dipolar order parameters including
+    the projected polarization density P_0⋅ρ(z)⋅cos(θ[z]),
+    the dipole orientation cos(θ[z]),
+    the squared dipole orientation cos²(Θ[z]) and
+    the number density ρ(z)
 
     :param binwidth (float): specify the binwidth [nm]
     :param dim (int): direction normal to the surface (x,y,z=0,1,2)
@@ -432,10 +433,11 @@ class diporder(SingleGroupAnalysisBase):
                        (only works if molecule is smaller than shortest box vector
 
 
-   :returns (dict): * z: bins
-                    * diporder: 0: P_0 rho(z) cos(Theta(z))
-                                1: cos(Theta(z))
-                                2: rho(z)
+   :returns (dict): * z: bins [nm]
+                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+                    * cos_theta: cos(θ[z])
+                    * cos_2_theta: cos²(Θ[z])
+                    * rho: ρ(z) [1/nm³]
     """
 
     def __init__(self,
@@ -448,7 +450,7 @@ class diporder(SingleGroupAnalysisBase):
                  center=False,
                  com=False,
                  binmethod='COM',
-                 bpbc=False,
+                 bpbc=True,
                  **kwargs):
         super(diporder, self).__init__(atomgroup, **kwargs)
 
@@ -497,7 +499,10 @@ class diporder(SingleGroupAnalysisBase):
         dz = self.binwidth * 10  # Convert to Angstroms
         # CAVE: binwidth varies in NPT !
         self.nbins = int(self.atomgroup.dimensions[self.dim] / dz)
-        self.diporder = np.zeros((self.nbins, 3))
+        self.P0 = np.zeros(self.nbins)
+        self.cos_theta = np.zeros(self.nbins)
+        self.cos_2_theta = np.zeros(self.nbins)
+        self.rho = np.zeros(self.nbins)
         self.av_box_length = 0
 
         # unit normal vector
@@ -521,7 +526,7 @@ class diporder(SingleGroupAnalysisBase):
 
         # Make molecules whole
         if self.bpbc:
-            self.atomgroup.unwrap(compound="molecule")
+            self.atomgroup.unwrap(compound="molecules")
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
@@ -547,19 +552,20 @@ class diporder(SingleGroupAnalysisBase):
         bincount = np.bincount(bins, minlength=self.nbins)
         A = np.prod(self._ts.dimensions[self.xydims])
 
-        self.diporder[:, 0] += np.histogram(
+        self.P0 += np.histogram(
             bins,
             bins=np.arange(self.nbins + 1),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            self.diporder[:, 1] += np.nan_to_num(
-                np.histogram(bins,
+        cos_theta = np.histogram(bins,
                              bins=np.arange(self.nbins + 1),
                              weights=np.dot(
                                  dipoles /
                                  np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
-                                 self.unit))[0] / bincount)
-        self.diporder[:, 2] += bincount / (A * dz_frame / 1e3)
+                                 self.unit))[0]
+        with np.errstate(divide='ignore', invalid='ignore'):
+            self.cos_theta += np.nan_to_num(cos_theta / bincount)
+            self.cos_2_theta += np.nan_to_num(cos_theta**2 / bincount)
+        self.rho += bincount / (A * dz_frame / 1e3) # convert to 1/nm^3
 
         self.av_box_length += self._ts.dimensions[self.dim] / 10
 
@@ -586,7 +592,10 @@ class diporder(SingleGroupAnalysisBase):
                 0, self.av_box_length / self._index, self.nbins,
                 endpoint=False) + dz / 2
 
-        self.results["diporder"] = self.diporder / self._frame_index
+        self.results["P0"] = self.P0 / self._frame_index
+        self.results["cos_theta"] = self.cos_theta / self._frame_index
+        self.results["cos_2_theta"] = self.cos_2_theta / self._frame_index
+        self.results["rho"] = self.rho / self._frame_index
 
         if self.bsym:
             for i in range(len(self.results["z"]) - 1):
@@ -603,8 +612,17 @@ class diporder(SingleGroupAnalysisBase):
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
+        header = "z [nm]\t"
+        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
+        header += "cos(theta(z))\t"
+        header += "cos^2(theta(z))\t"
+        header += "rho(z) [1/nm^3]"
+
         savetxt(self.output,
-                np.hstack([
-                    self.results["z"][:, np.newaxis], self.results["diporder"]
-                ]),
-                header="z\tP_0 rho(z) cos(Theta(z))\tcos(Theta(z))\trho(z)")
+                np.vstack([
+                    self.results["z"],
+                    self.results["P0"],
+                    self.results["cos_theta"],
+                    self.results["cos_2_theta"],
+                    self.results["rho"]]).T,
+                header=header)
