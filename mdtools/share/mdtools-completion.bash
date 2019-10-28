@@ -28,6 +28,7 @@ _mdtools_completion()
   mdtools_opts+=" epsilon_cylinder"
   mdtools_opts+=" kinetic_energy"
   mdtools_opts+=" saxs"
+  mdtools_opts+=" velocity"
   mdtools_opts+=" --debug --help --bash_completion --version"
 
   mdtools_default_args="-h -s -top -f -traj -atom_style -b -e -dt -box -nt -sel"
@@ -290,6 +291,31 @@ _mdtools_completion()
         COMPREPLY=( $( compgen -W "$mdtools_default_args -dout -sq\
                                   -startq -endq -dq -mintheta -maxtheta" -- ${cur_word} ) )
         return 0 ;;
+
+        velocity)
+          case "${prev_word}" in
+            -s)
+            COMPREPLY=( $( compgen -o plusdirs  -f -X "$topols" -- ${cur_word}) )
+            return 0 ;;
+            -f)
+            COMPREPLY=( $( compgen -o plusdirs  -f -X "$trajs" -- ${cur_word}) )
+            return 0 ;;
+            -o)
+            COMPREPLY=( $( compgen -o plusdirs  -f -- ${cur_word}) )
+            return 0 ;;
+            -d)
+            COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+            return 0 ;;
+            -dv)
+            COMPREPLY=( $( compgen -W "0 1 2" -- ${cur_word}) )
+            return 0 ;;
+            -h|-top|-traj|-atomstyle|-b|-e|-dt|-box|-nt|-sel|-dout|-nbins|-nblock|-bpbc)
+            COMPREPLY=( )
+            return 0 ;;
+          esac
+          COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d -dv -nbins\
+                                    -nblock -nopbcrepair" -- ${cur_word} ) )
+          return 0 ;;
   esac
 
   #  Complete the basic mdtools commands.

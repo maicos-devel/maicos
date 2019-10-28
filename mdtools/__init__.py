@@ -15,6 +15,7 @@ __all__ = [
     'dipole_angle',
     'kinetic_energy',
     'diporder',
+    'velocity',
 ]
 
 __authors__ = "Philip Loche et. al."
