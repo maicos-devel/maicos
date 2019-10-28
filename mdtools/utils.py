@@ -55,8 +55,8 @@ dt_dk_tolerance = 1e-8  # Max variation from the mean dt or dk that is allowed (
 
 
 def FT(t, x, indvar=True):
-    """Discrete fast fourier transform.\
-    Takes the time series and the function as arguments.\
+    """Discrete fast fourier transform.
+    Takes the time series and the function as arguments.
     By default, returns the FT and the frequency:\
     setting indvar=False means the function returns only the FT."""
     a, b = np.min(t), np.max(t)
@@ -77,8 +77,8 @@ def FT(t, x, indvar=True):
 
 
 def iFT(k, xf, indvar=True):
-    """Inverse discrete fast fourier transform.\
-    Takes the frequency series and the function as arguments.\
+    """Inverse discrete fast fourier transform.
+    Takes the frequency series and the function as arguments.
     By default, returns the iFT and the time series:\
     setting indvar=False means the function returns only the iFT."""
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
@@ -99,8 +99,8 @@ def iFT(k, xf, indvar=True):
 
 
 def Correlation(a, b=None, subtract_mean=False):
-    """Uses fast fourier transforms to give the correlation function\
-    of two arrays, or, if only one array is given, the autocorrelation.\
+    """Uses fast fourier transforms to give the correlation function
+    of two arrays, or, if only one array is given, the autocorrelation.
     Setting subtract_mean=True causes the mean to be subtracted from the input data."""
     meana = int(subtract_mean) * np.mean(
         a)  # essentially an if statement for subtracting mean
@@ -128,8 +128,8 @@ def Correlation(a, b=None, subtract_mean=False):
 
 
 def ScalarProdCorr(a, b=None, subtract_mean=False):
-    """Gives the correlation function of the scalar product of two vector timeseries.\
-    Arguments should be given in the form a[t, i], where t is the time variable,\
+    """Gives the correlation function of the scalar product of two vector timeseries.
+    Arguments should be given in the form a[t, i], where t is the time variable,
     along which the correlation is calculated, and i indexes the vector components."""
     corr = np.zeros(len(a[:, 0]))
 

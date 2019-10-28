@@ -46,7 +46,7 @@ class _AnalysisBase(base.AnalysisBase):
         end : float, optional
             end time (ps) for evaluation
         dt : float, optional
-            time step (ps) to read analysis frame
+            time step (ps) to read analysis frame. If `0` take all frames
         """
         self._trajectory = trajectory
 

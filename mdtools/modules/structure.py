@@ -496,9 +496,8 @@ class diporder(SingleGroupAnalysisBase):
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
-        dz = self.binwidth * 10  # Convert to Angstroms
-        # CAVE: binwidth varies in NPT !
-        self.nbins = int(self.atomgroup.dimensions[self.dim] / dz)
+        self.nbins = int(
+            np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
         self.P0 = np.zeros(self.nbins)
         self.cos_theta = np.zeros(self.nbins)
         self.cos_2_theta = np.zeros(self.nbins)
@@ -556,16 +555,16 @@ class diporder(SingleGroupAnalysisBase):
             bins,
             bins=np.arange(self.nbins + 1),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
-        cos_theta = np.histogram(bins,
-                             bins=np.arange(self.nbins + 1),
-                             weights=np.dot(
-                                 dipoles /
-                                 np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
-                                 self.unit))[0]
+        cos_theta = np.histogram(
+            bins,
+            bins=np.arange(self.nbins + 1),
+            weights=np.dot(
+                dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
+                self.unit))[0]
         with np.errstate(divide='ignore', invalid='ignore'):
             self.cos_theta += np.nan_to_num(cos_theta / bincount)
             self.cos_2_theta += np.nan_to_num(cos_theta**2 / bincount)
-        self.rho += bincount / (A * dz_frame / 1e3) # convert to 1/nm^3
+        self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
         self.av_box_length += self._ts.dimensions[self.dim] / 10
 
@@ -620,9 +619,8 @@ class diporder(SingleGroupAnalysisBase):
 
         savetxt(self.output,
                 np.vstack([
-                    self.results["z"],
-                    self.results["P0"],
-                    self.results["cos_theta"],
-                    self.results["cos_2_theta"],
-                    self.results["rho"]]).T,
+                    self.results["z"], self.results["P0"],
+                    self.results["cos_theta"], self.results["cos_2_theta"],
+                    self.results["rho"]
+                ]).T,
                 header=header)

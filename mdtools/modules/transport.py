@@ -35,7 +35,12 @@ class velocity(SingleGroupAnalysisBase):
         :param bpbc (bool): Do not make broken molecules whole again (only works if
                             molecule is smaller than shortest box vector
 
-        :returns (dict): * TODO
+        :returns (dict): * z: bins [nm]
+                         * v: velocity profile [m/s]
+                         * ees: velocity error estimate [m/s]
+                         * symz: symmetrized bins [nm]
+                         * symvel: symmetrized velocity profile [m/s]
+                         * symees: symmetrized velocity error estimate [m/s]
      """
 
     def __init__(self,
