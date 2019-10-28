@@ -82,6 +82,10 @@ Currently `mdtools` contains the following analysis modules:
 * **dipole_angle**: Calculates the timeseries of the dipole moment with respect to an axis.
 * **kinetic_energy**: Calculates the timeseries for the molecular center translational and rotational kinetic energy.
 
+## Transport Analysis
+
+* **velocity**: Calculates a velocity profile along a given axis.
+
 # Issues
 
 If you found any bugs, improvements or questions to mdtools feel free to raise an
