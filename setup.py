@@ -112,6 +112,6 @@ if __name__ == "__main__":
               'threadpoolctl>=1.1.0',
           ],
           entry_points={
-              'console_scripts': ['mdtools=mdtools.__main__:main',],
+              'console_scripts': ['mdtools = mdtools.__main__:entry_point'],
           },
           zip_safe=False)

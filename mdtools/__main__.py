@@ -43,9 +43,8 @@ def _warning(message,
 warnings.showwarning = _warning
 
 
-def main():
-    """The mdtools main function including the argument parser and universe
-       initialization."""
+def parse_args():
+    """Parse the command line arguments."""
 
     if '--bash_completion' in sys.argv:
         print(
@@ -180,10 +179,26 @@ def main():
         _configure_parser(selected_module, parser)
         complete_parser(parser, selected_module)
         args = parser.parse_args(sys.argv[2:])
+        args.debug = debug
+        args._allow_multiple_atomgroups = _allow_multiple_atomgroups
+        args.selected_module = selected_module
+    except Exception as e:
+        if args.debug:
+            traceback.print_exc()
+        else:
+            print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))
 
+    return args
+
+
+def main(args, verbose=True):
+    """The mdtools main function including universe initialization and module running."""
+
+    try:
         with threadpool_limits(limits=args.num_threads):
-            print("Loading trajectory... ", end="")
-            sys.stdout.flush()
+            if verbose:
+                print("Loading trajectory... ", end="")
+                sys.stdout.flush()
 
             # prepare kwargs dictionary for other optional arguments
             ukwargs = {}
@@ -195,7 +210,8 @@ def main():
                              **ukwargs)
             if args.trajectory is not None:
                 u.load_new(args.trajectory, format=args.trajectory_format)
-            print("Done!\n")
+            if verbose:
+                print("Done!\n")
 
             if args.box is not None:
                 if len(args.box) == 6:
@@ -204,12 +220,11 @@ def main():
                     u.dimensions[:3] = args.box
                     u.dimensions[3:] = [90, 90, 90]
                 else:
-                    sys.exit(
-                        "{}Error: The boxdimensions must contain 3 entries for "
-                        "the box vectors and possibly 3 more for the angles.{}"
-                        "".format(bcolors.fail, bcolors.endc))
-
-            print("Performing analysis for the following group(s):")
+                    raise IndexError(
+                        "The boxdimensions must contain 3 entries for "
+                        "the box length and possibly 3 more for the angles.")
+            if verbose:
+                print("Performing analysis for the following group(s):")
 
             if type(args.selection) is str:
                 args.selection = [args.selection]
@@ -217,7 +232,8 @@ def main():
             atomgroups = []
             for i, gr in enumerate(args.selection):
                 sel = u.select_atoms(gr)
-                print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
+                if verbose:
+                    print("{:>15}: {:>10} atoms".format(gr, sel.n_atoms))
                 if sel.n_atoms > 0:
                     atomgroups.append(sel)
                 else:
@@ -228,13 +244,13 @@ def main():
                             "since it does not contain any atoms.".format(gr))
 
             if len(atomgroups) == 0:
-                sys.exit("{}No atoms found in selection. Please adjust group"
-                         "selection.{}".format(bcolors.fail, bcolors.endc))
+                raise ValueError("No atoms found in selection."
+                                 "Please adjust group selection.")
 
-            if not _allow_multiple_atomgroups:
+            if not args._allow_multiple_atomgroups:
                 atomgroups = atomgroups[0]
 
-            ana_obj = selected_module(atomgroups, verbose=True, save=True)
+            ana_obj = args.selected_module(atomgroups, verbose=True, save=True)
             # Insert parser arguments into ana_obj
             for var in vars(args):
                 if var not in [
@@ -247,12 +263,12 @@ def main():
             ana_obj.run(begin=args.begin, end=args.end, dt=args.dt)
 
     except Exception as e:
-        if debug:
+        if args.debug:
             traceback.print_exc()
         else:
-            print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))
+            sys.exit("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))
 
-    if debug:
+    if args.debug:
         # Inject local variables into global namespace for debugging.
         for key, value in locals().items():
             globals()[key] = value
@@ -265,6 +281,15 @@ def main():
         else:
             code.interact(banner=banner, local=dict(globals(), **locals()))
 
+    # Only return if ana_obj exists
+    if "ana_obj" in locals():
+        return ana_obj
+
+
+def entry_point():
+    args = parse_args()
+    main(args)
+
 
 if __name__ == "__main__":
-    main()
+    entry_point()
