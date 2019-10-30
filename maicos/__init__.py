@@ -25,4 +25,4 @@ __all__ = [
 ]
 
 __authors__ = "Philip Loche et. al."
-__version__ = "0.1-dev"  # NOTE: keep in sync with VERSION in setup.py
+__version__ = "0.1"  # NOTE: keep in sync with VERSION in setup.py
