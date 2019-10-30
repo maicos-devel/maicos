@@ -1,4 +1,4 @@
-# MAICos - Molecular Analysis for Interfacial and Confined Systems
+# MAICoS - Molecular Analysis for Interfacial and Confined Systems
 
 A Python library to analyse molecular dynamics simulations of
 interfacial and confined systems based on
