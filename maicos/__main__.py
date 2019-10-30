@@ -9,7 +9,7 @@ import warnings
 
 from threadpoolctl import threadpool_limits
 import MDAnalysis as mda
-import mdtools
+import maicos
 
 from . import __version__
 from . import __all__ as available_modules
@@ -49,12 +49,12 @@ def parse_args():
     if '--bash_completion' in sys.argv:
         print(
             os.path.join(os.path.dirname(__file__),
-                         "share/mdtools-completion.bash"))
+                         "share/maicos-completion.bash"))
         sys.exit(0)
 
     parser = argparse.ArgumentParser(
-        description="A collection of scripts to analyse molecular "
-        "dynamics simulations.",
+        description="Analyse molecular dynamics simulations of "
+        "interfacial and confined systems.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("program",
                         type=str,
@@ -67,7 +67,7 @@ def parse_args():
                         "the program.")
     parser.add_argument('--version',
                         action='version',
-                        version="mdtools {}".format(__version__))
+                        version="maicos {}".format(__version__))
 
     try:
         sys.argv.remove("--debug")
@@ -78,7 +78,7 @@ def parse_args():
 
     try:
         if sys.argv[1] in available_modules:
-            selected_module = getattr(mdtools, sys.argv[1])
+            selected_module = getattr(maicos, sys.argv[1])
         else:
             parser.parse_args()
     except IndexError:
@@ -86,7 +86,7 @@ def parse_args():
 
     print('\n{}\n'.format(get_cli_input()))
     parser = argparse.ArgumentParser(
-        prog="mdtools " + sys.argv[1],
+        prog="maicos " + sys.argv[1],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("-s",
@@ -192,7 +192,7 @@ def parse_args():
 
 
 def main(args, verbose=True):
-    """The mdtools main function including universe initialization and module running."""
+    """The maicos main function including universe initialization and module running."""
 
     try:
         with threadpool_limits(limits=args.num_threads):

@@ -1,7 +1,8 @@
-# MDTOOLS
+# MAICos - Molecular Analysis for Interfacial and Confined Systems
 
-A collection of scripts to analyse molecular dynamics simulations.
-Usually these scripts offer more flexibility and/or are faster than the original implementations.
+A Python library to analyse molecular dynamics simulations of
+interfacial and confined systems based on
+[MDAnalysis](https://www.mdanalysis.org).
 
 # Installation
 
@@ -10,8 +11,8 @@ underlying libraries. To install the package
 for all users type
 
 ```sh
-    git clone https://gitlabph.physik.fu-berlin.de/ag-netz/mdtools.git
-    cd mdtools
+    git clone https://gitlabph.physik.fu-berlin.de/ag-netz/maicos.git
+    cd maicos
     pip3 install numpy cython
     pip3 install .
 ```
@@ -21,36 +22,36 @@ If you are using `BASH` you can add the autocompletion script
 by adding
 
 ```sh
-    source $(mdtools --bash_completion)
+    source $(maicos --bash_completion)
 ```
 
 to your `.bashrc` or `.profile` file.
 
 # Usage
 
-You can use mdtools either from the command line or directly from your python
+You can use maicos either from the command line or directly from your python
 code. All available modules are briefly described below.
 
 ## From the command line
 
-To run mdtools from the command line use
+To run maicos from the command line use
 
 ```sh
-mdtools <module> <paramaters>
+maicos <module> <paramaters>
 ```
 
-You can get a help page by typing `mdtools -h` or package specific help page
-by typing `mdtools <package> -h`.
+You can get a help page by typing `maicos -h` or package specific help page
+by typing `maicos <package> -h`.
 
 ## From the python interpreter
 
-To use mdtools with the python interpreter create `analysis` object,
+To use maicos with the python interpreter create `analysis` object,
 by supplying an MDAnalysis AtomGroup then use the `run` method
 
 ```python
-import mdtools
+import maicos
 
-ana_obj = mdtools.<module>(atomgroup, <paramaters>)
+ana_obj = maicos.<module>(atomgroup, <paramaters>)
 ana_obj.run()
 ```
 
@@ -58,7 +59,7 @@ Results are available through the objects `results` dictionary.
 
 # Modules
 
-Currently `mdtools` contains the following analysis modules:
+Currently `maicos` contains the following analysis modules:
 
 ## Density
 * **density_planar**: Computes partial densities or temperature profiles across the box.
@@ -88,7 +89,7 @@ Currently `mdtools` contains the following analysis modules:
 
 # Issues
 
-If you found any bugs, improvements or questions to mdtools feel free to raise an
+If you found any bugs, improvements or questions to maicos feel free to raise an
 issue.
 
 # Contributing
