@@ -1,12 +1,12 @@
 #/usr/bin/env bash
 
-_mdtools_completion()
+_maicos_completion()
 {
   local cur_word
   local prev_word
   local module
-  local mdtools_opts
-  local mdtools_default_args
+  local maicos_opts
+  local maicos_default_args
   local topols
   local trajs
 
@@ -14,24 +14,24 @@ _mdtools_completion()
   prev_word="${COMP_WORDS[$COMP_CWORD-1]}"
   module="${COMP_WORDS[1]}"
 
-  #  The mdtools options we will complete.
-  mdtools_opts=""
-  mdtools_opts+=" carbonstructure"
-  mdtools_opts+=" debye"
-  mdtools_opts+=" density_planar"
-  mdtools_opts+=" density_cylinder"
-  mdtools_opts+=" dielectric_spectrum"
-  mdtools_opts+=" dipole_angle"
-  mdtools_opts+=" diporder"
-  mdtools_opts+=" epsilon_bulk"
-  mdtools_opts+=" epsilon_planar"
-  mdtools_opts+=" epsilon_cylinder"
-  mdtools_opts+=" kinetic_energy"
-  mdtools_opts+=" saxs"
-  mdtools_opts+=" velocity"
-  mdtools_opts+=" --debug --help --bash_completion --version"
+  #  The maicos options we will complete.
+  maicos_opts=""
+  maicos_opts+=" carbonstructure"
+  maicos_opts+=" debye"
+  maicos_opts+=" density_planar"
+  maicos_opts+=" density_cylinder"
+  maicos_opts+=" dielectric_spectrum"
+  maicos_opts+=" dipole_angle"
+  maicos_opts+=" diporder"
+  maicos_opts+=" epsilon_bulk"
+  maicos_opts+=" epsilon_planar"
+  maicos_opts+=" epsilon_cylinder"
+  maicos_opts+=" kinetic_energy"
+  maicos_opts+=" saxs"
+  maicos_opts+=" velocity"
+  maicos_opts+=" --debug --help --bash_completion --version"
 
-  mdtools_default_args="-h -s -top -f -traj -atom_style -b -e -dt -box -nt -sel"
+  maicos_default_args="-h -s -top -f -traj -atom_style -b -e -dt -box -nt -sel"
 
   #  Define knowing topology, trajectory, structure formats.
   topols='!*@(.txyz|.top|.dms|.gsd|.crd\
@@ -64,7 +64,7 @@ _mdtools_completion()
         return 0
         ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -dout -sq -startq \
+      COMPREPLY=( $( compgen -W "$maicos_default_args -dout -sq -startq \
                     -endq -dq -sinc -d" -- ${cur_word} ) )
       return 0 ;;
 
@@ -89,7 +89,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d -dz -mu\
+      COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -d -dz -mu\
                                 -muo -temp -zpos -dens" -- ${cur_word} ) )
       return 0 ;;
 
@@ -114,7 +114,7 @@ _mdtools_completion()
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d \
+        COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -d \
                                   -center -r -dr -l -dens" -- ${cur_word} ) )
         return 0 ;;
 
@@ -139,7 +139,7 @@ _mdtools_completion()
       COMPREPLY=( )
       return 0 ;;
     esac
-    COMPREPLY=( $( compgen -W "$mdtools_default_args -recalc -temp -o -u \
+    COMPREPLY=( $( compgen -W "$maicos_default_args -recalc -temp -o -u \
                                -truncfac -trunclen -segs -df -noplots ⁠\
                                -plotformat -ymin -nobin" -- ${cur_word} ) )
     return 0 ;;
@@ -162,7 +162,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -d \
+      COMPREPLY=( $( compgen -W "$maicos_default_args -o -d \
                                 -dout" -- ${cur_word} ) )
       return 0 ;;
 
@@ -187,7 +187,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dz -d \
+      COMPREPLY=( $( compgen -W "$maicos_default_args -o -dz -d \
                                 -dout -sym -shift -com -bin -nopbcrepair" -- ${cur_word} ) )
       return 0 ;;
 
@@ -206,7 +206,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -temp \
+      COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -temp \
                                 -nopbcrepair" -- ${cur_word} ) )
       return 0 ;;
 
@@ -228,7 +228,7 @@ _mdtools_completion()
         COMPREPLY=( )
         return 0 ;;
       esac
-      COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -dz -d -zmin \
+      COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -dz -d -zmin \
                                 -zmax -temp -groups -2d -vac -sym -com -nopbcrepair"\
                                                           -- ${cur_word} ) )
       return 0 ;;
@@ -251,7 +251,7 @@ _mdtools_completion()
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -dr -vr -l \
+        COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -dr -vr -l \
                                   -temp -si -nopbcrepair" -- ${cur_word} ) )
         return 0 ;;
 
@@ -270,7 +270,7 @@ _mdtools_completion()
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "$mdtools_default_args -o " -- ${cur_word} ) )
+        COMPREPLY=( $( compgen -W "$maicos_default_args -o " -- ${cur_word} ) )
         return 0 ;;
 
       saxs)
@@ -288,7 +288,7 @@ _mdtools_completion()
           COMPREPLY=( )
           return 0 ;;
         esac
-        COMPREPLY=( $( compgen -W "$mdtools_default_args -dout -sq\
+        COMPREPLY=( $( compgen -W "$maicos_default_args -dout -sq\
                                   -startq -endq -dq -mintheta -maxtheta" -- ${cur_word} ) )
         return 0 ;;
 
@@ -313,14 +313,14 @@ _mdtools_completion()
             COMPREPLY=( )
             return 0 ;;
           esac
-          COMPREPLY=( $( compgen -W "$mdtools_default_args -o -dout -d -dv -nbins\
+          COMPREPLY=( $( compgen -W "$maicos_default_args -o -dout -d -dv -nbins\
                                     -nblock -nopbcrepair" -- ${cur_word} ) )
           return 0 ;;
   esac
 
-  #  Complete the basic mdtools commands.
-  COMPREPLY=( $( compgen -W "${mdtools_opts}" -- ${cur_word} ) )
+  #  Complete the basic maicos commands.
+  COMPREPLY=( $( compgen -W "${maicos_opts}" -- ${cur_word} ) )
   return 0
 }
 
-complete -o filenames -F _mdtools_completion mdtools
+complete -o filenames -F _maicos_completion maicos

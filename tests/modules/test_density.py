@@ -5,7 +5,7 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from mdtools import density_planar, density_cylinder
+from maicos import density_planar, density_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 

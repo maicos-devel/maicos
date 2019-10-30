@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 
-import mdtools.utils
+import maicos.utils
 import numpy as np
 from numpy.testing import assert_almost_equal
 
@@ -16,6 +16,6 @@ def test_FT():
 def test_iFT():
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
-    t, sin_FT = mdtools.utils.FT(x, sin)
-    x_new, sin_new = mdtools.utils.iFT(t, sin_FT)
+    t, sin_FT = maicos.utils.FT(x, sin)
+    x_new, sin_new = maicos.utils.iFT(t, sin_FT)
     assert_almost_equal(sin, sin_new.real, decimal=1)

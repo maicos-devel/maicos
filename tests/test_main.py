@@ -6,8 +6,8 @@ from unittest.mock import patch
 import subprocess
 
 from MDAnalysisTests import tempdir
-from mdtools.__main__ import parse_args, main
-from mdtools import __all__ as available_modules
+from maicos.__main__ import parse_args, main
+from maicos import __all__ as available_modules
 import pytest
 
 from modules.datafiles import WATER_GRO
@@ -17,22 +17,22 @@ class Test_parse_args(object):
 
     def test_required_args(self):
         with pytest.raises(subprocess.CalledProcessError):
-            subprocess.check_call(['mdtools'])
+            subprocess.check_call(['maicos'])
 
     def test_wrong_module(self):
         with pytest.raises(subprocess.CalledProcessError):
-            subprocess.check_call(['mdtools', 'foo'])
+            subprocess.check_call(['maicos', 'foo'])
 
     @pytest.mark.parametrize("module", tuple(available_modules))
     def test_available_modules(self, module):
-        subprocess.check_call(['mdtools', module, "--help"])
+        subprocess.check_call(['maicos', module, "--help"])
 
     @pytest.mark.parametrize('args', ("version", "help", "bash_completion"))
     def test_extra_options(self, args):
-        subprocess.check_call(['mdtools', '--' + args])
+        subprocess.check_call(['maicos', '--' + args])
 
     def test_debug(self):
-        subprocess.run(["mdtools", "density_planar", "--debug"],
+        subprocess.run(["maicos", "density_planar", "--debug"],
                        input=b'exit()\n')
 
     @pytest.mark.parametrize(
@@ -44,7 +44,7 @@ class Test_parse_args(object):
          ('-e', "end", 42), ('-dt', "dt", 42), ('-box', "box", [42, 42, 42]),
          ('-nt', "num_threads", 1)))
     def test_arguments(self, opt, dest, val):
-        testargs = ["mdtools", "density_planar", opt]
+        testargs = ["maicos", "density_planar", opt]
         if type(val) == list:
             for i in val:
                 testargs.append(str(i))
@@ -59,7 +59,7 @@ class Test_parse_args(object):
         'args',
         (["density_planar", "-sel", "foo", "bar"], ["diporder", "-sel", "foo"]))
     def test_multiple_atomgroup(self, args):
-        testargs = ["mdtools"]
+        testargs = ["maicos"]
         for i in args:
             testargs.append(i)
         with patch.object(sys, 'argv', testargs):
@@ -67,7 +67,7 @@ class Test_parse_args(object):
 
     def test_multi_group_on_single_module(self):
         with patch.object(sys, 'argv',
-                          ["mdtools", "diporder", "-sel", "foo", "bar"]):
+                          ["maicos", "diporder", "-sel", "foo", "bar"]):
             with pytest.raises(SystemExit):
                 parse_args()
 
@@ -76,7 +76,7 @@ class Test_main(object):
 
     @pytest.fixture()
     def args(self):
-        with patch.object(sys, 'argv', ["mdtools", "density_planar"]):
+        with patch.object(sys, 'argv', ["maicos", "density_planar"]):
             return parse_args()
 
     def test_full_run(self, args):

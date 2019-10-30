@@ -19,7 +19,7 @@ What happened instead. Add as much detail as you can. Include (copy and paste) s
 Show us how to reproduce the failiure. If you can, use trajectory files from the test data.
 
 ``` python
-import mdtools
+import maicos
 
 ....
 

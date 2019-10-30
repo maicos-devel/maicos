@@ -6,9 +6,9 @@
 # script do the following steps:
 # 1. Copy it to the `mdtsools/modules` folder and add your code.
 # 3. Choose an unique name, add `<analysis_example>`
-#    to the `__all__` list in `mdtools/__init__.py` and add
-#    'from .<analysis_example> import *' to `mdtools/modules/__init__.py`
-# 3. OPTIONAL: Add bash completion commands to "mdtools/share/mdtools_completion.bash".
+#    to the `__all__` list in `maicos/__init__.py` and add
+#    'from .<analysis_example> import *' to `maicos/modules/__init__.py`
+# 3. OPTIONAL: Add bash completion commands to "maicos/share/maicos_completion.bash".
 # ==================================
 
 # Mandatory imports
@@ -19,29 +19,25 @@ from ..utils import savetxt
 
 
 class analysis_example(SingleGroupAnalysisBase):
-    """Description for my awesome single group analysis script."""
+    """Description for my awesome single group analysis script.
 
-    def __init__(self, atomgroup, temperature=300, output="output", **kwargs):
+       :param output (str): Prefix for output filenames
+       :param temperature (str): Reference temperature (K)
+
+       :returns (dict): * volume: averaged box volume (Å**3)
+    """
+
+    def __init__(self, atomgroup, temperature=300, output="outfile", **kwargs):
         super(analysis_example, self).__init__(atomgroup, **kwargs)
 
         self.temperature = temperature
         self.output = output
 
     def _configure_parser(self, parser):
-        parser.description = self.__doc__
         # Custom arguments
-        parser.add_argument(
-            '-o',
-            dest='output',
-            type=str,
-            default='outfile',
-            help='Prefix for output filenames')
-        parser.add_argument(
-            '-temp',
-            dest='temperature',
-            type=float,
-            default=300,
-            help='Reference temperature')
+        # To generate the CLI help `dest` MUST be the same as the name in the docstring
+        parser.add_argument('-o', dest='output')
+        parser.add_argument('-temp', dest='temperature')
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
@@ -82,8 +78,7 @@ class analysis_example(SingleGroupAnalysisBase):
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
-        savetxt(
-            self.output + '.dat',
-            np.array([self.results["volume"]]),
-            fmt='%1.2f',
-            header='volume / Angstrom**3')
+        savetxt(self.output + '.dat',
+                np.array([self.results["volume"]]),
+                fmt='%1.2f',
+                header='volume / Angstrom**3')

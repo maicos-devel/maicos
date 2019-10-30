@@ -12,3 +12,4 @@ sfactor.c
 *.txt
 *.xvg
 .duecredit.p
+!maicos/share/*.dat

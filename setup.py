@@ -69,7 +69,7 @@ def detect_openmp():
     return hasopenmp
 
 
-VERSION = "0.1-dev"  # NOTE: keep in sync with __version__ in mdtools.__init__.py
+VERSION = "0.1-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 
 if __name__ == "__main__":
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     has_openmp = detect_openmp()
 
     extensions = [
-        Extension("mdtools.lib.sfactor", ["mdtools/lib/sfactor.pyx"],
+        Extension("maicos.lib.sfactor", ["maicos/lib/sfactor.pyx"],
                   include_dirs=[np.get_include()],
                   extra_compile_args=[
                       '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
@@ -93,12 +93,12 @@ if __name__ == "__main__":
     ]
 
 if __name__ == "__main__":
-    setup(name='mdtools',
+    setup(name='maicos',
           packages=find_packages(),
           version=VERSION,
           license='MIT',
-          description='A collection of scripts to analyse and build systems '
-          'for molecular dynamics simulations.',
+          description='Analyse molecular dynamics simulations of '
+          'interfacial and confined systems.',
           author="Philip Loche et. al.",
           author_email="ploche@physik.fu-berlin.de",
           package_data={'': ['share/*']},
@@ -112,6 +112,6 @@ if __name__ == "__main__":
               'threadpoolctl>=1.1.0',
           ],
           entry_points={
-              'console_scripts': ['mdtools = mdtools.__main__:entry_point'],
+              'console_scripts': ['maicos = maicos.__main__:entry_point'],
           },
           zip_safe=False)

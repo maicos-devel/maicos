@@ -5,7 +5,7 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from mdtools import velocity
+from maicos import velocity
 import numpy as np
 from numpy.testing import assert_almost_equal
 
