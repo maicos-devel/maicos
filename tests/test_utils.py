@@ -15,7 +15,7 @@ from numpy.testing import assert_almost_equal
 def test_FT():
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
-    t, sin_FT = mdtools.utils.FT(x, sin)
+    t, sin_FT = maicos.utils.FT(x, sin)
     assert_almost_equal(abs(t[np.argmax(sin_FT)]), 5, decimal=2)
 
 
