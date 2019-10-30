@@ -101,6 +101,8 @@ if __name__ == "__main__":
           'interfacial and confined systems.',
           author="Philip Loche et. al.",
           author_email="ploche@physik.fu-berlin.de",
+          maintainer="Philip Loche",
+          maintainer_email="ploche@physik.fu-berlin.de",
           package_data={'': ['share/*']},
           include_package_data=True,
           ext_modules=cythonize(extensions),

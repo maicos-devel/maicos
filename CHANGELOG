@@ -1,6 +1,7 @@
 # -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8 -*-
+
 ======================
-  maicos CHANGELOG
+  MAIcoS CHANGELOG
 ======================
 
 The rules for this file:
@@ -11,7 +12,9 @@ The rules for this file:
     use tabs but use spaces for formatting
 
 
+
+XXX/XX/XX Philip Loche
+
   * 0.1
 
-2018/04/31 Philip Loche
-  * first internal release
+  * first release out of the lab
