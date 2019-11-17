@@ -102,7 +102,7 @@ if __name__ == "__main__":
     setup(name='maicos',
           packages=find_packages(),
           version=VERSION,
-          license='MIT',
+          license='GPL 3',
           description='Analyse molecular dynamics simulations of '
           'interfacial and confined systems.',
           author="Philip Loche et. al.",
