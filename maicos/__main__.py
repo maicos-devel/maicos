@@ -189,7 +189,7 @@ def parse_args():
         args._allow_multiple_atomgroups = _allow_multiple_atomgroups
         args.selected_module = selected_module
     except Exception as e:
-        if args.debug:
+        if debug:
             traceback.print_exc()
         else:
             print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))

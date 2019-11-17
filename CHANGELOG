@@ -12,9 +12,11 @@ The rules for this file:
     use tabs but use spaces for formatting
 
 
-XXXX/XX/XX 
+XXXX/XX/XX Philip Loche
 
   * 0.2
+  
+  * Fixed debug if error in parsing
 
 
 2019/10/30 Philip Loche
