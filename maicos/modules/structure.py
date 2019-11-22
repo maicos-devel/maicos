@@ -440,7 +440,7 @@ class diporder(SingleGroupAnalysisBase):
 
 
    :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+                    * P0: P_0⋅cos(θ[z]) [e/nm²]
                     * cos_theta: cos(θ[z])
                     * cos_2_theta: cos²(Θ[z])
                     * rho: ρ(z) [1/nm³]
@@ -618,7 +618,7 @@ class diporder(SingleGroupAnalysisBase):
         _conclude"""
 
         header = "z [nm]\t"
-        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
+        header += "P_0*cos(Theta[z]) [e/nm^2]\t"
         header += "cos(theta(z))\t"
         header += "cos^2(theta(z))\t"
         header += "rho(z) [1/nm^3]"
