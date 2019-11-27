@@ -16,6 +16,7 @@ XXXX/XX/XX Philip Loche
 
   * 0.2
   
+  * Fixed wrong center of mass velocity in velocity module
   * Fixed documentation in diporder for P0
   * Fixed debug if error in parsing
 

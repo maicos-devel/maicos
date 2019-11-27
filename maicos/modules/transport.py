@@ -107,6 +107,8 @@ class velocity(SingleGroupAnalysisBase):
             self.atomgroup.atoms.masses,
             compound="molecules",
         )
+        comvels /= self.atomgroup.atoms.accumulate(self.atomgroup.atoms.masses,
+                                                   compound="molecules")
 
         bins = (coms / (self._universe.dimensions[self.dim] / self.nbins)
                ).astype(int) % self.nbins

@@ -24,11 +24,11 @@ class Test_velocity(object):
     def vel_array(self):
         v_array = []
         # dim = 0:
-        v_array.append([8.33, -3.9, 12.98])
+        v_array.append([0.46, -0.21, 0.72])
         # dim = 1:
-        v_array.append([2.44, -3.51, -6.16])
+        v_array.append([0.13, -0.19, -0.34])
         # dim = 2:
-        v_array.append([-4.70, 1.34, 26.46])
+        v_array.append([-0.26, 1.34, 1.47])
         return v_array
 
     @pytest.fixture()
@@ -46,11 +46,11 @@ class Test_velocity(object):
 
     def test_broken_molecules(self, ag):
         vel = velocity(ag, bpbc=False).run()
-        assert_almost_equal(vel.results['v'].mean(), -2.9, decimal=1)
+        assert_almost_equal(vel.results['v'].mean(), -0.16, decimal=1)
 
     def test_repaired_molecules(self, ag):
         vel = velocity(ag, bpbc=True).run()
-        assert_almost_equal(vel.results['v'].mean(), -4.70, decimal=1)
+        assert_almost_equal(vel.results['v'].mean(), -0.26, decimal=1)
 
     def test_output(self, ag):
         with tempdir.in_tempdir():
