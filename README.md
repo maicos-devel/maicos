@@ -87,6 +87,12 @@ Currently `maicos` contains the following analysis modules:
 
 * **velocity**: Calculates a velocity profile along a given axis.
 
+# Custom modules
+
+You can add your custom modules to the maicos library. Just create a
+`.maicos` folder in your home directory and add your modules to this folder.
+For more information see the [example directory](examples/README.md).
+
 # Issues
 
 If you found any bugs, improvements or questions to maicos feel free to raise an
