@@ -7,6 +7,8 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import warnings
+
 from .modules import *
 
 __all__ = [
@@ -26,3 +28,6 @@ __all__ = [
 
 __authors__ = "Philip Loche et. al."
 __version__ = "0.2-dev"  # NOTE: keep in sync with VERSION in setup.py
+
+# Print maicos DeprecationWarnings
+warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')
