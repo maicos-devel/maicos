@@ -11,11 +11,45 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
+from maicos.modules.base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
+from maicos import check_charge_neutral, epsilon_bulk, epsilon_planar, epsilon_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
+
+
+class TestSingleCharged(SingleGroupAnalysisBase):
+    def __init__(self, atomgroup):
+        self.atomgroup = atomgroup
+
+    @check_charge_neutral
+    def _prepare(self):
+        pass
+
+
+class TestMultiCharged(MultiGroupAnalysisBase):
+    def __init__(self, atomgroups):
+        self.atomgroups = atomgroups
+
+    @check_charge_neutral
+    def _prepare(self):
+        pass
+
+
+class TestChargedDecorator(object):
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
+
+    def test_charged_single(self, ag):
+        with pytest.raises(ValueError):
+            TestSingleCharged(ag.select_atoms("name OW*"))._prepare()
+
+    def test_charged_Multi(self, ag):
+        with pytest.raises(ValueError):
+            TestMultiCharged([ag.select_atoms("name OW*"), ag])._prepare()
 
 
 class Test_epsilon_bulk(object):

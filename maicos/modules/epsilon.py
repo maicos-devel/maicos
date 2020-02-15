@@ -7,6 +7,8 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import functools
+
 import numpy as np
 import scipy.constants
 import MDAnalysis as mda
@@ -37,6 +39,24 @@ def Bin(a, bins):
         count[ic] += 1
 
     return avg / count
+
+
+def check_charge_neutral(function):
+    """Decorator to raise ValueError when atomgroup is not charge neutral."""
+    @functools.wraps(function)
+    def wrapped(self):
+        # Check if SingleGroupAnalysis
+        if hasattr(self, 'atomgroup'):
+            groups = [self.atomgroup]
+        else:
+            groups = self.atomgroups
+        for group in groups:
+            if not np.allclose(group.total_charge(compound='fragments'), 0.0):
+                raise ValueError("At least one AtomGroup has free charges. "
+                                 "Analysis for non-neutral systems or "
+                                 "systems with free charges are not available!")
+        return function(self)
+    return wrapped
 
 
 class epsilon_bulk(SingleGroupAnalysisBase):
@@ -80,6 +100,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
         parser.add_argument('-temp', dest='temperature')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
+    @check_charge_neutral
     def _prepare(self):
         self.volume = 0
         self.M = np.zeros(3)
@@ -232,6 +253,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         parser.add_argument('-com', dest='com')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
+    @check_charge_neutral
     def _prepare(self):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
@@ -584,6 +606,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         parser.add_argument('-si', dest='single')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
+    @check_charge_neutral
     def _prepare(self):
 
         if self.geometry is not None:
@@ -864,6 +887,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument("-binafter", dest="binafter")
         parser.add_argument("-nobin", dest="nobin")
 
+    @check_charge_neutral
     def _prepare(self):
         if self.plotformat not in ["pdf, png, jpg"]:
             raise ValueError(
