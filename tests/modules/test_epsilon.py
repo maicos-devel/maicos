@@ -19,7 +19,7 @@ from numpy.testing import assert_equal, assert_almost_equal
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
 
-class TestSingleCharged(SingleGroupAnalysisBase):
+class SingleCharged(SingleGroupAnalysisBase):
     def __init__(self, atomgroup):
         self.atomgroup = atomgroup
 
@@ -28,7 +28,7 @@ class TestSingleCharged(SingleGroupAnalysisBase):
         pass
 
 
-class TestMultiCharged(MultiGroupAnalysisBase):
+class MultiCharged(MultiGroupAnalysisBase):
     def __init__(self, atomgroups):
         self.atomgroups = atomgroups
 
@@ -45,11 +45,11 @@ class TestChargedDecorator(object):
 
     def test_charged_single(self, ag):
         with pytest.raises(ValueError):
-            TestSingleCharged(ag.select_atoms("name OW*"))._prepare()
+            SingleCharged(ag.select_atoms("name OW*"))._prepare()
 
     def test_charged_Multi(self, ag):
         with pytest.raises(ValueError):
-            TestMultiCharged([ag.select_atoms("name OW*"), ag])._prepare()
+            MultiCharged([ag.select_atoms("name OW*"), ag])._prepare()
 
 
 class Test_epsilon_bulk(object):
