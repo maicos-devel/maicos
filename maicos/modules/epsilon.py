@@ -45,7 +45,8 @@ def Bin(a, bins):
 def check_charge_neutral(filter):
     """Decorator to raise an Error/Warning when AtomGroup in an AnalysisBase class
     is not charge neutral. The behaviour of the warning can be controlled
-    with the filter attribute.
+    with the filter attribute. If the AtomGroup's corresponding universe is non-neutral
+    an ValueError is raised.
 
     :param filter (str): Filter type to control warning filter
                          Common values are: "error" or "default"
@@ -64,8 +65,11 @@ def check_charge_neutral(filter):
                     with warnings.catch_warnings():
                         warnings.simplefilter(filter)
                         warnings.warn("At least one AtomGroup has free charges. "
-                                      "Analysis for non-neutral systems or systems with "
-                                      "free charges could lead to severe artifacts!")
+                                      "Analysis for systems with free charges could lead "
+                                      "to severe artifacts!")
+
+                if not np.allclose(group.universe.atoms.total_charge(), 0.0):
+                    raise ValueError("Analysis for non-neutral systems is not supported.")
             return function(self)
         return wrapped
     return inner_function

@@ -65,6 +65,11 @@ class TestChargedDecorator(object):
         with pytest.warns(UserWarning):
             MultiCharged([ag.select_atoms("name OW*"), ag], filter="default")._prepare()
 
+    def test_universe_charged_single(self, ag):
+        ag.charges += 1
+        with pytest.raises(ValueError):
+            SingleCharged(ag.select_atoms("name OW*"), filter="default")._prepare()
+
 
 class Test_epsilon_bulk(object):
 
