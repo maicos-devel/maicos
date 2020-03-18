@@ -22,6 +22,7 @@ XXXX/XX/XX Philip Loche
   * Fixed documentation in diporder for P0
   * Fixed debug if error in parsing
   * Added test files for an air-water trajectory and the diporder module
+  * Performance tweaks and tests for sfactor
 
 
 2019/10/30 Philip Loche
