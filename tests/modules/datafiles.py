@@ -9,6 +9,12 @@
 
 from pkg_resources import resource_filename
 
+# bulk water
 WATER_GRO = resource_filename(__name__, "../data/water/confout.gro")
 WATER_TRR = resource_filename(__name__, "../data/water/traj.trr")
 WATER_TPR = resource_filename(__name__, "../data/water/topol.tpr")
+
+# air-water interface
+AIRWATER_GRO = resource_filename(__name__, "../data/airwater/confout.gro")
+AIRWATER_TRR = resource_filename(__name__, "../data/airwater/traj.trr")
+AIRWATER_TPR = resource_filename(__name__, "../data/airwater/topol.tpr")
