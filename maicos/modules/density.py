@@ -287,10 +287,16 @@ class density_planar(MultiGroupAnalysisBase):
             columns = "{} density profile [{}]".format(self.dens, units)
         columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
             self._index * self._universe.trajectory.dt)
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group)
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group) + " error"
+        try:
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group)
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group) + " error"
+        except AttributeError:
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn("AtomGroup does not contain resnames."
+                              " Not writing residues information to output.")
 
         # save density profile
         savetxt(self.output,
