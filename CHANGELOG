@@ -21,6 +21,7 @@ XXXX/XX/XX Philip Loche
   * Fixed wrong center of mass velocity in velocity module
   * Fixed documentation in diporder for P0
   * Fixed debug if error in parsing
+  * Added checks for charge neutrality in dielectric analysis
   * Added test files for an air-water trajectory and the diporder module
   * Performance tweaks and tests for sfactor
 

@@ -11,11 +11,59 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
-from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
+from maicos.modules.base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
+from maicos import check_charge_neutral, epsilon_bulk, epsilon_planar, epsilon_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
+
+
+class SingleCharged(SingleGroupAnalysisBase):
+    def __init__(self, atomgroup, filter):
+        self.atomgroup = atomgroup
+        self.filter = filter
+
+    def _prepare(self):
+        @check_charge_neutral(self.filter)
+        def inner_func(self):
+            pass
+        inner_func(self)
+
+
+class MultiCharged(MultiGroupAnalysisBase):
+    def __init__(self, atomgroups, filter):
+        self.atomgroups = atomgroups
+        self.filter = filter
+
+    def _prepare(self):
+        @check_charge_neutral(self.filter)
+        def inner_func(self):
+            pass
+        inner_func(self)
+
+
+class TestChargedDecorator(object):
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
+
+    def test_charged_single(self, ag):
+        with pytest.raises(UserWarning):
+            SingleCharged(ag.select_atoms("name OW*"), filter="error")._prepare()
+
+    def test_charged_Multi(self, ag):
+        with pytest.raises(UserWarning):
+            MultiCharged([ag.select_atoms("name OW*"), ag], filter="error")._prepare()
+
+    def test_charged_single_warn(self, ag):
+        with pytest.warns(UserWarning):
+            SingleCharged(ag.select_atoms("name OW*"), filter="default")._prepare()
+
+    def test_charged_Multi_warn(self, ag):
+        with pytest.warns(UserWarning):
+            MultiCharged([ag.select_atoms("name OW*"), ag], filter="default")._prepare()
 
 
 class Test_epsilon_bulk(object):
