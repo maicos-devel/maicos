@@ -8,6 +8,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 import functools
+import warnings
 
 import numpy as np
 import scipy.constants
@@ -41,22 +42,33 @@ def Bin(a, bins):
     return avg / count
 
 
-def check_charge_neutral(function):
-    """Decorator to raise ValueError when atomgroup is not charge neutral."""
-    @functools.wraps(function)
-    def wrapped(self):
-        # Check if SingleGroupAnalysis
-        if hasattr(self, 'atomgroup'):
-            groups = [self.atomgroup]
-        else:
-            groups = self.atomgroups
-        for group in groups:
-            if not np.allclose(group.total_charge(compound='fragments'), 0.0):
-                raise ValueError("At least one AtomGroup has free charges. "
-                                 "Analysis for non-neutral systems or "
-                                 "systems with free charges are not available!")
-        return function(self)
-    return wrapped
+def check_charge_neutral(filter):
+    """Decorator to raise an Error/Warning when AtomGroup in an AnalysisBase class
+    is not charge neutral. The behaviour of the warning can be controlled
+    with the filter attribute.
+
+    :param filter (str): Filter type to control warning filter
+                         Common values are: "error" or "default"
+                         See `warnings.simplefilter` for more options.
+    """
+    def inner_function(function):
+        @functools.wraps(function)
+        def wrapped(self):
+            # Check if SingleGroupAnalysis
+            if hasattr(self, 'atomgroup'):
+                groups = [self.atomgroup]
+            else:
+                groups = self.atomgroups
+            for group in groups:
+                if not np.allclose(group.total_charge(compound='fragments'), 0.0):
+                    with warnings.catch_warnings():
+                        warnings.simplefilter(filter)
+                        warnings.warn("At least one AtomGroup has free charges. "
+                                      "Analysis for non-neutral systems or systems with "
+                                      "free charges could lead to severe artifacts!")
+            return function(self)
+        return wrapped
+    return inner_function
 
 
 class epsilon_bulk(SingleGroupAnalysisBase):
@@ -100,7 +112,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
         parser.add_argument('-temp', dest='temperature')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral
+    @check_charge_neutral(filter="default")
     def _prepare(self):
         self.volume = 0
         self.M = np.zeros(3)
@@ -253,7 +265,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         parser.add_argument('-com', dest='com')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral
+    @check_charge_neutral(filter="error")
     def _prepare(self):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
@@ -310,7 +322,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
     def _single_frame(self):
 
         if (self.zmax == -1):
-            zmax = self._self._ts.dimensions[self.dim]
+            zmax = self._ts.dimensions[self.dim]
         else:
             zmax = self.zmax
 
@@ -606,7 +618,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         parser.add_argument('-si', dest='single')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral
+    @check_charge_neutral(filter="error")
     def _prepare(self):
 
         if self.geometry is not None:
@@ -887,7 +899,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument("-binafter", dest="binafter")
         parser.add_argument("-nobin", dest="nobin")
 
-    @check_charge_neutral
+    @check_charge_neutral(filter="error")
     def _prepare(self):
         if self.plotformat not in ["pdf, png, jpg"]:
             raise ValueError(

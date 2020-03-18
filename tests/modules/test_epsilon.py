@@ -20,21 +20,27 @@ from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
 
 class SingleCharged(SingleGroupAnalysisBase):
-    def __init__(self, atomgroup):
+    def __init__(self, atomgroup, filter):
         self.atomgroup = atomgroup
+        self.filter = filter
 
-    @check_charge_neutral
     def _prepare(self):
-        pass
+        @check_charge_neutral(self.filter)
+        def inner_func(self):
+            pass
+        inner_func(self)
 
 
 class MultiCharged(MultiGroupAnalysisBase):
-    def __init__(self, atomgroups):
+    def __init__(self, atomgroups, filter):
         self.atomgroups = atomgroups
+        self.filter = filter
 
-    @check_charge_neutral
     def _prepare(self):
-        pass
+        @check_charge_neutral(self.filter)
+        def inner_func(self):
+            pass
+        inner_func(self)
 
 
 class TestChargedDecorator(object):
@@ -44,12 +50,20 @@ class TestChargedDecorator(object):
         return u.atoms
 
     def test_charged_single(self, ag):
-        with pytest.raises(ValueError):
-            SingleCharged(ag.select_atoms("name OW*"))._prepare()
+        with pytest.raises(UserWarning):
+            SingleCharged(ag.select_atoms("name OW*"), filter="error")._prepare()
 
     def test_charged_Multi(self, ag):
-        with pytest.raises(ValueError):
-            MultiCharged([ag.select_atoms("name OW*"), ag])._prepare()
+        with pytest.raises(UserWarning):
+            MultiCharged([ag.select_atoms("name OW*"), ag], filter="error")._prepare()
+
+    def test_charged_single_warn(self, ag):
+        with pytest.warns(UserWarning):
+            SingleCharged(ag.select_atoms("name OW*"), filter="default")._prepare()
+
+    def test_charged_Multi_warn(self, ag):
+        with pytest.warns(UserWarning):
+            MultiCharged([ag.select_atoms("name OW*"), ag], filter="default")._prepare()
 
 
 class Test_epsilon_bulk(object):
