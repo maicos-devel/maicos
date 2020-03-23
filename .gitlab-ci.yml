@@ -1,10 +1,30 @@
-debian:
-  image: debian:latest
+default:
+  before_script:
+  - apt-get update -q -y
+  - apt-get -y install python3-dev python3-pip
+  - pip3 install numpy cython
+  - export USE_CYTHON=True
+
+stages:
+  - test
+  - deploy
+
+test:
+  stage: test
   script:
-    - apt-get update -q -y
-    - apt-get -y install python3-dev python3-pip
-    - pip3 install numpy cython
     - pip3 install .
     - pip3 install pytest MDAnalysisTests
     - cd tests
     - pytest --disable-pytest-warnings .
+
+deploy:
+  stage: deploy
+  variables:
+    TWINE_USERNAME: $PYPI_USERNAME
+    TWINE_PASSWORD: $PYPI_PASSWORD
+  script:
+    - pip3 install twine
+    - python3 setup.py sdist
+    - twine upload dist/*
+  only:
+    - master
