@@ -1199,18 +1199,18 @@ class dielectric_spectrum_ion(dipole_trajectory):
     :param binafter (int): The number of low-frequency data points that are left unbinned.
 
     :returns (dict): Results dictionary containing
-        * t : Time intervals of the trajectory
-        * f : Frequency of the Fourier space components
-        * V : Average system volume across the trajectory
-        * P : Polarization trajectory of the solvent
-        * J : Conductivity trajectory of the ionic charges
+        * t : Time intervals of the trajectory [ps]
+        * f : Frequency of the Fourier space components [Thz]
+        * V : Average system volume across the trajectory [TODO]
+        * P : Polarization trajectory of the solvent [TODO]
+        * J : Conductivity trajectory of the ionic charges [TODO]
         * acf_w : Solvent polarization ACF
         * acf_iw : Polarization/conductivty cross-correlation function
         * acf_i : Ionic conductivity ACF
         * susc_w : Solvent polarization contribution to susceptibilty
         * susc_iw : Solvent/ionic contribution to susceptibility
         * susc_i : Conductivity-corrected ionic contribution to the susceptibility
-        * cond : Frequency dependent conductivity
+        * cond : Frequency dependent conductivity [TODO]
     """
     def __init__(self,
                  atomgroup,
@@ -1462,20 +1462,20 @@ class dielectric_spectrum_ion(dipole_trajectory):
             self.output_prefix + "susceptibility.dat",
             np.transpose(
                 (self.results["freq"],
-                self.results["susc"].real[:-2],
-                 -1 * self.results["susc"].imag[:-2],
-                 self.results["susc_w"].real[:-2],
-                 -1 * self.results["susc_w"].imag[:-2],
-                 self.results["susc_iw"].real[:-2],
-                 -1 * self.results["susc_iw"].imag[:-2],
-                 self.results["susc_i"].real[:-2],
-                 -1 * self.results["susc_i"].imag[:-2])),
+                self.results["susc"].real,
+                 -1 * self.results["susc"].imag,
+                 self.results["susc_w"].real,
+                 -1 * self.results["susc_w"].imag,
+                 self.results["susc_iw"].real,
+                 -1 * self.results["susc_iw"].imag,
+                 self.results["susc_i"].real,
+                 -1 * self.results["susc_i"].imag)),
             header=
-            "freq, susc_re, susc_im, susc_w_re, susc_w_im, susc_iw_re, susc_iw_im, susc_i_re, susc_i_im"
+            "freq [Thz], susc_re, susc_im, susc_w_re, susc_w_im, susc_iw_re, susc_iw_im, susc_i_re, susc_i_im"
         )
 
         savetxt(self.output_prefix + "conductivity.dat",
                 np.transpose((self.results["freq"],
-                              self.results["cond"].real[:-2],
-                              -1 * self.results["cond"].imag[:-2])),
+                              self.results["cond"].real,
+                              -1 * self.results["cond"].imag)),
                 header="freq, cond_re, cond_im")
