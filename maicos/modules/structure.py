@@ -93,7 +93,7 @@ class saxs(SingleGroupAnalysisBase):
                  mintheta=0,
                  maxtheta=180,
                  **kwargs):
-        super(saxs, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.nobindata = nobin
@@ -274,7 +274,7 @@ class debye(SingleGroupAnalysisBase):
                  sinc=False,
                  debyer="debyer",
                  **kwargs):
-        super(debye, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.startq = startq
@@ -455,7 +455,7 @@ class diporder(SingleGroupAnalysisBase):
                  binmethod='COM',
                  bpbc=True,
                  **kwargs):
-        super(diporder, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
 
         self.binwidth = binwidth
         self.dim = dim

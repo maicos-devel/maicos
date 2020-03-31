@@ -104,7 +104,7 @@ class density_planar(MultiGroupAnalysisBase):
                  comgroup=None,
                  center=False,
                  **kwargs):
-        super(density_planar, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
         self.dim = dim
@@ -341,7 +341,7 @@ class density_cylinder(MultiGroupAnalysisBase):
                  length=None,
                  dens="mass",
                  **kwargs):
-        super(density_cylinder, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
         self.dim = dim

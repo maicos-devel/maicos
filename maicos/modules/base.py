@@ -31,7 +31,7 @@ class _AnalysisBase(base.AnalysisBase):
         save : bool, optional
            Save results to a file, default ``False``
         """
-        super(_AnalysisBase, self).__init__(self, **kwargs)
+        super().__init__(self, **kwargs)
 
         self._trajectory = trajectory
         self._verbose = verbose
@@ -150,8 +150,7 @@ class SingleGroupAnalysisBase(_AnalysisBase):
     _allow_multiple_atomgroups = False
 
     def __init__(self, atomgroup, **kwargs):
-        super(SingleGroupAnalysisBase,
-              self).__init__(atomgroup.universe.trajectory, **kwargs)
+        super().__init__(atomgroup.universe.trajectory, **kwargs)
         self.atomgroup = atomgroup
         self._universe = atomgroup.universe
 
@@ -170,8 +169,7 @@ class MultiGroupAnalysisBase(_AnalysisBase):
                 if ag.universe != atomgroups[0].universe:
                     raise ValueError(
                         "Given Atomgroups are not from the same Universe.")
-        super(MultiGroupAnalysisBase,
-              self).__init__(atomgroups[0].universe.trajectory, **kwargs)
+        super().__init__(atomgroups[0].universe.trajectory, **kwargs)
 
         self.atomgroups = atomgroups
         self._universe = atomgroups[0].universe

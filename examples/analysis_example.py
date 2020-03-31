@@ -24,7 +24,7 @@ class analysis_example(SingleGroupAnalysisBase):
     """
 
     def __init__(self, atomgroup, temperature=300, output="outfile.dat", **kwargs):
-        super(analysis_example, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
 
         self.temperature = temperature
         self.output = output

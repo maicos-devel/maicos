@@ -104,7 +104,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                  bpbc=True,
                  output="eps.dat",
                  **kwargs):
-        super(epsilon_bulk, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = 100
         self.temperature = temperature
         self.bpbc = bpbc
@@ -239,7 +239,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  com=False,
                  bpbc=True,
                  **kwself):
-        super(epsilon_planar, self).__init__(atomgroups, **kwself)
+        super().__init__(atomgroups, **kwself)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.dim = dim
@@ -598,7 +598,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                  single=False,
                  bpbc=True,
                  **kwself):
-        super(epsilon_cylinder, self).__init__(atomgroup, **kwself)
+        super().__init__(atomgroup, **kwself)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.outfreq = outfreq
@@ -878,7 +878,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                  binafter=20,
                  nobin=False,
                  **kwargs):
-        super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.segs = segs

@@ -32,7 +32,7 @@ class dipole_angle(SingleGroupAnalysisBase):
                  outfreq=10000,
                  dim=2,
                  **kwargs):
-        super(dipole_angle, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.output = output
         self.dim = dim
         self.outfreq = outfreq
@@ -113,7 +113,7 @@ class kinetic_energy(SingleGroupAnalysisBase):
         """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
-        super(kinetic_energy, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint
 
