@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
-
-import functools
-import warnings
 
 import numpy as np
 import scipy.constants
@@ -16,6 +13,7 @@ import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 from ..utils import FT, iFT, savetxt
+from ..decorators import charge_neutral
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
@@ -42,39 +40,7 @@ def Bin(a, bins):
     return avg / count
 
 
-def check_charge_neutral(filter):
-    """Decorator to raise an Error/Warning when AtomGroup in an AnalysisBase class
-    is not charge neutral. The behaviour of the warning can be controlled
-    with the filter attribute. If the AtomGroup's corresponding universe is non-neutral
-    an ValueError is raised.
-
-    :param filter (str): Filter type to control warning filter
-                         Common values are: "error" or "default"
-                         See `warnings.simplefilter` for more options.
-    """
-    def inner_function(function):
-        @functools.wraps(function)
-        def wrapped(self):
-            # Check if SingleGroupAnalysis
-            if hasattr(self, 'atomgroup'):
-                groups = [self.atomgroup]
-            else:
-                groups = self.atomgroups
-            for group in groups:
-                if not np.allclose(group.total_charge(compound='fragments'), 0.0):
-                    with warnings.catch_warnings():
-                        warnings.simplefilter(filter)
-                        warnings.warn("At least one AtomGroup has free charges. "
-                                      "Analysis for systems with free charges could lead "
-                                      "to severe artifacts!")
-
-                if not np.allclose(group.universe.atoms.total_charge(), 0.0):
-                    raise ValueError("Analysis for non-neutral systems is not supported.")
-            return function(self)
-        return wrapped
-    return inner_function
-
-
+@charge_neutral(filter="default")
 class epsilon_bulk(SingleGroupAnalysisBase):
     r"""Computes dipole moment fluctuations and from this the
     static dielectric constant.
@@ -116,7 +82,6 @@ class epsilon_bulk(SingleGroupAnalysisBase):
         parser.add_argument('-temp', dest='temperature')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral(filter="default")
     def _prepare(self):
         self.volume = 0
         self.M = np.zeros(3)
@@ -192,6 +157,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                 header='eps\teps_x\teps_y\teps_z')
 
 
+@charge_neutral(filter="error")
 class epsilon_planar(MultiGroupAnalysisBase):
     """Calculates a planar dielectric profile.
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
@@ -269,7 +235,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
         parser.add_argument('-com', dest='com')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral(filter="error")
     def _prepare(self):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
@@ -561,6 +526,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                 header=header)
 
 
+@charge_neutral(filter="error")
 class epsilon_cylinder(SingleGroupAnalysisBase):
     """Calculation of the dielectric
     profile for axial (along z) and radial (along xy) direction
@@ -622,7 +588,6 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         parser.add_argument('-si', dest='single')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
-    @check_charge_neutral(filter="error")
     def _prepare(self):
 
         if self.geometry is not None:
@@ -822,6 +787,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                 header=header)
 
 
+@charge_neutral(filter="error")
 class dielectric_spectrum(SingleGroupAnalysisBase):
     """Computes the linear dielectric spectrum.
 
@@ -903,7 +869,6 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument("-binafter", dest="binafter")
         parser.add_argument("-nobin", dest="nobin")
 
-    @check_charge_neutral(filter="error")
     def _prepare(self):
         if self.plotformat not in ["pdf, png, jpg"]:
             raise ValueError(
