@@ -1,18 +1,28 @@
 # -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8 -*-
 
-=======================
- MAICoS Authors
-=======================
+==============================
+ MAICoS Authors & Contributors
+==============================
 
-Chronological list of authors
------------------------------
+Maintainer
+------------------------------
 
-2019 and before
+  - Philip Loche
+
+
+Authors
+------------------------------
+
+  - Alexander Schlaich
+  - Philip Loche
+
+
+Contributors
+------------------------------
+
   - Maximilian Becker
   - Shane Carlson
   - Julian Kappler
-  - Philip Loche
-  - Alexander Schlaich
   - Julius Schulz
   - Dominik Wille
   - Amanuel Wolde-Kidan
