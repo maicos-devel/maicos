@@ -239,7 +239,15 @@ class epsilon_planar(MultiGroupAnalysisBase):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
 
-        self.sol = self._universe.select_atoms('resname SOL')
+        if self.com:
+            try:
+                self.sol = self._universe.select_atoms('resname SOL')
+            except AttributeError:
+                raise AttributeError("No residue information."
+                                     "Cannot apply water COM shift.")
+             
+            if len(self.sol) == 0:
+                raise ValueError("No atoms for water COM shift found.")
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
