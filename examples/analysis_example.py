@@ -7,34 +7,24 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-# ========== DESCRIPTION ===========
-# This is an example for an analysis script. To use this
-# script do the following steps:
-# 1. Copy it to the `mdtsools/modules` folder and add your code.
-# 3. Choose an unique name, add `<analysis_example>`
-#    to the `__all__` list in `maicos/__init__.py` and add
-#    'from .<analysis_example> import *' to `maicos/modules/__init__.py`
-# 3. OPTIONAL: Add bash completion commands to "maicos/share/maicos_completion.bash".
-# ==================================
-
 # Mandatory imports
 import numpy as np
 
-from .base import SingleGroupAnalysisBase
-from ..utils import savetxt
+from maicos.modules.base import SingleGroupAnalysisBase
+from maicos.utils import savetxt
 
 
 class analysis_example(SingleGroupAnalysisBase):
     """Description for my awesome single group analysis script.
 
-       :param output (str): Prefix for output filenames
+       :param output (str): Output filename
        :param temperature (str): Reference temperature (K)
 
-       :returns (dict): * volume: averaged box volume (Å**3)
+       :returns (dict): * volume: averaged box volume (Å³)
     """
 
-    def __init__(self, atomgroup, temperature=300, output="outfile", **kwargs):
-        super(analysis_example, self).__init__(atomgroup, **kwargs)
+    def __init__(self, atomgroup, temperature=300, output="outfile.dat", **kwargs):
+        super().__init__(atomgroup, **kwargs)
 
         self.temperature = temperature
         self.output = output
@@ -75,7 +65,7 @@ class analysis_example(SingleGroupAnalysisBase):
         Called at the end of the run() method after _calculate_results
         to finish everything up."""
         if self._verbose:
-            print("Average volume of the simulation box {:.2f} Å**3".format(
+            print("Average volume of the simulation box {:.2f} Å³".format(
                 self.results["volume"]))
 
     def _save_results(self):
@@ -84,7 +74,7 @@ class analysis_example(SingleGroupAnalysisBase):
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
-        savetxt(self.output + '.dat',
+        savetxt(self.output,
                 np.array([self.results["volume"]]),
                 fmt='%1.2f',
-                header='volume / Angstrom**3')
+                header='volume / Å³')

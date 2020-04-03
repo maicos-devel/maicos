@@ -125,7 +125,7 @@ def parse_args():
     parser.add_argument("-atom_style",
                         dest="atom_style",
                         type=str,
-                        default='None',
+                        default=None,
                         help="Manually set the atom_style information"
                         "(currently only LAMMPS parser)."
                         "E.g. atom_style='id type x y z'.")
@@ -189,7 +189,7 @@ def parse_args():
         args._allow_multiple_atomgroups = _allow_multiple_atomgroups
         args.selected_module = selected_module
     except Exception as e:
-        if args.debug:
+        if debug:
             traceback.print_exc()
         else:
             print("{}Error: {}{}".format(bcolors.fail, e, bcolors.endc))

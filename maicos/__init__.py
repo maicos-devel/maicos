@@ -7,6 +7,10 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import warnings
+import sys
+import os
+
 from .modules import *
 
 __all__ = [
@@ -24,5 +28,13 @@ __all__ = [
     'velocity',
 ]
 
+try:
+    sys.path.append(os.path.join(os.path.expanduser("~"),
+                                 ".maicos/"))
+    from maicos_costum_modules import *
+    __all__ += custom_modules
+except ImportError:
+    pass
+
 __authors__ = "Philip Loche et. al."
-__version__ = "0.1"  # NOTE: keep in sync with VERSION in setup.py
+__version__ = "0.2"  # NOTE: keep in sync with VERSION in setup.py

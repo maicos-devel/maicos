@@ -75,7 +75,7 @@ def detect_openmp():
     return hasopenmp
 
 
-VERSION = "0.1"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+VERSION = "0.2"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 
 if __name__ == "__main__":
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     setup(name='maicos',
           packages=find_packages(),
           version=VERSION,
-          license='MIT',
+          license='GPL 3',
           description='Analyse molecular dynamics simulations of '
           'interfacial and confined systems.',
           author="Philip Loche et. al.",

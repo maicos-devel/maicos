@@ -25,21 +25,7 @@ Currently we only format python files.
 # Writing your own Analysis module
 
 Example code for an analysis module can be found in the [example folder](examples/). To deploy
-the script do the following steps.
-
-1.  Copy it to the `mdtsools/ana` folder and add your code. To the following methods
-    -   `__init__` Save the arguments to the objects namespace. Do not add any logic here,
-                    instead use the `_prepare` method!
-    -   `_prepare` Set up variables needed for your analysis.
-    -   `_single_frame` The calcualtions run in every frame.
-    -   `_calculate_results` Calculate your results based on the calculation in every frame.
-                              Save them to the objects `results` dictionary.
-    -   `_conclude` Do some conclusion printing, cleaning up. Do not Calculate any results here use
-                     `_calculate_results` mnethod instead.
-    -   `_save_results` Save your results to a file. This is especially needed to use it from the command line.
-2.  Choose an unique name and add `<analysis_example>` to the `__all__` list
-    in `maicos/modules/__init__.py`.
-3.  OPTIONAL Add bash completion commands to `maicos/share/maicos_completion.bash`.
+the script follow the steps in [examples/README.md](examples/README.md).
 
 # UnitTests
 

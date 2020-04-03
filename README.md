@@ -11,7 +11,7 @@ underlying libraries. To install the package
 for all users type
 
 ```sh
-    git clone https://gitlabph.physik.fu-berlin.de/ag-netz/maicos.git
+    git clone https://gitlab.com/netzlab/maicos.git
     cd maicos
     pip3 install numpy cython
     pip3 install .
@@ -86,6 +86,12 @@ Currently `maicos` contains the following analysis modules:
 ## Transport Analysis
 
 * **velocity**: Calculates a velocity profile along a given axis.
+
+# Custom modules
+
+You can add your custom modules to the maicos library. Just create a
+`.maicos` folder in your home directory and add your modules to this folder.
+For more information see the [example directory](examples/README.md).
 
 # Issues
 

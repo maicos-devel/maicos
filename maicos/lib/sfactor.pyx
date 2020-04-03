@@ -1,7 +1,7 @@
 # distutils: language = c
 # cython: language_level=3
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -16,7 +16,7 @@ from cython.parallel cimport prange
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-
+@cython.cdivision
 cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensions,
                                      double start_q, double end_q, double mintheta,
                                      double maxtheta):
@@ -26,17 +26,17 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
     assert(positions.shape[1]==3)
 
     cdef Py_ssize_t i, j, k, l, n_atoms
-    cdef int[:] maxn = np.empty(3,dtype=np.int32)
+    cdef int[::1] maxn = np.empty(3,dtype=np.int32)
     cdef double qx, qy, qz, qrr, qdotr, sin, cos, theta
-    cdef double[:] q_factor = np.empty(3,dtype=np.double)
+    cdef double[::1] q_factor = np.empty(3,dtype=np.double)
 
     n_atoms = positions.shape[0]
     for i in range(3):
         q_factor[i] = 2*np.pi/boxdimensions[i]
         maxn[i] = <int>math.ceil(end_q/<float>q_factor[i])
 
-    cdef double[:,:,:] S_array = np.zeros(maxn, dtype=np.double)
-    cdef double[:,:,:] q_array = np.zeros(maxn, dtype=np.double)
+    cdef double[:,:,::1] S_array = np.zeros(maxn, dtype=np.double)
+    cdef double[:,:,::1] q_array = np.zeros(maxn, dtype=np.double)
 
     for i in prange(<int>maxn[0],nogil=True):
         qx = i * q_factor[0]
@@ -63,4 +63,4 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
 
                         S_array[i,j,k] += sin*sin + cos*cos
 
-    return (q_array,S_array)
+    return (np.asarray(q_array), np.asarray(S_array))

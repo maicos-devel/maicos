@@ -11,6 +11,7 @@ import MDAnalysis as mda
 import pytest
 
 from MDAnalysisTests import tempdir
+
 from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal

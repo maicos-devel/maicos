@@ -104,7 +104,7 @@ class density_planar(MultiGroupAnalysisBase):
                  comgroup=None,
                  center=False,
                  **kwargs):
-        super(density_planar, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
         self.dim = dim
@@ -168,7 +168,7 @@ class density_planar(MultiGroupAnalysisBase):
             ) / self.atomgroups[0].atoms.n_residues
 
         if self.comgroup is not None:
-            self.comsel = self.atomgroup.select_atoms(self.comgroup)
+            self.comsel = self._universe.select_atoms(self.comgroup)
             if self._verbose:
                 print("{:>15}: {:>10} atoms".format(self.comgroup,
                                                     self.comsel.n_atoms))
@@ -287,10 +287,16 @@ class density_planar(MultiGroupAnalysisBase):
             columns = "{} density profile [{}]".format(self.dens, units)
         columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
             self._index * self._universe.trajectory.dt)
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group)
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group) + " error"
+        try:
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group)
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group) + " error"
+        except AttributeError:
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn("AtomGroup does not contain resnames."
+                              " Not writing residues information to output.")
 
         # save density profile
         savetxt(self.output,
@@ -335,7 +341,7 @@ class density_cylinder(MultiGroupAnalysisBase):
                  length=None,
                  dens="mass",
                  **kwargs):
-        super(density_cylinder, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
         self.dim = dim

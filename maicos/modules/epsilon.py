@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -13,6 +13,7 @@ import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 from ..utils import FT, iFT, savetxt
+from ..decorators import charge_neutral
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
@@ -39,6 +40,7 @@ def Bin(a, bins):
     return avg / count
 
 
+@charge_neutral(filter="default")
 class epsilon_bulk(SingleGroupAnalysisBase):
     r"""Computes dipole moment fluctuations and from this the
     static dielectric constant.
@@ -68,7 +70,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                  bpbc=True,
                  output="eps.dat",
                  **kwargs):
-        super(epsilon_bulk, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = 100
         self.temperature = temperature
         self.bpbc = bpbc
@@ -155,6 +157,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                 header='eps\teps_x\teps_y\teps_z')
 
 
+@charge_neutral(filter="error")
 class epsilon_planar(MultiGroupAnalysisBase):
     """Calculates a planar dielectric profile.
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
@@ -202,7 +205,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  com=False,
                  bpbc=True,
                  **kwself):
-        super(epsilon_planar, self).__init__(atomgroups, **kwself)
+        super().__init__(atomgroups, **kwself)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.dim = dim
@@ -236,7 +239,15 @@ class epsilon_planar(MultiGroupAnalysisBase):
         if self._verbose:
             print("\nCalcualate profile for the following group(s):")
 
-        self.sol = self._universe.select_atoms('resname SOL')
+        if self.com:
+            try:
+                self.sol = self._universe.select_atoms('resname SOL')
+            except AttributeError:
+                raise AttributeError("No residue information."
+                                     "Cannot apply water COM shift.")
+             
+            if len(self.sol) == 0:
+                raise ValueError("No atoms for water COM shift found.")
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
@@ -288,7 +299,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
     def _single_frame(self):
 
         if (self.zmax == -1):
-            zmax = self._self._ts.dimensions[self.dim]
+            zmax = self._ts.dimensions[self.dim]
         else:
             zmax = self.zmax
 
@@ -523,6 +534,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                 header=header)
 
 
+@charge_neutral(filter="error")
 class epsilon_cylinder(SingleGroupAnalysisBase):
     """Calculation of the dielectric
     profile for axial (along z) and radial (along xy) direction
@@ -560,7 +572,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                  single=False,
                  bpbc=True,
                  **kwself):
-        super(epsilon_cylinder, self).__init__(atomgroup, **kwself)
+        super().__init__(atomgroup, **kwself)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.outfreq = outfreq
@@ -783,6 +795,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                 header=header)
 
 
+@charge_neutral(filter="error")
 class dielectric_spectrum(SingleGroupAnalysisBase):
     """Computes the linear dielectric spectrum.
 
@@ -839,7 +852,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                  binafter=20,
                  nobin=False,
                  **kwargs):
-        super(dielectric_spectrum, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.segs = segs

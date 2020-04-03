@@ -21,12 +21,9 @@ def repairMolecules(selection):
     To this end the center of mass is reset into the central box.
     CAVE: Only works with small (< half box) molecules."""
 
-    with warnings.catch_warnings():
-        warnings.simplefilter('always', DeprecationWarning)
-        warnings.warn(
-            "repairMolecules is deprecated, "
-            "use AtomGroup.unwrap() instead.",
-            category=DeprecationWarning)
+    warnings.warn(
+        "repairMolecules is deprecated, use AtomGroup.unwrap() from MDAnalysis instead.",
+        category=DeprecationWarning)
 
     # we repair each moleculetype individually for performance reasons
     for seg in selection.segments:

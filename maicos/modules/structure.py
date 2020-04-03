@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -93,7 +93,7 @@ class saxs(SingleGroupAnalysisBase):
                  mintheta=0,
                  maxtheta=180,
                  **kwargs):
-        super(saxs, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.nobindata = nobin
@@ -175,9 +175,6 @@ class saxs(SingleGroupAnalysisBase):
                 np.double(positions / 10), np.double(box / 10), self.startq,
                 self.endq, self.mintheta, self.maxtheta)
 
-            q_ts = np.asarray(q_ts)
-            S_ts = np.asarray(S_ts)
-
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
             if self.nobindata:
@@ -244,7 +241,7 @@ class saxs(SingleGroupAnalysisBase):
                     "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
                     fmt='%.4e')
         else:
-            savetxt(self.output + '.dat',
+            savetxt(self.output,
                     np.vstack([self.results["q"],
                                self.results["scat_factor"]]).T,
                     header="q (1/nm)\tS(q) (arb. units)",
@@ -277,7 +274,7 @@ class debye(SingleGroupAnalysisBase):
                  sinc=False,
                  debyer="debyer",
                  **kwargs):
-        super(debye, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
         self.outfreq = outfreq
         self.output = output
         self.startq = startq
@@ -440,7 +437,7 @@ class diporder(SingleGroupAnalysisBase):
 
 
    :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+                    * P0: P_0⋅cos(θ[z]) [e/nm²]
                     * cos_theta: cos(θ[z])
                     * cos_2_theta: cos²(Θ[z])
                     * rho: ρ(z) [1/nm³]
@@ -458,7 +455,7 @@ class diporder(SingleGroupAnalysisBase):
                  binmethod='COM',
                  bpbc=True,
                  **kwargs):
-        super(diporder, self).__init__(atomgroup, **kwargs)
+        super().__init__(atomgroup, **kwargs)
 
         self.binwidth = binwidth
         self.dim = dim
@@ -618,7 +615,7 @@ class diporder(SingleGroupAnalysisBase):
         _conclude"""
 
         header = "z [nm]\t"
-        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
+        header += "P_0*cos(Theta[z]) [e/nm^2]\t"
         header += "cos(theta(z))\t"
         header += "cos^2(theta(z))\t"
         header += "rho(z) [1/nm^3]"

@@ -59,7 +59,7 @@ class velocity(SingleGroupAnalysisBase):
                  nblock=10,
                  bpbc=True,
                  **kwargs):
-        super(velocity, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
         self.output_suffix = output_suffix
         self.outfreq = outfreq
         self.dim = dim
@@ -107,6 +107,8 @@ class velocity(SingleGroupAnalysisBase):
             self.atomgroup.atoms.masses,
             compound="molecules",
         )
+        comvels /= self.atomgroup.atoms.accumulate(self.atomgroup.atoms.masses,
+                                                   compound="molecules")
 
         bins = (coms / (self._universe.dimensions[self.dim] / self.nbins)
                ).astype(int) % self.nbins

@@ -1,0 +1,10 @@
+debian:
+  image: debian:latest
+  script:
+    - apt-get update -q -y
+    - apt-get -y install python3-dev python3-pip
+    - pip3 install numpy cython
+    - pip3 install .
+    - pip3 install pytest MDAnalysisTests
+    - cd tests
+    - pytest --disable-pytest-warnings .
