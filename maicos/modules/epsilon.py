@@ -12,7 +12,7 @@ import scipy.constants
 import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
-from ..utils import FT, iFT, savetxt
+from ..utils import check_compound, FT, iFT, savetxt
 from ..decorators import charge_neutral
 
 eps0inv = 1. / scipy.constants.epsilon_0
@@ -91,7 +91,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
     def _single_frame(self):
         # Make molecules whole
         if self.bpbc:
-            self.atomgroup.unwrap(compound="molecules")
+            self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
 
         self.volume += self._ts.volume
 
@@ -320,7 +320,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound="molecules")
+            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
@@ -364,8 +364,14 @@ class epsilon_planar(MultiGroupAnalysisBase):
             # Move all z-positions to 'center of charge' such that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y direction)
             centers = sel.center(weights=np.abs(sel.charges),
-                                 compound="molecules")
-            repeats = np.unique(sel.atoms.molnums, return_counts=True)[1]
+                                 compound=check_compound(sel))
+            comp = check_compound(sel.atoms)
+            if comp == "molecules":
+                repeats = np.unique(sel.atoms.molnums, return_counts=True)[1]
+            elif comp == "fragments":
+                repeats = np.unique(sel.atoms.fragindices, return_counts=True)[1]
+            else:
+                repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
             binsz = (((testpos[:, self.dim] - self.zmin) %
@@ -664,7 +670,7 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound="molecules")
+            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
 
         # Transform from cartesian coordinates [x,y,z] to cylindrical
         # coordinates [r,z] (skip phi because of symmetry)
@@ -702,10 +708,17 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         # We only want to cut in z direction.
         chargepos = positions_cyl * np.abs(
             self.atomgroup.charges[:, np.newaxis])
-        centers = self.atomgroup.accumulate(chargepos, compound="molecules")
-        centers /= self.atomgroup.accumulate(
-            np.abs(self.atomgroup.charges), compound="molecules")[:, np.newaxis]
-        repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
+        centers = self.atomgroup.accumulate(chargepos,
+                                            compound=check_compound(self.atomgroup))
+        centers /= self.atomgroup.accumulate(np.abs(self.atomgroup.charges),
+                                             compound=check_compound(self.atomgroup))[:, np.newaxis]
+        comp = check_compound(self.atomgroup)
+        if comp == "molecules":
+            repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
+        elif comp == "fragments":
+            repeats = np.unique(self.atomgroup.fragindices, return_counts=True)[1]
+        else:
+            repeats = np.unique(self.atoms.resids, return_counts=True)[1]
         testpos = np.empty(positions_cyl[:, 0].shape)
         testpos = np.repeat(centers[:, 0], repeats)
 
@@ -893,7 +906,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
     def _single_frame(self):
         self.V += self._ts.volume
-        self.atomgroup.unwrap(compound='molecules')
+        self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
         self.P[self._frame_index, :] = np.dot(self.atomgroup.charges,
                                               self.atomgroup.positions)
 

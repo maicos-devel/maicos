@@ -11,7 +11,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 from .base import SingleGroupAnalysisBase
-from ..utils import savetxt
+from ..utils import check_compound, savetxt
 
 
 def fitfn(x, alpha, tau1, tau2, pref):
@@ -96,19 +96,19 @@ class velocity(SingleGroupAnalysisBase):
     def _single_frame(self):
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound="molecules")
+            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
 
         self.L += self._universe.dimensions[self.dim]
 
-        coms = self.atomgroup.center_of_mass(compound="molecules")[:, self.dim]
+        coms = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))[:, self.dim]
 
         comvels = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.velocities[:, self.vdim] *
             self.atomgroup.atoms.masses,
-            compound="molecules",
+            compound=check_compound(self.atomgroup)
         )
         comvels /= self.atomgroup.atoms.accumulate(self.atomgroup.atoms.masses,
-                                                   compound="molecules")
+                                                   compound=check_compound(self.atomgroup))
 
         bins = (coms / (self._universe.dimensions[self.dim] / self.nbins)
                ).astype(int) % self.nbins

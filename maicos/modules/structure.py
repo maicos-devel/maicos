@@ -17,7 +17,7 @@ import MDAnalysis as mda
 from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
-from ..utils import savetxt
+from ..utils import check_compound, savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -528,23 +528,24 @@ class diporder(SingleGroupAnalysisBase):
 
         # Make molecules whole
         if self.bpbc:
-            self.atomgroup.unwrap(compound="molecules")
+            self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
 
         dz_frame = self._ts.dimensions[self.dim] / self.nbins
 
         chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
                                                                       newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, compound="molecules")
+        dipoles = self.atomgroup.accumulate(chargepos, 
+                                            compound=check_compound(self.atomgroup))
         dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
             # Calculate the centers of the objects ( i.e. Molecules )
-            coms = self.atomgroup.center_of_mass(compound="molecules")
+            coms = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
             bins = ((coms[:, self.dim] % self._ts.dimensions[self.dim]) /
                     dz_frame).astype(int)
         elif self.binmethod == 'COC':
             cocs = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
-                                         compound="molecules")
+                                         compound=check_compound(self.atomgroup))
             bins = ((cocs[:, self.dim] % self._ts.dimensions[self.dim]) /
                     dz_frame).astype(int)
         elif self.binmethod == 'OXY':

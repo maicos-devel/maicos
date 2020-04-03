@@ -12,6 +12,7 @@ import sys
 import warnings
 
 import numpy as np
+from MDAnalysis import NoDataError
 
 _share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
 
@@ -52,6 +53,23 @@ def repairMolecules(selection):
             (centers % selection.dimensions[:3]) - centers,
             atomsPerMolecule,
             axis=0)
+
+
+def check_compound(AtomGroup):
+    """Checks if compound 'molecules' exists. If not it will
+    fallback to 'fragments' or 'residues'.
+    """
+    if hasattr(AtomGroup, "molnums"):
+        return "molecules"
+
+    # Do a try-except to catch NoDataError if no bonds
+    try:
+        hasattr(AtomGroup, "fragments")
+        warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
+        return "fragments"
+    except NoDataError:
+        warnings.warn("Cannot use 'molecules'. Falling back to 'residues'")
+        return "residues"
 
 
 dt_dk_tolerance = 1e-8  # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)

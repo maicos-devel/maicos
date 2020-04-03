@@ -9,7 +9,7 @@
 
 import numpy as np
 
-from ..utils import savetxt
+from ..utils import check_compound, savetxt
 from .base import SingleGroupAnalysisBase
 
 
@@ -60,7 +60,7 @@ class dipole_angle(SingleGroupAnalysisBase):
         self.atomgroup.unwrap(compound="molecule")
 
         chargepos = self.positions * self.charges[:, np.newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, compound="molecules")
+        dipoles = self.atomgroup.accumulate(chargepos, compound=check_compound(self.atomgroup))
 
         cos_theta = np.dot(dipoles, self.unit) / \
             np.linalg.norm(dipoles, axis=1)
@@ -132,10 +132,9 @@ class kinetic_energy(SingleGroupAnalysisBase):
             self.oxy = self.atomgroup.select_atoms("name OW*")
 
         self.masses = self.atomgroup.atoms.accumulate(
-            self.atomgroup.atoms.masses, compound="molecules")
+            self.atomgroup.atoms.masses, compound=check_compound(self.atomgroup))
         self.abscharges = self.atomgroup.atoms.accumulate(np.abs(
-            self.atomgroup.atoms.charges),
-                                                          compound="molecules")
+            self.atomgroup.atoms.charges), compound=check_compound(self.atomgroup))
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -150,13 +149,13 @@ class kinetic_energy(SingleGroupAnalysisBase):
         if self.refpoint == "COM":
             massvel = self.atomgroup.velocities * \
                 self.atomgroup.masses[:, np.newaxis]
-            v = self.atomgroup.accumulate(massvel, compound="molecules")
+            v = self.atomgroup.accumulate(massvel, compound=check_compound(self.atomgroup))
             v /= self.masses[:, np.newaxis]
 
         elif self.refpoint == "COC":
             abschargevel = self.atomgroup.velocities * \
                 np.abs(self.atomgroup.charges)[:, np.newaxis]
-            v = self.atomgroup.accumulate(abschargevel, compound="molecules")
+            v = self.atomgroup.accumulate(abschargevel, compound=check_compound(self.atomgroup))
             v /= self.abscharges[:, np.newaxis]
 
         elif self.refpoint == "OXY":
