@@ -16,7 +16,7 @@ import sys
 import shutil
 import tempfile
 
-VERSION = "0.2-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+VERSION = "0.3-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 is_release = 'dev' not in VERSION
 
 # Handle cython modules
