@@ -168,7 +168,7 @@ class density_planar(MultiGroupAnalysisBase):
             ) / self.atomgroups[0].atoms.n_residues
 
         if self.comgroup is not None:
-            self.comsel = self.atomgroup.select_atoms(self.comgroup)
+            self.comsel = self._universe.select_atoms(self.comgroup)
             if self._verbose:
                 print("{:>15}: {:>10} atoms".format(self.comgroup,
                                                     self.comsel.n_atoms))

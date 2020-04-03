@@ -114,7 +114,7 @@ class _AnalysisBase(base.AnalysisBase):
         ----------
         begin : float, optional
             start time (ps) for evaluation
-        stop : float, optional
+        end : float, optional
             end time (ps) for evaluation
         dt : float, optional
             time step (ps) to read analysis frame
