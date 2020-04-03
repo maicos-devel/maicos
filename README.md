@@ -11,10 +11,8 @@ underlying libraries. To install the package
 for all users type
 
 ```sh
-    git clone https://gitlab.com/netzlab/maicos.git
-    cd maicos
-    pip3 install numpy cython
-    pip3 install .
+    pip3 install numpy
+    pip3 install maicos
 ```
 
 To install only on the user site use pip's `--user` flag.
@@ -91,7 +89,7 @@ Currently `maicos` contains the following analysis modules:
 
 You can add your custom modules to the maicos library. Just create a
 `.maicos` folder in your home directory and add your modules to this folder.
-For more information see the [example directory](examples/README.md).
+For more information see the [example directory](https://gitlab.com/netzlab/maicos/-/tree/develop/examples).
 
 # Issues
 
@@ -100,5 +98,6 @@ issue.
 
 # Contributing
 
+Source code is available from https://gitlab.com/netzlab/maicos.
 Contribution via pull requests are always welcome.
-For more details see the [README](developer/README.md) in the development section.
+For more details see the [README](https://gitlab.com/netzlab/maicos/-/tree/develop/developer) in the development section.
