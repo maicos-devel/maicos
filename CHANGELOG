@@ -24,6 +24,7 @@ The rules for this file:
   * Added checks for charge neutrality in dielectric analysis
   * Added test files for an air-water trajectory and the diporder module
   * Performance tweaks and tests for sfactor
+  * Check for molecular information in modules
 
 
 2019/10/30 Philip Loche

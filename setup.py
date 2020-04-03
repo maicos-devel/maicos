@@ -16,8 +16,44 @@ import sys
 import shutil
 import tempfile
 
-import numpy as np
-from Cython.Build import cythonize
+VERSION = "0.2"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+is_release = 'dev' not in VERSION
+
+# Handle cython modules
+try:
+    # cython has to be >=0.16 <0.28 to support cython.parallel
+    from Cython.Build import cythonize
+except ImportError:
+    if not is_release:
+        print("*** package: Cython not found ***")
+        print("MAICos requires cython for development builds")
+        sys.exit(1)
+
+
+def get_numpy_include():
+    # From MDAnalysis setup.py
+    # Obtain the numpy include directory. This logic works across numpy
+    # versions.
+    # setuptools forgets to unset numpy's setup flag and we get a crippled
+    # version of it unless we do it ourselves.
+    try:
+        # Python 3 renamed the ``__builin__`` module into ``builtins``.
+        # Here we import the python 2 or the python 3 version of the module
+        # with the python 3 name. This could be done with ``six`` but that
+        # module may not be installed at that point.
+        import builtins
+    except ImportError:
+        import __builtin__ as builtins
+    builtins.__NUMPY_SETUP__ = False
+    try:
+        import numpy as np
+    except ImportError:
+        print('*** package "numpy" not found ***')
+        print('MAICos requires a version of NumPy (>=1.13.3), even for setup.')
+        print('Please get it from http://numpy.scipy.org/ or install it through '
+              'your package manager.')
+        sys.exit(-1)
+    return np.get_include()
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
@@ -75,8 +111,6 @@ def detect_openmp():
     return hasopenmp
 
 
-VERSION = "0.2"  # NOTE: keep in sync with __version__ in maicos.__init__.py
-
 if __name__ == "__main__":
 
     # Windows automatically handles math library linking
@@ -87,18 +121,34 @@ if __name__ == "__main__":
         mathlib = ['m']
 
     has_openmp = detect_openmp()
+    use_cython = not is_release or bool(os.getenv('USE_CYTHON'))
+    source_suffix = '.pyx' if use_cython else '.c'
 
-    extensions = [
-        Extension("maicos.lib.sfactor", ["maicos/lib/sfactor.pyx"],
-                  include_dirs=[np.get_include()],
-                  extra_compile_args=[
-                      '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
-                  ] + has_openmp * ['-fopenmp'],
-                  extra_link_args=has_openmp * ['-fopenmp'],
-                  libraries=mathlib)
-    ]
+    pre_exts = [Extension("maicos.lib.sfactor", ["maicos/lib/sfactor" + source_suffix],
+                          include_dirs=[get_numpy_include()],
+                          extra_compile_args=[
+                              '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
+                          ] + has_openmp * ['-fopenmp'],
+                          extra_link_args=has_openmp * ['-fopenmp'],
+                          libraries=mathlib)
+                ]
 
-if __name__ == "__main__":
+    if use_cython:
+        extensions = cythonize(pre_exts)
+    else:
+        extensions = pre_exts
+        # Let's check early for missing .c files
+        for ext in extensions:
+            for source in ext.sources:
+                if not (os.path.isfile(source) and
+                        os.access(source, os.R_OK)):
+                    raise IOError("Source file '{}' not found. This might be "
+                                  "caused by a missing Cython install, or a "
+                                  "failed/disabled Cython build.".format(source))
+
+    with open("README.md") as summary:
+        LONG_DESCRIPTION = summary.read()
+
     setup(name='maicos',
           packages=find_packages(),
           version=VERSION,
@@ -107,11 +157,12 @@ if __name__ == "__main__":
           'interfacial and confined systems.',
           author="Philip Loche et. al.",
           author_email="ploche@physik.fu-berlin.de",
+          long_description=LONG_DESCRIPTION,
+          long_description_content_type='text/markdown',
           maintainer="Philip Loche",
           maintainer_email="ploche@physik.fu-berlin.de",
-          package_data={'': ['share/*']},
           include_package_data=True,
-          ext_modules=cythonize(extensions),
+          ext_modules=extensions,
           install_requires=[
               'MDAnalysis>0.19.2',
               'matplotlib>=2.0.0',
@@ -119,7 +170,37 @@ if __name__ == "__main__":
               'scipy>=0.17',
               'threadpoolctl>=1.1.0',
           ],
+          python_requires='>=3.6',
           entry_points={
               'console_scripts': ['maicos = maicos.__main__:entry_point'],
           },
+          keywords=[
+              'Science',
+              'Molecular Dynamics',
+              'Confined Systems',
+              'MDAnalysis',
+            ],
+          project_urls={
+                'Source Code': 'https://gitlab.com/netzlab/maicos',
+            },
+          classifiers=[
+              'Development Status :: 4 - Beta',
+              'Environment :: Console',
+              'Intended Audience :: Science/Research',
+              'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+              'Operating System :: POSIX',
+              'Operating System :: MacOS :: MacOS X',
+              'Operating System :: Microsoft :: Windows ',
+              'Programming Language :: Python',
+              'Programming Language :: Python :: 3',
+              'Programming Language :: Python :: 3.6',
+              'Programming Language :: Python :: 3.7',
+              'Programming Language :: C',
+              'Topic :: Scientific/Engineering',
+              'Topic :: Scientific/Engineering :: Bio-Informatics',
+              'Topic :: Scientific/Engineering :: Chemistry',
+              'Topic :: Scientific/Engineering :: Physics',
+              'Topic :: Software Development :: Libraries :: Python Modules',
+              'Topic :: System :: Shells',
+          ],
           zip_safe=False)

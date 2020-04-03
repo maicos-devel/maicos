@@ -10,6 +10,7 @@
 import maicos.utils
 import numpy as np
 from numpy.testing import assert_almost_equal
+from MDAnalysisTests.core.util import UnWrapUniverse
 
 
 def test_FT():
@@ -25,3 +26,14 @@ def test_iFT():
     t, sin_FT = maicos.utils.FT(x, sin)
     x_new, sin_new = maicos.utils.iFT(t, sin_FT)
     assert_almost_equal(sin, sin_new.real, decimal=1)
+
+
+def test_check_compound():
+    u = UnWrapUniverse()
+    assert maicos.utils.check_compound(u.atoms) == "molecules"
+
+    u = UnWrapUniverse(have_molnums=False, have_bonds=True)
+    assert maicos.utils.check_compound(u.atoms) == "fragments"
+
+    u = UnWrapUniverse(have_molnums=False, have_bonds=False)
+    assert maicos.utils.check_compound(u.atoms) == "residues"
