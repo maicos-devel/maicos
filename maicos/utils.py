@@ -168,8 +168,9 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
 def get_cli_input():
     """Returns a proper fomatted string of the command line input"""
     program_name = os.path.basename(sys.argv[0])
-    return "Command line was: {} {}".format(program_name,
-                                            " ".join(sys.argv[1:]))
+    # Add additional quotes for connected arguments.
+    arguments = ['"{}"'.format(arg) if " " in arg else arg for arg in sys.argv[1:]]
+    return "Command line was: {} {}".format(program_name, " ".join(arguments))
 
 
 def savetxt(fname, X, header='', fsuffix=".dat", **kwargs):
