@@ -18,6 +18,7 @@ from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
 from ..utils import check_compound, savetxt
+from ..decorators import planar_base
 
 
 def compute_form_factor(q, atom_type):
@@ -413,6 +414,7 @@ class debye(SingleGroupAnalysisBase):
                 fmt='%.8e')
 
 
+@planar_base()
 class diporder(SingleGroupAnalysisBase):
     """Calculates dipolar order parameters including
     the projected polarization density P_0⋅ρ(z)⋅cos(θ[z]),
@@ -420,15 +422,10 @@ class diporder(SingleGroupAnalysisBase):
     the squared dipole orientation cos²(Θ[z]) and
     the number density ρ(z)
 
-    :param binwidth (float): specify the binwidth [nm]
-    :param dim (int): direction normal to the surface (x,y,z=0,1,2)
     :param output (str): Output filename
     :param outfreq (int): Default number of frames after which output files are
                          refreshed
     :param bsym (bool): symmetrize the profiles
-    :param center (bool): Shift system by half a box length (useful for
-                          membrane simulations
-    :param com (bool): shift system such that the water COM is centered
     :param binmethod (str): binning method: center of Mass (COM), center of charge (COC)
                             or oxygen position (OXY).
                             Note: `OXY` only works for water oxygens with name `OW*`
@@ -445,36 +442,29 @@ class diporder(SingleGroupAnalysisBase):
 
     def __init__(self,
                  atomgroup,
-                 binwidth=0.01,
-                 dim=2,
                  output="diporder.dat",
                  outfreq=10000,
                  bsym=False,
-                 center=False,
-                 com=False,
                  binmethod='COM',
                  bpbc=True,
+                 # Planar base arguments are necessary for buidling CLI
+                 dim=2,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
                  **kwargs):
         super().__init__(atomgroup, **kwargs)
 
-        self.binwidth = binwidth
-        self.dim = dim
         self.output = output
         self.outfreq = outfreq
         self.bsym = bsym
-        self.center = center
-        self.com = com
         self.binmethod = binmethod
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.add_argument('-dz', dest='binwidth')
-        parser.add_argument('-d', dest='dim')
         parser.add_argument('-o', dest='output')
         parser.add_argument('-dout', dest="outfreq")
         parser.add_argument('-sym', dest='bsym')
-        parser.add_argument('-shift', dest='center')
-        parser.add_argument('-com', dest='com')
         parser.add_argument('-bin', dest='binmethod')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
@@ -499,42 +489,25 @@ class diporder(SingleGroupAnalysisBase):
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
-        self.nbins = int(
-            np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
-        self.P0 = np.zeros(self.nbins)
-        self.cos_theta = np.zeros(self.nbins)
-        self.cos_2_theta = np.zeros(self.nbins)
-        self.rho = np.zeros(self.nbins)
-        self.av_box_length = 0
+        self.P0 = np.zeros(self.n_bins)
+        self.cos_theta = np.zeros(self.n_bins)
+        self.cos_2_theta = np.zeros(self.n_bins)
+        self.rho = np.zeros(self.n_bins)
 
         # unit normal vector
         self.unit = np.zeros(3)
         self.unit[self.dim] += 1
 
     def _single_frame(self):
-
-        if self.center:
-            # shift membrane
-            self._ts.positions[:, self.dim] += self._ts.dimensions[self.dim] / 2
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
-        if self.com:
-            # put water COM into center
-            waterCOM = np.sum(self.atomgroup.atoms.positions[:, 2] *
-                              self.atomgroup.atoms.masses
-                             ) / self.atomgroup.atoms.masses.sum()
-            self._ts.positions[:, self.dim] += self._ts.dimensions[
-                self.dim] / 2 - waterCOM
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
-
         # Make molecules whole
         if self.bpbc:
             self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
 
-        dz_frame = self._ts.dimensions[self.dim] / self.nbins
+        dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
         chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
                                                                       newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, 
+        dipoles = self.atomgroup.accumulate(chargepos,
                                             compound=check_compound(self.atomgroup))
         dipoles /= 10  # convert to e nm
 
@@ -552,16 +525,16 @@ class diporder(SingleGroupAnalysisBase):
             bins = ((self.oxy.positions[:, self.dim] %
                      self._ts.dimensions[self.dim]) / dz_frame).astype(int)
 
-        bincount = np.bincount(bins, minlength=self.nbins)
+        bincount = np.bincount(bins, minlength=self.n_bins)
         A = np.prod(self._ts.dimensions[self.xydims])
 
         self.P0 += np.histogram(
             bins,
-            bins=np.arange(self.nbins + 1),
+            bins=np.arange(self.n_bins + 1),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
         cos_theta = np.histogram(
             bins,
-            bins=np.arange(self.nbins + 1),
+            bins=np.arange(self.n_bins + 1),
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit))[0]
@@ -570,7 +543,7 @@ class diporder(SingleGroupAnalysisBase):
             self.cos_2_theta += np.nan_to_num(cos_theta**2 / bincount)
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
-        self.av_box_length += self._ts.dimensions[self.dim] / 10
+        self.Lz += self._ts.dimensions[self.dim] / 10
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -582,19 +555,6 @@ class diporder(SingleGroupAnalysisBase):
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
         self._index = self._frame_index + 1
-
-        dz = self.av_box_length / (self._index * self.nbins)
-        if self.center:
-            self.results["z"] = np.linspace(
-                -self.av_box_length / self._index / 2,
-                self.av_box_length / self._index / 2,
-                self.nbins,
-                endpoint=False) + dz / 2
-        else:
-            self.results["z"] = np.linspace(
-                0, self.av_box_length / self._index, self.nbins,
-                endpoint=False) + dz / 2
-
         self.results["P0"] = self.P0 / self._frame_index
         self.results["cos_theta"] = self.cos_theta / self._frame_index
         self.results["cos_2_theta"] = self.cos_2_theta / self._frame_index

@@ -87,8 +87,9 @@ def planar_base():
             if self.comgroup is not None:
                 self.comsel = self._universe.select_atoms(self.comgroup)
                 if self._verbose:
-                    print("{:>15}: {:>10} atoms".format(
-                        self.comgroup, self.comsel.n_atoms))
+                    print("Performing the binning relative to the "
+                          "center of mass of '{}' containing {} atoms.".format(
+                          self.comgroup, self.comsel.n_atoms))
                 if self.comsel.n_atoms == 0:
                     raise ValueError(
                         "`{}` does not contain any atoms. Please adjust 'com' selection."
@@ -97,7 +98,6 @@ def planar_base():
                 self.center = True  # always center when COM
 
             self.Lz = 0
-            print("baz")
             orig_prepare(self)
 
         def _single_frame(self, *args, **kwargs):
