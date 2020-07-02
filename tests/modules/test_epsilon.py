@@ -10,8 +10,6 @@
 import MDAnalysis as mda
 import pytest
 
-from MDAnalysisTests import tempdir
-
 from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
@@ -38,8 +36,8 @@ class Test_epsilon_bulk(object):
         eps = epsilon_bulk(ag, temperature=100).run()
         assert_almost_equal(eps.results['eps_mean'], 59.06, decimal=1)
 
-    def test_output(self, ag):
-        with tempdir.in_tempdir():
+    def test_output(self, ag, tmpdir):
+        with tmpdir.as_cwd():
             eps = epsilon_bulk(ag, save=True).run()
             res = np.loadtxt(eps.output)
             assert_almost_equal(np.hstack(
@@ -47,8 +45,8 @@ class Test_epsilon_bulk(object):
                                 res,
                                 decimal=2)
 
-    def test_output_name(self, ag):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag, tmpdir):
+        with tmpdir.as_cwd():
             epsilon_bulk(ag, output="foo", save=True).run()
             open("foo.dat")
 
@@ -91,8 +89,8 @@ class Test_epsilon_planar(object):
                             decimal=2)
         assert_equal(len(eps.results["z"]), n_bins)
 
-    def test_output(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             eps = epsilon_planar(ag_single_frame, save=True).run()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_perp"][:, 0],
@@ -103,8 +101,8 @@ class Test_epsilon_planar(object):
                                 res_par[:, 1],
                                 decimal=2)
 
-    def test_output_name(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             epsilon_planar(ag_single_frame, output_prefix="foo",
                            save=True).run()
             open("foo_perp.dat")
@@ -146,8 +144,8 @@ class Test_epsilon_cylinder(object):
                             decimal=2)
         assert_equal(len(eps.results["r"]), n_bins)
 
-    def test_output(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             eps = epsilon_cylinder(ag_single_frame, save=True).run()
             res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_ax"], res_ax[:, 1], decimal=1)
@@ -156,8 +154,8 @@ class Test_epsilon_cylinder(object):
                                 res_rad[:, 1],
                                 decimal=2)
 
-    def test_output_name(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             epsilon_cylinder(ag_single_frame, output_prefix="foo",
                              save=True).run()
             open("foo_ax.dat")

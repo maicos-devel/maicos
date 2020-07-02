@@ -15,10 +15,12 @@ XXXX/XX/XX
 
   * 0.3
 
+  * Fixed errors occurring from changes in MDAnalysis
+
 2020/04/03 Philip Loche
 
   * 0.2
-  
+
   * Added custom module
   * Less noisy DeprecationWarning
   * Fixed wrong center of mass velocity in velocity module

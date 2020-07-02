@@ -10,7 +10,6 @@
 import MDAnalysis as mda
 import pytest
 
-from MDAnalysisTests import tempdir
 from maicos import diporder
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -78,14 +77,14 @@ class Test_diporder(object):
         dip = diporder(ag, bpbc=True).run()
         assert_almost_equal(dip.results['P0'].mean(), 0.00, decimal=2)
 
-    def test_output(self, ag):
-        with tempdir.in_tempdir():
+    def test_output(self, ag, tmpdir):
+        with tmpdir.as_cwd():
             dip = diporder(ag, end=20, save=True).run()
             res_dip = np.loadtxt(dip.output)
             assert_almost_equal(dip.results["P0"], res_dip[:, 1], decimal=2)
 
-    def test_output_name(self, ag):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag, tmpdir):
+        with tmpdir.as_cwd():
             diporder(ag, output="foo.dat", end=20, save=True).run()
             open("foo.dat")
 

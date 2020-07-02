@@ -14,7 +14,6 @@ import subprocess
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
-from MDAnalysisTests import tempdir
 import pytest
 
 
@@ -48,8 +47,8 @@ class Test_analysis_example(object):
                             15443.7,
                             decimal=1)
 
-    def test_output(self, ag):
-        with tempdir.in_tempdir():
+    def test_output(self, ag, tmpdir):
+        with tmpdir.as_cwd():
             example = analysis_example(ag, save=True).run()
             res_volume = np.loadtxt(example.output)
             assert_almost_equal(example.results["volume"],

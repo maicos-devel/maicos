@@ -61,13 +61,10 @@ def check_compound(AtomGroup):
     """
     if hasattr(AtomGroup, "molnums"):
         return "molecules"
-
-    # Do a try-except to catch NoDataError if no bonds
-    try:
-        hasattr(AtomGroup, "fragments")
+    elif hasattr(AtomGroup, "fragments"):
         warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
-    except NoDataError:
+    else:
         warnings.warn("Cannot use 'molecules'. Falling back to 'residues'")
         return "residues"
 
