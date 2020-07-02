@@ -11,7 +11,7 @@
 import numpy as np
 
 from maicos.modules.base import SingleGroupAnalysisBase
-from maicos.utils import savetxt
+from maicos.lib.utils import savetxt
 
 
 class analysis_example(SingleGroupAnalysisBase):
