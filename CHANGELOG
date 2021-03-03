@@ -17,6 +17,7 @@ XXXX/XX/XX Philip Loche
 
   * Fixed errors occurring from changes in MDAnalysis
   * Increased minimal requirements
+  * Use new ProgressBar from MDAnalysis
 
 2020/04/03 Philip Loche
 
