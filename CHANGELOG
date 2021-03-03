@@ -11,11 +11,12 @@ The rules for this file:
   * keep the format consistent (79 char width, Y/M/D date format) and do not
     use tabs but use spaces for formatting
 
-XXXX/XX/XX
+XXXX/XX/XX Philip Loche
 
   * 0.3
 
   * Fixed errors occurring from changes in MDAnalysis
+  * Increased minimal requirements
 
 2020/04/03 Philip Loche
 

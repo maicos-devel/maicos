@@ -1,0 +1,7 @@
+numpy<1.17  # requirement from MDAnalysis
+MDAnalysis
+MDAnalysisTests
+matplotlib
+scipy
+pytest
+threadpoolctl
