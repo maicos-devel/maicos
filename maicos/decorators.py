@@ -34,7 +34,8 @@ def charge_neutral(filter):
                     groups = self.atomgroups
                 for group in groups:
                     if not np.allclose(
-                            group.total_charge(compound='fragments'), 0.0):
+                            group.total_charge(compound='fragments'), 0,
+                            atol=1E-5):
                         with warnings.catch_warnings():
                             warnings.simplefilter(filter)
                             warnings.warn(
@@ -42,8 +43,8 @@ def charge_neutral(filter):
                                 "Analysis for systems with free charges could lead "
                                 "to severe artifacts!")
 
-                    if not np.allclose(group.universe.atoms.total_charge(),
-                                       0.0):
+                    if not np.allclose(group.universe.atoms.total_charge(), 0,
+                                       atol=1E-5):
                         raise ValueError(
                             "Analysis for non-neutral systems is not supported."
                         )
