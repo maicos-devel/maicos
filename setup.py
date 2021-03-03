@@ -165,10 +165,10 @@ if __name__ == "__main__":
           ext_modules=extensions,
           python_requires='>=3.6, <3.9',
           setup_requires=[
-              'numpy>=1.13.3,<1.17',
+              'numpy>=1.13.3,<1.20',
           ],
           install_requires=[
-              'numpy>=1.13.3,<1.17',
+              'numpy>=1.13.3,<1.20',
               'MDAnalysis>=1.0.1',
               'matplotlib>=2.0.0',
               'scipy>=1.0.0',
