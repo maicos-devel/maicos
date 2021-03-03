@@ -10,7 +10,6 @@
 import MDAnalysis as mda
 import pytest
 
-from MDAnalysisTests import tempdir
 from maicos import density_planar, density_cylinder
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
@@ -74,8 +73,8 @@ class Test_density_planar(object):
         with pytest.warns(UserWarning):
             density_planar([ag, ag], mu=True).run()
 
-    def test_output(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             dens = density_planar(ag_single_frame, save=True, mu=True).run()
             res_dens = np.loadtxt(dens.output)
             res_mu = np.loadtxt(dens.muout)
@@ -84,8 +83,8 @@ class Test_density_planar(object):
                                 decimal=2)
             assert_almost_equal(dens.results["mu"], res_mu[0], decimal=2)
 
-    def test_output_name(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             density_planar(ag_single_frame,
                            output="foo",
                            muout="foo_mu",
@@ -136,16 +135,16 @@ class Test_density_cylinder(object):
         with pytest.raises(RuntimeError):
             density_cylinder(ag_single_frame, center="name foo").run()
 
-    def test_output(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             dens = density_planar(ag_single_frame, save=True).run()
             res = np.loadtxt(dens.output)
             assert_almost_equal(dens.results["dens_mean"][:, 0],
                                 res[:, 1],
                                 decimal=2)
 
-    def test_output_name(self, ag_single_frame):
-        with tempdir.in_tempdir():
+    def test_output_name(self, ag_single_frame, tmpdir):
+        with tmpdir.as_cwd():
             density_planar(ag_single_frame, output="foo", save=True).run()
             open("foo.dat")
 

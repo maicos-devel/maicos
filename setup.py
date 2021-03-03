@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -16,7 +16,7 @@ import sys
 import shutil
 import tempfile
 
-VERSION = "0.2"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+VERSION = "0.3"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 is_release = 'dev' not in VERSION
 
 # Handle cython modules
@@ -26,7 +26,7 @@ try:
 except ImportError:
     if not is_release:
         print("*** package: Cython not found ***")
-        print("MAICos requires cython for development builds")
+        print("MAICoS requires cython for development builds")
         sys.exit(1)
 
 
@@ -49,7 +49,7 @@ def get_numpy_include():
         import numpy as np
     except ImportError:
         print('*** package "numpy" not found ***')
-        print('MAICos requires a version of NumPy (>=1.13.3), even for setup.')
+        print('MAICoS requires a version of NumPy (>=1.13.3), even for setup.')
         print('Please get it from http://numpy.scipy.org/ or install it through '
               'your package manager.')
         sys.exit(-1)
@@ -163,14 +163,18 @@ if __name__ == "__main__":
           maintainer_email="ploche@physik.fu-berlin.de",
           include_package_data=True,
           ext_modules=extensions,
+          python_requires='>=3.6, <3.9',
+          setup_requires=[
+              'numpy>=1.13.3,<1.20',
+          ],
           install_requires=[
-              'MDAnalysis>0.19.2',
+              'numpy>=1.13.3,<1.20',
+              'MDAnalysis>=1.0.1',
               'matplotlib>=2.0.0',
-              'numpy>=1.10.4',
-              'scipy>=0.17',
+              'scipy>=1.0.0',
               'threadpoolctl>=1.1.0',
           ],
-          python_requires='>=3.6',
+  
           entry_points={
               'console_scripts': ['maicos = maicos.__main__:entry_point'],
           },
@@ -195,6 +199,7 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
+              'Programming Language :: Python :: 3.8',
               'Programming Language :: C',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Bio-Informatics',

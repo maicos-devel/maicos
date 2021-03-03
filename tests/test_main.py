@@ -11,7 +11,6 @@ import sys
 from unittest.mock import patch
 import subprocess
 
-from MDAnalysisTests import tempdir
 from maicos.__main__ import parse_args, main
 from maicos import __all__ as available_modules
 import pytest
@@ -85,18 +84,18 @@ class Test_main(object):
         with patch.object(sys, 'argv', ["maicos", "density_planar"]):
             return parse_args()
 
-    def test_full_run(self, args):
+    def test_full_run(self, args, tmpdir):
         args.topology = WATER_GRO
         args.trajectory = WATER_GRO
-        with tempdir.in_tempdir():
+        with tmpdir.as_cwd():
             main(args)
 
     @pytest.mark.parametrize("boxlist", (3 * [1], 6 * [1]))
-    def box(self, args, boxlist):
+    def box(self, args, boxlist, tmpdir):
         args.topology = WATER_GRO
         args.trajectory = WATER_GRO
         args.box = boxlist
-        with tempdir.in_tempdir():
+        with tmpdir.as_cwd():
             main(args)
 
     def raise_box_error(self, args):

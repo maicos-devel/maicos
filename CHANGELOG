@@ -11,11 +11,19 @@ The rules for this file:
   * keep the format consistent (79 char width, Y/M/D date format) and do not
     use tabs but use spaces for formatting
 
+2020/03/03 Philip Loche, Amanuel Wolde-Kidan
+
+  * 0.3
+
+  * Fixed errors occurring from changes in MDAnalysis
+  * Increased minimal requirements
+  * Use new ProgressBar from MDAnalysis
+  * Increased total_charge to account for numerical inaccuracy
 
 2020/04/03 Philip Loche
 
   * 0.2
-  
+
   * Added custom module
   * Less noisy DeprecationWarning
   * Fixed wrong center of mass velocity in velocity module

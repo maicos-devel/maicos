@@ -12,7 +12,7 @@ import warnings
 
 import numpy as np
 from MDAnalysis.analysis import base
-from MDAnalysis.lib.log import ProgressMeter
+from MDAnalysis.lib.log import ProgressBar
 
 logger = logging.getLogger(__name__)
 
@@ -86,14 +86,8 @@ class _AnalysisBase(base.AnalysisBase):
         self.stopframe = stopframe
         self.step = step
         self.n_frames = len(range(startframe, stopframe, step))
-        interval = int(self.n_frames // 100)
-        if interval == 0:
-            interval = 1
-
-        verbose = getattr(self, '_verbose', False)
-        self._pm = ProgressMeter(self.n_frames if self.n_frames else 1,
-                                 interval=interval,
-                                 verbose=verbose)
+        self.frames = np.zeros(self.n_frames, dtype=int)
+        self.times = np.zeros(self.n_frames)
 
     def _configure_parser(self, parser):
         """Adds parser options using an argparser object"""
@@ -129,13 +123,15 @@ class _AnalysisBase(base.AnalysisBase):
         self._setup_frames(self._trajectory, begin, end, dt)
         logger.info("Starting preparation")
         self._prepare()
-        for i, ts in enumerate(
-                self._trajectory[self.startframe:self.stopframe:self.step]):
+        for i, ts in enumerate(ProgressBar(
+                self._trajectory[self.startframe:self.stopframe:self.step],
+                verbose=verbose)):
             self._frame_index = i
+            self.frames[i] = ts.frame
+            self.times[i] = ts.time
             self._ts = ts
             # logger.info("--> Doing frame {} of {}".format(i+1, self.n_frames))
             self._single_frame()
-            self._pm.echo(self._frame_index)
         logger.info("Finishing up")
         self._calculate_results()
         self._conclude()
