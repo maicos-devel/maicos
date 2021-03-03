@@ -13,3 +13,4 @@ sfactor.c
 *.xvg
 .duecredit.p
 !maicos/share/*.dat
+!requirements.txt
