@@ -10,11 +10,12 @@
 import MDAnalysis as mda
 import pytest
 
-from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
+from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder, \
+                   dielectric_spectrum_ion
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
-from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
+from datafiles import WATER_GRO, WATER_TPR, WATER_TRR, SALT_TPR, SALT_TRR
 
 
 class Test_epsilon_bulk(object):
@@ -163,3 +164,28 @@ class Test_epsilon_cylinder(object):
 
     def test_verbose(self, ag_single_frame):
         epsilon_cylinder(ag_single_frame, verbose=True).run()
+
+
+# class Test_dielectric_spectrum_ion(object):
+#     @pytest.fixture()
+#     def ag(self):
+#         u = mda.Universe(SALT_TPR, SALT_TRR)
+#         return u.atoms
+
+#     def test_spectrum(self, ag):
+#         eps = dielectric_spectrum_ion(ag).run()
+#         assert_almost_equal(eps.results['freq'], 0, decimal=1)
+#         assert_almost_equal(eps.results['susc_w'], 0, decimal=1)
+#         assert_almost_equal(eps.results['susc_iw'], 0, decimal=1)
+#         assert_almost_equal(eps.results['susc_i'], 0, decimal=1)
+#         assert_almost_equal(eps.results['susc'], 0, decimal=1)
+#         assert_almost_equal(eps.results['cond'], 0, decimal=1)
+
+#     def test_temperature(self, ag):
+#         eps = epsilon_bulk(ag, temperature=100).run()
+#         assert_almost_equal(eps.results['susc_w'], 59.06, decimal=1)
+
+#     def test_output_name(self, ag, tmpdir):
+#         with tmpdir.as_cwd():
+#             epsilon_bulk(ag, output_prefix="foo", save=True).run()
+#             open("foo.dat")

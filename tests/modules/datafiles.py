@@ -18,3 +18,8 @@ WATER_TPR = resource_filename(__name__, "../data/water/topol.tpr")
 AIRWATER_GRO = resource_filename(__name__, "../data/airwater/confout.gro")
 AIRWATER_TRR = resource_filename(__name__, "../data/airwater/traj.trr")
 AIRWATER_TPR = resource_filename(__name__, "../data/airwater/topol.tpr")
+
+# NaCl solution
+SALT_GRO = resource_filename(__name__, "../data/salt/confout.gro")
+SALT_TRR = resource_filename(__name__, "../data/salt/traj.xtc")
+SALT_TPR = resource_filename(__name__, "../data/salt/topol.tpr")

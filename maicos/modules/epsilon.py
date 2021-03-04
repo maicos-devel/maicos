@@ -1317,8 +1317,6 @@ class dielectric_spectrum_ion(dipole_trajectory):
 
         self.results["acf_i"] = acf
 
-    #################################################################################
-
     def _calculate_susc_water(self):
         time = self.results["time_seg"]
         corr = self.results["acf_w"]
@@ -1470,8 +1468,8 @@ class dielectric_spectrum_ion(dipole_trajectory):
                  -1 * self.results["susc_iw"].imag,
                  self.results["susc_i"].real,
                  -1 * self.results["susc_i"].imag)),
-            header=
-            "freq [Thz], susc_re, susc_im, susc_w_re, susc_w_im, susc_iw_re, susc_iw_im, susc_i_re, susc_i_im"
+            header="freq [Thz], susc_re, susc_im, susc_w_re, susc_w_im, "
+                   "susc_iw_re, susc_iw_im, susc_i_re, susc_i_im"
         )
 
         savetxt(self.output_prefix + "conductivity.dat",
