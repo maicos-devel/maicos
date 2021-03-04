@@ -7,7 +7,7 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import maicos.utils.fourier
+import maicos.lib.fourier
 import numpy as np
 from numpy.testing import assert_almost_equal
 
