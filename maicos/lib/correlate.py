@@ -65,8 +65,6 @@ def scalar_prod_Corr(a, b=None, subtract_mean=False):
     return corr
 
 
-
-
 def vcorrelate(a, b=None, subtract_mean=False):
     # old ScalarProdCorr
     """

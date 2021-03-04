@@ -220,7 +220,11 @@ class dipole_trajectory(MultiGroupAnalysisBase):
         else:
             restypes = ["CM".format(i) for i in range(len(self.atomgroups))]
         self.restypes = restypes
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 05a4352 (Added module for calculating spectra with free charges)
         # Add check for labels and residues
         # Names of each AG
         if labels is not None:
