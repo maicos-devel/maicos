@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -9,8 +9,8 @@
 
 import numpy as np
 
-from ..utils import check_compound, savetxt
-from .base import SingleGroupAnalysisBase
+from ..lib.utils import check_compound, savetxt
+from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 
 
 class dipole_angle(SingleGroupAnalysisBase):
@@ -178,3 +178,174 @@ class kinetic_energy(SingleGroupAnalysisBase):
                 ]).T,
                 fmt='%.8e',
                 header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
+
+
+class dipole_trajectory(MultiGroupAnalysisBase):
+    """
+    Calculates the dipole and charge current trajectories for a series of atomgroups.
+
+   :param output_prefix (str): Prefix for the output files.
+   :param restypes (str): Types of residues contained in each atomgroup.
+                            Options are "SP" for a single particle, "NM" for a neutral molecule,
+                            or "CM" for a generic, charged molecule.
+                            If not supplied, "CM" is assumed.
+                            Affects the method of calculating each dipole component,
+                            wrongly choosing may result in incorrect results.
+    :param labels (str): Labels for each atomgroup.
+    :param nojump (bool): Indicates atomgroups are unfolded across boundaries,
+                            and the translational dipole moment can be computed comtinuously.
+    :param bpbc (bool): Do not make broken molecules whole again (only works if
+                        molecule is smaller than shortest box vector
+
+    :returns (dict): * time: time (ps)
+                     * LABEL_MD: Rotational dipole moment of group
+                     * LABEL_MJ: Translational dipole moment of group
+                     * LABEL_J: Translational current of group
+    """
+    def __init__(self,
+                 atomgroups,
+                 restypes=None,
+                 output_prefix="",
+                 labels=None,
+                 nojump=False,
+                 bpbc=True,
+                 **kwargs):
+        super().__init__(atomgroups, **kwargs)
+
+        # Group types of each AG
+        if restypes is not None:
+            if len(restypes) != len(self.atomgroups):
+                raise ValueError(
+                    "Number of atomgroups and residue types not equal.")
+        else:
+            restypes = ["CM".format(i) for i in range(len(self.atomgroups))]
+        self.restypes = restypes
+
+        # Add check for labels and residues
+        # Names of each AG
+        if labels is not None:
+            if len(labels) != len(self.atomgroups):
+                raise ValueError(
+                    "Number of atomgroups and label names not equal.")
+        else:
+            labels = ["ag{}".format(i) for i in range(len(self.atomgroups))]
+        self.labels = labels
+
+        self.nojump = nojump
+        self.bpbc = bpbc
+        self.output_prefix = output_prefix
+
+    def _configure_parser(self, parser):
+        parser.add_argument('-o', dest='output_prefix')
+        parser.add_argument('-r', dest='restypes', nargs="+")
+        parser.add_argument('-l', dest='labels', nargs="+")
+        parser.add_argument('-nojump', dest='nojump')
+        parser.add_argument('-nopbcrepair', dest='bpbc')
+
+    def _prepare(self):
+        self.volume = 0.0
+
+        # Setup the results arrays
+        self.results["dt"] = self._trajectory.dt * self.step
+        self.results["time"] = np.round(
+            self._trajectory.dt * np.arange(self.startframe, self.stopframe, self.step),
+            decimals=4)
+
+        for i, ag in enumerate(self.atomgroups):
+            label = self.labels[i]
+            self.results[label + "_MD"] = np.zeros((self.n_frames, 3))
+            self.results[label + "_J"] = np.zeros((self.n_frames, 3))
+
+            if self.nojump:
+                self.results[label + "_MJ"] = np.zeros((self.n_frames, 3))
+
+    def _single_frame(self):
+        # Increment volume
+        self.volume += self._ts.volume
+
+        # Loop over each AG, gets a vector for P and J
+        for i, ag in enumerate(self.atomgroups):
+
+            if self.bpbc:
+                # make broken molecules whole again!
+                ag.unwrap(compound="molecules")
+
+            # Determines which calculation method to use for each AG
+            label = self.labels[i]
+            restype = self.restypes[i]
+
+            if restype == "SP":
+                # Single particle
+                # No COM dipole, only position/velocity current if charged
+                MD = np.zeros(3)
+                J = np.dot(ag.charges, ag.velocities)
+                if self.nojump:
+                    MJ = np.dot(ag.charges, ag.positions)
+
+            elif restype == "NM":
+                # Neutral molecule
+                # No dipole/velocity current, only rotational dipole
+                MD = np.dot(ag.charges, ag.positions)
+                J = np.zeros(3)
+                if self.nojump:
+                    MJ = np.zeros(3)
+
+            else:
+                # Generic calculation for charged molecules
+                # Vectorized calculation for each residue in the group
+                idx = np.argwhere(ag.residues.resids[:,
+                                                     np.newaxis] == ag.resids)
+                idx = np.asarray(
+                    np.split(
+                        idx[:, 1],
+                        np.cumsum(np.unique(idx[:, 0],
+                                            return_counts=True)[1])[:-1]))
+
+                pos = ag.positions[idx]
+                vel = ag.velocities[idx]
+                ms = ag.masses[idx]
+                qs = ag.charges[idx]
+
+                mtot = np.sum(ms, axis=1, keepdims=True)
+                qtot = np.sum(qs, axis=1, keepdims=True)
+
+                rcm = np.sum(ms[:, :, np.newaxis] * pos, axis=1) / mtot
+                vcm = np.sum(ms[:, :, np.newaxis] * vel, axis=1) / mtot
+
+                MD = np.sum(np.sum(qs[:, :, np.newaxis] *
+                                   (pos - rcm[:, np.newaxis, :]),
+                                   axis=1),
+                            axis=0)
+                J = np.sum(qtot * vcm, axis=0)
+                if self.nojump:
+                    MJ = np.sum(qtot * rcm, axis=0)
+
+            self.results[label + "_MD"][self._frame_index, :] = MD
+            self.results[label + "_J"][self._frame_index, :] = J
+            if self.nojump:
+                self.results[label + "_MJ"][self._frame_index, :] = MJ
+
+    def _conclude(self):
+        self.volume = self.volume / (self._frame_index + 1)
+        self.results["volume"] = self.volume
+        self.results["nframes"] = self._frame_index + 1
+
+    def _save_results(self):
+        # Save volumne
+        savetxt(self.output_prefix + "volume.dat", [self.results["volume"]],
+                header="Avg. Volume")
+
+        for label in self.labels:
+            if self.nojump:
+                vals = (self.results["time"], self.results[label + "_MD"],
+                        self.results[label + "_MJ"],
+                        self.results[label + "_J"])
+                header = "time, MDx, MDy, MDz, MJx, MJy, MJz, Jx, Jy, Jz"
+            else:
+                vals = (self.results["time"], self.results[label + "_MD"],
+                        self.results[label + "_J"])
+                header = "time, MDx, MDy, MDz, Jx, Jy, Jz"
+
+            savetxt(self.output_prefix + "diptrj_" + label + ".dat",
+                    np.column_stack(vals),
+                    header=header)

@@ -17,7 +17,7 @@ import MDAnalysis as mda
 from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
-from ..utils import check_compound, savetxt
+from ..lib.utils import check_compound, savetxt
 
 
 def compute_form_factor(q, atom_type):
@@ -534,7 +534,7 @@ class diporder(SingleGroupAnalysisBase):
 
         chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
                                                                       newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, 
+        dipoles = self.atomgroup.accumulate(chargepos,
                                             compound=check_compound(self.atomgroup))
         dipoles /= 10  # convert to e nm
 

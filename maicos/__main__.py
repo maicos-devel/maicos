@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -19,7 +19,7 @@ import maicos
 
 from . import __version__
 from . import __all__ as available_modules
-from .utils import get_cli_input
+from .lib.utils import get_cli_input
 from .arg_completion import complete_parser
 
 # Try to use IPython shell for debug

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -20,10 +20,12 @@ __all__ = [
     'epsilon_planar',
     'epsilon_cylinder',
     'dielectric_spectrum',
+    'dielectric_spectrum_ion',
     'saxs',
     'debye',
     'dipole_angle',
     'kinetic_energy',
+    'dipole_trajectory',
     'diporder',
     'velocity',
 ]

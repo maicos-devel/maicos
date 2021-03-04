@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2020 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -11,7 +11,7 @@ import os
 
 import numpy as np
 
-from .utils import _share_path
+_share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
 
 # Translation of atomnames to types/element
 atomtypes = {}

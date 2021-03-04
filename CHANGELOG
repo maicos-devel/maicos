@@ -11,9 +11,11 @@ The rules for this file:
   * keep the format consistent (79 char width, Y/M/D date format) and do not
     use tabs but use spaces for formatting
 
-XXXX/XX/XX
+XXXX/XX/XX Philip Loche, Sean Fridowitz
 
   * 0.4
+
+  * Added module for calculating dielectric spectra with free charges
 
 2020/03/03 Philip Loche, Amanuel Wolde-Kidan
 
