@@ -168,4 +168,5 @@ class MultiGroupAnalysisBase(_AnalysisBase):
         super().__init__(atomgroups[0].universe.trajectory, **kwargs)
 
         self.atomgroups = atomgroups
+        self.n_atomgroups = len(self.atomgroups)
         self._universe = atomgroups[0].universe
