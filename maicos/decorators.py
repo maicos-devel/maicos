@@ -48,7 +48,7 @@ def planar_base():
             self.binwidth = binwidth
             self.center = center
             self.comgroup = comgroup
-            
+
             # TODO: Try to manipulate signature to get rid of standard arguments in
             # decorated planar classes.
             # Or find a way to extract default arguments, while building CLI...
@@ -65,8 +65,21 @@ def planar_base():
             if self.dim not in [1, 2, 3]:
                 raise ValueError("Dimension can only be 0=X or 1=Y or 2=Z.")
 
-            self.n_bins = int(
-                np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
+            # Workaround since currently not alle module have option with zmax and zmin
+            if not hasattr(self, 'zmax'):
+                self.zmax = -1
+
+            if self.zmax == -1:
+                zmax = self._universe.dimensions[self.dim]
+            else:
+                self.zmax *= 10
+                zmax = self.zmax
+
+            if not hasattr(self, 'zmin'):
+                self.zmin = 0
+            self.zmin = 10 * self.zmin
+
+            self.n_bins = int(np.ceil((zmax - self.zmin) / 10 / self.binwidth))
 
             if self._verbose:
                 print('Using', self.n_bins, 'bins.')
@@ -83,11 +96,12 @@ def planar_base():
             if self.comgroup is not None:
                 self.center = True  # always center when COM
 
-            self.av_box_length = 0
+            self.Lz = 0
+            print("baz")
             orig_prepare(self)
 
         def _single_frame(self, *args, **kwargs):
-            self.av_box_length += self._ts.dimensions[self.dim] / 10
+            self.Lz += self._ts.dimensions[self.dim]
             # Center of mass calculation with generalization to periodic systems
             # see Bai, Linge; Breen, David (2008). "Calculating Center of Mass in an
             # Unbounded 2D Environment". Journal of Graphics, GPU, and Game Tools. 13
@@ -120,14 +134,20 @@ def planar_base():
         def _calculate_results(self):
             self._index = self._frame_index + 1
 
-            dz = self.av_box_length / (self._index * self.nbins)
+            if self.zmax == -1:
+                zmax = self.Lz / self._index
+            else:
+                zmax = self.zmax
+
+            dz = (zmax - self.zmin) / self.n_bins
             self.results["z"] = np.linspace(
-                0, self.av_box_length / self._index, self.nbins,
+                self.zmin, zmax, self.n_bins,
                 endpoint=False) + dz / 2
 
             if self.center:
-                self.results["z"] -= self.av_box_length / self._index / 2
+                self.results["z"] -= self.zmin + (zmax - self.zmin) / 2
 
+            self.results["z"] /= 10
             orig_calculate_results(self)
 
         extra_params = [
@@ -159,6 +179,7 @@ def planar_base():
         original_class._configure_parser = _configure_parser
         original_class._prepare = _prepare
         original_class._single_frame = _single_frame
+        original_class._calculate_results = _calculate_results
 
         return original_class
 

@@ -239,7 +239,7 @@ class density_planar(MultiGroupAnalysisBase):
         # save density profile
         savetxt(self.output,
                 np.hstack(
-                    ((self.results["z"][:, np.newaxis]),
+                    ((self.results["z"][:, np.newaxis]/10),
                      self.results["dens_mean"], self.results["dens_err"])),
                 header=columns)
 
