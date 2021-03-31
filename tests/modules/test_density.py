@@ -60,7 +60,7 @@ class Test_density_planar(object):
         assert_almost_equal(dens.results["mu"], -11.8, decimal=1)
 
     def test_mu_zpos(self, ag):
-        dens = density_planar(ag, mu=True, zpos=0).run()
+        dens = density_planar(ag, mu=True, zpos=2.2).run()
         assert_almost_equal(dens.results["mu"],
                             water_chemical_potential,
                             decimal=1)

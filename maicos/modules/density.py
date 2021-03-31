@@ -207,9 +207,9 @@ class density_planar(MultiGroupAnalysisBase):
         dz = self._ts.dimensions[self.dim] / self.nbins
 
         for index, selection in enumerate(self.atomgroups):
-            bins = np.rint(
+            bins = (np.rint(
                 (selection.atoms.positions[:, self.dim] + comshift + dz / 2) /
-                dz) % self.nbins
+                dz) % self.nbins).astype(int)
             density_ts = np.histogram(bins,
                                       bins=np.arange(self.nbins + 1),
                                       weights=weight(selection, self.dens))[0]
@@ -254,10 +254,10 @@ class density_planar(MultiGroupAnalysisBase):
         # chemical potential
         if self.mu:
             if (self.zpos is not None):
-                this = np.rint(self.zpos / (self.av_box_length / self._index) *
-                        self.nbins)
+                this = (np.rint((self.zpos + dz / 2) / dz) %
+                        self.nbins).astype(int)
                 if self.center:
-                    this += self.nbins // 2
+                    this += np.rint(self.nbins / 2).astype(int)
                 self.results["mu"] = mu(self.results["dens_mean"][this][0],
                                         self.temperature, self.mass)
                 self.results["dmu"] = dmu(self.results["dens_mean"][this][0],
