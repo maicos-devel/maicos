@@ -158,8 +158,8 @@ class density_planar(MultiGroupAnalysisBase):
 
         for index, selection in enumerate(self.atomgroups):
             bins = np.rint(
-                (selection.atoms.positions[:, self.dim] + comshift + dz / 2) /
-                dz) % self.nbins
+                (selection.atoms.positions[:, self.dim] + dz / 2) /
+                dz) % self.n_bins
             density_ts = np.histogram(bins,
                                       bins=np.arange(self.n_bins + 1),
                                       weights=weight(selection, self.dens))[0]
@@ -193,7 +193,7 @@ class density_planar(MultiGroupAnalysisBase):
         if self.mu:
             if (self.zpos is not None):
                 this = np.rint(self.zpos / (self.av_box_length / self._index) *
-                        self.nbins)
+                        self.n_bins)
                 if self.center:
                     this += self.n_bins // 2
                 self.results["mu"] = mu(self.results["dens_mean"][this][0],
