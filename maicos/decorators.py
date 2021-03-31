@@ -62,7 +62,7 @@ def planar_base():
             orig_configure_parser(self, parser)
 
         def _prepare(self):
-            if self.dim not in [1, 2, 3]:
+            if self.dim not in [0, 1, 2]:
                 raise ValueError("Dimension can only be 0=X or 1=Y or 2=Z.")
 
             # Workaround since currently not alle module have option with zmax and zmin
