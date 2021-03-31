@@ -192,10 +192,11 @@ class density_planar(MultiGroupAnalysisBase):
         # chemical potential
         if self.mu:
             if (self.zpos is not None):
-                this = np.rint(self.zpos / (self.av_box_length / self._index) *
-                        self.n_bins)
+                dz = self.Lz / self._index / self.n_bins
+                this = (np.rint((self.zpos * 10. + dz / 2.) / dz) %
+                        self.n_bins).astype(int)
                 if self.center:
-                    this += self.n_bins // 2
+                    this += np.rint(self.n_bins / 2).astype(int)
                 self.results["mu"] = mu(self.results["dens_mean"][this][0],
                                         self.temperature, self.mass)
                 self.results["dmu"] = dmu(self.results["dens_mean"][this][0],
