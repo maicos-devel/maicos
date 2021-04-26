@@ -283,10 +283,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            bins = ((sel.atoms.positions[:, self.dim] - self.zmin) /
-                    ((zmax - self.zmin) / (self.n_bins))).astype(int)
-            bins[np.where(bins < 0)] = 0  # put all charges back inside box
-            bins[np.where(bins >= self.n_bins)] = self.n_bins - 1
+            bins = self.get_bins(sel.atoms.positions)
             curQ = np.histogram(bins,
                                 bins=np.arange(self.n_bins + 1),
                                 weights=sel.atoms.charges)[0]
@@ -320,17 +317,11 @@ class epsilon_planar(MultiGroupAnalysisBase):
                 repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
-            binsz = (((testpos[:, self.dim] - self.zmin) %
-                      self._ts.dimensions[self.dim]) /
-                     ((zmax - self.zmin) / self.n_bins)).astype(int)
+            binsz = self.get_bins(testpos)
 
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
-                binsx = (sel.atoms.positions[:, direction] /
-                         (self._ts.dimensions[direction] / nbinsx)).astype(int)
-                # put all charges back inside box
-                binsx[np.where(binsx < 0)] = 0
-                binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
+                binsx = self.get_bins(sel.atoms.positions, dim=direction)
                 curQx = np.histogram2d(binsz,
                                        binsx,
                                        bins=[

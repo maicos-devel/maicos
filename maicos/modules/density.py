@@ -157,9 +157,7 @@ class density_planar(MultiGroupAnalysisBase):
         dz = self._ts.dimensions[self.dim] / self.n_bins
 
         for index, selection in enumerate(self.atomgroups):
-            bins = (np.rint(
-                selection.atoms.positions[:, self.dim] /
-                dz) % self.n_bins).astype(int)
+            bins = self.get_bins(selection.atoms.positions)
             density_ts = np.histogram(bins,
                                       bins=np.arange(self.n_bins + 1),
                                       weights=weight(selection, self.dens))[0]

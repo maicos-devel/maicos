@@ -100,6 +100,23 @@ def planar_base():
             self.Lz = 0
             orig_prepare(self)
 
+        def get_bins(self, positions, dim=None):
+            """"Calculates bins based on given positions. dim denotes 
+            the dimension for calculating bins. If `None` the default 
+            dim is taken.
+            
+            Attributes
+            ----------
+            positions : numpy.ndarray
+                 3 dimensional positions
+            dim : int
+                dimesion for binning [1,2,3]"""
+            dim = self.dim if dim is None else dim
+            dz = self._ts.dimensions[dim] / self.n_bins
+            bins = np.rint(positions[:, dim] / dz) 
+            bins %= self.n_bins
+            return bins.astype(int)
+
         def _single_frame(self, *args, **kwargs):
             self.Lz += self._ts.dimensions[self.dim]
             # Center of mass calculation with generalization to periodic systems
@@ -179,6 +196,7 @@ def planar_base():
         original_class.__init__ = __init__
         original_class._configure_parser = _configure_parser
         original_class._prepare = _prepare
+        original_class.get_bins = get_bins
         original_class._single_frame = _single_frame
         original_class._calculate_results = _calculate_results
 

@@ -512,19 +512,15 @@ class diporder(SingleGroupAnalysisBase):
         dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
-            # Calculate the centers of the objects ( i.e. Molecules )
-            coms = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
-            bins = ((coms[:, self.dim] % self._ts.dimensions[self.dim]) /
-                    dz_frame).astype(int)
+            # Calculate the centers of the objects (i.e. Molecules)
+            bin_positions = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
         elif self.binmethod == 'COC':
-            cocs = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
+            bin_positions = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
                                          compound=check_compound(self.atomgroup))
-            bins = ((cocs[:, self.dim] % self._ts.dimensions[self.dim]) /
-                    dz_frame).astype(int)
         elif self.binmethod == 'OXY':
-            bins = ((self.oxy.positions[:, self.dim] %
-                     self._ts.dimensions[self.dim]) / dz_frame).astype(int)
+            bin_positions = self.oxy.positions
 
+        bins = self.get_bins(bin_positions)
         bincount = np.bincount(bins, minlength=self.n_bins)
         A = np.prod(self._ts.dimensions[self.xydims])
 
