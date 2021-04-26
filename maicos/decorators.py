@@ -140,9 +140,10 @@ def planar_base():
                 zmax = self.zmax
 
             dz = (zmax - self.zmin) / self.n_bins
+
             self.results["z"] = np.linspace(
-                self.zmin, zmax, self.n_bins,
-                endpoint=False) + dz / 2
+                self.zmin+dz/2, zmax-dz/2, self.n_bins,
+                endpoint=False)
 
             if self.center:
                 self.results["z"] -= self.zmin + (zmax - self.zmin) / 2

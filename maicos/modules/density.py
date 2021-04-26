@@ -158,7 +158,7 @@ class density_planar(MultiGroupAnalysisBase):
 
         for index, selection in enumerate(self.atomgroups):
             bins = (np.rint(
-                (selection.atoms.positions[:, self.dim] + dz / 2) /
+                selection.atoms.positions[:, self.dim] /
                 dz) % self.n_bins).astype(int)
             density_ts = np.histogram(bins,
                                       bins=np.arange(self.n_bins + 1),
@@ -240,7 +240,7 @@ class density_planar(MultiGroupAnalysisBase):
         # save density profile
         savetxt(self.output,
                 np.hstack(
-                    ((self.results["z"][:, np.newaxis]/10),
+                    (self.results["z"][:, np.newaxis],
                      self.results["dens_mean"], self.results["dens_err"])),
                 header=columns)
 
