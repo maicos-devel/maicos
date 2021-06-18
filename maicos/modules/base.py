@@ -9,13 +9,13 @@
 
 import logging
 import warnings
+from ..utils import check_compound, sort_atomgroup
 
 import numpy as np
 from MDAnalysis.analysis import base
 from MDAnalysis.lib.log import ProgressBar
 
 logger = logging.getLogger(__name__)
-
 
 class _AnalysisBase(base.AnalysisBase):
     """Extends the MDAnalysis base class for defining multi frame analysis."""
@@ -152,7 +152,7 @@ class SingleGroupAnalysisBase(_AnalysisBase):
 
     def __init__(self, atomgroup, **kwargs):
         super().__init__(atomgroup.universe.trajectory, **kwargs)
-        self.atomgroup = atomgroup
+        self.atomgroup = sort_atomgroup(atomgroup)
         self._universe = atomgroup.universe
 
 
@@ -163,10 +163,17 @@ class MultiGroupAnalysisBase(_AnalysisBase):
 
     def __init__(self, atomgroups, **kwargs):
         if type(atomgroups) not in [list, tuple, np.ndarray]:
+            # Sort the atomgroups, 
+            # such that molecules are listed one after the other
+            atomgroups = sort_atomgroup(atomgroups)
             atomgroups = [atomgroups]
         else:
-            # Check that all atomgroups are from same universe
-            for ag in atomgroups[:1]:
+            for i, ag in enumerate(atomgroups[1:]):
+                # Sort the atomgroups, 
+                # such that molecules are listed one after the other
+                atomgroups[i] = sort_atomgroup(ag)
+
+                # Check that all atomgroups are from same universe
                 if ag.universe != atomgroups[0].universe:
                     raise ValueError(
                         "Given Atomgroups are not from the same Universe.")

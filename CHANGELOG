@@ -16,6 +16,7 @@ XXXX/XX/XX Philip Loche
   * 0.4
 
   * Raise error if end is to small (#40)
+  * Add sorting of atom groups into molecules, enabling import of LAMMPS data
 
 2020/03/03 Philip Loche, Amanuel Wolde-Kidan
 
