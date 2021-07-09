@@ -1,9 +1,5 @@
 # MAICoS - Molecular Analysis for Interfacial and Confined Systems
 
-A Python library to analyse molecular dynamics simulations of
-interfacial and confined systems based on
-[MDAnalysis](https://www.mdanalysis.org).
-
 # Installation
 
 You'll need [Python3](https://www.python.org) and a C-compiler to build the

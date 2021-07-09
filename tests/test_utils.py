@@ -14,6 +14,7 @@ import maicos.utils
 import numpy as np
 from numpy.testing import assert_almost_equal
 from MDAnalysisTests.core.util import UnWrapUniverse
+import MDAnalysis as mda
 
 
 def test_FT():
@@ -41,6 +42,11 @@ def test_check_compound():
     u = UnWrapUniverse(have_molnums=False, have_bonds=False)
     assert maicos.utils.check_compound(u.atoms) == "residues"
 
+def test_sort_atomsgroup_lammps():
+    u = mda.Universe('./data/lammps10water.data')
+    atoms = maicos.utils.sort_atomgroup(u.atoms)
+
+    assert np.all(np.diff(atoms.fragindices) >= 0)
 
 def test_get_cli_input():
     testargs = ['maicos', 'foo', "foo bar"]

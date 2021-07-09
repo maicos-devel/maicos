@@ -189,3 +189,20 @@ def atomgroup_header(AtomGroup):
     return "{} atom(s): {}".format(
         AtomGroup.n_atoms, ", ".join(
             "{} {}".format(*i) for i in np.vstack([n_unq_res, unq_res]).T))
+
+def sort_atomgroup(atomgroup):
+    """Sort a atomgroup after its fragments, needed in e.g. LAMMPS,
+    as molecules are not sorted, but randomly distributed in atomgroup.atoms.
+
+    atomgroup: atomgroup to sort
+    """
+    com = check_compound(atomgroup)
+    if com == 'fragments':
+        return atomgroup[np.argsort(atomgroup.fragindices)]
+    elif com == 'residues':
+        return atomgroup[np.argsort(atomgroup.resids)]
+    elif com == 'molecules':
+        return atomgroup[np.argsort(atomgroup.molnums)]
+    else:
+        return atomgroup
+

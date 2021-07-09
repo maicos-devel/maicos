@@ -154,7 +154,6 @@ class density_planar(MultiGroupAnalysisBase):
 
     def _single_frame(self):
         curV = self._ts.volume / 1000
-        dz = self._ts.dimensions[self.dim] / self.n_bins
 
         for index, selection in enumerate(self.atomgroups):
             bins = self.get_bins(selection.atoms.positions)

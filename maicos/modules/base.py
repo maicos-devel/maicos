@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2021 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -9,13 +9,13 @@
 
 import logging
 import warnings
+from ..utils import check_compound, sort_atomgroup
 
 import numpy as np
 from MDAnalysis.analysis import base
 from MDAnalysis.lib.log import ProgressBar
 
 logger = logging.getLogger(__name__)
-
 
 class _AnalysisBase(base.AnalysisBase):
     """Extends the MDAnalysis base class for defining multi frame analysis."""
@@ -62,19 +62,24 @@ class _AnalysisBase(base.AnalysisBase):
 
         with warnings.catch_warnings():
             warnings.simplefilter('always')
-            if self.begin > trajectory.totaltime:
+            if begin > trajectory.totaltime:
                 raise ValueError("Start ({:.2f} ps) is larer than total time "
-                                 "({:.2f} ps).".format(self.begin,
-                                                       trajectory.totaltime))
-            elif self.begin > 0:
+                                 "({:.2f} ps)."
+                                 "".format(begin, trajectory.totaltime))
+
+            if end is not None and end < trajectory.dt:
+                raise ValueError("End ({:.2f} ps) is smaller than a single "
+                                 "trajectory timestep ({:.2f} ps)."
+                                 "".format(end, trajectory.dt))
+
+            if begin > 0:
                 startframe = int(begin // trajectory.dt)
             else:
                 startframe = 0
-            if self.end is not None:
+            if end is not None:
                 stopframe = int(end // trajectory.dt)
-                self.end += 1  # catch also last frame in loops
             else:
-                stopframe = None
+                stopframe = trajectory.n_frames
             if self.dt > 0:
                 step = int(dt // trajectory.dt)
             else:
@@ -147,7 +152,7 @@ class SingleGroupAnalysisBase(_AnalysisBase):
 
     def __init__(self, atomgroup, **kwargs):
         super().__init__(atomgroup.universe.trajectory, **kwargs)
-        self.atomgroup = atomgroup
+        self.atomgroup = sort_atomgroup(atomgroup)
         self._universe = atomgroup.universe
 
 
@@ -158,10 +163,17 @@ class MultiGroupAnalysisBase(_AnalysisBase):
 
     def __init__(self, atomgroups, **kwargs):
         if type(atomgroups) not in [list, tuple, np.ndarray]:
+            # Sort the atomgroups, 
+            # such that molecules are listed one after the other
+            atomgroups = sort_atomgroup(atomgroups)
             atomgroups = [atomgroups]
         else:
-            # Check that all atomgroups are from same universe
-            for ag in atomgroups[:1]:
+            for i, ag in enumerate(atomgroups[1:]):
+                # Sort the atomgroups, 
+                # such that molecules are listed one after the other
+                atomgroups[i] = sort_atomgroup(ag)
+
+                # Check that all atomgroups are from same universe
                 if ag.universe != atomgroups[0].universe:
                     raise ValueError(
                         "Given Atomgroups are not from the same Universe.")
