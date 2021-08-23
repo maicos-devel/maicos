@@ -16,6 +16,9 @@ from numpy.testing import assert_equal, assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
+from MDAnalysisTests.datafiles import TPR, XTC, TRR
+
+
 water_chemical_potential = -19.27
 
 
@@ -30,6 +33,18 @@ class Test_density_planar(object):
     def ag_single_frame(self):
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
+
+    @pytest.fixture()
+    def multiple_ags(self):
+        u = mda.Universe(TPR, TRR)
+        return [u.select_atoms("resname SOL"), u.select_atoms("resname MET")]
+
+    @pytest.mark.parametrize('dens_type, mean',
+                             (('mass', [1241.7,   18.4]), ('number', [167.4,   1.5]),
+                              ('charge', [0.9, 0.05]), ('temp', [227.2, 282.9])))
+    def test_multiple(self, multiple_ags, dens_type, mean):
+        dens = density_planar(multiple_ags, dens=dens_type).run()
+        assert_almost_equal(dens.results['dens_mean'][40], mean, decimal=1)
 
     @pytest.mark.parametrize('dens_type, mean',
                              (('mass', 987.9), ('number', 99.1),
