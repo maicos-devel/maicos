@@ -1,0 +1,32 @@
+image: python:3.7-alpine
+
+test:
+  stage: test
+  script:
+  - pip install -U sphinx
+  - pip install -U sphinx-autodocgen
+  - pip install -U sphinx-code-include
+  - pip install -U sphinxcontrib-napoleon
+  - pip install -U sphinx-docfx-yaml
+  - pip install -U sphinx_rtd_theme
+  - sphinx-build -b html . public
+  only:
+  - branches
+  except:
+  - master
+
+pages:
+  stage: deploy
+  script:
+  - pip install -U sphinx
+  - pip install -U sphinx-autodocgen
+  - pip install -U sphinx-code-include
+  - pip install -U sphinxcontrib-napoleon
+  - pip install -U sphinx-docfx-yaml
+  - pip install -U sphinx_rtd_theme
+  - sphinx-build -b html . public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master

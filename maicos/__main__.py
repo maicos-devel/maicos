@@ -61,7 +61,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyse molecular dynamics simulations of "
         "interfacial and confined systems.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("program",
                         type=str,
                         help="Program to start",
@@ -93,7 +93,7 @@ def parse_args():
     print('\n{}\n'.format(get_cli_input()))
     parser = argparse.ArgumentParser(
         prog="maicos " + sys.argv[1],
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("-s",
                         dest="topology",
