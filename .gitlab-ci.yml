@@ -8,15 +8,22 @@ default:
 stages:
   - test
   - deploy
+  - release
 
 test:
+  image: python:3.7
   stage: test
   script:
+    - pip3 install --upgrade pip setuptools wheel
+    - python setup.py build_ext --inplace
+    - pip3 install sphinx sphinx-press-theme
+    - sphinx-build -b html docs/source public
     - pip3 install .
     - cd tests
     - pytest --disable-pytest-warnings .
 
 deploy:
+  image: python:3.7
   stage: deploy
   variables:
     TWINE_USERNAME: $PYPI_USERNAME
@@ -27,3 +34,21 @@ deploy:
     - twine upload dist/*
   only:
     - master
+
+pages:
+  image: python:3.7
+  stage: release
+  script:
+  - pip3 install --upgrade pip setuptools wheel
+  - python setup.py build_ext --inplace
+  - pip3 install sphinx sphinx-press-theme
+  - sphinx-build -b html docs/source public
+  artifacts:
+    paths:
+    - public
+  only:
+  - develop
+
+
+
+
