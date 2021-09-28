@@ -15,6 +15,7 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 
   * 0.4
 
+  * Added support for Python 3.9
   * Created sphinx documentation
   * Raise error if end is to small (#40)
   * Add sorting of atom groups into molecules, enabling import of LAMMPS data
