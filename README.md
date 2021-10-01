@@ -99,6 +99,6 @@ issue.
 
 # Contributing
 
-Source code is available from https://gitlab.com/netzlab/maicos.
+Source code is available from https://gitlab.com/maicos-devel/maicos.
 Contribution via pull requests are always welcome.
 For more details see the [README](https://gitlab.com/maicos-devel/maicos/-/tree/develop/developer) in the development section.
