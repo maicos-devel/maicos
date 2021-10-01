@@ -90,7 +90,7 @@ Currently `maicos` contains the following analysis modules:
 
 You can add your custom modules to the maicos library. Just create a
 `.maicos` folder in your home directory and add your modules to this folder.
-For more information see the [example directory](https://gitlab.com/netzlab/maicos/-/tree/develop/examples).
+For more information see the [example directory](https://gitlab.com/maicos-devel/maicos/-/tree/develop/examples).
 
 # Issues
 
@@ -101,4 +101,4 @@ issue.
 
 Source code is available from https://gitlab.com/netzlab/maicos.
 Contribution via pull requests are always welcome.
-For more details see the [README](https://gitlab.com/netzlab/maicos/-/tree/develop/developer) in the development section.
+For more details see the [README](https://gitlab.com/maicos-devel/maicos/-/tree/develop/developer) in the development section.
