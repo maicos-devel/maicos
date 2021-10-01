@@ -1,5 +1,10 @@
 # MAICoS - Molecular Analysis for Interfacial and Confined Systems
 
+# Documentaion
+
+For the full documentation please have a look at our Sphinx
+[documentation](https://maicos-devel.gitlab.io/maicos/index.html).
+
 # Installation
 
 You'll need [Python3](https://www.python.org) and a C-compiler to build the
