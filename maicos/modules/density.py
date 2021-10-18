@@ -134,8 +134,7 @@ def weight(selection, dens):
 
 @planar_base()
 class density_planar(MultiGroupAnalysisBase):
-    """ The density planar module computes partial densities or 
-temperature profiles in the Cartesian coordinate system.
+    """Compute partial densities/temperature profiles in the Cartesian systems.
     
     **Tutorial**
 
@@ -349,7 +348,7 @@ by reducing the binwidth:
         if self.mu:
             if (self.zpos is not None):
                 this = (np.rint(
-                    (self.zpos + self.dz / 2) / self.dz) % self.nbins).astype(int)
+                    (self.zpos + self.binwidth / 2) / self.binwidth) % self.n_bins).astype(int)
                 if self.center:
                     this += np.rint(self.n_bins / 2).astype(int)
                 self.results["mu"] = mu(self.results["dens_mean"][this][0],
@@ -407,7 +406,7 @@ by reducing the binwidth:
 
 
 class density_cylinder(MultiGroupAnalysisBase):
-    """Computes partial densities across a cylinder of given radius r and length l
+    """Compute partial densities across a cylinder.
 
     **Inputs**
      

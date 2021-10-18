@@ -14,11 +14,15 @@ from .base import SingleGroupAnalysisBase
 
 
 class dipole_angle(SingleGroupAnalysisBase):
-    """Calculates the timeseries of the dipole moment with respect to an axis.
+    """Calculate angl timeseries of dipole moments with respect to an axis.
+
+    **Inputs**
 
     :param dim (int): refernce vector for angle (x,y,z=0,1,2)
     :param outfreq (float): Default number of frames after which output files are refreshed
     :param output (str): Prefix for output filenames
+
+    **Outputs**
 
     :returns (dict): * t: time (ps)
                      * cos_theta_i: Average cos between dipole and axis
@@ -99,13 +103,19 @@ class dipole_angle(SingleGroupAnalysisBase):
 
 
 class kinetic_energy(SingleGroupAnalysisBase):
-    """Calculates the timeseries for the molecular center
-       translational and rotational kinetic energy (kJ/mole).
+    """Calculate the timeseries of energiees.
+    
+       Translational and rotational kinetic energies are calculated for 
+       the molecular center.
+
+        **Inputs**
 
        :param output (str): Output filename
        :param refpoint (str): reference point for molecular center: center of
                               mass (COM), center of charge (COC), or oxygen position (OXY)
                               Note: The oxygen position only works for systems of pure water
+
+        **Outputs**
 
         :returns (dict): * t: time (ps)
                          * trans: translational kinetic energy (kJ/mole)

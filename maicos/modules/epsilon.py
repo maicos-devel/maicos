@@ -42,8 +42,9 @@ def Bin(a, bins):
 
 @charge_neutral(filter="default")
 class epsilon_bulk(SingleGroupAnalysisBase):
-    r"""Computes dipole moment fluctuations and from this the
-    static dielectric constant.
+    r"""Compute dipole moment fluctuations and static dielectric constant.
+
+    **Inputs**
 
     :param outfreq (float): Number of frames after which the output is updated.
     :param output (str): Output filename.
@@ -51,6 +52,8 @@ class epsilon_bulk(SingleGroupAnalysisBase):
     :param bpbc (bool): do not make broken molecules whole again
                                (only works if molecule is smaller than shortest
                                 box vector
+
+    **Outputs**
 
    :returns (dict): * M: Directional dependant dipole moment
                         :math:`\langle \boldsymbol M \rangle` in :math:`eÅ`.
@@ -160,8 +163,11 @@ class epsilon_bulk(SingleGroupAnalysisBase):
 @charge_neutral(filter="error")
 @planar_base()
 class epsilon_planar(MultiGroupAnalysisBase):
-    """Calculates a planar dielectric profile.
+    """Calculate planar dielectric profiles.
+
        See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
+
+    **Inputs**
 
     :param output_prefix (str): Prefix for output files
     :param zmin (float): minimal coordinate for evaluation (nm)
@@ -173,6 +179,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
     :param bsym (bool): symmetrize the profiles
     :param bpbc (bool): Do not make broken molecules whole again (only works if
                         molecule is smaller than shortest box vector
+
+    **Outputs**
 
     :returns (dict): * z: Bin positions
                      * eps_par: Parallel dielectric profile (ε_∥ - 1)
@@ -473,9 +481,12 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
 @charge_neutral(filter="error")
 class epsilon_cylinder(SingleGroupAnalysisBase):
-    """Calculation of the dielectric
-    profile for axial (along z) and radial (along xy) direction
-    at the system's center of mass.
+    """Calculate cylindrical dielectric profiles.
+    
+    Compunents are calculated along the axial (z) and radial (along xy) 
+    direction at the system's center of mass.
+
+    **Inputs**
 
     :param output_prefix (str): Prefix for output_prefix files
     :param geometry (str): A structure file without water from which com is calculated.
@@ -488,6 +499,8 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
     :param single (bool): "1D" line of watermolecules
     :param bpbc (bool): Do not make broken molecules whole again (only works if
                         molecule is smaller than shortest box vector
+
+    **Outputs**
 
     :returns (dict): * r: Bin positions
                      * eps_ax: Parallel dielectric profile (ε_∥)
@@ -752,6 +765,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         saved in the working directory, and the data are reloaded from these files if they are present.
         Lin-log and log-log plots of the susceptibility are also produced by default.
 
+        **Inputs**
+
         :param recalc (bool): Forces to recalculate the polarization,
                               regardless if it is already present.
         :param temperature (float): Reference temperature.
@@ -774,6 +789,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         :param nobin (bool): Prevents the data from being binned altogether. This
                              can result in very large plot files and errors.
 
+        **Outputs**
         :returns (dict): TODO
     """
 

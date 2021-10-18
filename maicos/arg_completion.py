@@ -204,6 +204,10 @@ def complete_parser(parser, module):
                                         default=param_dict["default"],
                                         help=param_dict["doc"])
 
+                    # Delete i-th action since we cretaed a new one
+                    parser._actions.pop(i)
+
+                    # Place the new action at the same position
                     parser._actions.insert(i, parser._actions.pop(-1))
 
                 else:  # Add attributes if non boolean parameter

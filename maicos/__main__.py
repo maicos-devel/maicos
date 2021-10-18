@@ -184,6 +184,7 @@ def parse_args():
 
         _configure_parser(selected_module, parser)
         complete_parser(parser, selected_module)
+
         args = parser.parse_args(sys.argv[2:])
         args.debug = debug
         args._allow_multiple_atomgroups = _allow_multiple_atomgroups

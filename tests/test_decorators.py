@@ -83,3 +83,14 @@ class TestChargedDecorator(object):
     def test_universe_slihghtly_charged_single(self, ag):
         ag[0].charge += 1E-5
         single_class(ag, filter="error")._prepare()
+
+
+    # @pytest.mark.parametrize('dim', (0, 1, 2))
+    # def test_binwidth(self, ag_single_frame, dim):
+    #     eps = epsilon_planar(ag_single_frame, binwidth=0.1).run()
+    #     # Divide by 10: Å -> nm
+    #     n_bins = ag_single_frame.universe.dimensions[dim] / 10 // 0.1
+    #     assert_almost_equal(eps.results["z"][1] - eps.results["z"][0],
+    #                         0.1,
+    #                         decimal=2)
+    #     assert_equal(len(eps.results["z"]), n_bins)

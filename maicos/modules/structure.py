@@ -22,8 +22,10 @@ from ..decorators import planar_base
 
 
 def compute_form_factor(q, atom_type):
-    """Calculates the form factor for the given element for given q (1/nm).
-       Handles united atom types like CH4 etc ..."""
+    """Calculate the form factor for the given element for given q (1/nm).
+
+       Handles united atom types like CH4 etc ...
+    """
     element = tables.atomtypes[atom_type]
 
     if element == "CH1":
@@ -57,7 +59,7 @@ def compute_form_factor(q, atom_type):
 
 
 class saxs(SingleGroupAnalysisBase):
-    """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory.
+    """Compute SAXS scattering intensities.
 
     The q vectors are binned
     by their length using a binwidth given by -dq. Using the -nobin option
@@ -69,6 +71,8 @@ class saxs(SingleGroupAnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands.
 
+    **Inputs**
+
     :param outfreq (float): Number of frames after which the output is updated.
     :param output (str): Output filename
     :param noboindata (bool): Do not bin the data. Only works reliable for NVT!
@@ -77,6 +81,8 @@ class saxs(SingleGroupAnalysisBase):
     :param dq (float): binwidth (1/nm)
     :param mintheta (float): Minimal angle (°) between the q vectors and the z-axis.
     :param maxtheta (float): Maximal angle (°) between the q vectors and the z-axis.
+
+    **Outputs**
 
     :returns (dict): * q: length of binned q-vectors
                      * q_indices: Miller indices of q-vector (only if noboindata==True)
@@ -250,7 +256,9 @@ class saxs(SingleGroupAnalysisBase):
 
 
 class debye(SingleGroupAnalysisBase):
-    """Calculates scattering intensities using the debye equation.
+    """Calculate scattering intensities using the debye equation.
+
+        **Inputs**
 
        :param outfreq (float): Number of frames after which the output is updated.
        :param output (str): Output filename
@@ -259,6 +267,8 @@ class debye(SingleGroupAnalysisBase):
        :param dq (float): binwidth (1/nm)
        :param sinc (bool): Apply sinc damping
        :param debyer (str): Path to the debyer executable
+
+        **Outputs**
 
        :returns (dict): * q: length of binned q-vectors
                         * scat_factor: Scattering intensities
@@ -416,11 +426,13 @@ class debye(SingleGroupAnalysisBase):
 
 @planar_base()
 class diporder(SingleGroupAnalysisBase):
-    """Calculates dipolar order parameters including
-    the projected polarization density P_0⋅ρ(z)⋅cos(θ[z]),
-    the dipole orientation cos(θ[z]),
-    the squared dipole orientation cos²(Θ[z]) and
-    the number density ρ(z)
+    """Calculates dipolar order parameters.
+    
+    Calculateions include the projected polarization density 
+    P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
+    orientation cos²(Θ[z]) and the number density ρ(z).
+
+    **Inputs**
 
     :param output (str): Output filename
     :param outfreq (int): Default number of frames after which output files are
@@ -432,6 +444,8 @@ class diporder(SingleGroupAnalysisBase):
     :param bpbc (bool): do not make broken molecules whole again
                        (only works if molecule is smaller than shortest box vector
 
+
+    **Outputs**
 
    :returns (dict): * z: bins [nm]
                     * P0: P_0⋅cos(θ[z]) [e/nm²]
@@ -566,7 +580,7 @@ class diporder(SingleGroupAnalysisBase):
                                    self.results["diporder"][i + 1][-1::-1])
 
     def _save_results(self):
-        """Saves results to a file.
+        """Save results to a file.
 
         Called at the end of the run() method after _calculate_results and
         _conclude"""

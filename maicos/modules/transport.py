@@ -30,6 +30,8 @@ class velocity(SingleGroupAnalysisBase):
         [1] Hess, B. Determining the shear viscosity of model liquids from molecular
            dynamics simulations. The Journal of Chemical Physics 116, 209-217 (2002).
 
+        **Inputs**
+
         :param output_suffix (str): Suffix for output filenames
         :param outfreq (int): Default time after which output files are refreshed (1000 ps).
         :param dim (int): Dimension for position binning (0=X, 1=Y, 2=Z)
@@ -40,6 +42,8 @@ class velocity(SingleGroupAnalysisBase):
                             1 results in standard error
         :param bpbc (bool): Do not make broken molecules whole again (only works if
                             molecule is smaller than shortest box vector
+
+        **Outputs**
 
         :returns (dict): * z: bins [nm]
                          * v: velocity profile [m/s]
