@@ -15,6 +15,7 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 
   * 0.4
 
+  * Corrected time_series module and created a test for it
   * Added support for Python 3.9
   * Created sphinx documentation
   * Raise error if end is to small (#40)
