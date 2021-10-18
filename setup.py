@@ -163,13 +163,13 @@ if __name__ == "__main__":
           maintainer_email="ploche@physik.fu-berlin.de",
           include_package_data=True,
           ext_modules=extensions,
-          python_requires='>=3.6, <3.9',
+          python_requires='>=3.6',
           setup_requires=[
               'numpy>=1.16.0',
           ],
           install_requires=[
               'numpy>=1.16.0',
-              'MDAnalysis>=1.1.1',
+              'MDAnalysis>=2.0.0',
               'matplotlib>=2.0.0',
               'scipy>=1.0.0',
               'threadpoolctl>=1.1.0',
@@ -200,6 +200,7 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
               'Programming Language :: Python :: 3.8',
+              'Programming Language :: Python :: 3.9',
               'Programming Language :: C',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Bio-Informatics',

@@ -57,9 +57,9 @@ class dipole_angle(SingleGroupAnalysisBase):
     def _single_frame(self):
 
         # make broken molecules whole again!
-        self.atomgroup.unwrap(compound="molecule")
+        self.atomgroup.unwrap(compound="molecules")
 
-        chargepos = self.positions * self.charges[:, np.newaxis]
+        chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.newaxis]
         dipoles = self.atomgroup.accumulate(chargepos, compound=check_compound(self.atomgroup))
 
         cos_theta = np.dot(dipoles, self.unit) / \
