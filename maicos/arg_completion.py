@@ -129,7 +129,7 @@ def _unparse_docstring(doctsring_dict):
     :returns: docstring
     """
     docstring = doctsring_dict["short_description"]
-    
+
     if doctsring_dict["long_description"]:
         docstring += "\n{}".format(doctsring_dict["long_description"])
 
