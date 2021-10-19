@@ -128,14 +128,19 @@ def _unparse_docstring(doctsring_dict):
 
     :returns: docstring
     """
-    docstring = "{}\n{}\n".format(doctsring_dict["short_description"],
-                                  doctsring_dict["long_description"])
+    docstring = doctsring_dict["short_description"]
+    
+    if doctsring_dict["long_description"]:
+        docstring += "\n{}".format(doctsring_dict["long_description"])
 
-    for param in doctsring_dict["params"]:
-        docstring += ":param {name} ({type.__name__}): {doc}\n".format(**param)
+    if doctsring_dict["params"]:
+        docstring += "\n"
+        for param in doctsring_dict["params"]:
+            docstring += ":param {name} ({type.__name__}): {doc}".format(**param)
 
-    docstring += "\n:returns {}: {}".format(doctsring_dict["returns_type"],
-                                            doctsring_dict["returns"])
+    if doctsring_dict["returns_type"]:
+        docstring += "\n:returns ({}): {}".format(doctsring_dict["returns_type"],
+                                                doctsring_dict["returns"])
     return docstring
 
 
@@ -204,13 +209,11 @@ def complete_parser(parser, module):
                                         default=param_dict["default"],
                                         help=param_dict["doc"])
 
-                    # Delete i-th action since we cretaed a new one
-                    parser._actions.pop(i)
-
-                    # Place the new action at the same position
                     parser._actions.insert(i, parser._actions.pop(-1))
 
                 else:  # Add attributes if non boolean parameter
                     action.type = param_dict["type"]
                     action.default = param_dict["default"]
                     action.help = param_dict["doc"]
+
+                break
