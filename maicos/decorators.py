@@ -26,7 +26,8 @@ def planar_base():
     Furthermore the item "z" is added automatically to the classes results dictionary.
     """
     def inner(original_class):
-        # Make copy of original functions, so we can call it without recursion.
+        # Make copy of original functions, so we can call them
+        # without recursion problems.
         orig_init = original_class.__init__
         orig_configure_parser = original_class._configure_parser
         orig_prepare = original_class._prepare
@@ -36,11 +37,11 @@ def planar_base():
         @functools.wraps(original_class.__init__)
         def __init__(self,
                      atomgroups,
+                     *args,
                      dim=2,
                      binwidth=0.1,
                      center=False,
                      comgroup=None,
-                     *args,
                      **kwargs):
             # Call the original __init__ first to append arguments.
             orig_init(self, atomgroups, *args, **kwargs)
@@ -49,23 +50,24 @@ def planar_base():
             self.center = center
             self.comgroup = comgroup
 
-            # TODO: Try to manipulate signature to get rid of standard arguments in
-            # decorated planar classes.
+            # TODO: Try to manipulate signature to get rid of standard 
+            # arguments in decorated planar classes.
             # Or find a way to extract default arguments, while building CLI...
 
         def _configure_parser(self, parser):
             # Call the original _configure_parser first to append arguments.
+            orig_configure_parser(self, parser)
             parser.add_argument('-d', dest='dim')
             parser.add_argument('-dz', dest='binwidth')
             parser.add_argument('-com', dest='comgroup')
             parser.add_argument('-center', dest='center')
-            orig_configure_parser(self, parser)
 
         def _prepare(self):
             if self.dim not in [0, 1, 2]:
                 raise ValueError("Dimension can only be 0=X or 1=Y or 2=Z.")
 
-            # Workaround since currently not alle module have option with zmax and zmin
+            # Workaround since currently not alle module have option 
+            # with zmax and zmin
             if not hasattr(self, 'zmax'):
                 self.zmax = -1
 
@@ -92,8 +94,8 @@ def planar_base():
                           self.comgroup, self.comsel.n_atoms))
                 if self.comsel.n_atoms == 0:
                     raise ValueError(
-                        "`{}` does not contain any atoms. Please adjust 'com' selection."
-                        .format(self.comgroup))
+                        "`{}` does not contain any atoms. Please adjust "
+                        "'com' selection.".format(self.comgroup))
             if self.comgroup is not None:
                 self.center = True  # always center when COM
 
@@ -172,21 +174,22 @@ def planar_base():
         {
             "name": "dim",
             "type": int,
-            "doc": "Dimension for binning (0=X, 1=Y, 2=Z)"
+            "doc": "Dimension for binning (0=X, 1=Y, 2=Z)\n"
         }, {
             "name": "binwidth",
             "type": float,
-            "doc": "binwidth (nanometer)"
+            "doc": "binwidth (nanometer)\n"
         }, {
             "name": "comgroup",
             "type": str,
             "doc": "Perform the binning relative to the "
                    "center of mass of the selected group."
-                   "With `comgroup` the `center` option is also used."
+                   "With `comgroup` the `center` option is also used.\n"
         }, {
             "name": "center",
             "type": bool,
-            "doc": "Perform the binning relative to the center of the (changing) box."
+            "doc": "Perform the binning relative to the center of the "
+                   "(changing) box.\n"
         }]
 
         original_class.__doc__ = _append_to_doc(original_class.__doc__,
