@@ -17,13 +17,15 @@ from .arg_completion import _append_to_doc
 
 def planar_base():
     """Class Decorator to provide options and attributes for analysis in planar
-    cofinenement. Decorator will add the options `dim`, `bindwidth`, `comgroup`, `center` to the
-    AnalysisClass.
-    `dim` controls the direction of binning and `bindwidth` the bindwidth in nanometer.
-    With `comgroup` the binning is performed relative to the center of mass of the
-    selected group. With `center` the binning is preformed relative to the center of
-    the (changing) box.
-    Furthermore the item "z" is added automatically to the classes results dictionary.
+    cofinenement. Decorator will add the options `dim`, `bindwidth`, 
+    `comgroup`, `center` to the AnalysisClass.
+    `dim` controls the direction of binning and `bindwidth` the 
+    bindwidth in nanometers. With `comgroup` the binning is performed relative 
+    to the center of mass of the selected group. With `center` the 
+    binning is preformed relative to the center of the (changing) box.
+
+    Furthermore the item "z" is added automatically to the classes 
+    results dictionary.
     """
     def inner(original_class):
         # Make copy of original functions, so we can call them
@@ -110,9 +112,9 @@ def planar_base():
             Attributes
             ----------
             positions : numpy.ndarray
-                 3 dimensional positions
+                3 dimensional positions
             dim : int
-                dimesion for binning [1,2,3]"""
+                dimesion for binning (x=0, y=1, z=2)"""
             dim = self.dim if dim is None else dim
             dz = self._ts.dimensions[dim] / self.n_bins
             bins = np.rint(positions[:, dim] / dz) 

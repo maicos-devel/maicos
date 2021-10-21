@@ -14,11 +14,11 @@ from .base import SingleGroupAnalysisBase
 
 
 class dipole_angle(SingleGroupAnalysisBase):
-    """Calculate angl timeseries of dipole moments with respect to an axis.
+    """Calculate angle timeseries of dipole moments with respect to an axis.
 
     **Inputs**
 
-    :param dim (int): refernce vector for angle (x,y,z=0,1,2)
+    :param dim (int): refernce vector for angle (x=0, y=1, z=2)
     :param outfreq (float): Default number of frames after which output files are refreshed
     :param output (str): Prefix for output filenames
 
@@ -103,7 +103,7 @@ class dipole_angle(SingleGroupAnalysisBase):
 
 
 class kinetic_energy(SingleGroupAnalysisBase):
-    """Calculate the timeseries of energiees.
+    """Calculate the timeseries of energies.
     
        Translational and rotational kinetic energies are calculated for 
        the molecular center.

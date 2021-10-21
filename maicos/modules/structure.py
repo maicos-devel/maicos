@@ -426,7 +426,7 @@ class debye(SingleGroupAnalysisBase):
 
 @planar_base()
 class diporder(SingleGroupAnalysisBase):
-    """Calculates dipolar order parameters.
+    """Calculation of dipolar order parameters.
     
     Calculateions include the projected polarization density 
     P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
