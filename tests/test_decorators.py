@@ -292,6 +292,6 @@ class TestChargedDecorator(object):
             single_class(ag.select_atoms("name OW*"),
                          filter="error")._prepare()
 
-    def test_universe_slihghtly_charged_single(self, ag):
+    def test_universe_slightly_charged_single(self, ag):
         ag[0].charge += 1E-5
         single_class(ag, filter="error")._prepare()

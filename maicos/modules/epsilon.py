@@ -165,7 +165,7 @@ class epsilon_bulk(SingleGroupAnalysisBase):
 class epsilon_planar(MultiGroupAnalysisBase):
     """Calculate planar dielectric profiles.
 
-       See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
+    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details
 
     **Inputs**
 
@@ -483,7 +483,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
 class epsilon_cylinder(SingleGroupAnalysisBase):
     """Calculate cylindrical dielectric profiles.
     
-    Compunents are calculated along the axial (z) and radial (along xy) 
+    Components are calculated along the axial (z) and radial (along xy) 
     direction at the system's center of mass.
 
     **Inputs**
