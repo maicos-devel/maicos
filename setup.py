@@ -185,7 +185,7 @@ if __name__ == "__main__":
               'MDAnalysis',
             ],
           project_urls={
-                'Source Code': 'https://gitlab.com/netzlab/maicos',
+                'Source Code': 'https://gitlab.com/maicos-devel/maicos',
             },
           classifiers=[
               'Development Status :: 4 - Beta',
