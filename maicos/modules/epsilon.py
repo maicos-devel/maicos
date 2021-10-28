@@ -13,7 +13,7 @@ import MDAnalysis as mda
 
 from .base import SingleGroupAnalysisBase, MultiGroupAnalysisBase
 from ..utils import check_compound, FT, iFT, savetxt
-from ..decorators import charge_neutral
+from ..decorators import charge_neutral, planar_base
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
@@ -42,8 +42,9 @@ def Bin(a, bins):
 
 @charge_neutral(filter="default")
 class epsilon_bulk(SingleGroupAnalysisBase):
-    r"""Computes dipole moment fluctuations and from this the
-    static dielectric constant.
+    r"""Compute dipole moment fluctuations and static dielectric constant.
+
+    **Inputs**
 
     :param outfreq (float): Number of frames after which the output is updated.
     :param output (str): Output filename.
@@ -51,6 +52,8 @@ class epsilon_bulk(SingleGroupAnalysisBase):
     :param bpbc (bool): do not make broken molecules whole again
                                (only works if molecule is smaller than shortest
                                 box vector
+
+    **Outputs**
 
    :returns (dict): * M: Directional dependant dipole moment
                         :math:`\langle \boldsymbol M \rangle` in :math:`eÅ`.
@@ -158,25 +161,26 @@ class epsilon_bulk(SingleGroupAnalysisBase):
 
 
 @charge_neutral(filter="error")
+@planar_base()
 class epsilon_planar(MultiGroupAnalysisBase):
-    """Calculates a planar dielectric profile.
-       See Bonthuis et. al., Langmuir 28, vol. 20 (2012) for details.
+    """Calculate planar dielectric profiles.
+
+    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details
+
+    **Inputs**
 
     :param output_prefix (str): Prefix for output files
-    :param binwidth (float): binwidth (nm)
-    :param dim (int): direction normal to the surface (x,y,z=0,1,2, default: z)
-    :param zmin (float): minimal z-coordinate for evaluation (nm)
-    :param zmax (float): maximal z-coordinate for evaluation (nm)
+    :param zmin (float): minimal coordinate for evaluation (nm)
+    :param zmax (float): maximal coordinate for evaluation (nm)
     :param temperature (float): temperature (K)
     :param outfreq (int): Default number of frames after which output files are refreshed.
     :param b2d (bool): Use 2d slab geometry
     :param vac (bool): Use vacuum boundary conditions instead of metallic (2D only!).
     :param bsym (bool): symmetrize the profiles
-    :param membrane_shift (bool): shift system by half a box length
-                                  (useful for membrane simulations)
-    :param com (bool): Shift system such that the water COM is centered
     :param bpbc (bool): Do not make broken molecules whole again (only works if
                         molecule is smaller than shortest box vector
+
+    **Outputs**
 
     :returns (dict): * z: Bin positions
                      * eps_par: Parallel dielectric profile (ε_∥ - 1)
@@ -192,8 +196,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
     def __init__(self,
                  atomgroups,
                  output_prefix="eps",
-                 binwidth=0.05,
-                 dim=2,
                  zmin=0,
                  zmax=-1,
                  temperature=300,
@@ -201,14 +203,15 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  b2d=False,
                  bsym=False,
                  vac=False,
-                 membrane_shift=False,
-                 com=False,
                  bpbc=True,
+                 # Planar base arguments are necessary for buidling CLI
+                 dim=2,
+                 binwidth=0.05,
+                 center=False,
+                 comgroup=None,
                  **kwself):
         super().__init__(atomgroups, **kwself)
         self.output_prefix = output_prefix
-        self.binwidth = binwidth
-        self.dim = dim
         self.zmin = zmin
         self.zmax = zmax
         self.temperature = temperature
@@ -216,14 +219,10 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.b2d = b2d
         self.bsym = bsym
         self.vac = vac
-        self.membrane_shift = membrane_shift
-        self.com = com
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
         parser.add_argument('-o', dest='output_prefix')
-        parser.add_argument('-dz', dest='binwidth')
-        parser.add_argument('-d', dest='dim')
         parser.add_argument('-zmin', dest='zmin')
         parser.add_argument('-zmax', dest='zmax')
         parser.add_argument('-temp', dest='temperature')
@@ -231,36 +230,10 @@ class epsilon_planar(MultiGroupAnalysisBase):
         parser.add_argument('-2d', dest='b2d')
         parser.add_argument('-vac', dest='vac')
         parser.add_argument('-sym', dest='bsym')
-        parser.add_argument('-shift', dest='membrane_shift')
-        parser.add_argument('-com', dest='com')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
     def _prepare(self):
-        if self._verbose:
-            print("\nCalcualate profile for the following group(s):")
-
-        if self.com:
-            try:
-                self.sol = self._universe.select_atoms('resname SOL')
-            except AttributeError:
-                raise AttributeError("No residue information."
-                                     "Cannot apply water COM shift.")
-             
-            if len(self.sol) == 0:
-                raise ValueError("No atoms for water COM shift found.")
-
-        # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
-        dz = self.binwidth * 10  # Convert to Angstroms
-
-        if self.zmax == -1:
-            self.zmax = self._universe.dimensions[self.dim]
-        else:
-            self.zmax *= 10
-
-        self.zmin *= 10
-        # CAVE: binwidth varies in NPT !
-        self.nbins = int((self.zmax - self.zmin) / dz)
 
         # Use 10 hardoced blocks for resampling
         self.resample = 10
@@ -268,61 +241,42 @@ class epsilon_planar(MultiGroupAnalysisBase):
             np.ceil((self.stopframe - self.startframe) / self.resample))
 
         self.V = 0
-        self.Lz = 0
         self.A = np.prod(self._universe.dimensions[self.xydims])
 
-        self.m_par = np.zeros((self.nbins, len(self.atomgroups), self.resample))
-        self.mM_par = np.zeros((self.nbins, len(self.atomgroups),
+        self.m_par = np.zeros((self.n_bins, len(self.atomgroups), self.resample))
+        self.mM_par = np.zeros((self.n_bins, len(self.atomgroups),
                                 self.resample))  # total fluctuations
-        self.mm_par = np.zeros((self.nbins, len(self.atomgroups)))  # self
+        self.mm_par = np.zeros((self.n_bins, len(self.atomgroups)))  # self
         self.cmM_par = np.zeros(
-            (self.nbins, len(self.atomgroups)))  # collective contribution
-        self.cM_par = np.zeros((self.nbins, len(self.atomgroups)))
+            (self.n_bins, len(self.atomgroups)))  # collective contribution
+        self.cM_par = np.zeros((self.n_bins, len(self.atomgroups)))
         self.M_par = np.zeros((self.resample))
 
         # Same for perpendicular
         self.m_perp = np.zeros(
-            (self.nbins, len(self.atomgroups), self.resample))
-        self.mM_perp = np.zeros((self.nbins, len(self.atomgroups),
+            (self.n_bins, len(self.atomgroups), self.resample))
+        self.mM_perp = np.zeros((self.n_bins, len(self.atomgroups),
                                  self.resample))  # total fluctuations
-        self.mm_perp = np.zeros((self.nbins, len(self.atomgroups)))  # self
+        self.mm_perp = np.zeros((self.n_bins, len(self.atomgroups)))  # self
         self.cmM_perp = np.zeros(
-            (self.nbins, len(self.atomgroups)))  # collective contribution
+            (self.n_bins, len(self.atomgroups)))  # collective contribution
         self.cM_perp = np.zeros(
-            (self.nbins, len(self.atomgroups)))  # collective contribution
+            (self.n_bins, len(self.atomgroups)))  # collective contribution
         self.M_perp = np.zeros((self.resample))
         self.M_perp_2 = np.zeros((self.resample))
 
-        if self._verbose:
-            print('Using', self.nbins, 'bins.')
-
     def _single_frame(self):
 
-        if (self.zmax == -1):
+        if self.zmax == -1:
             zmax = self._ts.dimensions[self.dim]
         else:
             zmax = self.zmax
-
-        if self.membrane_shift:
-            # shift membrane
-            self._ts.positions[:, self.dim] += self._ts.dimensions[self.dim] / 2
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
-        if self.com:
-            # put water COM into center
-            waterCOM = np.sum(
-                self.sol.atoms.positions[:, 2] *
-                self.sol.atoms.masses) / self.sol.atoms.masses.sum()
-            if self._verbose:
-                print("shifting by ", waterCOM)
-            self._ts.positions[:, self.dim] += self._ts.dimensions[
-                self.dim] / 2 - waterCOM
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
 
         if self.bpbc:
             # make broken molecules whole again!
             self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
 
-        dz_frame = self._ts.dimensions[self.dim] / self.nbins
+        dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
         # precalculate total polarization of the box
         this_M_perp, this_M_par = np.split(
@@ -337,12 +291,9 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            bins = ((sel.atoms.positions[:, self.dim] - self.zmin) /
-                    ((zmax - self.zmin) / (self.nbins))).astype(int)
-            bins[np.where(bins < 0)] = 0  # put all charges back inside box
-            bins[np.where(bins >= self.nbins)] = self.nbins - 1
+            bins = self.get_bins(sel.atoms.positions)
             curQ = np.histogram(bins,
-                                bins=np.arange(self.nbins + 1),
+                                bins=np.arange(self.n_bins + 1),
                                 weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / self.A)
             self.m_perp[:, i, self._frame_index //
@@ -350,7 +301,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self.mM_perp[:, i, self._frame_index //
                          self.resample_freq] += this_m_perp * this_M_perp
             self.mm_perp[:, i] += this_m_perp * this_m_perp * \
-                (self._ts.dimensions[self.dim] / self.nbins) * self.A  # self term
+                (self._ts.dimensions[self.dim] / self.n_bins) * self.A  # self term
             # collective contribution
             self.cmM_perp[:, i] += this_m_perp * \
                 (this_M_perp - this_m_perp * (self.A * dz_frame))
@@ -374,27 +325,21 @@ class epsilon_planar(MultiGroupAnalysisBase):
                 repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
-            binsz = (((testpos[:, self.dim] - self.zmin) %
-                      self._ts.dimensions[self.dim]) /
-                     ((zmax - self.zmin) / self.nbins)).astype(int)
+            binsz = self.get_bins(testpos)
 
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
-                binsx = (sel.atoms.positions[:, direction] /
-                         (self._ts.dimensions[direction] / nbinsx)).astype(int)
-                # put all charges back inside box
-                binsx[np.where(binsx < 0)] = 0
-                binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
+                binsx = self.get_bins(sel.atoms.positions, dim=direction)
                 curQx = np.histogram2d(binsz,
                                        binsx,
                                        bins=[
-                                           np.arange(0, self.nbins + 1),
+                                           np.arange(0, self.n_bins + 1),
                                            np.arange(0, nbinsx + 1)
                                        ],
                                        weights=sel.atoms.charges)[0]
                 curqx = np.cumsum(curQx, axis=1) / (
                     self._ts.dimensions[self.xydims[1 - j]] *
-                    (self._ts.dimensions[self.dim] / self.nbins)
+                    (self._ts.dimensions[self.dim] / self.n_bins)
                 )  # integral over x, so uniself._ts of area
                 this_m_par = -curqx.mean(axis=1)
 
@@ -413,7 +358,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
                     this_m_par * dz_frame * self.A
 
         self.V += self._ts.volume
-        self.Lz += self._ts.dimensions[self.dim]
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -435,7 +379,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
              self._index * self.resample)**2) / np.sqrt(self.resample - 1)
         cov_perp_self = self.mm_perp / self._index - \
             (self.m_perp.sum(axis=2) / self._index * self.m_perp.sum(axis=2)
-             / self._index * self.A * self.Lz / self.nbins / self._index)
+             / self._index * self.A * self.Lz / self.n_bins / self._index)
         cov_perp_coll = self.cmM_perp / self._index - \
             self.m_perp.sum(axis=2) / self._index * self.cM_perp / self._index
 
@@ -449,7 +393,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self.M_par.sum() / self._index
         cov_par_self = self.mm_par / self._index - \
             self.m_par.sum(axis=2) / self._index * (self.m_par.sum(axis=2) *
-                                                    self.Lz / self.nbins / self._index * self.A) / self._index
+                                                    self.Lz / self.n_bins / self._index * self.A) / self._index
         cov_par_coll = self.cmM_par / self._index - \
             self.m_par.sum(axis=2) / self._index * self.cM_par / self._index
         dcov_par = np.sqrt(
@@ -493,13 +437,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self.results["eps_perp_coll"] = (- eps0inv * beta * pref * cov_perp_coll) \
                 / (1 + eps0inv * beta * pref / self.results["V"] * var_perp)
 
-        if (self.zmax == -1):
-            self.results["z"] = np.linspace(self.zmin, self.Lz / self._index,
-                                            len(self.results["eps_par"])) / 10
-        else:
-            self.results["z"] = np.linspace(self.zmin, self.zmax,
-                                            len(self.results["eps_par"])) / 10
-
     def _save_results(self):
         outdata_perp = np.hstack([
             self.results["z"][:, np.newaxis],
@@ -522,6 +459,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self.results["eps_par_self"], self.results["eps_par_coll"]
         ])
 
+        # TODO: write general function to symmetrize lists
+        # for include in more modules...
         if (self.bsym):
             for i in range(len(outdata_par) - 1):
                 outdata_par[i + 1] = .5 * \
@@ -542,9 +481,12 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
 @charge_neutral(filter="error")
 class epsilon_cylinder(SingleGroupAnalysisBase):
-    """Calculation of the dielectric
-    profile for axial (along z) and radial (along xy) direction
-    at the system's center of mass.
+    """Calculate cylindrical dielectric profiles.
+    
+    Components are calculated along the axial (z) and radial (along xy) 
+    direction at the system's center of mass.
+
+    **Inputs**
 
     :param output_prefix (str): Prefix for output_prefix files
     :param geometry (str): A structure file without water from which com is calculated.
@@ -557,6 +499,8 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
     :param single (bool): "1D" line of watermolecules
     :param bpbc (bool): Do not make broken molecules whole again (only works if
                         molecule is smaller than shortest box vector
+
+    **Outputs**
 
     :returns (dict): * r: Bin positions
                      * eps_ax: Parallel dielectric profile (ε_∥)
@@ -821,6 +765,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         saved in the working directory, and the data are reloaded from these files if they are present.
         Lin-log and log-log plots of the susceptibility are also produced by default.
 
+        **Inputs**
+
         :param recalc (bool): Forces to recalculate the polarization,
                               regardless if it is already present.
         :param temperature (float): Reference temperature.
@@ -843,6 +789,7 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         :param nobin (bool): Prevents the data from being binned altogether. This
                              can result in very large plot files and errors.
 
+        **Outputs**
         :returns (dict): TODO
     """
 

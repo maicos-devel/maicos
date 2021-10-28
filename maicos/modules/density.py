@@ -79,6 +79,7 @@ from scipy import constants
 
 from .base import MultiGroupAnalysisBase
 from ..utils import savetxt, atomgroup_header
+from ..decorators import planar_base
 
 
 def mu(rho, temperature, m):
@@ -131,9 +132,9 @@ def weight(selection, dens):
             format(dens))
 
 
+@planar_base()
 class density_planar(MultiGroupAnalysisBase):
-    """ The density planar module computes partial densities or 
-temperature profiles in the Cartesian coordinate system.
+    """Compute partial densities/temperature profiles in the Cartesian systems.
     
     **Tutorial**
 
@@ -247,43 +248,36 @@ by reducing the binwidth:
                  atomgroups,
                  output="density.dat",
                  outfreq=1000,
-                 dim=2,
-                 binwidth=0.1,
                  mu=False,
                  muout="muout.dat",
                  temperature=300,
                  mass=np.nan,
                  zpos=None,
                  dens="mass",
-                 comgroup=None,
+                 # Planar base arguments are necessary for buidling CLI
+                 dim=2,
+                 binwidth=0.1,
                  center=False,
+                 comgroup=None,
                  **kwargs):
         super().__init__(atomgroups, **kwargs)
         self.output = output
         self.outfreq = outfreq
-        self.dim = dim
-        self.binwidth = binwidth
         self.mu = mu
         self.muout = muout
         self.temperature = temperature
         self.mass = mass
         self.zpos = zpos
         self.dens = dens
-        self.comgroup = comgroup
-        self.center = center
 
     def _configure_parser(self, parser):
         parser.add_argument('-o', dest='output')
         parser.add_argument('-dout', dest='outfreq')
-        parser.add_argument('-d', dest='dim')
-        parser.add_argument('-dz', dest='binwidth')
         parser.add_argument('-mu', dest='mu')
         parser.add_argument('-muo', dest='muout')
         parser.add_argument('-temp', dest='temperature')
         parser.add_argument('-zpos', dest='zpos')
         parser.add_argument('-dens', dest='dens')
-        parser.add_argument('-com', dest='comgroup')
-        parser.add_argument('-center', dest='center')
 
     def _prepare(self):
         if self.dens not in ["mass", "number", "charge", "temp"]:
@@ -298,13 +292,8 @@ by reducing the binwidth:
                 print('Computing {} density profile along {}-axes.'.format(
                     self.dens, 'XYZ'[self.dim]))
 
-        self.ngroups = len(self.atomgroups)
-        self.nbins = int(
-            np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
-
-        self.density_mean = np.zeros((self.nbins, self.ngroups))
-        self.density_mean_sq = np.zeros((self.nbins, self.ngroups))
-        self.av_box_length = 0
+        self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
+        self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
 
         if self.mu and self.dens != 'mass':
             raise ValueError(
@@ -312,7 +301,7 @@ by reducing the binwidth:
                 "mass density is selected")
 
         if self.mu:
-            if len(self.atomgroups) != 1:
+            if self.n_atomgroups != 1:
                 with warnings.catch_warnings():
                     warnings.simplefilter('always')
                     warnings.warn(
@@ -321,61 +310,23 @@ by reducing the binwidth:
             self.mass = self.atomgroups[0].total_mass(
             ) / self.atomgroups[0].atoms.n_residues
 
-        if self.comgroup is not None:
-            self.comsel = self._universe.select_atoms(self.comgroup)
-            if self._verbose:
-                print("{:>15}: {:>10} atoms".format(self.comgroup,
-                                                    self.comsel.n_atoms))
-            if self.comsel.n_atoms == 0:
-                raise ValueError(
-                    "`{}` does not contain any atoms. Please adjust 'com' selection."
-                    .format(self.comgroup))
-        if self.comgroup is not None:
-            self.center = True  # always center when COM
-        if self._verbose:
-            print("\n")
-            print('Using', self.nbins, 'bins.')
-
     def _single_frame(self):
         curV = self._ts.volume / 1000
-        self.av_box_length += self._ts.dimensions[self.dim] / 10
-        """ center of mass calculation with generalization to periodic systems
-        see Bai, Linge; Breen, David (2008). "Calculating Center of Mass in an
-        Unbounded 2D Environment". Journal of Graphics, GPU, and Game Tools. 13
-        (4): 53–60. doi:10.1080/2151237X.2008.10129266,
-        https://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
-        """
-        if self.comgroup is None:
-            comshift = 0
-        else:
-            Theta = self.comsel.positions[:, self.dim] / self._ts.dimensions[
-                self.dim] * 2 * np.pi
-            Xi = (np.cos(Theta) *
-                  self.comsel.masses).sum() / self.comsel.masses.sum()
-            Zeta = (np.sin(Theta) *
-                    self.comsel.masses).sum() / self.comsel.masses.sum()
-            ThetaCOM = np.arctan2(-Zeta, -Xi) + np.pi
-            comshift = self._ts.dimensions[self.dim] * (0.5 - ThetaCOM /
-                                                        (2 * np.pi))
-
-        dz = self._ts.dimensions[self.dim] / self.nbins
 
         for index, selection in enumerate(self.atomgroups):
-            bins = (np.rint(
-                (selection.atoms.positions[:, self.dim] + comshift + dz / 2) /
-                dz) % self.nbins).astype(int)
+            bins = self.get_bins(selection.atoms.positions)
             density_ts = np.histogram(bins,
-                                      bins=np.arange(self.nbins + 1),
+                                      bins=np.arange(self.n_bins + 1),
                                       weights=weight(selection, self.dens))[0]
 
             if self.dens == 'temp':
-                bincount = np.bincount(bins, minlength=self.nbins)
+                bincount = np.bincount(bins, minlength=self.n_bins)
                 self.density_mean[:, index] += density_ts / bincount
                 self.density_mean_sq[:, index] += (density_ts / bincount)**2
             else:
-                self.density_mean[:, index] += density_ts / curV * self.nbins
+                self.density_mean[:, index] += density_ts / curV * self.n_bins
                 self.density_mean_sq[:, index] += (density_ts / curV *
-                                                   self.nbins)**2
+                                                   self.n_bins)**2
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -393,25 +344,13 @@ by reducing the binwidth:
         self.results["dens_err"] = self.results["dens_std"] / \
             np.sqrt(self._index)
 
-        dz = self.av_box_length / (self._index * self.nbins)
-        if self.center:
-            self.results["z"] = np.linspace(
-                -self.av_box_length / self._index / 2,
-                self.av_box_length / self._index / 2,
-                self.nbins,
-                endpoint=False) + dz / 2
-        else:
-            self.results["z"] = np.linspace(
-                0, self.av_box_length / self._index, self.nbins,
-                endpoint=False) + dz / 2
-
         # chemical potential
         if self.mu:
             if (self.zpos is not None):
                 this = (np.rint(
-                    (self.zpos + dz / 2) / dz) % self.nbins).astype(int)
+                    (self.zpos + self.binwidth / 2) / self.binwidth) % self.n_bins).astype(int)
                 if self.center:
-                    this += np.rint(self.nbins / 2).astype(int)
+                    this += np.rint(self.n_bins / 2).astype(int)
                 self.results["mu"] = mu(self.results["dens_mean"][this][0],
                                         self.temperature, self.mass)
                 self.results["dmu"] = dmu(self.results["dens_mean"][this][0],
@@ -455,7 +394,7 @@ by reducing the binwidth:
         # save density profile
         savetxt(self.output,
                 np.hstack(
-                    ((self.results["z"][:, np.newaxis]),
+                    (self.results["z"][:, np.newaxis],
                      self.results["dens_mean"], self.results["dens_err"])),
                 header=columns)
 
@@ -467,7 +406,7 @@ by reducing the binwidth:
 
 
 class density_cylinder(MultiGroupAnalysisBase):
-    """Computes partial densities across a cylinder of given radius r and length l
+    """Compute partial densities across a cylinder.
 
     **Inputs**
      
@@ -570,11 +509,10 @@ class density_cylinder(MultiGroupAnalysisBase):
         else:
             self.length /= 10
 
-        self.ngroups = len(self.atomgroups)
         self.nbins = int(np.ceil(self.radius / 10 / self.binwidth))
 
-        self.density_mean = np.zeros((self.nbins, self.ngroups))
-        self.density_mean_sq = np.zeros((self.nbins, self.ngroups))
+        self.density_mean = np.zeros((self.nbins, self.n_atomgroups))
+        self.density_mean_sq = np.zeros((self.nbins, self.n_atomgroups))
 
         self._dr = np.ones(self.nbins) * self.radius / self.nbins
         self._r_bins = np.arange(self.nbins) * self._dr + self._dr

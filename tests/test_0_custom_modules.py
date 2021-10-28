@@ -7,6 +7,9 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+# Note: The custom test module has to be evaluated at first
+# otherwise the module are not inplace and the tests fail...
+
 import os
 import shutil
 import subprocess

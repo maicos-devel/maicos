@@ -40,8 +40,8 @@ class Test_density_planar(object):
         return [u.select_atoms("resname SOL"), u.select_atoms("resname MET")]
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [1241.7,   18.4]), ('number', [167.4,   1.5]),
-                              ('charge', [0.9, 0.05]), ('temp', [227.2, 282.9])))
+                             (('mass', [1308.2, 23.1]), ('number', [174.6, 1.6]),
+                              ('charge', [0.7, 0.0]), ('temp', [222.4, 315.6])))
     def test_multiple(self, multiple_ags, dens_type, mean):
         dens = density_planar(multiple_ags, dens=dens_type).run()
         assert_almost_equal(dens.results['dens_mean'][40], mean, decimal=1)

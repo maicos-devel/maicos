@@ -64,7 +64,7 @@ def _reindent(string):
     return "\n".join(l.strip() for l in string.strip().split("\n"))
 
 
-def parse_docstring(docstring):
+def _parse_docstring(docstring):
     """Parse the docstring into its components.
 
     Taken from openstack rally repository.
@@ -78,7 +78,10 @@ def parse_docstring(docstring):
               }
     """
 
-    short_description = long_description = returns = ""
+    short_description = ""
+    long_description = ""
+    returns = ""
+    returns_type = ""
     params = []
 
     if docstring:
@@ -109,21 +112,43 @@ def parse_docstring(docstring):
                 match = RETURNS_REGEX.search(params_returns_desc)
                 if match:
                     returns = _reindent(match.group("doc"))
+                    returns_type = _reindent(match.group("p_type"))
 
     return {
         "short_description": short_description,
         "long_description": long_description,
         "params": params,
-        "returns": returns
+        "returns": returns,
+        "returns_type": returns_type
     }
+
+
+def _unparse_docstring(doctsring_dict):
+    """Unparse the docstring dictionary `doctsring_dict` into a docstring.
+
+    :returns: docstring
+    """
+    docstring = doctsring_dict["short_description"]
+
+    if doctsring_dict["long_description"]:
+        docstring += "\n{}".format(doctsring_dict["long_description"])
+
+    if doctsring_dict["params"]:
+        docstring += "\n"
+        for param in doctsring_dict["params"]:
+            docstring += ":param {name} ({type.__name__}): {doc}".format(**param)
+
+    if doctsring_dict["returns_type"]:
+        docstring += "\n:returns ({}): {}".format(doctsring_dict["returns_type"],
+                                                doctsring_dict["returns"])
+    return docstring
 
 
 def _create_doctsring_dict(func):
     """Creates a dictionary containing arguments and returns including default values from a function"""
 
-    doctsring_dict = parse_docstring(func.__doc__)
+    doctsring_dict = _parse_docstring(func.__doc__)
     init_arguments = inspect.signature(func).parameters.items()
-
     # Find default argument
     for function_param, value in init_arguments:
         if value.default is inspect.Parameter.empty:
@@ -133,6 +158,31 @@ def _create_doctsring_dict(func):
                 argument_dict["default"] = value.default
 
     return doctsring_dict
+
+
+def _append_to_doc(doc,
+                   short_description="",
+                   long_description="",
+                   params=None):
+    """Appends given strings to the doc at correct positions.
+       Params must be a list of dictionaries of the form
+       [{"name": name,
+         "type": type,
+         "doc": doc},...]
+    """
+
+    doc_dict = _parse_docstring(doc)
+    doc_dict["short_description"] = "{}{}".format(
+        doc_dict["short_description"], short_description)
+    doc_dict["long_description"] = "{}{}".format(doc_dict["long_description"],
+                                                 long_description)
+    if params is not None:
+        if type(params) not in [list, tuple]:
+            params = [params]
+        for param in params:
+            doc_dict["params"].append(param)
+
+    return _unparse_docstring(doc_dict)
 
 
 def complete_parser(parser, module):
@@ -165,3 +215,5 @@ def complete_parser(parser, module):
                     action.type = param_dict["type"]
                     action.default = param_dict["default"]
                     action.help = param_dict["doc"]
+
+                break

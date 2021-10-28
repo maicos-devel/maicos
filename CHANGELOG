@@ -15,6 +15,8 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 
   * 0.4
 
+  * Add `planar_base` decorator unifying the syntax for planar analysis modules
+    as `denisty_planar`, `epsilon_planar` and `diporder` (!48)
   * Corrected time_series module and created a test for it
   * Added support for Python 3.9
   * Created sphinx documentation
