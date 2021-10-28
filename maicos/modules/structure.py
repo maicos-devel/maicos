@@ -428,7 +428,7 @@ class debye(SingleGroupAnalysisBase):
 class diporder(SingleGroupAnalysisBase):
     """Calculation of dipolar order parameters.
     
-    Calculateions include the projected polarization density 
+    Calculations include the projected polarization density 
     P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
     orientation cos²(Θ[z]) and the number density ρ(z).
 
