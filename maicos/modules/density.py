@@ -135,113 +135,111 @@ def weight(selection, dens):
 @planar_base()
 class density_planar(MultiGroupAnalysisBase):
     """Compute partial densities/temperature profiles in the Cartesian systems.
-    
-    **Tutorial**
 
-    .. _label_tutorial_density_planar:
+**Tutorial**
 
-    This tutorial has been written for the version ``0.3`` of MAICoS. 
+.. _label_tutorial_density_planar:
+
 To follow this tutorial, the data test files of MAICoS are needed. 
 From a terminal, download MAICoS at a location of your choice:
 
-    .. code-block:: bash
+.. code-block:: bash
 
-	    cd mypath
-	    git clone git@gitlab.com:maicos-devel/maicos.git
+    cd mypath
+    git clone git@gitlab.com:maicos-devel/maicos.git
 
-    In a python environment, import MDAnalysis, MAICoS, PyPlot, and NumPy:
+In a python environment, import MDAnalysis, MAICoS, PyPlot, and NumPy:
 
-    .. code-block:: python3
+.. code-block:: python3
 
-	    import MDAnalysis as mda
-	    import maicos
-	    import matplotlib.pyplot as plt
-	    import numpy as np
-	    
+    import MDAnalysis as mda
+    import maicos
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+Define the path to the ``airwater`` data folder of MAICoS:
 
-    Define the path to the ``airwater`` data folder of MAICoS:
+.. code-block:: python3
 
-    .. code-block:: python3
-
-	    datapath = 'mypath/maicos/tests/data/airwater/'
-	    
-    The system consists of a 2D slab with 352 water molecules in vacuum, 
+    datapath = 'mypath/maicos/tests/data/airwater/'
+    
+The system consists of a 2D slab with 352 water molecules in vacuum, 
 where the two water/vacuum interfaces are normal to the axis :math:`z`:
 
 
-    .. image:: ../images/airwater.png
-       :width: 600
+.. image:: ../images/airwater.png
+   :width: 600
 
-    Create a universe using MDAnalysis and define a group containing 
+Create a universe using MDAnalysis and define a group containing 
 the oxygen and the hydrogen atoms of the water molecules:
 
-    .. code-block:: python3
+.. code-block:: python3
 
-	    u = mda.Universe(datapath+'conf.gro', datapath+'traj.trr')
-	    grpH2O = u.select_atoms('type O or type H')
+    u = mda.Universe(datapath+'conf.gro', datapath+'traj.trr')
+    grpH2O = u.select_atoms('type O or type H')
 
-    Let us call the ``density_planar`` module:
+Let us call the ``density_planar`` module:
 
-    .. code-block:: python3
+.. code-block:: python3
 
-	    dplan = maicos.density_planar(grpH2O)
-	    dplan.run()   
+    dplan = maicos.density_planar(grpH2O)
+    dplan.run()   
 
-    Extract the coordinate and the density profile:
+Extract the coordinate and the density profile:
 
-    .. code-block:: python3
+.. code-block:: python3
 
-	    zcoor = dplan.results['z']
-	    dens = dplan.results['dens_mean']
+    zcoor = dplan.results['z']
+    dens = dplan.results['dens_mean']
 
-    By default the binwidth is 0.1 nanometers, the units are kg/m3, 
+By default the binwidth is 0.1 nanometers, the units are kg/m3, 
 and the axis is :math:`z`. Plot it using 
 
-    .. code-block:: python3
+.. code-block:: python3
 
-	    fig = plt.figure(figsize = (12,6))
-	    plt.plot(zcoor,dens,linewidth=2)
-	    plt.xlabel("z coordinate [nanometer]")
-	    plt.ylabel("density H2O [kg/m3]")
-	    plt.show()
-	    
-    .. image:: ../images/density_planar.png
-       :width: 600
-
+    fig = plt.figure(figsize = (12,6))
+    plt.plot(zcoor,dens,linewidth=2)
+    plt.xlabel("z coordinate [nanometer]")
+    plt.ylabel("density H2O [kg/m3]")
+    plt.show()
     
-    They are several options you can play with. To know the full 
+.. image:: ../images/density_planar.png
+   :width: 600
+
+
+They are several options you can play with. To know the full 
 list of options, have a look at the ``Inputs`` section below. 
 For instance, you can increase the spacial resolution 
 by reducing the binwidth:
 
-    .. code-block:: python3 
+.. code-block:: python3 
 
-	    dplan = maicos.density_planar(grp_oxy, binwidth = 0.05) 
+    dplan = maicos.density_planar(grp_oxy, binwidth = 0.05) 
+    
+**Inputs**
+ 
+:param output (str): Output filename
+:param outfreq (int): Default time after which output files are refreshed (1000 ps).
+:param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
+:param binwidth (float): binwidth (nanometer)
+:param mu (bool): Calculate the chemical potential
+:param muout (str): Prefix for output filename for chemical potential
+:param temperature (float): temperature (K) for chemical potential
+:param mass (float): atommass if not guessed from topology
+:param zpos (float): position at which the chemical potential will be computed. By default average over box.
+:param dens (str): Density: mass, number, charge, electron
+:param comgroup (str): Perform the binning relative to the center of mass of the selected group.
+:param center (bool): Perform the binning relative to the center of the (changing) box.
 
-    **Inputs**
+**Outputs**
 
-    :param output (str): Output filename
-    :param outfreq (int): Default time after which output files are refreshed (1000 ps).
-    :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
-    :param binwidth (float): binwidth (nanometer)
-    :param mu (bool): Calculate the chemical potential
-    :param muout (str): Prefix for output filename for chemical potential
-    :param temperature (float): temperature (K) for chemical potential
-    :param mass (float): atommass if not guessed from topology
-    :param zpos (float): position at which the chemical potential will be computed. By default average over box.
-    :param dens (str): Density: mass, number, charge, electron
-    :param comgroup (str): Perform the binning relative to the center of mass of the selected group.
-    :param center (bool): Perform the binning relative to the center of the (changing) box.
-
-    **Outputs**
-
-    :returns (dict): * z: bins
-                    * deans_mean: calculated densities
-                    * dens_err: density error
-                    * mu: chemical potential
-                    * dmu: error of chemical potential
-       
-    |
+:returns (dict): * z: bins
+                 * dens_mean: calculated densities
+                 * dens_err: density error
+                 * mu: chemical potential
+                 * dmu: error of chemical potential
+                 
+|
     """
 
     def __init__(self,
@@ -408,23 +406,101 @@ by reducing the binwidth:
 class density_cylinder(MultiGroupAnalysisBase):
     """Compute partial densities across a cylinder.
 
-    **Inputs**
-     
-    :param output (str): Output filename
-    :param outfreq (int): Default time after which output files are refreshed (1000 ps).
-    :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
-    :param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup. If None center of box is used.
-    :param radius (float): Radius of the cylinder (nm). If None smallest box extension is taken.
-    :param binwidth (float): binwidth (nanometer)
-    :param length (float): Length of the cylinder (nm). If None length of box in the binning dimension is taken.
-    :param dens (str): Density: mass, number, charge, temp
+**Inputs**
+ 
+:param output (str): Output filename
+:param outfreq (int): Default time after which output files are refreshed (1000 ps).
+:param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
+:param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup. If None center of box is used.
+:param radius (float): Radius of the cylinder (nm). If None smallest box extension is taken.
+:param binwidth (float): binwidth (nanometer)
+:param length (float): Length of the cylinder (nm). If None length of box in the binning dimension is taken.
+:param dens (str): Density: mass, number, charge, temp
 
-    **Outputs**
+**Outputs**
 
-    :returns (dict): * z: bins
-                     * deans_mean: calculated densities
-                     * dens_err: density error
-        """
+:returns (dict): * z: bins
+                 * dens_mean: calculated densities
+                 * dens_err: density error
+
+**Tutorial**
+
+To follow this tutorial, the data test files of MAICoS are needed. 
+From a terminal, download MAICoS at a location of your choice:
+
+.. code-block:: bash
+
+    cd mypath
+    git clone git@gitlab.com:maicos-devel/maicos.git
+
+In a python environment, import MDAnalysis, MAICoS, and PyPlot:
+
+.. code-block:: python3
+
+    import MDAnalysis as mda
+    import maicos
+    import matplotlib.pyplot as plt	    
+
+Define the path to the ``cntwater`` data folder of MAICoS:
+
+.. code-block:: python3
+
+    datapath = 'mypath/maicos/tests/data/cntwater/'
+	    
+The system consists of a carbon nanotube (CNT) with axis in the 
+:math:`z`: direction, a radius of about 2 nm, a of length 2.2 nm, 
+and filled with 810 water molecules.
+
+.. image:: ../images/cntwater.png
+    :width: 400
+
+Create a universe using MDAnalysis and define two groups, 
+one containing the water molecules, one containing the
+carbon atoms:
+
+.. code-block:: python3
+
+    u = mda.Universe(datapath + 'lammps.data', datapath + 'traj.xtc')
+    grpH2O = u.select_atoms('type 1 or type 2')
+    grpCNT = u.select_atoms('type 3')
+
+Call the ``density_cylinder`` module for the two groups:
+
+.. code-block:: python3
+
+    dcylH2O = maicos.density_cylinder(grpH2O, center='all', binwidth = 0.01)
+    dcylH2O.run()   
+    dcylCNT = maicos.density_cylinder(grpCNT, center='all', binwidth = 0.01)
+    dcylCNT.run() 
+
+With the keyword ``center='all'``, the center of mass of all the atoms 
+of the group is used as the center of the density profile. 
+If not specified, the center of the box is used. 
+
+Finally, extract the coordinates and the density profiles:
+
+.. code-block:: python3
+
+    rcoor = dcylH2O.results['r']
+    densH2O = dcylH2O.results['dens_mean']
+    densCNT = dcylCNT.results['dens_mean']
+    
+Plot it using PyPlot: 
+
+.. code-block:: python3
+
+    fig = plt.figure(figsize = (12,6))
+    plt.plot(rcoor,densH2O,linewidth=2)
+    plt.plot(rcoor,densCNT,linewidth=2)
+    plt.xlabel("r coordinate [nanometer]")
+    plt.ylabel("density [kg/m3]")
+    plt.show()
+	    
+.. image:: ../images/density_cylinder.png
+    :width: 600    
+   
+|
+    """
 
     def __init__(self,
                  atomgroups,
