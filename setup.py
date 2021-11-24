@@ -146,7 +146,7 @@ if __name__ == "__main__":
                                   "caused by a missing Cython install, or a "
                                   "failed/disabled Cython build.".format(source))
 
-    with open("README.md") as summary:
+    with open("README.rst") as summary:
         LONG_DESCRIPTION = summary.read()
 
     setup(name='maicos',
