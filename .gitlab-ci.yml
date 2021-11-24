@@ -58,16 +58,8 @@ pages:
   image: python:3.9
   stage: release
   script:
-  - pip3 install --upgrade pip setuptools wheel
   - python setup.py build_ext --inplace
-  - pip3 install sphinx sphinx-press-theme
   - sphinx-build -b html docs/source public
   artifacts:
     paths:
     - public
-  only:
-  - develop
-
-
-
-

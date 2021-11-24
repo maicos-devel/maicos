@@ -12,5 +12,3 @@ Description
     :members:
     :undoc-members:
     :show-inheritance:
-  
-

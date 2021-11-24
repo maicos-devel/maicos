@@ -6,3 +6,5 @@ matplotlib
 scipy
 pytest
 threadpoolctl
+sphinx
+sphinx-press-theme

@@ -174,7 +174,7 @@ if __name__ == "__main__":
               'scipy>=1.0.0',
               'threadpoolctl>=1.1.0',
           ],
-  
+
           entry_points={
               'console_scripts': ['maicos = maicos.__main__:entry_point'],
           },
@@ -185,8 +185,11 @@ if __name__ == "__main__":
               'MDAnalysis',
             ],
           project_urls={
+                'Source': 'https://gitlab.com/maicos-devel/maicos',
                 'Documentation': 'https://maicos-devel.gitlab.io/maicos',
-                'Source Code': 'https://gitlab.com/maicos-devel/maicos',
+                'Changelog': 'https://gitlab.com/maicos-devel/maicos/-/blob/master/CHANGELOG',
+                'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
+                'Discord': 'https://discord.com/channels/869537986977603604/',
             },
           classifiers=[
               'Development Status :: 4 - Beta',
