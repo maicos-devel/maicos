@@ -5,7 +5,5 @@ Authors list
 
 .. toctree::
    :maxdepth: 4
-   :numbered:		
+   :numbered:
    :hidden:
-
-

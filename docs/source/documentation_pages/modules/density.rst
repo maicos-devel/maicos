@@ -13,12 +13,11 @@ Density planar
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 Density cylinder
-================    
-       
+================
+
 .. automodule:: maicos.modules.density.density_cylinder
     :members:
     :undoc-members:
     :show-inheritance:
-    

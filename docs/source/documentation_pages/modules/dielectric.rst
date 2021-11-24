@@ -12,8 +12,8 @@ Description
     :members:
     :undoc-members:
     :show-inheritance:
-    
-    
+
+
 Epsilon planar
 ==============
 
@@ -24,7 +24,7 @@ Description
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 Epsilon cylinder
 ================
 
@@ -47,4 +47,3 @@ Description
     :members:
     :undoc-members:
     :show-inheritance:
-

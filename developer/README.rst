@@ -1,9 +1,5 @@
-
-
 Getting involved
 ################
-
-.. inclusion-marker-gettinginvolved-start
 
 Contribution via pull requests are always welcome. Source code is 
 available from `GitLab`_.  Before submitting a pull request, please 
@@ -14,6 +10,24 @@ model we used is given in this `nice post blog`_.
 
 .. _`gitlab` : https://gitlab.com/maicos-devel/maicos/
 .. _`nice post blog` : https://nvie.com/posts/a-successful-git-branching-model/
+
+Testing
+-------
+
+You can run the tests from the ``maicos/tests/`` directory. The tests 
+rely on the `pytest`_ library, and use some work flows from NumPy 
+and `MDAnalysisTests`_. In a terminal, type:
+
+.. code-block:: bash
+
+    pip3 install MDAnalysisTests
+
+Then, type:
+
+.. code-block:: bash
+
+    cd maicos/tests
+    pytest  --disable-pytest-warnings
 
 Writing your own analysis module
 --------------------------------
@@ -79,5 +93,3 @@ the `toctree` in the ``index.rst`` file.
 
 .. _`sphinx` : https://www.sphinx-doc.org/en/master/
 .. _`MAICoS develop project` : https://gitlab.com/maicos-devel/maicos
-
-.. inclusion-marker-gettinginvolved-end

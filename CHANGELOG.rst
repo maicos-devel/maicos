@@ -8,13 +8,15 @@ The rules for MAICoS' CHANGELOG file:
 - don't ever delete anything.
 - keep the format consistent (79 char width, Y/M/D date format) and do not
   use tabs but use spaces for formatting
-  
+
 .. inclusion-marker-changelog-start
 
-XXXX/XX/XX Philip Loche, Simon Gravelle
+v0.4 (XXXX/XX/XX)
+-----------------
 
-- 0.4
+Philip Loche, Simon Gravelle
 
+- Restructure docs and build docs for develop and release version
 - Include README files into sphinx doc
 - Add tutorial for density_cylinder module
 - Add `planar_base` decorator unifying the syntax for planar analysis modules
@@ -25,18 +27,20 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 - Raise error if end is to small (#40)
 - Add sorting of atom groups into molecules, enabling import of LAMMPS data
 
-2020/03/03 Philip Loche, Amanuel Wolde-Kidan
+v0.3 (2020/03/03)
+-----------------
 
-- 0.3
+Philip Loche, Amanuel Wolde-Kidan
 
 - Fixed errors occurring from changes in MDAnalysis
 - Increased minimal requirements
 - Use new ProgressBar from MDAnalysis
 - Increased total_charge to account for numerical inaccuracy
 
-2020/04/03 Philip Loche
+v0.2 (2020/04/03)
+-----------------
 
-- 0.2
+Philip Loche
 
 - Added custom module
 - Less noisy DeprecationWarning
@@ -48,10 +52,10 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 - Performance tweaks and tests for sfactor
 - Check for molecular information in modules
 
+v0.1 (2019/10/30)
+-----------------
 
-2019/10/30 Philip Loche
-
-- 0.1
+Philip Loche
 
 - first release out of the lab
 

@@ -13,7 +13,8 @@ sfactor.c
 # Ignore build dir
 /build
 /dist
-docs/build
+docs/source/_build
+public
 
 # Ignore the .DS_Store file in the osx file system
 *.DS_store
