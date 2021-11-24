@@ -15,6 +15,7 @@ XXXX/XX/XX Philip Loche, Simon Gravelle
 
   * 0.4
 
+  * Add tutorial for density_cylinder module
   * Add `planar_base` decorator unifying the syntax for planar analysis modules
     as `denisty_planar`, `epsilon_planar` and `diporder` (!48)
   * Corrected time_series module and created a test for it
