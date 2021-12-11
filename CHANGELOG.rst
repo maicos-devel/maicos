@@ -27,6 +27,7 @@ Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger
 - Raise error if end is to small (#40)
 - Add sorting of atom groups into molecules, enabling import of LAMMPS data
 - Corrected plot format selection in `dielectric_spectrum` (!66)
+- Fixed box dimension not set properly (!64)
 
 v0.3 (2020/03/03)
 -----------------

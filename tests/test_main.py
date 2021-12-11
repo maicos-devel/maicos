@@ -11,6 +11,7 @@ import sys
 from unittest.mock import patch
 import subprocess
 
+from numpy.testing import assert_allclose
 from maicos.__main__ import parse_args, main
 from maicos import __all__ as available_modules
 import pytest
@@ -91,24 +92,28 @@ class Test_main(object):
             main(args)
 
     @pytest.mark.parametrize("boxlist", (3 * [1], 6 * [1]))
-    def box(self, args, boxlist, tmpdir):
+    def test_box(self, args, boxlist, tmpdir):
         args.topology = WATER_GRO
         args.trajectory = WATER_GRO
         args.box = boxlist
         with tmpdir.as_cwd():
-            main(args)
+            ana_obj = main(args)
 
-    def raise_box_error(self, args):
+        if len(boxlist) == 3:
+            boxlist += [90, 90, 90]
+        assert_allclose(ana_obj._universe.dimensions, boxlist)
+
+    def test_raise_box_error(self, args):
         args.topology = WATER_GRO
         args.trajectory = WATER_GRO
         args.box = 2 * [1]
-        with pytest.raises(IndexError):
+        with pytest.raises(SystemExit):
             main(args)
 
-    def raise_no_atoms(self, args):
+    def test_raise_no_atoms(self, args):
         args.topology = WATER_GRO
         args.trajectory = WATER_GRO
         args.sel = ["resname foo"]
         args.box = 2 * [1]
-        with pytest.raises(IndexError):
+        with pytest.raises(SystemExit):
             main(args)
