@@ -14,7 +14,7 @@ The rules for MAICoS' CHANGELOG file:
 v0.4 (XXXX/XX/XX)
 -----------------
 
-Philip Loche, Simon Gravelle
+Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger
 
 - Restructure docs and build docs for develop and release version
 - Include README files into sphinx doc
@@ -26,6 +26,7 @@ Philip Loche, Simon Gravelle
 - Created sphinx documentation
 - Raise error if end is to small (#40)
 - Add sorting of atom groups into molecules, enabling import of LAMMPS data
+- Corrected plot format selection in `dielectric_spectrum` (!66)
 
 v0.3 (2020/03/03)
 -----------------

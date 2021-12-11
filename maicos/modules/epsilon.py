@@ -776,7 +776,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                            This determines the minimum frequency about which there
                            is data. Overrides -segs option.
         :param noplots (bool): Prevents plots from being generated.
-        :param plotformat (bool): Allows the user to choose the format of generated plots.
+        :param plotformat (str): Allows the user to choose the format of generated
+                                    plots (choose from 'pdf', 'png', 'jpg', 'eps')
         :param ymin (float): Manually sets the minimum lower bound for the log-log plot.
         :param bins (int): Determines the number of bins used for data averaging;
                            (this parameter sets the upper limit).
@@ -838,10 +839,10 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         parser.add_argument("-nobin", dest="nobin")
 
     def _prepare(self):
-        if self.plotformat not in ["pdf, png, jpg"]:
+        if self.plotformat not in ["pdf", "png", "jpg", "eps"]:
             raise ValueError(
-                "Invalid choice for potformat: '{}' (choose from 'pdf', "
-                "'png', 'jpg')".format(self.plotformat))
+                "Invalid choice for plotformat: '{}' (choose from 'pdf', "
+                "'png', 'jpg', 'eps')".format(self.plotformat))
 
         if len(self.output_prefix) > 0:
             self.output_prefix += "_"
