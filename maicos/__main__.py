@@ -223,9 +223,8 @@ def main(args, verbose=True):
             if args.box is not None:
                 if len(args.box) == 6:
                     u.dimensions = args.box
-                if len(args.box) == 3:
-                    u.dimensions[:3] = args.box
-                    u.dimensions[3:] = [90, 90, 90]
+                elif len(args.box) == 3:
+                    u.dimensions = [*args.box, 90., 90., 90.]
                 else:
                     raise IndexError(
                         "The boxdimensions must contain 3 entries for "
