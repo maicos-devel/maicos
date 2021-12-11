@@ -11,8 +11,9 @@ import MDAnalysis as mda
 import pytest
 
 from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
+from maicos import dielectric_spectrum
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
@@ -144,3 +145,24 @@ class Test_epsilon_cylinder(object):
 
     def test_verbose(self, ag_single_frame):
         epsilon_cylinder(ag_single_frame, verbose=True).run()
+
+
+class TestDielectricSpectrum(object):
+
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
+
+    @pytest.mark.parametrize('plotformat', ["pdf", "png", "jpg", "eps"])
+    def test_plotformat(self, ag, plotformat, tmpdir):
+        with tmpdir.as_cwd():
+            dielectric_spectrum(ag, plotformat=plotformat,
+                                output_prefix='test_it').run()
+            assert open('test_it_susc_log.' + plotformat)
+            assert open('test_it_susc_linlog.' + plotformat)
+
+    def test_plotformat_wrong(self, ag):
+        with pytest.raises(ValueError,
+                           match="Invalid choice for plotformat: 'foo'"):
+            dielectric_spectrum(ag, plotformat="foo").run()
