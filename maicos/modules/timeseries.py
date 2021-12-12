@@ -15,6 +15,84 @@ from .base import SingleGroupAnalysisBase
 
 class dipole_angle(SingleGroupAnalysisBase):
     """Calculate angle timeseries of dipole moments with respect to an axis.
+    
+    The dipole angle function in the timeseries module computes the dipole moment of an MD simulation trajectory with respect to a reference axis. 
+
+    The program can be run from either a python environment or a command line interface.
+    As an example, we analyse a box of water molecules simulated for 100 picoseconds (ps) using an NVT ensemble. 
+    The length of the box was 5.45 nm containing around 5000 water molecules. 
+    The time step of simulation was 2 fs. 
+    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
+    LINCS algorithm was used to constraint the H-Bonds at a temperature of 300K. 
+    A pulsed and alternating electric field was applied along the x-axis in the form of a guassian laser pulse. 
+    Please check `gromacs electric field`_ for more details. 
+
+    The simulation directory can be downloaded from the repository (shown below) which contains ``mdelectric.tpr`` and ``mdelectric.trr``
+
+    .. code-block:: bash
+
+        cd tests/data/electricfwater
+
+    **From the python interpreter**
+
+    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
+
+    .. code-block:: python3
+
+        import MDAnalysis as mda
+        import matplotlib.pyplot as plt
+        import maicos
+
+    Then create an MD Analysis Universe. 
+
+    .. code-block:: python3
+
+        u = mda.Universe("mdelectric.tpr","mdelectric.trr")
+        at = u.atoms
+
+    Now run the MAICOS dipole angle function.
+
+    .. code-block:: python3
+
+        dipangle = maicos.dipole_angle(at, dim=0)
+        dipangle.run()
+
+    The option ``dim = 0`` specifies the reference vector  ``x-axis``.
+    The run produces a `python dictionary` named ``dipangle.results`` with `4 keys` linked to `numpy arrays` as `values`. 
+    They are timestep, cosine of dipole and x-axis, cosine squared, product of cosine of dipoles i and j (i!=j)
+
+    The results can be visualized as follows:
+
+    .. code-block:: python3
+
+        plt.plot(dipangle.results["t"],dipangle.results["cos_theta_i"])
+        plt.title("Average cos between dipole and x-axis")
+        plt.xlabel("Time (ps)")
+        plt.ylabel(r'cos($\theta_i$)')
+        plt.show()
+
+    The figure generated :
+
+       .. image:: ../images/dipangle.png
+        :width: 600
+
+    MAICOS can also be accessed through command line interface.
+
+    **From the command line interface**
+
+    .. code-block:: bash
+
+        maicos dipole_angle -s md.tpr -f md.trr -d 0
+
+    The output file ``dipangle.dat`` is similar to `dipangle.results` and contains the data in columns. 
+
+    They are several options you can play with. To know the full 
+    list of options, have a look at the ``Inputs`` section below. 
+
+    .. _`MD Analysis`: https://www.mdanalysis.org/
+    .. _`matplotlib`: https://matplotlib.org/ 
+    .. _`gromacs electric field`: https://manual.gromacs.org/2019-current/reference-manual/special/electric-fields.html#fig-field
+
 
     **Inputs**
 
@@ -63,8 +141,10 @@ class dipole_angle(SingleGroupAnalysisBase):
         # make broken molecules whole again!
         self.atomgroup.unwrap(compound="molecules")
 
-        chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, compound=check_compound(self.atomgroup))
+        chargepos = self.atomgroup.positions * \
+            self.atomgroup.charges[:, np.newaxis]
+        dipoles = self.atomgroup.accumulate(
+            chargepos, compound=check_compound(self.atomgroup))
 
         cos_theta = np.dot(dipoles, self.unit) / \
             np.linalg.norm(dipoles, axis=1)
@@ -103,24 +183,96 @@ class dipole_angle(SingleGroupAnalysisBase):
 
 
 class kinetic_energy(SingleGroupAnalysisBase):
-    """Calculate the timeseries of energies.
-    
-       Translational and rotational kinetic energies are calculated for 
-       the molecular center.
+    """Computes the timeseries of energies.
 
-        **Inputs**
+    The kinetic energy function computes the translational and rotational Kinetic Energy for the molecular center of an MD simulation trajectory.
 
-       :param output (str): Output filename
-       :param refpoint (str): reference point for molecular center: center of
-                              mass (COM), center of charge (COC), or oxygen position (OXY)
-                              Note: The oxygen position only works for systems of pure water
+    The program can be run from either a python environment or a command line interface.
+    As an example, we analyse a simulation of box of water molecules in an NVE ensemble. 
+    The length of the box was 2.5 nm containing around 500 water molecules. 
+    The time step of simulation was 4 fs and it was 200 ps long. 
+    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
+    LINCS algorithm was used to constraint the H-Bonds.
 
-        **Outputs**
+    The simulation directory can be downloaded from the repository (shown below) which contains ``nve.tpr`` and ``nve.trr``
 
-        :returns (dict): * t: time (ps)
-                         * trans: translational kinetic energy (kJ/mole)
-                         * rot: rotational kinetic energy (kJ/mole)
-        """
+    .. code-block:: bash
+
+        cd tests/data/kineticenergy
+
+    **From the python interpreter**
+
+    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
+
+    .. code-block:: python3
+
+        import MDAnalysis as mda
+        import matplotlib.pyplot as plt
+        import maicos
+
+    Then create an MD Analysis Universe. 
+
+    .. code-block:: python3
+
+        u = mda.Universe("nve.tpr","nve.trr")
+        at = u.atoms
+
+    Now run the MAICOS dipole angle function.
+
+    .. code-block:: python3
+
+        ke = maicos.dipole_angle(at)
+        ke.run()
+
+    The run produces a `python dictionary` named ``ke.results`` with `3 keys` linked to `numpy arrays` as `values`. 
+    They are timestep, translational KE, and rotational KE.
+
+    The results can be visualized as follows:
+
+    .. code-block:: python3
+
+        plt.plot(ke.results['t'],ke.results['trans'] )
+        plt.title("Translational Kinetic Energy")
+        plt.xlabel("Time (ps)")
+        plt.ylabel("KJ/mole")
+        plt.show()
+
+    The figure generated :
+
+       .. image:: ../images/ket.png
+            :width: 600
+
+    MAICOS can also be accessed through command line interface.
+
+    **From the command line interface**
+
+    .. code-block:: bash
+
+        maicos kinetic_energy -s md.tpr -f md.trr -o ke.dat
+
+    The output file ``ke.dat`` is similar to `ke.results` and contains the data in columns. 
+
+    They are several options you can play with. To know the full 
+    list of options, have a look at the ``Inputs`` section below. 
+
+
+    .. _`MD Analysis`: https://www.mdanalysis.org/
+    .. _`matplotlib`: https://matplotlib.org/ 
+
+
+    **Inputs**
+
+    :param output (str): Output filename
+    :param refpoint (str): reference point for molecular center: center of
+                            mass (COM), center of charge (COC), or oxygen position (OXY)
+                            Note: The oxygen position only works for systems of pure water
+
+    **Outputs**
+
+    :returns (dict): * t: time (ps)
+                        * trans: translational kinetic energy (kJ/mole)
+                        * rot: rotational kinetic energy (kJ/mole)
+    """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
         super().__init__(atomgroup, **kwargs)
@@ -159,13 +311,15 @@ class kinetic_energy(SingleGroupAnalysisBase):
         if self.refpoint == "COM":
             massvel = self.atomgroup.velocities * \
                 self.atomgroup.masses[:, np.newaxis]
-            v = self.atomgroup.accumulate(massvel, compound=check_compound(self.atomgroup))
+            v = self.atomgroup.accumulate(
+                massvel, compound=check_compound(self.atomgroup))
             v /= self.masses[:, np.newaxis]
 
         elif self.refpoint == "COC":
             abschargevel = self.atomgroup.velocities * \
                 np.abs(self.atomgroup.charges)[:, np.newaxis]
-            v = self.atomgroup.accumulate(abschargevel, compound=check_compound(self.atomgroup))
+            v = self.atomgroup.accumulate(
+                abschargevel, compound=check_compound(self.atomgroup))
             v /= self.abscharges[:, np.newaxis]
 
         elif self.refpoint == "OXY":
