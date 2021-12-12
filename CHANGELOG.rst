@@ -28,6 +28,7 @@ Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger
 - Add sorting of atom groups into molecules, enabling import of LAMMPS data
 - Corrected plot format selection in `dielectric_spectrum` (!66)
 - Fixed box dimension not set properly (!64)
+- Add docs for timeseries modulees (!72)
 
 v0.3 (2020/03/03)
 -----------------

@@ -22,3 +22,5 @@ Contributors
 - Philipp Stärk
 - Simon Gravelle
 - Henrik Jaeger
+- Srihas Velpuri
+
