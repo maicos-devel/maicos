@@ -11,7 +11,10 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.4 (XXXX/XX/XX)
+v0.5 (XXXX/XX/XX)
+-----------------
+
+v0.4 (2021/12/13)
 -----------------
 
 Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger,

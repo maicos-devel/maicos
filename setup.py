@@ -16,7 +16,7 @@ import sys
 import shutil
 import tempfile
 
-VERSION = "0.4-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+VERSION = "0.5-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 is_release = 'dev' not in VERSION
 
 # Handle cython modules
@@ -187,7 +187,7 @@ if __name__ == "__main__":
           project_urls={
                 'Source': 'https://gitlab.com/maicos-devel/maicos',
                 'Documentation': 'https://maicos-devel.gitlab.io/maicos',
-                'Changelog': 'https://gitlab.com/maicos-devel/maicos/-/blob/master/CHANGELOG',
+                'Changelog': 'https://maicos-devel.gitlab.io/maicos/documentation_pages/changelog.html',
                 'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
                 'Discord': 'https://discord.com/channels/869537986977603604/',
             },
