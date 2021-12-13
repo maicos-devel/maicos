@@ -61,7 +61,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyse molecular dynamics simulations of "
         "interfacial and confined systems.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("program",
                         type=str,
                         help="Program to start",
@@ -93,7 +93,7 @@ def parse_args():
     print('\n{}\n'.format(get_cli_input()))
     parser = argparse.ArgumentParser(
         prog="maicos " + sys.argv[1],
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("-s",
                         dest="topology",
@@ -184,6 +184,7 @@ def parse_args():
 
         _configure_parser(selected_module, parser)
         complete_parser(parser, selected_module)
+
         args = parser.parse_args(sys.argv[2:])
         args.debug = debug
         args._allow_multiple_atomgroups = _allow_multiple_atomgroups
@@ -222,9 +223,8 @@ def main(args, verbose=True):
             if args.box is not None:
                 if len(args.box) == 6:
                     u.dimensions = args.box
-                if len(args.box) == 3:
-                    u.dimensions[:3] = args.box
-                    u.dimensions[3:] = [90, 90, 90]
+                elif len(args.box) == 3:
+                    u.dimensions = [*args.box, 90., 90., 90.]
                 else:
                     raise IndexError(
                         "The boxdimensions must contain 3 entries for "

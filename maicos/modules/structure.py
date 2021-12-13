@@ -18,11 +18,14 @@ from .base import SingleGroupAnalysisBase
 from .. import tables
 from ..lib import sfactor
 from ..utils import check_compound, savetxt
+from ..decorators import planar_base
 
 
 def compute_form_factor(q, atom_type):
-    """Calculates the form factor for the given element for given q (1/nm).
-       Handles united atom types like CH4 etc ..."""
+    """Calculate the form factor for the given element for given q (1/nm).
+
+       Handles united atom types like CH4 etc ...
+    """
     element = tables.atomtypes[atom_type]
 
     if element == "CH1":
@@ -56,7 +59,7 @@ def compute_form_factor(q, atom_type):
 
 
 class saxs(SingleGroupAnalysisBase):
-    """Computes SAXS scattering intensities S(q) for all atom types from the given trajectory.
+    """Compute SAXS scattering intensities.
 
     The q vectors are binned
     by their length using a binwidth given by -dq. Using the -nobin option
@@ -68,6 +71,8 @@ class saxs(SingleGroupAnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands.
 
+    **Inputs**
+
     :param outfreq (float): Number of frames after which the output is updated.
     :param output (str): Output filename
     :param noboindata (bool): Do not bin the data. Only works reliable for NVT!
@@ -76,6 +81,8 @@ class saxs(SingleGroupAnalysisBase):
     :param dq (float): binwidth (1/nm)
     :param mintheta (float): Minimal angle (°) between the q vectors and the z-axis.
     :param maxtheta (float): Maximal angle (°) between the q vectors and the z-axis.
+
+    **Outputs**
 
     :returns (dict): * q: length of binned q-vectors
                      * q_indices: Miller indices of q-vector (only if noboindata==True)
@@ -249,7 +256,9 @@ class saxs(SingleGroupAnalysisBase):
 
 
 class debye(SingleGroupAnalysisBase):
-    """Calculates scattering intensities using the debye equation.
+    """Calculate scattering intensities using the debye equation.
+
+        **Inputs**
 
        :param outfreq (float): Number of frames after which the output is updated.
        :param output (str): Output filename
@@ -258,6 +267,8 @@ class debye(SingleGroupAnalysisBase):
        :param dq (float): binwidth (1/nm)
        :param sinc (bool): Apply sinc damping
        :param debyer (str): Path to the debyer executable
+
+        **Outputs**
 
        :returns (dict): * q: length of binned q-vectors
                         * scat_factor: Scattering intensities
@@ -413,22 +424,20 @@ class debye(SingleGroupAnalysisBase):
                 fmt='%.8e')
 
 
+@planar_base()
 class diporder(SingleGroupAnalysisBase):
-    """Calculates dipolar order parameters including
-    the projected polarization density P_0⋅ρ(z)⋅cos(θ[z]),
-    the dipole orientation cos(θ[z]),
-    the squared dipole orientation cos²(Θ[z]) and
-    the number density ρ(z)
+    """Calculation of dipolar order parameters.
+    
+    Calculations include the projected dipole density 
+    P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
+    orientation cos²(Θ[z]) and the number density ρ(z).
 
-    :param binwidth (float): specify the binwidth [nm]
-    :param dim (int): direction normal to the surface (x,y,z=0,1,2)
+    **Inputs**
+
     :param output (str): Output filename
     :param outfreq (int): Default number of frames after which output files are
                          refreshed
     :param bsym (bool): symmetrize the profiles
-    :param center (bool): Shift system by half a box length (useful for
-                          membrane simulations
-    :param com (bool): shift system such that the water COM is centered
     :param binmethod (str): binning method: center of Mass (COM), center of charge (COC)
                             or oxygen position (OXY).
                             Note: `OXY` only works for water oxygens with name `OW*`
@@ -436,8 +445,10 @@ class diporder(SingleGroupAnalysisBase):
                        (only works if molecule is smaller than shortest box vector
 
 
+    **Outputs**
+
    :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅cos(θ[z]) [e/nm²]
+                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
                     * cos_theta: cos(θ[z])
                     * cos_2_theta: cos²(Θ[z])
                     * rho: ρ(z) [1/nm³]
@@ -445,36 +456,29 @@ class diporder(SingleGroupAnalysisBase):
 
     def __init__(self,
                  atomgroup,
-                 binwidth=0.01,
-                 dim=2,
                  output="diporder.dat",
                  outfreq=10000,
                  bsym=False,
-                 center=False,
-                 com=False,
                  binmethod='COM',
                  bpbc=True,
+                 # Planar base arguments are necessary for buidling CLI
+                 dim=2,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
                  **kwargs):
         super().__init__(atomgroup, **kwargs)
 
-        self.binwidth = binwidth
-        self.dim = dim
         self.output = output
         self.outfreq = outfreq
         self.bsym = bsym
-        self.center = center
-        self.com = com
         self.binmethod = binmethod
         self.bpbc = bpbc
 
     def _configure_parser(self, parser):
-        parser.add_argument('-dz', dest='binwidth')
-        parser.add_argument('-d', dest='dim')
         parser.add_argument('-o', dest='output')
         parser.add_argument('-dout', dest="outfreq")
         parser.add_argument('-sym', dest='bsym')
-        parser.add_argument('-shift', dest='center')
-        parser.add_argument('-com', dest='com')
         parser.add_argument('-bin', dest='binmethod')
         parser.add_argument('-nopbcrepair', dest='bpbc')
 
@@ -499,78 +503,62 @@ class diporder(SingleGroupAnalysisBase):
 
         # Assume a threedimensional universe...
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
-        self.nbins = int(
-            np.ceil(self._universe.dimensions[self.dim] / 10 / self.binwidth))
-        self.P0 = np.zeros(self.nbins)
-        self.cos_theta = np.zeros(self.nbins)
-        self.cos_2_theta = np.zeros(self.nbins)
-        self.rho = np.zeros(self.nbins)
-        self.av_box_length = 0
+        self.P0 = np.zeros(self.n_bins)
+        self.cos_theta = np.zeros(self.n_bins)
+        self.cos_2_theta = np.zeros(self.n_bins)
+        self.rho = np.zeros(self.n_bins)
+        self.bin_count = np.zeros(self.n_bins)
 
         # unit normal vector
         self.unit = np.zeros(3)
         self.unit[self.dim] += 1
 
     def _single_frame(self):
-
-        if self.center:
-            # shift membrane
-            self._ts.positions[:, self.dim] += self._ts.dimensions[self.dim] / 2
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
-        if self.com:
-            # put water COM into center
-            waterCOM = np.sum(self.atomgroup.atoms.positions[:, 2] *
-                              self.atomgroup.atoms.masses
-                             ) / self.atomgroup.atoms.masses.sum()
-            self._ts.positions[:, self.dim] += self._ts.dimensions[
-                self.dim] / 2 - waterCOM
-            self._ts.positions[:, self.dim] %= self._ts.dimensions[self.dim]
-
         # Make molecules whole
         if self.bpbc:
             self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
 
-        dz_frame = self._ts.dimensions[self.dim] / self.nbins
+        dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
         chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
                                                                       newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, 
+        dipoles = self.atomgroup.accumulate(chargepos,
                                             compound=check_compound(self.atomgroup))
         dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
-            # Calculate the centers of the objects ( i.e. Molecules )
-            coms = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
-            bins = ((coms[:, self.dim] % self._ts.dimensions[self.dim]) /
-                    dz_frame).astype(int)
+            # Calculate the centers of the objects (i.e. Molecules)
+            bin_positions = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
         elif self.binmethod == 'COC':
-            cocs = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
+            bin_positions = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
                                          compound=check_compound(self.atomgroup))
-            bins = ((cocs[:, self.dim] % self._ts.dimensions[self.dim]) /
-                    dz_frame).astype(int)
         elif self.binmethod == 'OXY':
-            bins = ((self.oxy.positions[:, self.dim] %
-                     self._ts.dimensions[self.dim]) / dz_frame).astype(int)
+            bin_positions = self.oxy.positions
 
-        bincount = np.bincount(bins, minlength=self.nbins)
+        bins = self.get_bins(bin_positions)
+        bincount = np.bincount(bins, minlength=self.n_bins)
+        self.bin_count += bincount
         A = np.prod(self._ts.dimensions[self.xydims])
 
         self.P0 += np.histogram(
             bins,
-            bins=np.arange(self.nbins + 1),
+            bins=np.arange(self.n_bins + 1),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
-        cos_theta = np.histogram(
+        self.cos_theta += np.histogram(
             bins,
-            bins=np.arange(self.nbins + 1),
+            bins=np.arange(self.n_bins + 1),
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit))[0]
-        with np.errstate(divide='ignore', invalid='ignore'):
-            self.cos_theta += np.nan_to_num(cos_theta / bincount)
-            self.cos_2_theta += np.nan_to_num(cos_theta**2 / bincount)
+        self.cos_2_theta += np.histogram(
+            bins,
+            bins=np.arange(self.n_bins + 1),
+            weights=np.dot(
+                dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
+                self.unit)**2)[0]
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
-        self.av_box_length += self._ts.dimensions[self.dim] / 10
+        self.Lz += self._ts.dimensions[self.dim] / 10
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -582,23 +570,12 @@ class diporder(SingleGroupAnalysisBase):
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
         self._index = self._frame_index + 1
-
-        dz = self.av_box_length / (self._index * self.nbins)
-        if self.center:
-            self.results["z"] = np.linspace(
-                -self.av_box_length / self._index / 2,
-                self.av_box_length / self._index / 2,
-                self.nbins,
-                endpoint=False) + dz / 2
-        else:
-            self.results["z"] = np.linspace(
-                0, self.av_box_length / self._index, self.nbins,
-                endpoint=False) + dz / 2
-
         self.results["P0"] = self.P0 / self._frame_index
-        self.results["cos_theta"] = self.cos_theta / self._frame_index
-        self.results["cos_2_theta"] = self.cos_2_theta / self._frame_index
         self.results["rho"] = self.rho / self._frame_index
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            self.results["cos_theta"] = np.nan_to_num(self.cos_theta / self.bin_count)
+            self.results["cos_2_theta"] = np.nan_to_num(self.cos_2_theta / self.bin_count)
 
         if self.bsym:
             for i in range(len(self.results["z"]) - 1):
@@ -610,13 +587,13 @@ class diporder(SingleGroupAnalysisBase):
                                    self.results["diporder"][i + 1][-1::-1])
 
     def _save_results(self):
-        """Saves results to a file.
+        """Save results to a file.
 
         Called at the end of the run() method after _calculate_results and
         _conclude"""
 
         header = "z [nm]\t"
-        header += "P_0*cos(Theta[z]) [e/nm^2]\t"
+        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
         header += "cos(theta(z))\t"
         header += "cos^2(theta(z))\t"
         header += "rho(z) [1/nm^3]"

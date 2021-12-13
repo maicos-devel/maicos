@@ -11,8 +11,9 @@ import MDAnalysis as mda
 import pytest
 
 from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
+from maicos import dielectric_spectrum
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
@@ -67,8 +68,9 @@ class Test_epsilon_planar(object):
         return u.atoms
 
     @pytest.mark.parametrize('dim, val_perp, val_par',
-                             ((0, -0.99, 1026.1), (1, -0.99, 943.2),
-                              (2, -0.99, 839.7)))
+                             ((0, 0.075, -19.18), 
+                              (1, 0.280, -8.1),
+                              (2, 0.109, -15.9)))
     def test_broken_molecules(self, ag, dim, val_perp, val_par):
         eps = epsilon_planar(ag, bpbc=False, dim=dim).run()
         assert_almost_equal(eps.results['eps_perp'].mean(), val_perp, decimal=1)
@@ -76,18 +78,8 @@ class Test_epsilon_planar(object):
 
     def test_repaired_molecules(self, ag):
         eps = epsilon_planar(ag, bpbc=True).run()
-        assert_almost_equal(eps.results['eps_perp'].mean(), -0.98, decimal=1)
-        assert_almost_equal(eps.results['eps_par'].mean(), 9.4, decimal=1)
-
-    @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_binwidth(self, ag_single_frame, dim):
-        eps = epsilon_planar(ag_single_frame, binwidth=0.1).run()
-        # Divide by 10: Å -> nm
-        n_bins = ag_single_frame.universe.dimensions[dim] / 10 // 0.1
-        assert_almost_equal(eps.results["z"][1] - eps.results["z"][0],
-                            0.1,
-                            decimal=2)
-        assert_equal(len(eps.results["z"]), n_bins)
+        assert_almost_equal(eps.results['eps_perp'].mean(), 0.43, decimal=1)
+        assert_almost_equal(eps.results['eps_par'].mean(), 1.94, decimal=1)
 
     def test_output(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
@@ -134,16 +126,6 @@ class Test_epsilon_cylinder(object):
         assert_almost_equal(eps.results['eps_ax'].mean(), 19.9, decimal=1)
         assert_almost_equal(eps.results['eps_rad'].mean(), -9.79, decimal=1)
 
-    def test_binwidth(self, ag_single_frame):
-        eps = epsilon_cylinder(ag_single_frame, binwidth=0.1).run()
-        # Divide by 10: Å -> nm
-        n_bins = np.ceil(ag_single_frame.universe.dimensions.min() / 10 / 2 /
-                         0.1)
-        assert_almost_equal(eps.results["r"][1] - eps.results["r"][0],
-                            0.1,
-                            decimal=2)
-        assert_equal(len(eps.results["r"]), n_bins)
-
     def test_output(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
             eps = epsilon_cylinder(ag_single_frame, save=True).run()
@@ -163,3 +145,24 @@ class Test_epsilon_cylinder(object):
 
     def test_verbose(self, ag_single_frame):
         epsilon_cylinder(ag_single_frame, verbose=True).run()
+
+
+class TestDielectricSpectrum(object):
+
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
+
+    @pytest.mark.parametrize('plotformat', ["pdf", "png", "jpg", "eps"])
+    def test_plotformat(self, ag, plotformat, tmpdir):
+        with tmpdir.as_cwd():
+            dielectric_spectrum(ag, plotformat=plotformat,
+                                output_prefix='test_it').run()
+            assert open('test_it_susc_log.' + plotformat)
+            assert open('test_it_susc_linlog.' + plotformat)
+
+    def test_plotformat_wrong(self, ag):
+        with pytest.raises(ValueError,
+                           match="Invalid choice for plotformat: 'foo'"):
+            dielectric_spectrum(ag, plotformat="foo").run()

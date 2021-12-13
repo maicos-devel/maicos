@@ -17,8 +17,12 @@ from maicos.utils import savetxt
 class analysis_example(SingleGroupAnalysisBase):
     """Description for my awesome single group analysis script.
 
+       **Inputs**
+
        :param output (str): Output filename
        :param temperature (str): Reference temperature (K)
+
+       **Outputs**
 
        :returns (dict): * volume: averaged box volume (Å³)
     """

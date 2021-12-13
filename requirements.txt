@@ -1,8 +1,10 @@
 cython
-numpy<1.20  # requirement from MDAnalysis
+numpy
 MDAnalysis
 MDAnalysisTests
 matplotlib
 scipy
 pytest
 threadpoolctl
+sphinx
+sphinx-press-theme

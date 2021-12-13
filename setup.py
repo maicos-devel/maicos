@@ -16,7 +16,7 @@ import sys
 import shutil
 import tempfile
 
-VERSION = "0.3"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+VERSION = "0.4"  # NOTE: keep in sync with __version__ in maicos.__init__.py
 is_release = 'dev' not in VERSION
 
 # Handle cython modules
@@ -146,7 +146,7 @@ if __name__ == "__main__":
                                   "caused by a missing Cython install, or a "
                                   "failed/disabled Cython build.".format(source))
 
-    with open("README.md") as summary:
+    with open("README.rst") as summary:
         LONG_DESCRIPTION = summary.read()
 
     setup(name='maicos',
@@ -163,18 +163,18 @@ if __name__ == "__main__":
           maintainer_email="ploche@physik.fu-berlin.de",
           include_package_data=True,
           ext_modules=extensions,
-          python_requires='>=3.6, <3.9',
+          python_requires='>=3.6',
           setup_requires=[
-              'numpy>=1.13.3,<1.20',
+              'numpy>=1.16.0',
           ],
           install_requires=[
-              'numpy>=1.13.3,<1.20',
-              'MDAnalysis>=1.0.1',
+              'numpy>=1.16.0',
+              'MDAnalysis>=2.0.0',
               'matplotlib>=2.0.0',
               'scipy>=1.0.0',
               'threadpoolctl>=1.1.0',
           ],
-  
+
           entry_points={
               'console_scripts': ['maicos = maicos.__main__:entry_point'],
           },
@@ -185,7 +185,11 @@ if __name__ == "__main__":
               'MDAnalysis',
             ],
           project_urls={
-                'Source Code': 'https://gitlab.com/netzlab/maicos',
+                'Source': 'https://gitlab.com/maicos-devel/maicos',
+                'Documentation': 'https://maicos-devel.gitlab.io/maicos',
+                'Changelog': 'https://gitlab.com/maicos-devel/maicos/-/blob/master/CHANGELOG',
+                'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
+                'Discord': 'https://discord.com/channels/869537986977603604/',
             },
           classifiers=[
               'Development Status :: 4 - Beta',
@@ -200,6 +204,7 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
               'Programming Language :: Python :: 3.8',
+              'Programming Language :: Python :: 3.9',
               'Programming Language :: C',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Bio-Informatics',

@@ -2,15 +2,35 @@
 /*.egg-info
 *.pyc
 __pycache__
-/build
-/dist
-*.DS_store
+
 sfactor.c
 *.npz
 *.dat
 *.npy
 *.txt
 *.xvg
+
+# Ignore build dir
+/build
+/dist
+docs/source/_build
+public
+
+# Ignore the .DS_Store file in the osx file system
+*.DS_store
+
+# duecredit
 .duecredit.p
+
+# ignore files from tests
+.hypothesis/
+
+# Allow maicos share text files
 !maicos/share/*.dat
 !requirements.txt
+
+# editors and IDEs
+*.sw[a-z]
+*~
+.idea
+.vscode
