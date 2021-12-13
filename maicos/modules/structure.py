@@ -428,7 +428,7 @@ class debye(SingleGroupAnalysisBase):
 class diporder(SingleGroupAnalysisBase):
     """Calculation of dipolar order parameters.
     
-    Calculations include the projected polarization density 
+    Calculations include the projected dipole density 
     P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
     orientation cos²(Θ[z]) and the number density ρ(z).
 
@@ -448,7 +448,7 @@ class diporder(SingleGroupAnalysisBase):
     **Outputs**
 
    :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅cos(θ[z]) [e/nm²]
+                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
                     * cos_theta: cos(θ[z])
                     * cos_2_theta: cos²(Θ[z])
                     * rho: ρ(z) [1/nm³]
@@ -507,6 +507,7 @@ class diporder(SingleGroupAnalysisBase):
         self.cos_theta = np.zeros(self.n_bins)
         self.cos_2_theta = np.zeros(self.n_bins)
         self.rho = np.zeros(self.n_bins)
+        self.bin_count = np.zeros(self.n_bins)
 
         # unit normal vector
         self.unit = np.zeros(3)
@@ -536,21 +537,25 @@ class diporder(SingleGroupAnalysisBase):
 
         bins = self.get_bins(bin_positions)
         bincount = np.bincount(bins, minlength=self.n_bins)
+        self.bin_count += bincount
         A = np.prod(self._ts.dimensions[self.xydims])
 
         self.P0 += np.histogram(
             bins,
             bins=np.arange(self.n_bins + 1),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
-        cos_theta = np.histogram(
+        self.cos_theta += np.histogram(
             bins,
             bins=np.arange(self.n_bins + 1),
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit))[0]
-        with np.errstate(divide='ignore', invalid='ignore'):
-            self.cos_theta += np.nan_to_num(cos_theta / bincount)
-            self.cos_2_theta += np.nan_to_num(cos_theta**2 / bincount)
+        self.cos_2_theta += np.histogram(
+            bins,
+            bins=np.arange(self.n_bins + 1),
+            weights=np.dot(
+                dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
+                self.unit)**2)[0]
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
         self.Lz += self._ts.dimensions[self.dim] / 10
@@ -566,9 +571,11 @@ class diporder(SingleGroupAnalysisBase):
         Can also called during a run to update the results during processing."""
         self._index = self._frame_index + 1
         self.results["P0"] = self.P0 / self._frame_index
-        self.results["cos_theta"] = self.cos_theta / self._frame_index
-        self.results["cos_2_theta"] = self.cos_2_theta / self._frame_index
         self.results["rho"] = self.rho / self._frame_index
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            self.results["cos_theta"] = np.nan_to_num(self.cos_theta / self.bin_count)
+            self.results["cos_2_theta"] = np.nan_to_num(self.cos_2_theta / self.bin_count)
 
         if self.bsym:
             for i in range(len(self.results["z"]) - 1):
@@ -586,7 +593,7 @@ class diporder(SingleGroupAnalysisBase):
         _conclude"""
 
         header = "z [nm]\t"
-        header += "P_0*cos(Theta[z]) [e/nm^2]\t"
+        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
         header += "cos(theta(z))\t"
         header += "cos^2(theta(z))\t"
         header += "rho(z) [1/nm^3]"
