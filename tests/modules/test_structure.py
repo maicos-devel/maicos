@@ -24,16 +24,16 @@ class Test_diporder(object):
 
         # x-direction
         res[0] = {}
-        res[0]["P0"] = np.array([0, 0, 0, 0])
+        res[0]["P0"] = np.array([0, 0, 0.01, 0])
         res[0]["cos_theta"] = np.array([0, 0, 0.01, 0])
-        res[0]["cos_2_theta"] = np.array([0.36, 0.37, 0.4, 0.41])
+        res[0]["cos_2_theta"] = np.array([0.34, 0.35, 0.35, 0.35])
         res[0]["rho"] = np.array([14.75, 15. , 14.78, 14.73])
 
         # y-direction
         res[1] = {}
-        res[1]["P0"] = np.array([0, 0, 0, 0])
-        res[1]["cos_theta"] = np.array([0, 0, -0.01, -0.01])
-        res[1]["cos_2_theta"] = np.array([0.41, 0.42, 0.35, 0.48])
+        res[1]["P0"] = np.array([-0.01, 0, 0, 0])
+        res[1]["cos_theta"] = np.array([-0.01, -0.01, 0, -0.01])
+        res[1]["cos_2_theta"] = np.array([0.34, 0.34, 0.34, 0.35])
         res[1]["rho"] = np.array([14.85, 14.81, 14.8 , 14.79])
 
         # z-direction
@@ -41,9 +41,9 @@ class Test_diporder(object):
         res[2]["P0"] = np.array([-0.01, 0.03, 0. , -0.01, -0.,
                                  -0.03, 0.01, 0., 0., 0., 0., 0.])
         res[2]["cos_theta"] = np.array(
-            [-0.03, 0.02, 0., -0., -0., -0.02, 0.04, 0., 0., 0., 0., 0.])
-        res[2]["cos_2_theta"] = np.array([0.1, 0.06, 0.05, 0.05, 0.05, 0.07, 
-                                        0.12, 0., 0., 0., 0., 0.])
+            [-0.02, 0.02, 0., -0., -0., -0.02, 0.03, 0., 0., 0., 0., 0.])
+        res[2]["cos_2_theta"] = np.array([0.22, 0.30, 0.33, 0.33, 0.33, 0.30, 
+                                        0.23, 0., 0., 0., 0., 0.])
         res[2]["rho"] = np.array(
             [5.96, 32.38, 33.26, 33.1, 33.38, 32.63, 7.05, 0., 0., 0., 0., 0.])
 
