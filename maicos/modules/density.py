@@ -49,7 +49,7 @@ first import MAICoS and MDAnalysis:
 
 	import MDAnalysis as mda
 	import maicos
-	
+
 Then create a MDAnalysis universe:
 
 .. code-block:: python3
@@ -81,34 +81,45 @@ from .base import MultiGroupAnalysisBase
 from ..utils import savetxt, atomgroup_header
 from ..decorators import planar_base
 
+from MDAnalysis.exceptions import NoDataError
+
 
 def mu(rho, temperature, m):
     """Returns the chemical potential calculated from the density: mu = k_B T log(rho. / m)"""
-
-    # De Broglie (converted to nm)
-    db = np.sqrt(constants.h**2 / (2 * np.pi * m * constants.atomic_mass *
-                                   constants.Boltzmann * temperature))
-
     # kT in KJ/mol
     kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
 
-    if np.all(rho > 0):
-        return kT * np.log(rho * db**3 / (m * constants.atomic_mass))
-    elif np.any(rho == 0):
-        return np.float64("-inf")
-    else:
-        return np.float("nan")
+    results = []
+
+    for srho, mass in zip(np.array(rho).T, m):
+        # De Broglie (converted to nm)
+        db = np.sqrt(
+            constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
+                                * constants.Boltzmann * temperature)
+        ) / constants.nano
+
+        if np.all(srho > 0):
+            results.append(kT * np.log(srho * db ** 3))
+        elif np.any(srho == 0):
+            results.append(np.float64("-inf") * np.ones(srho.shape))
+        else:
+            results.append(np.float64("nan") * np.ones(srho.shape))
+    return np.squeeze(np.array(results).T)
 
 
 def dmu(rho, drho, temperature):
     """Returns the error of the chemical potential calculated from the density using propagation of uncertainty."""
 
-    if np.all(rho > 0):
-        return (drho / rho)
-    elif np.any(rho == 0):
-        return np.float64("-inf")
-    else:
-        return np.float("nan")
+    kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
+
+    results = []
+
+    for srho, sdrho in zip(np.array(rho).T, np.array(drho).T):
+        if np.all(srho > 0):
+            results.append(kT * (sdrho / srho))
+        else:
+            results.append(np.float64("nan") * np.ones(srho.shape))
+    return np.squeeze(np.array(results).T)
 
 
 def weight(selection, dens):
@@ -124,12 +135,12 @@ def weight(selection, dens):
     elif dens == "temp":
         # ((1 amu * Angstrom^2) / (picoseconds^2)) / Boltzmann constant
         prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-        return ((selection.atoms.velocities**2).sum(axis=1) *
+        return ((selection.atoms.velocities ** 2).sum(axis=1) *
                 selection.atoms.masses / 2 * prefac)
     else:
         raise ValueError(
             "`{}` not supported. Use `mass`, `number`, `charge` or `temp`".
-            format(dens))
+                format(dens))
 
 
 @planar_base()
@@ -222,12 +233,12 @@ by reducing the binwidth:
 :param outfreq (int): Default time after which output files are refreshed (1000 ps).
 :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
 :param binwidth (float): binwidth (nanometer)
-:param mu (bool): Calculate the chemical potential
+:param mu (bool): Calculate the chemical potential (sets dens='number')
 :param muout (str): Prefix for output filename for chemical potential
-:param temperature (float): temperature (K) for chemical potential
-:param mass (float): atommass if not guessed from topology
-:param zpos (float): position at which the chemical potential will be computed. By default average over box.
-:param dens (str): Density: mass, number, charge, electron
+:param temperature (float): temperature (K) for chemical potential (Default: 300K)
+:param mass (float): Mass (u) for the chemical potential. By default taken from topology.
+:param zpos (float): position (nm) at which the chemical potential will be computed. By default average over box.
+:param dens (str): Density: mass, number, charge, temperature. (Default: mass)
 :param comgroup (str): Perform the binning relative to the center of mass of the selected group.
 :param center (bool): Perform the binning relative to the center of the (changing) box.
 
@@ -249,10 +260,10 @@ by reducing the binwidth:
                  mu=False,
                  muout="muout.dat",
                  temperature=300,
-                 mass=np.nan,
+                 mass=None,
                  zpos=None,
-                 dens="mass",
-                 # Planar base arguments are necessary for buidling CLI
+                 dens=None,
+                 # Planar base arguments are necessary for building CLI
                  dim=2,
                  binwidth=0.1,
                  center=False,
@@ -274,10 +285,23 @@ by reducing the binwidth:
         parser.add_argument('-mu', dest='mu')
         parser.add_argument('-muo', dest='muout')
         parser.add_argument('-temp', dest='temperature')
+        parser.add_argument('-mass', dest='mass')
         parser.add_argument('-zpos', dest='zpos')
         parser.add_argument('-dens', dest='dens')
 
     def _prepare(self):
+        if self.dens is None and self.mu:
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn("Chemical potential calculation requested. "
+                              "Using number density.")
+            self.dens = "number"
+        elif self.dens != "number" and self.mu:
+            raise ValueError("Calculation of the chemical potential is only "
+                             "possible when number density is selected.")
+        elif self.dens is None:
+            self.dens = "mass"
+
         if self.dens not in ["mass", "number", "charge", "temp"]:
             raise ValueError(
                 "Invalid choice for dens: '{}' (choose from 'mass', "
@@ -293,20 +317,64 @@ by reducing the binwidth:
         self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
         self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
 
-        if self.mu and self.dens != 'mass':
-            raise ValueError(
-                "Calculation of the chemical potential is only possible when "
-                "mass density is selected")
-
         if self.mu:
-            if self.n_atomgroups != 1:
-                with warnings.catch_warnings():
-                    warnings.simplefilter('always')
-                    warnings.warn(
-                        "Performing chemical potential analysis for 1st selection"
-                        "group '{}'".format(self.atomgroups[0]))
-            self.mass = self.atomgroups[0].total_mass(
-            ) / self.atomgroups[0].atoms.n_residues
+            if not self.mass:
+                try:
+                    self.atomgroups[0].universe.atoms.masses
+                except NoDataError:
+                    raise ValueError(
+                        "Calculation of the chemical potential is only possible"
+                        " when masses are present in the topology or masses are"
+                        "supplied by the user.")
+                get_mass_from_topol = True
+                self.mass = np.array([])
+            else:
+                if len([self.mass]) == 1:
+                    self.mass = np.array([self.mass])
+                else:
+                    self.mass = np.array(self.mass)
+                get_mass_from_topol = False
+
+            self.n_res = np.array([])
+            self.n_atoms = np.array([])
+
+            for ag in self.atomgroups:
+                if not len(ag.atoms) == len(ag.residues.atoms):
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('always')
+                        warnings.warn("Selections contains incomplete residues."
+                                      "MAICoS uses the total mass of the "
+                                      "residues to calculate the chemical "
+                                      "potential. Your results will be "
+                                      "incorrect! You can supply your own "
+                                      "masses with the -mass flag.")
+
+                ag_res = ag.residues
+                mass = []
+                n_atoms = 0
+                n_res = 0
+                while len(ag_res.atoms):
+                    n_res += 1
+                    resgroup = ag_res - ag_res
+                    n_atoms += len(ag_res.residues[0].atoms)
+
+                    for res in ag_res.residues:
+                        if np.all(res.atoms.types
+                                  == ag_res.residues[0].atoms.types):
+                            resgroup = resgroup + res
+                    ag_res = ag_res - resgroup
+                    if get_mass_from_topol:
+                        mass.append(resgroup.total_mass() / resgroup.n_residues)
+                if not n_res == n_atoms and n_res > 1:
+                    raise NotImplementedError(
+                        "Selection contains multiple types of residues and at "
+                        "least one them is a molecule. Molecules are not "
+                        "supported when selecting multiple residues."
+                    )
+                self.n_res = np.append(self.n_res, n_res)
+                self.n_atoms = np.append(self.n_atoms, n_atoms)
+                if get_mass_from_topol:
+                    self.mass = np.append(self.mass, np.sum(mass))
 
     def _single_frame(self):
         curV = self._ts.volume / 1000
@@ -320,11 +388,11 @@ by reducing the binwidth:
             if self.dens == 'temp':
                 bincount = np.bincount(bins, minlength=self.n_bins)
                 self.density_mean[:, index] += density_ts / bincount
-                self.density_mean_sq[:, index] += (density_ts / bincount)**2
+                self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
                 self.density_mean[:, index] += density_ts / curV * self.n_bins
                 self.density_mean_sq[:, index] += (density_ts / curV *
-                                                   self.n_bins)**2
+                                                   self.n_bins) ** 2
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -338,28 +406,34 @@ by reducing the binwidth:
 
         self.results["dens_std"] = np.nan_to_num(
             np.sqrt(self.results["dens_mean_sq"] -
-                    self.results["dens_mean"]**2))
+                    self.results["dens_mean"] ** 2))
         self.results["dens_err"] = self.results["dens_std"] / \
-            np.sqrt(self._index)
+                                   np.sqrt(self._index)
 
         # chemical potential
         if self.mu:
-            if (self.zpos is not None):
+            if self.zpos is not None:
                 this = (np.rint(
-                    (self.zpos + self.binwidth / 2) / self.binwidth) % self.n_bins).astype(int)
+                    (self.zpos + self.binwidth / 2) / self.binwidth)
+                        % self.n_bins).astype(int)
                 if self.center:
                     this += np.rint(self.n_bins / 2).astype(int)
-                self.results["mu"] = mu(self.results["dens_mean"][this][0],
+                self.results["mu"] = mu(self.results["dens_mean"][this]
+                                        / self.n_atoms,
                                         self.temperature, self.mass)
-                self.results["dmu"] = dmu(self.results["dens_mean"][this][0],
-                                          self.results["dens_err"][this][0],
-                                          self.temperature)
+                self.results["dmu"] = dmu(self.results["dens_mean"][this]
+                                          / self.n_atoms,
+                                          self.results["dens_err"][this]
+                                          / self.n_atoms, self.temperature)
             else:
                 self.results["mu"] = np.mean(
-                    mu(self.results["dens_mean"], self.temperature, self.mass))
+                    mu(self.results["dens_mean"] / self.n_atoms,
+                       self.temperature,
+                       self.mass), axis=0)
                 self.results["dmu"] = np.mean(
-                    dmu(self.results["dens_mean"], self.results["dens_err"],
-                        self.temperature))
+                    dmu(self.results["dens_mean"] / self.n_atoms,
+                        self.results["dens_err"],
+                        self.temperature), axis=0)
 
     def _save_results(self):
         # write header
@@ -397,10 +471,29 @@ by reducing the binwidth:
                 header=columns)
 
         if self.mu:
+            if self.zpos is not None:
+                columns = "Chemical potential calculated at z = {} nm.".format(
+                    self.zpos)
+            else:
+                columns = "Chemical potential averaged over the whole system."
+            columns += "\nstatistics over {:.1f} picoseconds \n".format(
+                self._index * self._universe.trajectory.dt)
+            try:
+                for group in self.atomgroups:
+                    columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
+                for group in self.atomgroups:
+                    columns += atomgroup_header(group) + " μ error [kJ/mol]" \
+                               + "\t"
+            except AttributeError:
+                with warnings.catch_warnings():
+                    warnings.simplefilter('always')
+                    warnings.warn("AtomGroup does not contain resnames."
+                                  " Not writing residues information to "
+                                  "output.")
             # save chemical potential
             savetxt(self.muout,
                     np.hstack((self.results["mu"], self.results["dmu"]))[None],
-                    header="μ [kJ/mol]\t μ error [kJ/mol]")
+                    header=columns)
 
 
 class density_cylinder(MultiGroupAnalysisBase):
@@ -411,7 +504,8 @@ class density_cylinder(MultiGroupAnalysisBase):
 :param output (str): Output filename
 :param outfreq (int): Default time after which output files are refreshed (1000 ps).
 :param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
-:param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup. If None center of box is used.
+:param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup.
+                     If None center of box is used.
 :param radius (float): Radius of the cylinder (nm). If None smallest box extension is taken.
 :param binwidth (float): binwidth (nanometer)
 :param length (float): Length of the cylinder (nm). If None length of box in the binning dimension is taken.
@@ -573,7 +667,7 @@ Plot it using PyPlot:
             if self._verbose:
                 print(
                     "No radius given --> Take smallest box extension (r={:.2f} nm)."
-                    .format(self.radius / 10))
+                        .format(self.radius / 10))
         else:
             self.radius /= 10
 
@@ -592,8 +686,8 @@ Plot it using PyPlot:
 
         self._dr = np.ones(self.nbins) * self.radius / self.nbins
         self._r_bins = np.arange(self.nbins) * self._dr + self._dr
-        self._delta_r_sq = self._r_bins**2 - \
-            np.insert(self._r_bins, 0, 0)[0:-1]**2  # r_o^2 - r_i^2
+        self._delta_r_sq = self._r_bins ** 2 - \
+                           np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
 
         if self._verbose:
             print("\n")
@@ -628,13 +722,13 @@ Plot it using PyPlot:
             if self.dens == 'temp':
                 bincount = np.bincount(bins, minlength=self.nbins)
                 self.density_mean[:, index] += density_ts / bincount
-                self.density_mean_sq[:, index] += (density_ts / bincount)**2
+                self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
                 self.density_mean[:, index] += density_ts * 1000 / (
-                    np.pi * self._delta_r_sq * self.length)
+                        np.pi * self._delta_r_sq * self.length)
                 self.density_mean_sq[:, index] += (
-                    density_ts * 1000 /
-                    (np.pi * self._delta_r_sq * self.length))**2
+                                                          density_ts * 1000 /
+                                                          (np.pi * self._delta_r_sq * self.length)) ** 2
 
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
@@ -649,7 +743,7 @@ Plot it using PyPlot:
 
         self.results["dens_std"] = np.nan_to_num(
             np.sqrt(self.results["dens_mean_sq"] -
-                    self.results["dens_mean"]**2))
+                    self.results["dens_mean"] ** 2))
         self.results["dens_err"] = self.results["dens_std"] / np.sqrt(
             self._index)
 

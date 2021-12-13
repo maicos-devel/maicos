@@ -31,6 +31,9 @@ Srihas Velpuri, Maximilian Becker
 - Fixed box dimension not set properly (!64)
 - Add docs for timeseries modulees (!72)
 - Fixed diporder does not compute the right quantities (#55, !75)
+- Added support of calculating the chemical potentials for multiple atomgroups.
+- Changed the codes behaviour of calculating the chemical potential if
+  atomgroups contain multiple residues.
 
 v0.3 (2020/03/03)
 -----------------
