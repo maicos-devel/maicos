@@ -15,11 +15,9 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
+from datafiles import SALT_WATER_GRO, SALT_WATER_TPR
 
 from MDAnalysisTests.datafiles import TPR, XTC, TRR
-
-
-water_chemical_potential = -19.27
 
 
 class Test_density_planar(object):
@@ -37,7 +35,31 @@ class Test_density_planar(object):
     @pytest.fixture()
     def multiple_ags(self):
         u = mda.Universe(TPR, TRR)
-        return [u.select_atoms("resname SOL"), u.select_atoms("resname MET")]
+        return [u.select_atoms("resname SOL"),
+                u.select_atoms("resname MET")]
+
+    @pytest.fixture()
+    def multiple_ags_mu(self):
+        u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
+        return [u.select_atoms("resname SOL"),
+                u.select_atoms("resname NA"),
+                u.select_atoms("resname CL")]
+
+    @pytest.fixture()
+    def ag_no_masses(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u.del_TopologyAttr('masses')
+        return u.atoms
+
+    @pytest.fixture()
+    def multiple_res_ag(self):
+        u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
+        return [u.select_atoms("resname NA or resname CL")]
+
+    @pytest.fixture()
+    def mult_res_mult_atoms_ag(self):
+        u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
+        return [u.select_atoms("resname SOL or resname NA")]
 
     @pytest.mark.parametrize('dens_type, mean',
                              (('mass', [1308.2, 23.1]), ('number', [174.6, 1.6]),
@@ -60,41 +82,66 @@ class Test_density_planar(object):
         # Divide by 10: Å -> nm
         n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 10 / 0.1
         assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
-                            0.1,
-                            decimal=2)
+                            0.1, decimal=2)
         assert_equal(len(dens.results["z"]), n_bins)
 
     def test_mu(self, ag):
-        dens = density_planar(ag, mu=True).run()
-        assert_almost_equal(dens.results["mu"],
-                            water_chemical_potential,
-                            decimal=1)
+        dens = density_planar(ag, mu=True, dens='number').run()
+        assert_almost_equal(dens.results["mu"],  -19.27, decimal=1)
+
+    def test_mu_error(self, ag):
+        dens = density_planar(ag, mu=True, dens='number').run()
+        assert_almost_equal(dens.results["dmu"], 0.04, decimal=1)
 
     def test_mu_temp(self, ag):
-        dens = density_planar(ag, mu=True, temperature=200).run()
+        dens = density_planar(ag, mu=True, dens='number', temperature=200).run()
         assert_almost_equal(dens.results["mu"], -11.8, decimal=1)
 
-    def test_mu_zpos(self, ag):
-        dens = density_planar(ag, mu=True, zpos=2.2).run()
-        assert_almost_equal(dens.results["mu"],
-                            water_chemical_potential,
+    def test_mu_mass(self, ag):
+        dens = density_planar(ag, mu=True, dens='number', mass=40).run()
+        assert_almost_equal(dens.results["mu"], -22.25, decimal=1)
+
+    def test_mu_masses(self, multiple_ags_mu):
+        dens = density_planar(multiple_ags_mu, mu=True, dens='number',
+                              mass=[18, 25, 40], zpos=4).run()
+        assert_almost_equal(dens.results["mu"], [-19.3, -20.5, -22.3],
                             decimal=1)
 
-    def test_mu_not_mass(self, ag):
-        with pytest.raises(ValueError):
-            density_planar(ag, mu=True, dens="number").run()
+    def test_mu_zpos(self, ag):
+        dens = density_planar(ag, mu=True, dens='number', zpos=2.2).run()
+        assert_almost_equal(dens.results["mu"], -19.27, decimal=1)
 
-    def test_mu_two_groups(self, ag):
-        with pytest.warns(UserWarning):
-            density_planar([ag, ag], mu=True).run()
+    def test_mu_not_number(self, ag):
+        with pytest.raises(ValueError):
+            density_planar(ag, mu=True, dens='mass').run()
+
+    def test_mu_no_mass(self, ag_no_masses):
+        with pytest.raises(ValueError):
+            density_planar(ag_no_masses, mu=True, dens='number').run()
+
+    def test_mu_two_residues(self, multiple_res_ag):
+        dens = density_planar(multiple_res_ag, mu=True, dens='number',
+                              zpos=0).run()
+        assert_almost_equal(dens.results["mu"], -32.6, decimal=1)
+
+    def test_mu_multiple_ags(self, multiple_ags_mu):
+        dens = density_planar(multiple_ags_mu,  mu=True, dens='number',
+                              zpos=4).run()
+        assert_almost_equal(dens.results["mu"], [-19.3, -30.1, -30.0],
+                            decimal=1)
+
+    def test_mu_mult_res_mult_atoms_ag(self, mult_res_mult_atoms_ag):
+        with pytest.raises(NotImplementedError):
+            density_planar(mult_res_mult_atoms_ag, mu=True, dens='number',
+                           zpos=4).run()
 
     def test_output(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
-            dens = density_planar(ag_single_frame, save=True, mu=True).run()
+            dens = density_planar(ag_single_frame, save=True, mu=True,
+                                  dens='number').run()
             res_dens = np.loadtxt(dens.output)
             res_mu = np.loadtxt(dens.muout)
-            assert_almost_equal(dens.results["dens_mean"][:, 0],
-                                res_dens[:, 1],
+            assert_almost_equal(dens.results["dens_mean"][:, 0], res_dens[:, 1],
                                 decimal=2)
             assert_almost_equal(dens.results["mu"], res_mu[0], decimal=2)
 
@@ -104,7 +151,7 @@ class Test_density_planar(object):
                            output="foo",
                            muout="foo_mu",
                            save=True,
-                           mu=True).run()
+                           mu=True, dens='number').run()
             open("foo.dat")
             open("foo_mu.dat")
 
