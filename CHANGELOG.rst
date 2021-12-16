@@ -13,6 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.5 (XXXX/XX/XX)
 -----------------
+Philip Loche,
+
+- Fixed double counting of the box length in diporder (#58, !76)
 
 v0.4 (2021/12/13)
 -----------------
