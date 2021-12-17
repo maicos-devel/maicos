@@ -11,6 +11,12 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
+v0.4.1 (2021/12/17)
+-----------------
+Philip Loche,
+
+- Fixed double counting of the box length in diporder (#58, !76)
+
 v0.4 (2021/12/13)
 -----------------
 

@@ -558,8 +558,6 @@ class diporder(SingleGroupAnalysisBase):
                 self.unit)**2)[0]
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
-        self.Lz += self._ts.dimensions[self.dim] / 10
-
         if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
             self._calculate_results()
             self._save_results()

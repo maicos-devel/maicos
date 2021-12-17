@@ -84,6 +84,11 @@ class Test_diporder(object):
             res_dip = np.loadtxt(dip.output)
             assert_almost_equal(dip.results["P0"], res_dip[:, 1], decimal=2)
 
+    def test_Lz(self, ag):
+        dip = diporder(ag, bpbc=False).run()
+        Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
+        assert dip.Lz == Lz
+
     def test_output_name(self, ag, tmpdir):
         with tmpdir.as_cwd():
             diporder(ag, output="foo.dat", end=20, save=True).run()
