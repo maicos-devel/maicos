@@ -171,7 +171,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     :param output_prefix (str): Prefix for output files
     :param zmin (float): minimal coordinate for evaluation (nm)
-    :param zmax (float): maximal coordinate for evaluation (nm)
+    :param zmax (float): maximal coordinate for evaluation (nm) If `None` the 
+                         whole box is taken into account.
     :param temperature (float): temperature (K)
     :param outfreq (int): Default number of frames after which output files are refreshed.
     :param b2d (bool): Use 2d slab geometry
@@ -197,7 +198,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
                  atomgroups,
                  output_prefix="eps",
                  zmin=0,
-                 zmax=-1,
+                 zmax=None,
                  temperature=300,
                  outfreq=10000,
                  b2d=False,
@@ -213,7 +214,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         super().__init__(atomgroups, **kwself)
         self.output_prefix = output_prefix
         self.zmin = zmin
-        self.zmax = zmax
+        self._zmax = zmax
         self.temperature = temperature
         self.outfreq = outfreq
         self.b2d = b2d
@@ -266,11 +267,6 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.M_perp_2 = np.zeros((self.resample))
 
     def _single_frame(self):
-
-        if self.zmax == -1:
-            zmax = self._ts.dimensions[self.dim]
-        else:
-            zmax = self.zmax
 
         if self.bpbc:
             # make broken molecules whole again!

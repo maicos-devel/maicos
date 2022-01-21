@@ -65,6 +65,9 @@ class PlanarClass(SingleGroupAnalysisBase):
     def _calculate_results(self):
         self.calculated_results = True
 
+    def _save(self):
+        pass
+
 def single_class(atomgroup, filter):
     @charge_neutral(filter)
     class SingleCharged(SingleGroupAnalysisBase):
@@ -175,8 +178,8 @@ class TestPlanarBase(object):
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
         planar_class_obj._prepare()
 
-        assert planar_class_obj.binwidth == binwidth
-        assert planar_class_obj.n_bins == 60/(binwidth*10)
+        assert planar_class_obj.binwidth == 10*binwidth
+        assert planar_class_obj.n_bins == 60/(10 * binwidth)
 
     def test_n_bins(self, planar_class_obj, capsys):
         planar_class_obj._verbose = True
@@ -193,25 +196,42 @@ class TestPlanarBase(object):
         planar_class_obj.zmin = 1
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == (60 - 10)/(binwidth*10)
+        assert planar_class_obj.n_bins == (60 - 10) / (10 * binwidth)
 
 
     def test_zmax(self, ag):
         binwidth = 0.2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
-        planar_class_obj.zmax = 5
+        planar_class_obj._zmax = 5
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == 50/(binwidth*10)
+        assert planar_class_obj._zmax == planar_class_obj.zmax / 10
+        assert planar_class_obj.n_bins == 50 / (10 * binwidth)
+
+    def test_zmax_dim(self, ag):
+        planar_class_obj = PlanarClass(ag, pos_arg=42)
+        planar_class_obj._zmax = None
+        planar_class_obj._prepare()
+
+        assert planar_class_obj.zmax == ag.universe.dimensions[2]
+
+    def test_Lz(self, ag):
+        planar_class_obj = PlanarClass(ag, pos_arg=42)
+        planar_class_obj._zmax = None
+        planar_class_obj._trajectory = ag.universe.trajectory
+        planar_class_obj.run()
+
+        Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
+        assert planar_class_obj.Lz == Lz
 
     def test_zmin_zmax(self, ag):
         binwidth = 0.2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
         planar_class_obj.zmin = 1
-        planar_class_obj.zmax = 5
+        planar_class_obj._zmax = 5
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == (50 - 10)/(binwidth*10)
+        assert planar_class_obj.n_bins == (50 - 10) / (10 * binwidth)
 
     def test_results_z(self, ag):
         planar_class_obj = PlanarClass(ag, pos_arg=42, center=False)
