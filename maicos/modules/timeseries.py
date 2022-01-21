@@ -100,12 +100,13 @@ class dipole_angle(SingleGroupAnalysisBase):
     :param outfreq (float): Default number of frames after which output files are refreshed
     :param output (str): Prefix for output filenames
 
-    **Outputs**
+    **Attributes**
 
-    :returns (dict): * t: time (ps)
-                     * cos_theta_i: Average cos between dipole and axis
-                     * cos_theta_ii: Average cos^2 of the same between dipole and axis
-                     * cos_theta_ij: Product cos of dipole i and cos of dipole j (i!=j)
+    :returns results.t (numpy.ndarray): time (ps)
+    :returns results.cos_theta_i (numpy.ndarray): Average cos between dipole and axis
+    :returns results.cos_theta_ii (numpy.ndarray): Average cos^2 of the same between dipole and axis
+    :returns results.cos_theta_ij (numpy.ndarray): Product cos of dipole i and cos of dipole j (i!=j)
+    
     """
 
     def __init__(self,
@@ -164,19 +165,19 @@ class dipole_angle(SingleGroupAnalysisBase):
     def _calculate_results(self):
         self._index = self._frame_index + 1
 
-        self.results["t"] = self._trajectory.dt * \
+        self.results.t = self._trajectory.dt * \
             np.arange(self.startframe, self.stopframe, self.step)
 
-        self.results["cos_theta_i"] = self.cos_theta_i[:self._index]
-        self.results["cos_theta_ii"] = self.cos_theta_ii[:self._index]
-        self.results["cos_theta_ij"] = self.cos_theta_ij[:self._index]
+        self.results.cos_theta_i = self.cos_theta_i[:self._index]
+        self.results.cos_theta_ii = self.cos_theta_ii[:self._index]
+        self.results.cos_theta_ij = self.cos_theta_ij[:self._index]
 
     def _save_results(self):
 
         savetxt(self.output,
                 np.vstack([
-                    self.results["t"], self.results["cos_theta_i"],
-                    self.results["cos_theta_ii"], self.results["cos_theta_ij"]
+                    self.results.t, self.results.cos_theta_i,
+                    self.results.cos_theta_ii, self.results.cos_theta_ij
                 ]).T,
                 header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
                 fmt='%.5e')
@@ -267,11 +268,12 @@ class kinetic_energy(SingleGroupAnalysisBase):
                             mass (COM), center of charge (COC), or oxygen position (OXY)
                             Note: The oxygen position only works for systems of pure water
 
-    **Outputs**
+    **Attributes**
 
-    :returns (dict): * t: time (ps)
-                        * trans: translational kinetic energy (kJ/mole)
-                        * rot: rotational kinetic energy (kJ/mole)
+    :returns results.t (numpy.ndarray): time (ps)
+    :returns results.trans (numpy.ndarray): translational kinetic energy (kJ/mole)
+    :returns results.rot (numpy.ndarray): rotational kinetic energy (kJ/mole)
+
     """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
@@ -329,16 +331,16 @@ class kinetic_energy(SingleGroupAnalysisBase):
                                                   np.linalg.norm(v, axis=1)**2)
 
     def _calculate_results(self):
-        self.results["t"] = self._trajectory.dt * \
+        self.results.t= self._trajectory.dt * \
             np.arange(self.startframe, self.stopframe, self.step)
-        self.results["trans"] = self.E_center / 2 / 100
-        self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
+        self.results.trans = self.E_center / 2 / 100
+        self.results.rot = (self.E_kin - self.E_center) / 2 / 100
 
     def _save_results(self):
         savetxt(self.output,
                 np.vstack([
-                    self.results["t"], self.results["trans"],
-                    self.results["rot"]
+                    self.results.t, self.results.trans,
+                    self.results.rot
                 ]).T,
                 fmt='%.8e',
                 header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
