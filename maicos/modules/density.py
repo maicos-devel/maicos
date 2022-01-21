@@ -242,16 +242,18 @@ by reducing the binwidth:
 :param comgroup (str): Perform the binning relative to the center of mass of the selected group.
 :param center (bool): Perform the binning relative to the center of the (changing) box.
 
-**Outputs**
+**Attributes**
 
-:returns (dict): * z: bins
-                 * dens_mean: calculated densities
-                 * dens_err: density error
-                 * mu: chemical potential
-                 * dmu: error of chemical potential
-                 
-|
-    """
+:returns results.z (numpy.ndarray): density position
+:returns results.dens_mean (numpy.ndarray): calculated density
+:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
+:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
+:returns results.dens_std (numpy.ndarray): density standard deviation
+:returns results.dens_err (numpy.ndarray): density error
+:returns results.mu (float): chemical potential (only if `mu=True`)
+:returns results.dmu (float): error of chemical potential (only if `mu=True`)
+
+"""
 
     def __init__(self,
                  atomgroups,
@@ -401,14 +403,14 @@ by reducing the binwidth:
     def _calculate_results(self):
         self._index = self._frame_index + 1
 
-        self.results["dens_mean"] = self.density_mean / self._index
-        self.results["dens_mean_sq"] = self.density_mean_sq / self._index
+        self.results.dens_mean = self.density_mean / self._index
+        self.results.dens_mean_sq = self.density_mean_sq / self._index
 
-        self.results["dens_std"] = np.nan_to_num(
-            np.sqrt(self.results["dens_mean_sq"] -
-                    self.results["dens_mean"] ** 2))
-        self.results["dens_err"] = self.results["dens_std"] / \
-                                   np.sqrt(self._index)
+        self.results.dens_std = np.nan_to_num(
+            np.sqrt(self.results.dens_mean_sq -
+                    self.results.dens_mean**2))
+        self.results.dens_err = self.results.dens_std / np.sqrt(self._index)
+
 
         # chemical potential
         if self.mu:
@@ -418,21 +420,21 @@ by reducing the binwidth:
                         % self.n_bins).astype(int)
                 if self.center:
                     this += np.rint(self.n_bins / 2).astype(int)
-                self.results["mu"] = mu(self.results["dens_mean"][this]
+                self.results.mu = mu(self.results.dens_mean[this]
                                         / self.n_atoms,
                                         self.temperature, self.mass)
-                self.results["dmu"] = dmu(self.results["dens_mean"][this]
+                self.results.dmu = dmu(self.results.dens_mean[this]
                                           / self.n_atoms,
-                                          self.results["dens_err"][this]
+                                          self.results.dens_err[this]
                                           / self.n_atoms, self.temperature)
             else:
-                self.results["mu"] = np.mean(
-                    mu(self.results["dens_mean"] / self.n_atoms,
+                self.results.mu = np.mean(
+                    mu(self.results.dens_mean / self.n_atoms,
                        self.temperature,
                        self.mass), axis=0)
-                self.results["dmu"] = np.mean(
-                    dmu(self.results["dens_mean"] / self.n_atoms,
-                        self.results["dens_err"],
+                self.results.dmu = np.mean(
+                    dmu(self.results.dens_mean / self.n_atoms,
+                        self.results.dens_err,
                         self.temperature), axis=0)
 
     def _save_results(self):
@@ -466,8 +468,8 @@ by reducing the binwidth:
         # save density profile
         savetxt(self.output,
                 np.hstack(
-                    (self.results["z"][:, np.newaxis],
-                     self.results["dens_mean"], self.results["dens_err"])),
+                    (self.results.z[:, np.newaxis],
+                     self.results.dens_mean, self.results.dens_err)),
                 header=columns)
 
         if self.mu:
@@ -492,7 +494,7 @@ by reducing the binwidth:
                                   "output.")
             # save chemical potential
             savetxt(self.muout,
-                    np.hstack((self.results["mu"], self.results["dmu"]))[None],
+                    np.hstack((self.results.mu, self.results.dmu))[None],
                     header=columns)
 
 
@@ -511,11 +513,14 @@ class density_cylinder(MultiGroupAnalysisBase):
 :param length (float): Length of the cylinder (nm). If None length of box in the binning dimension is taken.
 :param dens (str): Density: mass, number, charge, temp
 
-**Outputs**
+**Attributes**
 
-:returns (dict): * z: bins
-                 * dens_mean: calculated densities
-                 * dens_err: density error
+:returns results.z (numpy.ndarray): density position
+:returns results.dens_mean (numpy.ndarray): calculated density
+:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
+:returns results.dens_std (numpy.ndarray): density standard deviation
+:returns results.dens_err (numpy.ndarray): density error
+
 
 **Tutorial**
 
@@ -737,14 +742,14 @@ Plot it using PyPlot:
     def _calculate_results(self):
         self._index = self._frame_index + 1
 
-        self.results["r"] = (np.copy(self._r_bins) - self._dr / 2) / 10
-        self.results["dens_mean"] = self.density_mean / self._index
-        self.results["dens_mean_sq"] = self.density_mean_sq / self._index
+        self.results.r = (np.copy(self._r_bins) - self._dr / 2) / 10
+        self.results.dens_mean = self.density_mean / self._index
+        self.results.dens_mean_sq = self.density_mean_sq / self._index
 
-        self.results["dens_std"] = np.nan_to_num(
-            np.sqrt(self.results["dens_mean_sq"] -
-                    self.results["dens_mean"] ** 2))
-        self.results["dens_err"] = self.results["dens_std"] / np.sqrt(
+        self.results.dens_std = np.nan_to_num(
+            np.sqrt(self.results.dens_mean_sq -
+                    self.results.dens_mean ** 2))
+        self.results.dens_err = self.results.dens_std / np.sqrt(
             self._index)
 
     def _save_results(self):
@@ -772,6 +777,6 @@ Plot it using PyPlot:
         # save density profile
         savetxt(self.output,
                 np.hstack(
-                    ((self.results["r"][:, np.newaxis]),
-                     self.results["dens_mean"], self.results["dens_err"])),
+                    ((self.results.r[:, np.newaxis]),
+                     self.results.dens_mean, self.results.dens_err)),
                 header=columns)

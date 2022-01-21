@@ -43,14 +43,16 @@ class velocity(SingleGroupAnalysisBase):
         :param bpbc (bool): Do not make broken molecules whole again (only works if
                             molecule is smaller than shortest box vector
 
-        **Outputs**
 
-        :returns (dict): * z: bins [nm]
-                         * v: velocity profile [m/s]
-                         * ees: velocity error estimate [m/s]
-                         * symz: symmetrized bins [nm]
-                         * symvel: symmetrized velocity profile [m/s]
-                         * symees: symmetrized velocity error estimate [m/s]
+        **Attributes*
+
+        :returns results.z (numpy.ndarray): bins [nm]
+        :returns results.v (numpy.ndarray): velocity profile [m/s]
+        :returns results.ees (numpy.ndarray): velocity error estimate [m/s]
+        :returns results.symz (numpy.ndarray): symmetrized bins [nm]
+        :returns results.symvel (numpy.ndarray): symmetrized velocity profile [m/s]
+        :returns results.symees (numpy.ndarray): symmetrized velocity error estimate [m/s]
+
      """
 
     def __init__(self,
@@ -100,11 +102,13 @@ class velocity(SingleGroupAnalysisBase):
     def _single_frame(self):
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
+            self._universe.atoms.unwrap(
+                compound=check_compound(self._universe.atoms))
 
         self.L += self._universe.dimensions[self.dim]
 
-        coms = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))[:, self.dim]
+        coms = self.atomgroup.center_of_mass(
+            compound=check_compound(self.atomgroup))[:, self.dim]
 
         comvels = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.velocities[:, self.vdim] *
@@ -115,7 +119,7 @@ class velocity(SingleGroupAnalysisBase):
                                                    compound=check_compound(self.atomgroup))
 
         bins = (coms / (self._universe.dimensions[self.dim] / self.nbins)
-               ).astype(int) % self.nbins
+                ).astype(int) % self.nbins
         bincount = np.bincount(bins, minlength=self.nbins)
         with np.errstate(divide="ignore", invalid="ignore"):
             # mean velocity in this bin, zero if empty
@@ -144,59 +148,61 @@ class velocity(SingleGroupAnalysisBase):
         self.minframes = self._index / 100
         avL = self.L / self._index / 10  # in nm
         dz = avL / self.nbins
-        self.results["symz"] = np.arange(0, avL / 4 - dz / 2, dz) + dz / 2
+        self.results.symz = np.arange(0, avL / 4 - dz / 2, dz) + dz / 2
 
-        self.results["z"] = np.arange(0, avL - dz / 2, dz) + dz / 2
-        self.results["v"] = np.sum(
+        self.results.z = np.arange(0, avL - dz / 2, dz) + dz / 2
+        self.results.v = np.sum(
             self.av_vel[np.sum(self.binframes, axis=1) > self.minframes],
             axis=1) / np.sum(
-                self.binframes[np.sum(self.binframes, axis=1) > self.minframes],
+                self.binframes[np.sum(self.binframes, axis=1)
+                               > self.minframes],
                 axis=1)
-        self.results["dv"] = np.sqrt(self.av_vel_sq[
+        self.results.dv = np.sqrt(self.av_vel_sq[
             np.sum(self.binframes, axis=1) > self.minframes] / np.sum(
-                self.binframes[np.sum(self.binframes, axis=1) > self.minframes],
-                axis=1) - self.results["v"]**2) / np.sqrt(
+                self.binframes[np.sum(self.binframes, axis=1)
+                               > self.minframes],
+                axis=1) - self.results.v**2) / np.sqrt(
                     np.sum(self.binframes[
                         np.sum(self.binframes, axis=1) > self.minframes],
-                           axis=1) - 1)
+                        axis=1) - 1)
 
         # make use of the symmetry
-        self.results["symvel"] = (
+        self.results.symvel = (
             self.av_vel[:self.nbins // 4] -
             self.av_vel[self.nbins // 4:2 * self.nbins // 4][::-1] -
             self.av_vel[2 * self.nbins // 4:3 * self.nbins // 4] +
             self.av_vel[3 * self.nbins // 4:][::-1])
-        self.results["symvel_sq"] = (
+        self.results.symvel_sq = (
             self.av_vel_sq[:self.nbins // 4] +
             self.av_vel_sq[self.nbins // 4:2 * self.nbins // 4][::-1] +
             self.av_vel_sq[2 * self.nbins // 4:3 * self.nbins // 4] +
             self.av_vel_sq[3 * self.nbins // 4:][::-1])
-        self.results["symbinframes"] = (
+        self.results.symbinframes = (
             self.binframes[:self.nbins // 4] +
             self.binframes[self.nbins // 4:2 * self.nbins // 4][::-1] +
             self.binframes[2 * self.nbins // 4:3 * self.nbins // 4] +
             self.binframes[3 * self.nbins // 4:][::-1])
 
-        self.results["vsym"] = np.sum(
-            self.results["symvel"][
-                np.sum(self.results["symbinframes"], axis=1) > self.minframes],
+        self.results.vsym = np.sum(
+            self.results.symvel[
+                np.sum(self.results.symbinframes, axis=1) > self.minframes],
             axis=1,
         ) / np.sum(
-            self.results["symbinframes"][
-                np.sum(self.results["symbinframes"], axis=1) > self.minframes],
+            self.results.symbinframes[
+                np.sum(self.results.symbinframes, axis=1) > self.minframes],
             axis=1,
         )
-        self.results["dvsym"] = np.sqrt(self.results["symvel_sq"][np.sum(
-            self.results["symbinframes"], axis=1) > self.minframes] / np.sum(
-                self.results["symbinframes"]
-                [np.sum(self.results["symbinframes"], axis=1) > self.minframes],
+        self.results.dvsym = np.sqrt(self.results.symvel_sq[np.sum(
+            self.results.symbinframes, axis=1) > self.minframes] / np.sum(
+                self.results.symbinframes
+                [np.sum(self.results.symbinframes, axis=1) > self.minframes],
                 axis=1,
-            ) - self.results["vsym"]**2) / np.sqrt(
-                np.sum(
-                    self.results["symbinframes"][np.sum(
-                        self.results["symbinframes"], axis=1) > self.minframes],
-                    axis=1,
-                ) - 1)
+        ) - self.results.vsym**2) / np.sqrt(
+            np.sum(
+                self.results.symbinframes[np.sum(
+                    self.results.symbinframes, axis=1) > self.minframes],
+                axis=1,
+            ) - 1)
 
     def _blockee(self, data):
         ee = []
@@ -215,19 +221,20 @@ class velocity(SingleGroupAnalysisBase):
 
     def _conclude(self):
         bee = self._blockee(np.nan_to_num(self.av_vel / self.binframes))
-        self.results["ee_out"] = np.vstack(
+        self.results.ee_out = np.vstack(
             list(np.hstack((bee[i])) for i in range(len(bee))))
 
         prefs = (2 * (
             self.av_vel_sq[np.sum(self.binframes, axis=1) > self.minframes] /
             np.sum(
-                self.binframes[np.sum(self.binframes, axis=1) > self.minframes],
+                self.binframes[np.sum(self.binframes, axis=1)
+                               > self.minframes],
                 axis=1,
-            ) - self.results["v"]**2) /
-                 (self._index * self._trajectory.dt * self.step)
-                )  # 2 sigma^2 / T, (A16) in [1]
-        self.results["ees"] = []
-        self.results["params"] = []
+            ) - self.results.v**2) /
+            (self._index * self._trajectory.dt * self.step)
+        )  # 2 sigma^2 / T, (A16) in [1]
+        self.results.ees = []
+        self.results.params = []
         for count, i in enumerate(range(self.nbins)):
             if np.sum(self.binframes[i]) > self.minframes:
                 pref = prefs[count]
@@ -237,35 +244,35 @@ class velocity(SingleGroupAnalysisBase):
 
                 [alpha, tau1, tau2], pcov = curve_fit(
                     modfitfn,
-                    self.results["ee_out"][:, 0],
-                    (self.results["ee_out"][:, i + 1])**2,
+                    self.results.ee_out[:, 0],
+                    (self.results.ee_out[:, i + 1])**2,
                     bounds=([0, 0, 0], [1, np.inf, np.inf]),
                     p0=[0.99, 0.001, 0.01],
                     max_nfev=1e5,
                 )
                 # (A.17) in [1]
                 errest = np.sqrt(pref * (alpha * tau1 + (1 - alpha) * tau2))
-                self.results["ees"].append(errest)
-                self.results["params"].append([pref, alpha, tau1, tau2])
+                self.results.ees.append(errest)
+                self.results.params.append([pref, alpha, tau1, tau2])
 
         # Same for symmetrized
         bee = self._blockee(
-            np.nan_to_num(self.results["symvel"] /
-                          self.results["symbinframes"]))
-        self.results["symee_out"] = np.vstack(
+            np.nan_to_num(self.results.symvel /
+                          self.results.symbinframes))
+        self.results.symee_out = np.vstack(
             list(np.hstack((bee[i])) for i in range(len(bee))))
 
-        prefs = (2 * (self.results["symvel_sq"][np.sum(
-            self.results["symbinframes"], axis=1) > self.minframes] / np.sum(
-                self.results["symbinframes"]
-                [np.sum(self.results["symbinframes"], axis=1) > self.minframes],
+        prefs = (2 * (self.results.symvel_sq[np.sum(
+            self.results.symbinframes, axis=1) > self.minframes] / np.sum(
+                self.results.symbinframes
+                [np.sum(self.results.symbinframes, axis=1) > self.minframes],
                 axis=1,
-            ) - self.results["vsym"]**2) /
-                 (self._index * self._trajectory.dt * self.step)
-                )  # 2 sigma^2 / T, (A16) in [1]
-        self.results["symees"] = []
+        ) - self.results.vsym**2) /
+            (self._index * self._trajectory.dt * self.step)
+        )  # 2 sigma^2 / T, (A16) in [1]
+        self.results.symees = []
         for count, i in enumerate(range(self.nbins // 4)):
-            if np.sum(self.results["symbinframes"][i]) > self.minframes:
+            if np.sum(self.results.symbinframes[i]) > self.minframes:
                 pref = prefs[count]
 
                 def modfitfn(x, alpha, tau1, tau2):
@@ -273,81 +280,81 @@ class velocity(SingleGroupAnalysisBase):
 
                 [alpha, tau1, tau2], pcov = curve_fit(
                     modfitfn,
-                    self.results["symee_out"][:, 0],
-                    (self.results["symee_out"][:, i + 1])**2,
+                    self.results.symee_out[:, 0],
+                    (self.results.symee_out[:, i + 1])**2,
                     bounds=([0, 0, 0], [1, np.inf, np.inf]),
                     p0=[0.9, 1e3, 1e4],
                     max_nfev=1e5,
                 )
                 # (A.17) in [1]
                 errest = np.sqrt(pref * (alpha * tau1 + (1 - alpha) * tau2))
-                self.results["symees"].append(errest)
+                self.results.symees.append(errest)
 
         if self._save:
             savetxt(
                 "errest_" + self.output_suffix,
                 np.concatenate(
                     (
-                        self.results["ee_out"][:, 0].reshape(
-                            len(self.results["ee_out"]), 1),
-                        (self.results["ee_out"][:, 1:]
-                        )[:, np.sum(self.binframes, axis=1) > self.minframes],
+                        self.results.ee_out[:, 0].reshape(
+                            len(self.results.ee_out), 1),
+                        (self.results.ee_out[:, 1:]
+                         )[:, np.sum(self.binframes, axis=1) > self.minframes],
                     ),
                     axis=1,
                 ),
                 header="z " + " ".join(
                     map(
                         str,
-                        self.results["z"][
+                        self.results.z[
                             np.sum(self.binframes, axis=1) > self.minframes],
                     )),
             )
             savetxt("errparams_" + self.output_suffix,
-                    np.array(self.results["params"]))
+                    np.array(self.results.params))
             savetxt(
                 "errest_sym_" + self.output_suffix,
                 np.concatenate(
                     (
-                        self.results["symee_out"][:, 0].reshape(
-                            len(self.results["symee_out"]), 1),
-                        (self.results["symee_out"][:, 1:]
-                        )[:,
-                          np.sum(self.results["symbinframes"], axis=1) > self.
-                          minframes],
+                        self.results.symee_out[:, 0].reshape(
+                            len(self.results.symee_out), 1),
+                        (self.results.symee_out[:, 1:]
+                         )[:,
+                           np.sum(self.results.symbinframes, axis=1) > self.
+                           minframes],
                     ),
                     axis=1,
                 ),
                 header="z " + " ".join(
                     map(
                         str,
-                        self.results["symz"]
-                        [np.sum(self.results["symbinframes"], axis=1) >
+                        self.results.symz
+                        [np.sum(self.results.symbinframes, axis=1) >
                          self.minframes],
                     )),
             )
             savetxt(
                 "errparams_sym_" + self.output_suffix,
-                np.array(self.results["params"]),
+                np.array(self.results.params),
             )
 
             savetxt(
                 "vel_" + self.output_suffix,
                 np.vstack((
-                    self.results["z"][
+                    self.results.z[
                         np.sum(self.binframes, axis=1) > self.minframes],
-                    self.results["v"],
-                    np.array(self.results["ees"]),
-                    self.results["dv"],
+                    self.results.v,
+                    np.array(self.results.ees),
+                    self.results.dv,
                 )).T,
             )
 
             savetxt(
                 "vel_sym_" + self.output_suffix,
                 np.vstack((
-                    self.results["symz"][np.sum(self.results["symbinframes"],
-                                                axis=1) > self.minframes],
-                    self.results["vsym"],
-                    np.array(self.results["symees"]),
+                    self.results.symz[np.sum(self.results.symbinframes,
+                                             axis=1) > self.minframes],
+                    self.results.vsym,
+                    np.array(self.results.symees),
                 )).T,
             )
 
@@ -355,18 +362,18 @@ class velocity(SingleGroupAnalysisBase):
         savetxt(
             "vel_sym_" + self.output_suffix,
             np.vstack((
-                self.results["symz"]
-                [np.sum(self.results["symbinframes"], axis=1) > self.minframes],
-                self.results["vsym"],
-                self.results["dvsym"],
+                self.results.symz
+                [np.sum(self.results.symbinframes, axis=1) > self.minframes],
+                self.results.vsym,
+                self.results.dvsym,
             )).T,
         )
         savetxt(
             "vel_" + self.output_suffix,
             np.vstack((
-                self.results["z"][
+                self.results.z[
                     np.sum(self.binframes, axis=1) > self.minframes],
-                self.results["v"],
-                self.results["dv"],
+                self.results.v,
+                self.results.dv,
             )).T,
         )
