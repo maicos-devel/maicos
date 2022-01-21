@@ -70,20 +70,21 @@ def planar_base():
 
             # Workaround since currently not alle module have option 
             # with zmax and zmin
-            if not hasattr(self, 'zmax'):
-                self.zmax = -1
+            if not hasattr(self, '_zmax'):
+                self._zmax = None
 
-            if self.zmax == -1:
-                zmax = self._universe.dimensions[self.dim]
+            if self._zmax is None:
+                self.Lz = 0
+                self.zmax = self._universe.dimensions[self.dim]
             else:
-                self.zmax *= 10
-                zmax = self.zmax
+                self.zmax = 10 * self._zmax
 
             if not hasattr(self, 'zmin'):
                 self.zmin = 0
-            self.zmin = 10 * self.zmin
+            self.zmin *= 10
+            self.binwidth *= 10
 
-            self.n_bins = int(np.ceil((zmax - self.zmin) / 10 / self.binwidth))
+            self.n_bins = int(np.ceil((self.zmax - self.zmin) / self.binwidth))
 
             if self._verbose:
                 print('Using', self.n_bins, 'bins.')
@@ -101,7 +102,6 @@ def planar_base():
             if self.comgroup is not None:
                 self.center = True  # always center when COM
 
-            self.Lz = 0
             orig_prepare(self)
 
         def get_bins(self, positions, dim=None):
@@ -122,7 +122,12 @@ def planar_base():
             return bins.astype(int)
 
         def _single_frame(self, *args, **kwargs):
-            self.Lz += self._ts.dimensions[self.dim]
+
+            if self._zmax is None:
+                self.zmax = self._ts.dimensions[self.dim]
+                self.Lz += self.zmax
+                
+
             # Center of mass calculation with generalization to periodic systems
             # see Bai, Linge; Breen, David (2008). "Calculating Center of Mass in an
             # Unbounded 2D Environment". Journal of Graphics, GPU, and Game Tools. 13
@@ -155,7 +160,7 @@ def planar_base():
         def _calculate_results(self):
             self._index = self._frame_index + 1
 
-            if self.zmax == -1:
+            if self._zmax is None:
                 zmax = self.Lz / self._index
             else:
                 zmax = self.zmax

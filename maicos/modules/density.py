@@ -413,6 +413,7 @@ by reducing the binwidth:
         # chemical potential
         if self.mu:
             if self.zpos is not None:
+                self.zpos *= 10 # nm -> Å
                 this = (np.rint(
                     (self.zpos + self.binwidth / 2) / self.binwidth)
                         % self.n_bins).astype(int)
@@ -473,7 +474,7 @@ by reducing the binwidth:
         if self.mu:
             if self.zpos is not None:
                 columns = "Chemical potential calculated at z = {} nm.".format(
-                    self.zpos)
+                    self.zpos/10)
             else:
                 columns = "Chemical potential averaged over the whole system."
             columns += "\nstatistics over {:.1f} picoseconds \n".format(
