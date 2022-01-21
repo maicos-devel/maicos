@@ -82,11 +82,14 @@ class saxs(SingleGroupAnalysisBase):
     :param mintheta (float): Minimal angle (°) between the q vectors and the z-axis.
     :param maxtheta (float): Maximal angle (°) between the q vectors and the z-axis.
 
-    **Outputs**
 
-    :returns (dict): * q: length of binned q-vectors
-                     * q_indices: Miller indices of q-vector (only if noboindata==True)
-                     * scat_factor: Scattering intensities
+    **Attributes**
+
+    :returns results.q (numpy.ndarray): length of binned q-vectors
+    :returns results.q_indices (numpy.ndarray): Miller indices of q-vector (only if noboindata==True)
+    :returns results.scat_factor(numpy.ndarray): Scattering intensities
+
+
     """
 
     def __init__(self,
@@ -211,10 +214,10 @@ class saxs(SingleGroupAnalysisBase):
     def _calculate_results(self):
         self._index = self._frame_index + 1
         if self.nobindata:
-            self.results["scat_factor"] = self.S_array.sum(axis=3)
-            self.results["q_indices"] = np.array(
+            self.results.scat_factor = self.S_array.sum(axis=3)
+            self.results.q_indices = np.array(
                 list(np.ndindex(tuple(self.maxn))))
-            self.results["q"] = np.linalg.norm(self.results["q_indices"] *
+            self.results.q = np.linalg.norm(self.results.q_indices *
                                                self.q_factor[np.newaxis, :],
                                                axis=1)
         else:
@@ -222,18 +225,18 @@ class saxs(SingleGroupAnalysisBase):
             nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
             scat_factor = self.struct_factor[nonzeros]
 
-            self.results["q"] = q[nonzeros]
-            self.results["scat_factor"] = scat_factor.sum(axis=1)
+            self.results.q= q[nonzeros]
+            self.results.scat_factor = scat_factor.sum(axis=1)
 
-        self.results["scat_factor"] /= (self._index * self.atomgroup.n_atoms)
+        self.results.scat_factor /= (self._index * self.atomgroup.n_atoms)
 
     def _save_results(self):
         """Saves the current profiles to a file."""
 
         if self.nobindata:
             out = np.hstack([
-                self.results["q"][:, np.newaxis], self.results["q_indices"],
-                self.results["scat_factor"].flatten()[:, np.newaxis]
+                self.results.q[:, np.newaxis], self.results.q_indices,
+                self.results.scat_factor.flatten()[:, np.newaxis]
             ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
@@ -249,8 +252,8 @@ class saxs(SingleGroupAnalysisBase):
                     fmt='%.4e')
         else:
             savetxt(self.output,
-                    np.vstack([self.results["q"],
-                               self.results["scat_factor"]]).T,
+                    np.vstack([self.results.q,
+                               self.results.scat_factor]).T,
                     header="q (1/nm)\tS(q) (arb. units)",
                     fmt='%.4e')
 
@@ -268,10 +271,10 @@ class debye(SingleGroupAnalysisBase):
        :param sinc (bool): Apply sinc damping
        :param debyer (str): Path to the debyer executable
 
-        **Outputs**
+        **Attributes**
 
-       :returns (dict): * q: length of binned q-vectors
-                        * scat_factor: Scattering intensities
+        :returns results.q (numpy.ndarray): length of binned q-vectors
+        :returns results.scat_factor (numpy.ndarray): Scattering intensities
     """
 
     def __init__(self,
@@ -408,8 +411,8 @@ class debye(SingleGroupAnalysisBase):
 
         nonzeros = np.where(s_out != 0)[0]
 
-        self.results["q"] = 10 * q[nonzeros]
-        self.results["scat_factor"] = s_out[nonzeros] / len(datfiles)
+        self.results.q = 10 * q[nonzeros]
+        self.results.scat_factor = s_out[nonzeros] / len(datfiles)
 
     def _conclude(self):
         for f in os.listdir(self._tmp):
@@ -419,7 +422,7 @@ class debye(SingleGroupAnalysisBase):
 
     def _save_results(self):
         savetxt(self.output,
-                np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+                np.vstack([self.results.q, self.results.scat_factor]).T,
                 header="q (1/A)\tS(q)_tot (arb. units)",
                 fmt='%.8e')
 
@@ -444,14 +447,15 @@ class diporder(SingleGroupAnalysisBase):
     :param bpbc (bool): do not make broken molecules whole again
                        (only works if molecule is smaller than shortest box vector
 
+    
+    **Attributes**
 
-    **Outputs**
+    :returns results.z (numpy.ndarray): bins [nm]
+    :returns results.P0 (numpy.ndarray): P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+    :returns results.cos_theta (numpy.ndarray): cos(θ[z])
+    :returns results.cos_2_theta (numpy.ndarray): cos²(Θ[z])
+    :returns results.rho (numpy.ndarray): ρ(z) [1/nm³]
 
-   :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
-                    * cos_theta: cos(θ[z])
-                    * cos_2_theta: cos²(Θ[z])
-                    * rho: ρ(z) [1/nm³]
     """
 
     def __init__(self,
@@ -568,21 +572,21 @@ class diporder(SingleGroupAnalysisBase):
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
         self._index = self._frame_index + 1
-        self.results["P0"] = self.P0 / self._frame_index
-        self.results["rho"] = self.rho / self._frame_index
+        self.results.P0 = self.P0 / self._frame_index
+        self.results.rho= self.rho / self._frame_index
 
         with np.errstate(divide='ignore', invalid='ignore'):
-            self.results["cos_theta"] = np.nan_to_num(self.cos_theta / self.bin_count)
-            self.results["cos_2_theta"] = np.nan_to_num(self.cos_2_theta / self.bin_count)
+            self.results.cos_theta = np.nan_to_num(self.cos_theta / self.bin_count)
+            self.results.cos_2_theta = np.nan_to_num(self.cos_2_theta / self.bin_count)
 
         if self.bsym:
-            for i in range(len(self.results["z"]) - 1):
-                self.results["z"][i +
-                                  1] = .5 * (self.results["z"][i + 1] +
-                                             self.results["z"][i + 1][-1::-1])
-                self.results["diporder"][
-                    i + 1] = .5 * (self.results["diporder"][i + 1] +
-                                   self.results["diporder"][i + 1][-1::-1])
+            for i in range(len(self.results.z) - 1):
+                self.results.z[i +
+                                  1] = .5 * (self.results.z[i + 1] +
+                                             self.results.z[i + 1][-1::-1])
+                self.results.diporder[
+                    i + 1] = .5 * (self.results.diporder[i + 1] +
+                                   self.results.diporder[i + 1][-1::-1])
 
     def _save_results(self):
         """Save results to a file.
@@ -598,8 +602,8 @@ class diporder(SingleGroupAnalysisBase):
 
         savetxt(self.output,
                 np.vstack([
-                    self.results["z"], self.results["P0"],
-                    self.results["cos_theta"], self.results["cos_2_theta"],
-                    self.results["rho"]
+                    self.results.z, self.results.P0,
+                    self.results.cos_theta, self.results.cos_2_theta,
+                    self.results.rho
                 ]).T,
                 header=header)

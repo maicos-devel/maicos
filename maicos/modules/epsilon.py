@@ -53,17 +53,18 @@ class epsilon_bulk(SingleGroupAnalysisBase):
                                (only works if molecule is smaller than shortest
                                 box vector
 
-    **Outputs**
+    **Attributes**
 
-   :returns (dict): * M: Directional dependant dipole moment
+    :returns results.M (numpy.ndarray): Directional dependant dipole moment
                         :math:`\langle \boldsymbol M \rangle` in :math:`eÅ`.
-                    * M2: Directional dependant squared dipole moment
+    :returns results.M2 (numpy.ndarray): Directional dependant squared dipole moment
                         :math:`\langle \boldsymbol M^2 \rangle` in :math:`(eÅ)^2`
-                    * fluct: Directional dependant dipole moment fluctuation
+    :returns results.fluct (numpy.ndarray): Directional dependant dipole moment fluctuation
                             :math:`\langle \boldsymbol M^2 \rangle - \langle \boldsymbol M \rangle^2`
                             in :math:`(eÅ)^2`
-                    * eps: Directional dependant static dielectric constant
-                    * eps_mean: Static dielectric constant
+    :returns results.eps (numpy.ndarray): Directional dependant static dielectric constant  
+    :returns results.eps_mean (numpy.ndarray): Static dielectric constant
+
     """
 
     def __init__(self,
@@ -110,16 +111,16 @@ class epsilon_bulk(SingleGroupAnalysisBase):
         index = self._frame_index + 1
         beta = 1. / (scipy.constants.Boltzmann * self.temperature)
 
-        self.results["M"] = self.M / index
-        self.results["M2"] = self.M2 / index
-        self.results["volume"] = self.volume / index
-        self.results["fluct"] = self.results["M2"] - self.results["M"]**2
-        self.results["eps"] = beta * eps0inv * pref * self.results["fluct"] / \
-                              self.results["volume"]
-        self.results["eps_mean"] = self.results["eps"].mean()
+        self.results.M = self.M / index
+        self.results.M2 = self.M2 / index
+        self.results.volume = self.volume / index
+        self.results.fluct = self.results.M2 - self.results.M**2
+        self.results.eps = beta * eps0inv * pref * self.results.fluct / \
+            self.results.volume
+        self.results.eps_mean = self.results.eps.mean()
 
-        self.results["eps"] += 1
-        self.results["eps_mean"] += 1
+        self.results.eps += 1
+        self.results.eps_mean += 1
 
     def _conclude(self):
         if self._verbose:
@@ -129,33 +130,33 @@ class epsilon_bulk(SingleGroupAnalysisBase):
 
             print("")
             for i, d in enumerate("xyz"):
-                print(" <M_{}> = {:.4f} eÅ".format(d, self.results["M"][i]))
+                print(" <M_{}> = {:.4f} eÅ".format(d, self.results.M[i]))
 
             print("")
             for i, d in enumerate("xyz"):
                 print(" <M_{}²> = {:.4f} (eÅ)²".format(d,
-                                                       self.results["M2"][i]))
+                                                       self.results.M2[i]))
 
             print("")
-            print(" <|M|²> = {:.4f} (eÅ)²".format(self.results["M2"].mean()))
+            print(" <|M|²> = {:.4f} (eÅ)²".format(self.results.M2.mean()))
             print(" |<M>|² = {:.4f} (eÅ)²".format(
-                (self.results["M"]**2).mean()))
+                (self.results.M**2).mean()))
 
             print("")
             print(" <|M|²> - |<M>|² = {:.4f} (eÅ)²".format(
-                self.results["fluct"].mean()))
+                self.results.fluct.mean()))
 
             print("")
             for i, d in enumerate("xyz"):
-                print(" ε_{} = {:.2f} ".format(d, self.results["eps"][i]))
+                print(" ε_{} = {:.2f} ".format(d, self.results.eps[i]))
 
             print("")
-            print(" ε = {:.2f}".format(self.results["eps_mean"]))
+            print(" ε = {:.2f}".format(self.results.eps_mean))
             print("")
 
     def _save_results(self):
         savetxt(self.output,
-                np.hstack([self.results["eps_mean"], self.results["eps"]]).T,
+                np.hstack([self.results.eps_mean, self.results.eps]).T,
                 fmt='%1.2f',
                 header='eps\teps_x\teps_y\teps_z')
 
@@ -171,7 +172,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     :param output_prefix (str): Prefix for output files
     :param zmin (float): minimal coordinate for evaluation (nm)
-    :param zmax (float): maximal coordinate for evaluation (nm)
+    :param zmax (float): maximal coordinate for evaluation (nm) If `None` the 
+                         whole box is taken into account.
     :param temperature (float): temperature (K)
     :param outfreq (int): Default number of frames after which output files are refreshed.
     :param b2d (bool): Use 2d slab geometry
@@ -180,24 +182,26 @@ class epsilon_planar(MultiGroupAnalysisBase):
     :param bpbc (bool): Do not make broken molecules whole again (only works if
                         molecule is smaller than shortest box vector
 
-    **Outputs**
+    **Attributes**
 
-    :returns (dict): * z: Bin positions
-                     * eps_par: Parallel dielectric profile (ε_∥ - 1)
-                     * deps_par: Error of parallel dielectric profile
-                     * eps_par_self: Self contribution of parallel dielectric profile
-                     * eps_par_coll: Collective contribution of parallel dielectric profile
-                     * eps_perp: Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
-                     * deps_perp: Error of inverse perpendicular dielectric profile
-                     * eps_par_self: Self contribution of Inverse perpendicular dielectric profile
-                     * eps_perp_coll: Collective contribution of Inverse perpendicular dielectric profile
+    :returns results.z (numpy.ndarray): Bin positions
+    :returns results.eps_par (numpy.ndarray): Parallel dielectric profile (ε_∥ - 1)
+    :returns results.deps_par (numpy.ndarray): Error of parallel dielectric profile
+    :returns results.eps_par_self (numpy.ndarray): Self contribution of parallel dielectric profile
+    :returns results.eps_par_coll (numpy.ndarray): Collective contribution of parallel dielectric profile
+    :returns results.eps_perp (numpy.ndarray): Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
+    :returns results.deps_perp (numpy.ndarray): Error of inverse perpendicular dielectric profile
+    :returns results.eps_par_self (numpy.ndarray): Self contribution of Inverse perpendicular dielectric profile
+    :returns results.eps_perp_coll (numpy.ndarray): Collective contribution of Inverse perpendicular dielectric profile
+
+
     """
 
     def __init__(self,
                  atomgroups,
                  output_prefix="eps",
                  zmin=0,
-                 zmax=-1,
+                 zmax=None,
                  temperature=300,
                  outfreq=10000,
                  b2d=False,
@@ -213,7 +217,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
         super().__init__(atomgroups, **kwself)
         self.output_prefix = output_prefix
         self.zmin = zmin
-        self.zmax = zmax
+        self._zmax = zmax
         self.temperature = temperature
         self.outfreq = outfreq
         self.b2d = b2d
@@ -243,7 +247,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
         self.V = 0
         self.A = np.prod(self._universe.dimensions[self.xydims])
 
-        self.m_par = np.zeros((self.n_bins, len(self.atomgroups), self.resample))
+        self.m_par = np.zeros(
+            (self.n_bins, len(self.atomgroups), self.resample))
         self.mM_par = np.zeros((self.n_bins, len(self.atomgroups),
                                 self.resample))  # total fluctuations
         self.mm_par = np.zeros((self.n_bins, len(self.atomgroups)))  # self
@@ -267,14 +272,10 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
     def _single_frame(self):
 
-        if self.zmax == -1:
-            zmax = self._ts.dimensions[self.dim]
-        else:
-            zmax = self.zmax
-
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
+            self._universe.atoms.unwrap(
+                compound=check_compound(self._universe.atoms))
 
         dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
@@ -289,7 +290,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
         # sum up the averages
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
-        self.M_perp_2[self._frame_index // self.resample_freq] += this_M_perp**2
+        self.M_perp_2[self._frame_index //
+                      self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
             bins = self.get_bins(sel.atoms.positions)
             curQ = np.histogram(bins,
@@ -301,7 +303,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             self.mM_perp[:, i, self._frame_index //
                          self.resample_freq] += this_m_perp * this_M_perp
             self.mm_perp[:, i] += this_m_perp * this_m_perp * \
-                (self._ts.dimensions[self.dim] / self.n_bins) * self.A  # self term
+                (self._ts.dimensions[self.dim] /
+                 self.n_bins) * self.A  # self term
             # collective contribution
             self.cmM_perp[:, i] += this_m_perp * \
                 (this_M_perp - this_m_perp * (self.A * dz_frame))
@@ -320,7 +323,8 @@ class epsilon_planar(MultiGroupAnalysisBase):
             if comp == "molecules":
                 repeats = np.unique(sel.atoms.molnums, return_counts=True)[1]
             elif comp == "fragments":
-                repeats = np.unique(sel.atoms.fragindices, return_counts=True)[1]
+                repeats = np.unique(sel.atoms.fragindices,
+                                    return_counts=True)[1]
             else:
                 repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
             testpos = sel.atoms.positions
@@ -366,7 +370,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
     def _calculate_results(self):
         self._index = self._frame_index + 1
 
-        self.results["V"] = self.V / self._index
+        self.results.V = self.V / self._index
 
         cov_perp = self.mM_perp.sum(axis=2) / self._index - \
             self.m_perp.sum(axis=2) / self._index * \
@@ -405,58 +409,56 @@ class epsilon_planar(MultiGroupAnalysisBase):
 
         beta = 1 / (scipy.constants.Boltzmann * self.temperature)
 
-        self.results["eps_par"] = beta * eps0inv * pref / 2 * cov_par
-        self.results["deps_par"] = beta * eps0inv * pref / 2 * dcov_par
-        self.results["eps_par_self"] = beta * eps0inv * pref / 2 * cov_par_self
-        self.results["eps_par_coll"] = beta * eps0inv * pref / 2 * cov_par_coll
+        self.results.eps_par = beta * eps0inv * pref / 2 * cov_par
+        self.results.deps_par = beta * eps0inv * pref / 2 * dcov_par
+        self.results.eps_par_self = beta * eps0inv * pref / 2 * cov_par_self
+        self.results.eps_par_coll = beta * eps0inv * pref / 2 * cov_par_coll
 
         if (self.b2d):
-            self.results["eps_perp"] = -beta * eps0inv * pref * cov_perp
-            self.results[
-                "eps_perp_self"] = -beta * eps0inv * pref * cov_perp_self
-            self.results[
-                "eps_perp_coll"] = -beta * eps0inv * pref * cov_perp_coll
-            self.results["deps_perp"] = np.abs(
+            self.results.eps_perp = -beta * eps0inv * pref * cov_perp
+            self.results.eps_perp_self = -beta * eps0inv * pref * cov_perp_self
+            self.results.eps_perp_coll = -beta * eps0inv * pref * cov_perp_coll
+            self.results.deps_perp = np.abs(
                 -eps0inv * beta * pref) * dcov_perp
             if (self.vac):
-                self.results["eps_perp"] *= 2. / 3.
-                self.results["eps_perp_self"] *= 2. / 3.
-                self.results["eps_perp_coll"] *= 2. / 3.
-                self.results["deps_perp"] *= 2. / 3.
+                self.results.eps_perp *= 2. / 3.
+                self.results.eps_perp_self *= 2. / 3.
+                self.results.eps_perp_coll *= 2. / 3.
+                self.results.deps_perp *= 2. / 3.
 
         else:
-            self.results["eps_perp"] = (- eps0inv * beta * pref * cov_perp) \
-                / (1 + eps0inv * beta * pref / self.results["V"] * var_perp)
-            self.results["deps_perp"] = np.abs((- eps0inv * beta * pref) /
-                                          (1 + eps0inv * beta * pref / self.results["V"] * var_perp)) * dcov_perp \
+            self.results.eps_perp = (- eps0inv * beta * pref * cov_perp) \
+                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
+            self.results.deps_perp = np.abs((- eps0inv * beta * pref) /
+                                            (1 + eps0inv * beta * pref / self.results.V * var_perp)) * dcov_perp \
                 + np.abs((- eps0inv * beta * pref * cov_perp) /
-                         (1 + eps0inv * beta * pref / self.results["V"] * var_perp)**2) * dvar_perp
+                         (1 + eps0inv * beta * pref / self.results.V * var_perp)**2) * dvar_perp
 
-            self.results["eps_perp_self"] = (- eps0inv * beta * pref * cov_perp_self) \
-                / (1 + eps0inv * beta * pref / self.results["V"] * var_perp)
-            self.results["eps_perp_coll"] = (- eps0inv * beta * pref * cov_perp_coll) \
-                / (1 + eps0inv * beta * pref / self.results["V"] * var_perp)
+            self.results.eps_perp_self = (- eps0inv * beta * pref * cov_perp_self) \
+                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
+            self.results.eps_perp_coll = (- eps0inv * beta * pref * cov_perp_coll) \
+                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
 
     def _save_results(self):
         outdata_perp = np.hstack([
-            self.results["z"][:, np.newaxis],
-            self.results["eps_perp"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_perp"],
-            np.linalg.norm(self.results["deps_perp"],
-                           axis=1)[:, np.newaxis], self.results["deps_perp"],
-            self.results["eps_perp_self"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_perp_coll"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_perp_self"], self.results["eps_perp_coll"]
+            self.results.z[:, np.newaxis],
+            self.results.eps_perp.sum(axis=1)[:, np.newaxis],
+            self.results.eps_perp,
+            np.linalg.norm(self.results.deps_perp,
+                           axis=1)[:, np.newaxis], self.results.deps_perp,
+            self.results.eps_perp_self.sum(axis=1)[:, np.newaxis],
+            self.results.eps_perp_coll.sum(axis=1)[:, np.newaxis],
+            self.results.eps_perp_self, self.results.eps_perp_coll
         ])
         outdata_par = np.hstack([
-            self.results["z"][:, np.newaxis],
-            self.results["eps_par"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_par"],
-            np.linalg.norm(self.results["deps_par"],
-                           axis=1)[:, np.newaxis], self.results["deps_par"],
-            self.results["eps_par_self"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_par_coll"].sum(axis=1)[:, np.newaxis],
-            self.results["eps_par_self"], self.results["eps_par_coll"]
+            self.results.z[:, np.newaxis],
+            self.results.eps_par.sum(axis=1)[:, np.newaxis],
+            self.results.eps_par,
+            np.linalg.norm(self.results.deps_par,
+                           axis=1)[:, np.newaxis], self.results.deps_par,
+            self.results.eps_par_self.sum(axis=1)[:, np.newaxis],
+            self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
+            self.results.eps_par_self, self.results.eps_par_coll
         ])
 
         # TODO: write general function to symmetrize lists
@@ -482,7 +484,7 @@ class epsilon_planar(MultiGroupAnalysisBase):
 @charge_neutral(filter="error")
 class epsilon_cylinder(SingleGroupAnalysisBase):
     """Calculate cylindrical dielectric profiles.
-    
+
     Components are calculated along the axial (z) and radial (along xy) 
     direction at the system's center of mass.
 
@@ -507,6 +509,14 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                      * deps_ax: Error of parallel dielectric profile
                      * eps_rad: Inverse perpendicular dielectric profile (ε^{-1}_⟂)
                      * deps_rad: Error of inverse perpendicular dielectric profile
+    **Attributes**
+
+    :returns results.r (numpy.ndarray): Bin positions
+    :returns results.eps_ax (numpy.ndarray): Parallel dielectric profile (ε_∥)
+    :returns results.deps_ax (numpy.ndarray): Error of parallel dielectric profile
+    :returns results.eps_rad (numpy.ndarray): Inverse perpendicular dielectric profile (ε^{-1}_⟂)
+    :returns results.deps_rad (numpy.ndarray): Error of inverse perpendicular dielectric profile
+
     """
 
     def __init__(self,
@@ -605,7 +615,8 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         self.m_ax = np.zeros((self.nbins, self.resample))
         self.M_ax = np.zeros((self.resample))
-        self.mM_ax = np.zeros((self.nbins, self.resample))  # total fluctuations
+        self.mM_ax = np.zeros((self.nbins, self.resample)
+                              )  # total fluctuations
 
         if self._verbose:
             print('Using', self.nbins, 'bins.')
@@ -614,7 +625,8 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         if self.bpbc:
             # make broken molecules whole again!
-            self._universe.atoms.unwrap(compound=check_compound(self._universe.atoms))
+            self._universe.atoms.unwrap(
+                compound=check_compound(self._universe.atoms))
 
         # Transform from cartesian coordinates [x,y,z] to cylindrical
         # coordinates [r,z] (skip phi because of symmetry)
@@ -660,7 +672,8 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
         if comp == "molecules":
             repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
         elif comp == "fragments":
-            repeats = np.unique(self.atomgroup.fragindices, return_counts=True)[1]
+            repeats = np.unique(self.atomgroup.fragindices,
+                                return_counts=True)[1]
         else:
             repeats = np.unique(self.atoms.resids, return_counts=True)[1]
         testpos = np.empty(positions_cyl[:, 0].shape)
@@ -704,9 +717,11 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
                 np.sqrt(self.resample - 1)
         else:
             cov_ax = self.mM_ax.sum(axis=1) / self._index - \
-                self.m_ax.sum(axis=1) / self._index * self.M_ax.sum() / self._index
+                self.m_ax.sum(axis=1) / self._index * \
+                self.M_ax.sum() / self._index
             cov_rad = self.mM_rad.sum(axis=1) / self._index - \
-                self.m_rad.sum(axis=1) / self._index * self.M_rad.sum() / self._index
+                self.m_rad.sum(axis=1) / self._index * \
+                self.M_rad.sum() / self._index
 
             dcov_ax = np.sqrt(
                 (self.mM_ax.std(axis=1) / self._index * self.resample)**2 +
@@ -723,23 +738,23 @@ class epsilon_cylinder(SingleGroupAnalysisBase):
 
         beta = 1 / (scipy.constants.Boltzmann * self.temperature)
 
-        self.results["eps_ax"] = 1 + beta * eps0inv * pref * cov_ax
-        self.results["deps_ax"] = beta * eps0inv * pref * dcov_ax
+        self.results.eps_ax = 1 + beta * eps0inv * pref * cov_ax
+        self.results.deps_ax = beta * eps0inv * pref * dcov_ax
 
-        self.results[
-            "eps_rad"] = 1 - beta * eps0inv * pref * 2 * np.pi * self.r * self.length * cov_rad
-        self.results[
-            "deps_rad"] = beta * eps0inv * pref * 2 * np.pi * self.r * self.length * dcov_rad
+        self.results.eps_rad = 1 - beta * eps0inv * pref * \
+            2 * np.pi * self.r * self.length * cov_rad
+        self.results.deps_rad = beta * eps0inv * pref * \
+            2 * np.pi * self.r * self.length * dcov_rad
 
-        self.results["r"] = self.r / 10
+        self.results.r = self.r / 10
 
     def _save_results(self):
 
         outdata_ax = np.array([
-            self.results["r"], self.results["eps_ax"], self.results["deps_ax"]
+            self.results.r, self.results.eps_ax, self.results.deps_ax
         ]).T
         outdata_rad = np.array([
-            self.results["r"], self.results["eps_rad"], self.results["deps_rad"]
+            self.results.r, self.results.eps_rad, self.results.deps_rad
         ]).T
 
         header = "statistics over {:.1f} picoseconds".format(
@@ -860,15 +875,15 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
     def _calculate_results(self):
 
-        self.results["t"] = self._trajectory.dt * np.arange(
+        self.results.t = self._trajectory.dt * np.arange(
             self.startframe, self.stopframe, self.step)
 
-        self.results["V"] = self.V
-        self.results["V"] *= 1e-3 / (self._frame_index + 1)
+        self.results.V = self.V
+        self.results.V *= 1e-3 / (self._frame_index + 1)
 
-        self.results["P"] = self.P
+        self.results.P = self.P
         # MDAnalysis gives units of Å, we use nm
-        self.results["P"] /= 10
+        self.results.P /= 10
 
         # Find a suitable number of segments if it's not specified:
         if self.df is not None:
@@ -878,29 +893,29 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
 
         # Prefactor for susceptibility:
         pref = scipy.constants.e * scipy.constants.e * 1e9 / \
-            (3 * self.results["V"] * scipy.constants.k
+            (3 * self.results.V * scipy.constants.k
              * self.temperature * scipy.constants.epsilon_0)
 
         if self._verbose:  # Susceptibility and errors:
             print('Calculating susceptibilty and errors...')
 
         # if t too short to simply truncate
-        if len(self.results["t"]) < 2 * self.seglen:
-            self.results["t"] = np.append(
-                self.results["t"],
-                self.results["t"] + self.results["t"][-1] + self.dt)
+        if len(self.results.t) < 2 * self.seglen:
+            self.results.t = np.append(
+                self.results.t,
+                self.results.t + self.results.t[-1] + self.dt)
 
         # truncate t array (it's automatically longer than 2 * seglen)
-        self.results["t"] = self.results["t"][:2 * self.seglen]
+        self.results.t = self.results.t[:2 * self.seglen]
         # get freqs
-        self.results["nu"] = FT(
-            self.results["t"],
-            np.append(self.results["P"][:self.seglen, 0],
+        self.results.nu = FT(
+            self.results.t,
+            np.append(self.results.P[:self.seglen, 0],
                       np.zeros(self.seglen)))[0]
         # susceptibility
-        self.results["susc"] = np.zeros(self.seglen, dtype=complex)
+        self.results.susc = np.zeros(self.seglen, dtype=complex)
         # std deviation of susceptibility
-        self.results["dsusc"] = np.zeros(self.seglen, dtype=complex)
+        self.results.dsusc = np.zeros(self.seglen, dtype=complex)
         # susceptibility for current seg
         ss = np.zeros((2 * self.seglen), dtype=complex)
 
@@ -911,46 +926,46 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
             ss = 0 + 0j
 
             # loop over x, y, z
-            for self._i in range(0, len(self.results["P"][0, :])):
+            for self._i in range(0, len(self.results.P[0, :])):
                 FP = FT(
-                    self.results["t"],
+                    self.results.t,
                     np.append(
-                        self.results["P"][s * self.seglen:(s + 1) *
-                                          self.seglen, self._i],
+                        self.results.P[s * self.seglen:(s + 1) *
+                                       self.seglen, self._i],
                         np.zeros(self.seglen)), False)
                 ss += FP.real * FP.real + FP.imag * FP.imag
 
-            ss *= self.results["nu"] * 1j
+            ss *= self.results.nu * 1j
 
             # Get the real part by Kramers Kronig
             ss.real = iFT(
-                self.results["t"], 1j * np.sign(self.results["nu"]) *
-                FT(self.results["nu"], ss, False), False).imag
+                self.results.t, 1j * np.sign(self.results.nu) *
+                FT(self.results.nu, ss, False), False).imag
 
             if s == 0:
-                self.results["susc"] += ss[self.seglen:]
+                self.results.susc += ss[self.seglen:]
 
             else:
                 ds = ss[self.seglen:] - \
-                    (self.results["susc"] / s)
-                self.results["susc"] += ss[self.seglen:]
+                    (self.results.susc / s)
+                self.results.susc += ss[self.seglen:]
                 dif = ss[self.seglen:] - \
-                    (self.results["susc"] / (s + 1))
+                    (self.results.susc / (s + 1))
                 ds.real *= dif.real
                 ds.imag *= dif.imag
                 # variance by Welford's Method
-                self.results["dsusc"] += ds
+                self.results.dsusc += ds
 
-        self.results["dsusc"].real = np.sqrt(self.results["dsusc"].real)
-        self.results["dsusc"].imag = np.sqrt(self.results["dsusc"].imag)
+        self.results.dsusc.real = np.sqrt(self.results.dsusc.real)
+        self.results.dsusc.imag = np.sqrt(self.results.dsusc.imag)
 
         # 1/2 b/c it's the full FT, not only half-domain
-        self.results["susc"] *= pref / (2 * self.seglen * self.segs * self.dt)
-        self.results["dsusc"] *= pref / (2 * self.seglen * self.segs * self.dt)
+        self.results.susc *= pref / (2 * self.seglen * self.segs * self.dt)
+        self.results.dsusc *= pref / (2 * self.seglen * self.segs * self.dt)
 
         # Discard negative-frequency data; contains the same information as positive regime:
         # Now nu represents positive f instead of omega
-        self.results["nu"] = self.results["nu"][self.seglen:] / (2 * np.pi)
+        self.results.nu = self.results.nu[self.seglen:] / (2 * np.pi)
 
         if self._verbose:
             print('Length of segments:    {0} frames, {1:.0f} ps'.format(
@@ -962,39 +977,39 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
         if not (self.nobin or self.seglen <= self.bins):
             bins = np.logspace(
                 np.log(self.binafter) / np.log(10),
-                np.log(len(self.results["susc"])) / np.log(10),
+                np.log(len(self.results.susc)) / np.log(10),
                 self.bins - self.binafter + 1).astype(int)
             bins = np.unique(np.append(np.arange(self.binafter), bins))[:-1]
 
-            self.results["nu_binned"] = Bin(self.results["nu"], bins)
-            self.results["susc_binned"] = Bin(self.results["susc"], bins)
-            self.results["dsusc_binned"] = Bin(self.results["dsusc"], bins)
+            self.results.nu_binned = Bin(self.results.nu, bins)
+            self.results.susc_binned = Bin(self.results.susc, bins)
+            self.results.dsusc_binned = Bin(self.results.dsusc, bins)
 
             if self._verbose:
                 print('Binning data above datapoint {0} in log-spaced bins'.
                       format(self.binafter))
                 print('Binned data consists of {0} datapoints'.format(
-                    len(self.results["susc"])))
+                    len(self.results.susc)))
         elif self._verbose:
             # data is binned
             print('Not binning data: there are {0} datapoints'.format(
-                len(self.results["susc"])))
+                len(self.results.susc)))
 
     def _save_results(self):
-        np.save(self.output_prefix + 'tseries.npy', self.results["t"])
+        np.save(self.output_prefix + 'tseries.npy', self.results.t)
 
         with open(self.output_prefix + 'V.txt', "w") as Vfile:
-            Vfile.write(str(self.results["V"]))
+            Vfile.write(str(self.results.V))
 
-        np.save(self.output_prefix + 'P_tseries.npy', self.results["P"])
+        np.save(self.output_prefix + 'P_tseries.npy', self.results.P)
 
         suscfilename = "{}{}".format(self.output_prefix, 'susc')
         savetxt(
             suscfilename,
             np.transpose([
-                self.results["nu"], self.results["susc"].real,
-                self.results["dsusc"].real, self.results["susc"].imag,
-                self.results["dsusc"].imag
+                self.results.nu, self.results.susc.real,
+                self.results.dsusc.real, self.results.susc.imag,
+                self.results.dsusc.imag
             ]),
             delimiter='\t',
             header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
@@ -1007,11 +1022,11 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
             suscfilename = "{}{}".format(self.output_prefix, 'susc_binned')
             savetxt(suscfilename,
                     np.transpose([
-                        self.results["nu_binned"],
-                        self.results["susc_binned"].real,
-                        self.results["dsusc_binned"].real,
-                        self.results["susc_binned"].imag,
-                        self.results["dsusc_binned"].imag
+                        self.results.nu_binned,
+                        self.results.susc_binned.real,
+                        self.results.dsusc_binned.real,
+                        self.results.susc_binned.imag,
+                        self.results.dsusc_binned.imag
                     ]),
                     delimiter='\t',
                     header="freq\tsusc\'\tstd_dev_susc\'\t-"
@@ -1050,8 +1065,8 @@ class dielectric_spectrum(SingleGroupAnalysisBase):
                 fig, ax = plt.subplots(1, figsize=[width, width / np.sqrt(2)])
                 ax.set_ylabel(r'$\chi$')
                 ax.set_xlabel('$\\nu$ [THz]')
-                ax.set_xlim(self.results["nu"][1] / nuBuf,
-                            self.results["nu"][-1] * nuBuf)
+                ax.set_xlim(self.results.nu[1] / nuBuf,
+                            self.results.nu[-1] * nuBuf)
                 ax.set_xscale('log')
                 ax.set_yscale(yscale)
 

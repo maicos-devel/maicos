@@ -37,7 +37,7 @@ class _AnalysisBase(base.AnalysisBase):
         self._trajectory = trajectory
         self._verbose = verbose
         self._save = save
-        self.results = {}
+        self.results = base.Results()
 
     def _setup_frames(self, trajectory, begin=0, end=None, dt=0):
         """
