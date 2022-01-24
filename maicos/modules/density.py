@@ -178,7 +178,7 @@ The system consists of a 2D slab with 352 water molecules in vacuum,
 where the two water/vacuum interfaces are normal to the axis :math:`z`:
 
 
-.. image:: ../images/airwater.png
+.. image:: ../../images/airwater.png
    :width: 600
 
 Create a universe using MDAnalysis and define a group containing 
@@ -214,7 +214,7 @@ and the axis is :math:`z`. Plot it using
     plt.ylabel("density H2O [kg/m3]")
     plt.show()
     
-.. image:: ../images/density_planar.png
+.. image:: ../../images/density_planar.png
    :width: 600
 
 
@@ -551,7 +551,7 @@ The system consists of a carbon nanotube (CNT) with axis in the
 :math:`z`: direction, a radius of about 2 nm, a of length 2.2 nm, 
 and filled with 810 water molecules.
 
-.. image:: ../images/cntwater.png
+.. image:: ../../images/cntwater.png
     :width: 400
 
 Create a universe using MDAnalysis and define two groups, 
@@ -596,7 +596,7 @@ Plot it using PyPlot:
     plt.ylabel("density [kg/m3]")
     plt.show()
 	    
-.. image:: ../images/density_cylinder.png
+.. image:: ../../images/density_cylinder.png
     :width: 600    
    
 |
