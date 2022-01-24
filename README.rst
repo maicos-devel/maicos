@@ -1,8 +1,7 @@
-.. image:: https://gitlab.com/maicos-devel/maicos/-/raw/develop/docs/source/images/logo_MAICOS_small.png
-   :align: left
-   :alt: MAICoS
-
 .. inclusion-readme-intro-start
+
+MAICoS
+======
 
 **MAICoS** is the acronym for Molecular Analysis for Interfacial
 and Confined Systems. It is an object-oriented python toolkit for
