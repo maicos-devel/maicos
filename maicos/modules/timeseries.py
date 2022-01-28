@@ -15,19 +15,20 @@ from .base import SingleGroupAnalysisBase
 
 class dipole_angle(SingleGroupAnalysisBase):
     """Calculate angle timeseries of dipole moments with respect to an axis.
-    
-    The dipole angle function in the timeseries module computes the dipole moment of an MD simulation trajectory with respect to a reference axis. 
 
-    The program can be run from either a python environment or a command line interface.
-    As an example, we analyse a box of water molecules simulated for 100 picoseconds (ps) using an NVT ensemble. 
-    The length of the box was 5.45 nm containing around 5000 water molecules. 
-    The time step of simulation was 2 fs. 
-    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
-    LINCS algorithm was used to constraint the H-Bonds at a temperature of 300K. 
-    A pulsed and alternating electric field was applied along the x-axis in the form of a guassian laser pulse. 
-    Please check `gromacs electric field`_ for more details. 
+    The dipole angle function in the timeseries module computes the dipole
+    moment of a MD simulation trajectory with respect to a reference axis.
 
-    The simulation directory can be downloaded from the repository (shown below) which contains ``mdelectric.tpr`` and ``mdelectric.trr``
+    As an example, we analyse a box of water molecules containing around 5000
+    water molecules and simulated for 100 picoseconds (ps) in the NVT ensemble
+    with a timestep of 2 fs. Periodic boundary conditions were employed in all
+    directions and long range electrostatics were modelled using the PME method.
+    LINCS algorithm was used to constraint the H-Bonds at a temperature of 300K.
+    A pulsed and alternating electric field was applied along the x-axis in the
+    form of a Gaussian laser pulse. Please check `gromacs electric field`_ for more details.
+
+    To follow this tutorial, go to the directory
+    which contains ``mdelectric.tpr`` and ``mdelectric.trr``:
 
     .. code-block:: bash
 
@@ -35,7 +36,7 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     **From the python interpreter**
 
-    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
+    First import `MDAnalysis`_, `matplotlib`_ and MAICoS packages:
 
     .. code-block:: python3
 
@@ -43,14 +44,14 @@ class dipole_angle(SingleGroupAnalysisBase):
         import matplotlib.pyplot as plt
         import maicos
 
-    Then create an MD Analysis Universe. 
+    Then create a MDAnalysis Universe, and extract its number of atoms:
 
     .. code-block:: python3
 
         u = mda.Universe("mdelectric.tpr","mdelectric.trr")
         at = u.atoms
 
-    Now run the MAICOS dipole angle function.
+    Now run the MAICOS dipole angle function:
 
     .. code-block:: python3
 
@@ -58,8 +59,9 @@ class dipole_angle(SingleGroupAnalysisBase):
         dipangle.run()
 
     The option ``dim = 0`` specifies the reference vector  ``x-axis``.
-    The run produces a `python dictionary` named ``dipangle.results`` with `4 keys` linked to `numpy arrays` as `values`. 
-    They are timestep, cosine of dipole and x-axis, cosine squared, product of cosine of dipoles i and j (i!=j)
+    The run produces a ``python dictionary`` named ``dipangle.results``
+    with ``4 keys`` linked to ``numpy arrays`` as ``values``: timestep, cosine
+    of dipole and x-axis, cosine squared, product of cosine of dipoles i and j (i!=j)
 
     The results can be visualized as follows:
 
@@ -73,10 +75,9 @@ class dipole_angle(SingleGroupAnalysisBase):
 
     The figure generated :
 
-       .. image:: ../images/dipangle.png
+       .. image:: ../../images/dipangle.png
         :width: 600
 
-    MAICOS can also be accessed through command line interface.
 
     **From the command line interface**
 
@@ -84,13 +85,13 @@ class dipole_angle(SingleGroupAnalysisBase):
 
         maicos dipole_angle -s md.tpr -f md.trr -d 0
 
-    The output file ``dipangle.dat`` is similar to `dipangle.results` and contains the data in columns. 
+    The output file ``dipangle.dat`` is similar to ``dipangle.results`` and contains the data in columns.
 
-    They are several options you can play with. To know the full 
-    list of options, have a look at the ``Inputs`` section below. 
+    They are several options you can play with. To know the full
+    list of options, have a look at the ``Inputs`` section below.
 
-    .. _`MD Analysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/ 
+    .. _`MDAnalysis`: https://www.mdanalysis.org/
+    .. _`matplotlib`: https://matplotlib.org/
     .. _`gromacs electric field`: https://manual.gromacs.org/2019-current/reference-manual/special/electric-fields.html#fig-field
 
 
@@ -106,7 +107,7 @@ class dipole_angle(SingleGroupAnalysisBase):
     :returns results.cos_theta_i (numpy.ndarray): Average cos between dipole and axis
     :returns results.cos_theta_ii (numpy.ndarray): Average cos^2 of the same between dipole and axis
     :returns results.cos_theta_ij (numpy.ndarray): Product cos of dipole i and cos of dipole j (i!=j)
-    
+
     """
 
     def __init__(self,
@@ -186,16 +187,18 @@ class dipole_angle(SingleGroupAnalysisBase):
 class kinetic_energy(SingleGroupAnalysisBase):
     """Computes the timeseries of energies.
 
-    The kinetic energy function computes the translational and rotational Kinetic Energy for the molecular center of an MD simulation trajectory.
+    The kinetic energy function computes the translational and rotational kinetic
+    energy with respect to molecular center (center of mass, center of charge)
+    of an MD simulation trajectory.
 
-    The program can be run from either a python environment or a command line interface.
-    As an example, we analyse a simulation of box of water molecules in an NVE ensemble. 
-    The length of the box was 2.5 nm containing around 500 water molecules. 
-    The time step of simulation was 4 fs and it was 200 ps long. 
-    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
+    As an example, we analyse a box of water molecules containing around 500
+    water molecules and simulated for 200 ps in the NVE ensemble
+    with a timestep of 4 fs. Periodic boundary conditions were employed in
+    all directions and long range electrostatics were modelled using the PME method.
     LINCS algorithm was used to constraint the H-Bonds.
 
-    The simulation directory can be downloaded from the repository (shown below) which contains ``nve.tpr`` and ``nve.trr``
+    To follow this tutorial, go to the directory
+    which contains ``nve.tpr`` and ``nve.trr``:
 
     .. code-block:: bash
 
@@ -203,7 +206,7 @@ class kinetic_energy(SingleGroupAnalysisBase):
 
     **From the python interpreter**
 
-    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
+    First, import `MDAnalysis`_, `matplotlib`_ and MAICoS packages:
 
     .. code-block:: python3
 
@@ -211,22 +214,23 @@ class kinetic_energy(SingleGroupAnalysisBase):
         import matplotlib.pyplot as plt
         import maicos
 
-    Then create an MD Analysis Universe. 
+    Then, create an MDAnalysis universe:
 
     .. code-block:: python3
 
         u = mda.Universe("nve.tpr","nve.trr")
         at = u.atoms
 
-    Now run the MAICOS dipole angle function.
+    Now, run the MAICOS dipole angle function:
 
     .. code-block:: python3
 
         ke = maicos.dipole_angle(at)
         ke.run()
 
-    The run produces a `python dictionary` named ``ke.results`` with `3 keys` linked to `numpy arrays` as `values`. 
-    They are timestep, translational KE, and rotational KE.
+    The run produces a ``python dictionary`` named ``ke.results`` with ``3 keys``
+    linked to ``numpy arrays`` as ``values``: timestep, translational KE,
+    and rotational KE.
 
     The results can be visualized as follows:
 
@@ -240,10 +244,8 @@ class kinetic_energy(SingleGroupAnalysisBase):
 
     The figure generated :
 
-       .. image:: ../images/ket.png
+       .. image:: ../../images/ket.png
             :width: 600
-
-    MAICOS can also be accessed through command line interface.
 
     **From the command line interface**
 
@@ -251,14 +253,14 @@ class kinetic_energy(SingleGroupAnalysisBase):
 
         maicos kinetic_energy -s md.tpr -f md.trr -o ke.dat
 
-    The output file ``ke.dat`` is similar to `ke.results` and contains the data in columns. 
+    The output file ``ke.dat`` is similar to ``ke.results`` and contains the data in columns.
 
-    They are several options you can play with. To know the full 
-    list of options, have a look at the ``Inputs`` section below. 
+    They are several options you can play with. To know the full
+    list of options, have a look at the ``Inputs`` section.
 
 
-    .. _`MD Analysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/ 
+    .. _`MDAnalysis`: https://www.mdanalysis.org/
+    .. _`matplotlib`: https://matplotlib.org/
 
 
     **Inputs**

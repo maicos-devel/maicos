@@ -1,3 +1,6 @@
+MAICoS
+======
+
 .. image:: images/logo_MAICOS_square.png
    :align: right
    :width: 100
