@@ -146,7 +146,7 @@ if __name__ == "__main__":
                                   "caused by a missing Cython install, or a "
                                   "failed/disabled Cython build.".format(source))
 
-    with open("pypi/README.rst") as summary:
+    with open("README.rst") as summary:
         LONG_DESCRIPTION = summary.read()
 
     setup(name='maicos',
@@ -158,7 +158,7 @@ if __name__ == "__main__":
           author="Philip Loche et. al.",
           author_email="ploche@physik.fu-berlin.de",
           long_description=LONG_DESCRIPTION,
-          long_description_content_type='text/markdown',
+          long_description_content_type='text/x-rst',
           maintainer="Philip Loche",
           maintainer_email="ploche@physik.fu-berlin.de",
           include_package_data=True,
