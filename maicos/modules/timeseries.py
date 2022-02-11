@@ -342,7 +342,7 @@ class KineticEnergy(AnalysisBase):
         self.E_center[self._frame_index] = np.dot(self.masses,
                                                   np.linalg.norm(v, axis=1)**2)
 
-    def _calculate_results(self):
+    def _conclude(self):
         self.results.t= self.times
         self.results.trans = self.E_center / 2 / 100
         self.results.rot = (self.E_kin - self.E_center) / 2 / 100

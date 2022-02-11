@@ -14,7 +14,7 @@ from maicos import DipoleAngle, KineticEnergy
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from datafiles import WATER_TPR, WATER_TRR
+from datafiles import WATER_TPR, WATER_TRR, NVE_WATER_TPR, NVE_WATER_TRR
 
 class TestDipoleAngle(object):
 
@@ -33,8 +33,13 @@ class TestKineticEnergy(object):
 
     @pytest.fixture()
     def ag(self):
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(NVE_WATER_TPR, NVE_WATER_TRR)
         return u.atoms
 
-    def test_KineticEnergy(self, ag):
-        KineticEnergy(ag).run()
+    def test_ke_trans(self, ag):
+        ke = KineticEnergy(ag).run()
+        assert_almost_equal(np.mean(ke.results.trans), 2156, decimal=0)
+
+    def test_ke_rot(self, ag):
+        ke = KineticEnergy(ag).run()
+        assert_almost_equal(np.mean(ke.results.rot), 2193, decimal=0)
