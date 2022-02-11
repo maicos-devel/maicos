@@ -14,11 +14,12 @@ stages:
   script:
     - pip3 install --upgrade pip setuptools wheel
     - python setup.py build_ext --inplace
-    - pip3 install sphinx sphinx-press-theme
+    - pip3 install sphinx sphinx-press-theme coverage
     - sphinx-build -b html docs/source public
     - pip3 install .
     - cd tests
-    - pytest --disable-pytest-warnings .
+    - coverage run --branch -m pytest --disable-pytest-warnings .
+    - coverage report -m --show-missing
 
 test-3.6:
   extends: .test
@@ -39,7 +40,6 @@ test-3.9:
   extends: .test
   image: python:3.9
   stage: test
-
 
 deploy:
   image: python:3.9
