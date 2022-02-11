@@ -20,11 +20,6 @@ stages:
     - cd tests
     - pytest --disable-pytest-warnings .
 
-test-3.6:
-  extends: .test
-  image: python:3.6
-  stage: test
-
 test-3.7:
   extends: .test
   image: python:3.7

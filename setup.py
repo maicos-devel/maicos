@@ -16,7 +16,9 @@ import sys
 import shutil
 import tempfile
 
-VERSION = "0.5-dev"  # NOTE: keep in sync with __version__ in maicos.__init__.py
+# NOTE: keep in sync with __version__ in maicos.__init__.py
+# NOTE: keep in sync with version in docs/source/conf.py
+VERSION = "0.5-dev"
 is_release = 'dev' not in VERSION
 
 # Handle cython modules
@@ -163,7 +165,7 @@ if __name__ == "__main__":
           maintainer_email="ploche@physik.fu-berlin.de",
           include_package_data=True,
           ext_modules=extensions,
-          python_requires='>=3.6',
+          python_requires='>=3.7',
           setup_requires=[
               'numpy>=1.16.0',
           ],
@@ -172,11 +174,11 @@ if __name__ == "__main__":
               'MDAnalysis>=2.0.0',
               'matplotlib>=2.0.0',
               'scipy>=1.0.0',
-              'threadpoolctl>=1.1.0',
+              'mdacli>=0.1.12',
           ],
 
           entry_points={
-              'console_scripts': ['maicos = maicos.__main__:entry_point'],
+              'console_scripts': ['maicos = maicos.__main__:main'],
           },
           keywords=[
               'Science',
@@ -201,7 +203,6 @@ if __name__ == "__main__":
               'Operating System :: Microsoft :: Windows ',
               'Programming Language :: Python',
               'Programming Language :: Python :: 3',
-              'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
               'Programming Language :: Python :: 3.8',
               'Programming Language :: Python :: 3.9',

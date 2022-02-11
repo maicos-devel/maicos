@@ -2,9 +2,9 @@ cython
 numpy
 MDAnalysis
 MDAnalysisTests
+mdacli
 matplotlib
 scipy
 pytest
-threadpoolctl
 sphinx
 sphinx-press-theme
