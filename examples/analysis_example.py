@@ -1,43 +1,47 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2021 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Mandatory imports
+import logging
 import numpy as np
 
-from maicos.modules.base import SingleGroupAnalysisBase
+from maicos.modules.base import AnalysisBase
 from maicos.utils import savetxt
 
+logger = logging.getLogger(__name__)
 
-class analysis_example(SingleGroupAnalysisBase):
-    """Description for my awesome single group analysis script.
+class AnalysisExample(AnalysisBase):
+    """Analysis script calcuting the average box volume.
 
-       **Inputs**
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    output : str
+        Output filename
+    temperature : str
+        Reference temperature (K)
 
-       :param output (str): Output filename
-       :param temperature (str): Reference temperature (K)
-
-       **Outputs**
-
-       :returns (dict): * volume: averaged box volume (Å³)
+    Attributes
+    ----------
+    results.volume: float
+        averaged box volume (Å³)
     """
-
-    def __init__(self, atomgroup, temperature=300, output="outfile.dat", **kwargs):
+    def __init__(self,
+                 atomgroup,
+                 temperature=300,
+                 output="outfile.dat",
+                 **kwargs):
         super().__init__(atomgroup, **kwargs)
 
         self.temperature = temperature
         self.output = output
-
-    def _configure_parser(self, parser):
-        # Custom arguments
-        # To generate the CLI help `dest` MUST be the same as the name in the docstring
-        parser.add_argument('-o', dest='output')
-        parser.add_argument('-temp', dest='temperature')
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
@@ -55,30 +59,21 @@ class analysis_example(SingleGroupAnalysisBase):
 
         self.volume += self._ts.volume
 
-    def _calculate_results(self):
-        """Calculate the results.
-
-        Called at the end of the run() method to before the _conclude function.
-        Can also called during a run to update the results during processing."""
-
-        self.results["volume"] = self.volume / self.n_frames
-
     def _conclude(self):
         """Finalise the results you've gathered.
 
-        Called at the end of the run() method after _calculate_results
-        to finish everything up."""
-        if self._verbose:
-            print("Average volume of the simulation box {:.2f} Å³".format(
-                self.results["volume"]))
+        Called at the end of the run() method to finish everything up.
+        """
+        self.results.volume = self.volume / self.n_frames
+        logger.info("Average volume of the simulation box "
+                    f"{self.results.volume:.2f} Å³")
 
-    def _save_results(self):
-        """Saves results to a file.
+    def save(self):
+        """Save results to a file.
 
-        Called at the end of the run() method after _calculate_results and
-        _conclude"""
-
+        Called at the end of the run() method after _conclude.
+        """
         savetxt(self.output,
-                np.array([self.results["volume"]]),
+                np.array([self.results.volume]),
                 fmt='%1.2f',
                 header='volume / Å³')

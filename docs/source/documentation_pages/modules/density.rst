@@ -9,7 +9,7 @@ Density modules
 Density planar
 ==============
 
-.. automodule:: maicos.modules.density.density_planar
+.. automodule:: maicos.modules.density.DensityPlanar
     :members:
     :undoc-members:
     :show-inheritance:
@@ -17,7 +17,7 @@ Density planar
 Density cylinder
 ================
 
-.. automodule:: maicos.modules.density.density_cylinder
+.. automodule:: maicos.modules.density.DensityCylinder
     :members:
     :undoc-members:
     :show-inheritance:

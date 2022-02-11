@@ -14,7 +14,7 @@ sfactor.c
 /build
 /dist
 docs/source/_build
-public
+/public
 
 # Ignore the .DS_Store file in the osx file system
 *.DS_store
@@ -24,6 +24,7 @@ public
 
 # ignore files from tests
 .hypothesis/
+.pytest_cache/
 
 # Allow maicos share text files
 !maicos/share/*.dat
