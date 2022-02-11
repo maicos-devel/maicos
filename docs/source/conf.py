@@ -23,9 +23,11 @@ copyright = 'All source code is available under the GNU General Public License v
 author = 'See the file AUTHORS for the full list of names.'
 
 # The short X.Y version
-version = '0.4'
+# NOTE: keep in sync with VERSION in setup.py
+# NOTE: keep in sync with __version__ in maicos.__init__.py
+version = '0.5'
 # The full version, including alpha/beta/rc tags
-release = '0.4'
+release = version + "-dev"
 
 
 # -- General configuration ---------------------------------------------------

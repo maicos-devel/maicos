@@ -8,7 +8,7 @@ Velocity
 Description
 ***********
 
-.. automodule:: maicos.modules.transport.velocity
+.. automodule:: maicos.modules.transport.Velocity
     :members:
     :undoc-members:
     :show-inheritance:

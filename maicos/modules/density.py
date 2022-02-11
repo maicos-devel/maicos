@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
+# Copyright (c) 2022 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 r"""
 
-The density modules of MAICoS are tools for computing density, 
-temperature, and chemical potential profiles from molecular 
-simulation trajectory files. Profiles can be extracted either 
-in Cartesian or cylindrical coordinate systems. Units for the density 
-are the same as GROMACS, i.e. mass, number, charge, and electron. 
+The density modules of MAICoS are tools for computing density,
+temperature, and chemical potential profiles from molecular
+simulation trajectory files. Profiles can be extracted either
+in Cartesian or cylindrical coordinate systems. Units for the density
+are the same as GROMACS, i.e. mass, number or charge.
 See the `gmx density`_ manual for details.
 
 **From the command line**
 
-You can extract a density profile from your molecular dynamics 
-trajectories directly from the terminal. For this example, we use 
+You can extract a density profile from your molecular dynamics
+trajectories directly from the terminal. For this example, we use
 the ``airwater`` data file of MAICoS. First, go to the directory
 
 .. code-block:: bash
@@ -29,20 +29,20 @@ then type:
 
 .. code-block:: bash
 
-    maicos density_planar -s conf.gro -traj traj.trr
+    maicos densityplanar -s conf.gro -traj traj.trr
 
-Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and 
-trajectory files, respectively. The density profile appears in 
-a ``.dat`` file. You can visualise all the options of the module 
-``density_planar`` by typing
+Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and
+trajectory files, respectively. The density profile appears in
+a ``.dat`` file. You can visualise all the options of the module
+``DensityPlanar`` by typing
 
 .. code-block:: bash
 
-    maicos density_planar -h
+    maicos densityplanar -h
 
 **From the Python interpreter**
 
-In order to calculate the density using MAICoS in a Python environment, 
+In order to calculate the density using MAICoS in a Python environment,
 first import MAICoS and MDAnalysis:
 
 .. code-block:: python3
@@ -57,32 +57,31 @@ Then create a MDAnalysis universe:
 	u = mda.Universe('conf.gro', 'traj.trr')
 	grpH2O = u.select_atoms('type O or type H')
 
-And run MAICoS' density_planar module:
-	
+And run MAICoS' DensityPlanar module:
+
 .. code-block:: python3
 
-	dplan = maicos.density_planar(grpH2O)
-	dplan.run()   	
+	dplan = maicos.DensityPlanar(grpH2O)
+	dplan.run()
 
-Results can be accessed from ``dplan.results``. More details are 
-given in the :ref:`tutorial <label_tutorial_density_planar>` below. 
+Results can be accessed from ``dplan.results``. More details are
+given in the :ref:`tutorial <label_tutorial_DensityPlanar>` below.
 
 .. _`gmx density`: https://manual.gromacs.org/archive/5.0.7/programs/gmx-density.html
-
-|
 """
-
+import logging
 import warnings
 
 import numpy as np
 from scipy import constants
 
-from .base import MultiGroupAnalysisBase
+from .base import AnalysisBase, PlanarBase
 from ..utils import savetxt, atomgroup_header
-from ..decorators import planar_base
+from ..decorators import set_verbose_doc, set_planar_class_doc
 
 from MDAnalysis.exceptions import NoDataError
 
+logger = logging.getLogger(__name__)
 
 def mu(rho, temperature, m):
     """Returns the chemical potential calculated from the density: mu = k_B T log(rho. / m)"""
@@ -133,165 +132,174 @@ def weight(selection, dens):
     elif dens == "charge":
         return selection.atoms.charges
     elif dens == "temp":
-        # ((1 amu * Angstrom^2) / (picoseconds^2)) / Boltzmann constant
+        # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
         prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
         return ((selection.atoms.velocities ** 2).sum(axis=1) *
                 selection.atoms.masses / 2 * prefac)
     else:
-        raise ValueError(
-            "`{}` not supported. Use `mass`, `number`, `charge` or `temp`".
-                format(dens))
+        raise ValueError(f"`{dens}` not supported. "
+                          "Use `mass`, `number`, `charge` or `temp`.")
+
+@set_verbose_doc
+@set_planar_class_doc
+class DensityPlanar(PlanarBase):
+    """Compute partial densities/temperature profiles in the cartesian systems.
+
+    Parameters
+    ----------
+    atomgroups : list[AtomGroup]
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the densities are calculated
+    dens : str
+        Density: mass, number, charge, temperature.
+    ${PLANAR_CLASS_PARAMETERS}
+    mu : bool
+        Calculate the chemical potential (requires dens='number')
+    muout : str
+        Prefix for output filename for chemical potential
+    temperature : float
+        temperature (K) for chemical potential
+    mass : float
+        Mass (u) for the chemical potential. By default taken from topology.
+    zpos : float
+        position (nm) at which the chemical potential will be computed.
+        By default average over box.
+    output : str
+        Output filename
+    concfreq : int
+        Default number of frames after which results are calculated and files refreshed.
+        If `0` results are only calculated at the end of the analysis and not
+        saved by default.
+    ${VERBOSE_PARAMETER}
+
+    Attributes
+    ----------
+    ${PLANAR_CLASS_ATTRIBUTES}
+    results.dens_mean : np.ndarray
+        calculated densities
+    results.dens_std : np.ndarray
+        density standard deviation
+    results.dens_err : np.ndarray
+        density error
+    results.mu : float
+        chemical potential (only if `mu=True`)
+    results.dmu : float
+        error of chemical potential (only if `mu=True`)
+
+    Tutorial
+    --------
+    .. _label_tutorial_DensityPlanar:
+
+    To follow this tutorial, the data test files of MAICoS are needed.
+    From a terminal, download MAICoS at a location of your choice:
+
+    .. code-block:: bash
+
+        cd mypath
+        git clone git@gitlab.com:maicos-devel/maicos.git
+
+    In a python environment, import MDAnalysis, MAICoS, PyPlot, and NumPy:
+
+    .. code-block:: python3
+
+        import MDAnalysis as mda
+        import maicos
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+    Define the path to the ``airwater`` data folder of MAICoS:
+
+    .. code-block:: python3
+
+        datapath = 'mypath/maicos/tests/data/airwater/'
+
+    The system consists of a 2D slab with 352 water molecules in vacuum,
+    where the two water/vacuum interfaces are normal to the axis :math:`z`:
 
 
-@planar_base()
-class density_planar(MultiGroupAnalysisBase):
-    """Compute partial densities/temperature profiles in the Cartesian systems.
+    .. image:: ../../images/airwater.png
+    :width: 600
 
-**Tutorial**
+    Create a universe using MDAnalysis and define a group containing
+    the oxygen and the hydrogen atoms of the water molecules:
 
-.. _label_tutorial_density_planar:
+    .. code-block:: python3
 
-To follow this tutorial, the data test files of MAICoS are needed. 
-From a terminal, download MAICoS at a location of your choice:
+        u = mda.Universe(datapath+'conf.gro', datapath+'traj.trr')
+        grpH2O = u.select_atoms('type O or type H')
 
-.. code-block:: bash
+    Let us call the ``DensityPlanar`` class:
 
-    cd mypath
-    git clone git@gitlab.com:maicos-devel/maicos.git
+    .. code-block:: python3
 
-In a python environment, import MDAnalysis, MAICoS, PyPlot, and NumPy:
+        dplan = maicos.DensityPlanar(grpH2O)
+        dplan.run()
 
-.. code-block:: python3
+    Extract the coordinate and the density profile:
 
-    import MDAnalysis as mda
-    import maicos
-    import matplotlib.pyplot as plt
-    import numpy as np
-    
-Define the path to the ``airwater`` data folder of MAICoS:
+    .. code-block:: python3
 
-.. code-block:: python3
+        zcoor = dplan.results['z']
+        dens = dplan.results['dens_mean']
 
-    datapath = 'mypath/maicos/tests/data/airwater/'
-    
-The system consists of a 2D slab with 352 water molecules in vacuum, 
-where the two water/vacuum interfaces are normal to the axis :math:`z`:
+    By default the binwidth is 0.1 nanometers, the units are kg/m3,
+    and the axis is :math:`z`. Plot it using
 
+    .. code-block:: python3
 
-.. image:: ../../images/airwater.png
-   :width: 600
+        fig = plt.figure(figsize = (12,6))
+        plt.plot(zcoor,dens,linewidth=2)
+        plt.xlabel("z coordinate [nanometer]")
+        plt.ylabel("density H2O [kg/m3]")
+        plt.show()
 
-Create a universe using MDAnalysis and define a group containing 
-the oxygen and the hydrogen atoms of the water molecules:
-
-.. code-block:: python3
-
-    u = mda.Universe(datapath+'conf.gro', datapath+'traj.trr')
-    grpH2O = u.select_atoms('type O or type H')
-
-Let us call the ``density_planar`` module:
-
-.. code-block:: python3
-
-    dplan = maicos.density_planar(grpH2O)
-    dplan.run()   
-
-Extract the coordinate and the density profile:
-
-.. code-block:: python3
-
-    zcoor = dplan.results['z']
-    dens = dplan.results['dens_mean']
-
-By default the binwidth is 0.1 nanometers, the units are kg/m3, 
-and the axis is :math:`z`. Plot it using 
-
-.. code-block:: python3
-
-    fig = plt.figure(figsize = (12,6))
-    plt.plot(zcoor,dens,linewidth=2)
-    plt.xlabel("z coordinate [nanometer]")
-    plt.ylabel("density H2O [kg/m3]")
-    plt.show()
-    
-.. image:: ../../images/density_planar.png
-   :width: 600
+    .. image:: ../../images/DensityPlanar.png
+    :width: 600
 
 
-They are several options you can play with. To know the full 
-list of options, have a look at the ``Inputs`` section below. 
-For instance, you can increase the spacial resolution 
-by reducing the binwidth:
+    They are several options you can play with. To know the full
+    list of options, have a look at the ``Inputs`` section below.
+    For instance, you can increase the spacial resolution
+    by reducing the binwidth:
 
-.. code-block:: python3 
+    .. code-block:: python3
 
-    dplan = maicos.density_planar(grp_oxy, binwidth = 0.05) 
-    
-**Inputs**
- 
-:param output (str): Output filename
-:param outfreq (int): Default time after which output files are refreshed (1000 ps).
-:param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
-:param binwidth (float): binwidth (nanometer)
-:param mu (bool): Calculate the chemical potential (sets dens='number')
-:param muout (str): Prefix for output filename for chemical potential
-:param temperature (float): temperature (K) for chemical potential (Default: 300K)
-:param mass (float): Mass (u) for the chemical potential. By default taken from topology.
-:param zpos (float): position (nm) at which the chemical potential will be computed. By default average over box.
-:param dens (str): Density: mass, number, charge, temperature. (Default: mass)
-:param comgroup (str): Perform the binning relative to the center of mass of the selected group.
-:param center (bool): Perform the binning relative to the center of the (changing) box.
-
-**Attributes**
-
-:returns results.z (numpy.ndarray): density position
-:returns results.dens_mean (numpy.ndarray): calculated density
-:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
-:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
-:returns results.dens_std (numpy.ndarray): density standard deviation
-:returns results.dens_err (numpy.ndarray): density error
-:returns results.mu (float): chemical potential (only if `mu=True`)
-:returns results.dmu (float): error of chemical potential (only if `mu=True`)
-
-"""
+        dplan = maicos.DensityPlanar(grp_oxy, binwidth = 0.05)
+    """
 
     def __init__(self,
                  atomgroups,
-                 output="density.dat",
-                 outfreq=1000,
+                 dens="mass",
+                 dim=2,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
                  mu=False,
                  muout="muout.dat",
                  temperature=300,
                  mass=None,
                  zpos=None,
-                 dens=None,
-                 # Planar base arguments are necessary for building CLI
-                 dim=2,
-                 binwidth=0.1,
-                 center=False,
-                 comgroup=None,
+                 output="density.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroups, **kwargs)
-        self.output = output
-        self.outfreq = outfreq
+        super(DensityPlanar, self).__init__(atomgroups=atomgroups,
+                                            dim=dim,
+                                            binwidth=binwidth,
+                                            center=center,
+                                            comgroup=comgroup,
+                                            multi_group=True,
+                                            **kwargs)
+        self.dens = dens
         self.mu = mu
         self.muout = muout
         self.temperature = temperature
         self.mass = mass
         self.zpos = zpos
-        self.dens = dens
-
-    def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
-        parser.add_argument('-dout', dest='outfreq')
-        parser.add_argument('-mu', dest='mu')
-        parser.add_argument('-muo', dest='muout')
-        parser.add_argument('-temp', dest='temperature')
-        parser.add_argument('-mass', dest='mass')
-        parser.add_argument('-zpos', dest='zpos')
-        parser.add_argument('-dens', dest='dens')
+        self.output = output
+        self.concfreq = concfreq
 
     def _prepare(self):
+        super(DensityPlanar, self)._prepare()
         if self.dens is None and self.mu:
             with warnings.catch_warnings():
                 warnings.simplefilter('always')
@@ -305,16 +313,16 @@ by reducing the binwidth:
             self.dens = "mass"
 
         if self.dens not in ["mass", "number", "charge", "temp"]:
-            raise ValueError(
-                "Invalid choice for dens: '{}' (choose from 'mass', "
-                "'number', 'charge', 'temp')".format(self.dens))
-        if self._verbose:
-            if self.dens == 'temp':
-                print('Computing temperature profile along {}-axes.'.format(
-                    'XYZ'[self.dim]))
-            else:
-                print('Computing {} density profile along {}-axes.'.format(
-                    self.dens, 'XYZ'[self.dim]))
+            raise ValueError(f"Invalid choice for dens: {self.dens}"
+                             "(choose from 'mass', 'number', "
+                             "'charge', 'temp')")
+        if self.dens == 'temp':
+            profile_str = "temperature"
+        else:
+            profile_str = f"{self.dens} density"
+
+        logger.info(f"Computing {profile_str} profile "
+                    f"along {'XYZ'[self.dim]}-axes.")
 
         self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
         self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
@@ -324,10 +332,10 @@ by reducing the binwidth:
                 try:
                     self.atomgroups[0].universe.atoms.masses
                 except NoDataError:
-                    raise ValueError(
-                        "Calculation of the chemical potential is only possible"
-                        " when masses are present in the topology or masses are"
-                        "supplied by the user.")
+                    raise ValueError("Calculation of the chemical potential "
+                                     "is only possible when masses are "
+                                     "present in the topology or masses are "
+                                     "supplied by the user.")
                 get_mass_from_topol = True
                 self.mass = np.array([])
             else:
@@ -379,6 +387,7 @@ by reducing the binwidth:
                     self.mass = np.append(self.mass, np.sum(mass))
 
     def _single_frame(self):
+        super(DensityPlanar, self)._single_frame()
         curV = self._ts.volume / 1000
 
         for index, selection in enumerate(self.atomgroups):
@@ -396,11 +405,13 @@ by reducing the binwidth:
                 self.density_mean_sq[:, index] += (density_ts / curV *
                                                    self.n_bins) ** 2
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
+        super(DensityPlanar, self)._conclude()
         self._index = self._frame_index + 1
 
         self.results.dens_mean = self.density_mean / self._index
@@ -438,8 +449,8 @@ by reducing the binwidth:
                         self.results.dens_err,
                         self.temperature), axis=0)
 
-    def _save_results(self):
-        # write header
+    def save(self):
+        """Save results of analysis to file."""
         if self.dens == "mass":
             units = "kg m^(-3)"
         elif self.dens == "number":
@@ -450,11 +461,11 @@ by reducing the binwidth:
             units = "K"
 
         if self.dens == 'temp':
-            columns = "temperature profile [{}]".format(units)
+            columns = f"temperature profile [{units}]"
         else:
-            columns = "{} density profile [{}]".format(self.dens, units)
-        columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
-            self._index * self._universe.trajectory.dt)
+            columns = f"{self.dens} density profile [{units}]"
+        columns += f"\nstatistics over {self._index * self._trajectory.dt:.1f}"
+        columns += " ps \npositions [nm]"
         try:
             for group in self.atomgroups:
                 columns += "\t" + atomgroup_header(group)
@@ -475,12 +486,12 @@ by reducing the binwidth:
 
         if self.mu:
             if self.zpos is not None:
-                columns = "Chemical potential calculated at z = {} nm.".format(
-                    self.zpos/10)
+                columns = "Chemical potential calculated at "
+                columns += f"z = {self.zpos/10} nm."
             else:
                 columns = "Chemical potential averaged over the whole system."
-            columns += "\nstatistics over {:.1f} picoseconds \n".format(
-                self._index * self._universe.trajectory.dt)
+            columns += "\nstatistics over "
+            columns += "{self._index * self._trajectory.dt:.1f} ps\n"
             try:
                 for group in self.atomgroups:
                     columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
@@ -499,161 +510,167 @@ by reducing the binwidth:
                     header=columns)
 
 
-class density_cylinder(MultiGroupAnalysisBase):
+@set_verbose_doc
+class DensityCylinder(AnalysisBase):
     """Compute partial densities across a cylinder.
 
-**Inputs**
- 
-:param output (str): Output filename
-:param outfreq (int): Default time after which output files are refreshed (1000 ps).
-:param dim (int): Dimension for binning (0=X, 1=Y, 2=Z)
-:param center (str): Perform the binning relative to the center of this selection string of teh first AtomGroup.
-                     If None center of box is used.
-:param radius (float): Radius of the cylinder (nm). If None smallest box extension is taken.
-:param binwidth (float): binwidth (nanometer)
-:param length (float): Length of the cylinder (nm). If None length of box in the binning dimension is taken.
-:param dens (str): Density: mass, number, charge, temp
+    Parameters
+    ----------
+    atomgroups : list[AtomGroup]
+        A list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the densities are calculated
+    dens : str
+        Density: mass, number, charge, temp
+    dim : int
+        Dimension for binning (x=0, y=1, z=2)
+    center : str
+        Perform the binning relative to the center of this selection
+        string of teh first AtomGroup. If `None` center of box is used.
+    radius : float
+        Radius of the cylinder (nm). If None smallest box extension is taken.
+    length : float
+        Length of the cylinder (nm). If None length of box in the
+        binning dimension is taken.
+    binwidth : float
+        binwidth (nanometer)
+    output : str
+        Output filename
+    concfreq : int
+        Default number of frames after which results are calculated and files refreshed.
+        If `0` results are only calculated at the end of the analysis and not
+        saved by default.
+    ${VERBOSE_PARAMETER}
 
-**Attributes**
+    Attributes
+    ----------
+    results.r : np.ndarray
+        bins
+    results.dens_mean : np.ndarray
+        calculated densities
+    results.dens_mean_sq : np.ndarray
+        squared calculated density
+    results.dens_std : np.ndarray
+        density standard deviation
+    results.dens_err : np.ndarray
+        density error
 
-:returns results.z (numpy.ndarray): density position
-:returns results.dens_mean (numpy.ndarray): calculated density
-:returns results.dens_mean_sq (numpy.ndarray): squared calculated density
-:returns results.dens_std (numpy.ndarray): density standard deviation
-:returns results.dens_err (numpy.ndarray): density error
+    Tutorial
+    --------
+    To follow this tutorial, the data test files of MAICoS are needed.
+    From a terminal, download MAICoS at a location of your choice:
 
+    .. code-block:: bash
 
-**Tutorial**
+        cd mypath
+        git clone git@gitlab.com:maicos-devel/maicos.git
 
-To follow this tutorial, the data test files of MAICoS are needed. 
-From a terminal, download MAICoS at a location of your choice:
+    In a python environment, import MDAnalysis, MAICoS, and PyPlot:
 
-.. code-block:: bash
+    .. code-block:: python3
 
-    cd mypath
-    git clone git@gitlab.com:maicos-devel/maicos.git
+        import MDAnalysis as mda
+        import maicos
+        import matplotlib.pyplot as plt
 
-In a python environment, import MDAnalysis, MAICoS, and PyPlot:
+    Define the path to the ``cntwater`` data folder of MAICoS:
 
-.. code-block:: python3
+    .. code-block:: python3
 
-    import MDAnalysis as mda
-    import maicos
-    import matplotlib.pyplot as plt	    
+        datapath = 'mypath/maicos/tests/data/cntwater/'
 
-Define the path to the ``cntwater`` data folder of MAICoS:
+    The system consists of a carbon nanotube (CNT) with axis in the
+    :math:`z`: direction, a radius of about 2 nm, a of length 2.2 nm,
+    and filled with 810 water molecules.
 
-.. code-block:: python3
+    .. image:: ../../images/cntwater.png
+        :width: 400
 
-    datapath = 'mypath/maicos/tests/data/cntwater/'
-	    
-The system consists of a carbon nanotube (CNT) with axis in the 
-:math:`z`: direction, a radius of about 2 nm, a of length 2.2 nm, 
-and filled with 810 water molecules.
+    Create a universe using MDAnalysis and define two groups,
+    one containing the water molecules, one containing the
+    carbon atoms:
 
-.. image:: ../../images/cntwater.png
-    :width: 400
+    .. code-block:: python3
 
-Create a universe using MDAnalysis and define two groups, 
-one containing the water molecules, one containing the
-carbon atoms:
+        u = mda.Universe(datapath + 'lammps.data', datapath + 'traj.xtc')
+        grpH2O = u.select_atoms('type 1 or type 2')
+        grpCNT = u.select_atoms('type 3')
 
-.. code-block:: python3
+    Call the ``DensityCylinder`` module for the two groups:
 
-    u = mda.Universe(datapath + 'lammps.data', datapath + 'traj.xtc')
-    grpH2O = u.select_atoms('type 1 or type 2')
-    grpCNT = u.select_atoms('type 3')
+    .. code-block:: python3
 
-Call the ``density_cylinder`` module for the two groups:
+        dcylH2O = maicos.DensityCylinder(grpH2O, center='all', binwidth = 0.01)
+        dcylH2O.run()
+        dcylCNT = maicos.DensityCylinder(grpCNT, center='all', binwidth = 0.01)
+        dcylCNT.run()
 
-.. code-block:: python3
+    With the keyword ``center='all'``, the center of mass of all the atoms
+    of the group is used as the center of the density profile.
+    If not specified, the center of the box is used.
 
-    dcylH2O = maicos.density_cylinder(grpH2O, center='all', binwidth = 0.01)
-    dcylH2O.run()   
-    dcylCNT = maicos.density_cylinder(grpCNT, center='all', binwidth = 0.01)
-    dcylCNT.run() 
+    Finally, extract the coordinates and the density profiles:
 
-With the keyword ``center='all'``, the center of mass of all the atoms 
-of the group is used as the center of the density profile. 
-If not specified, the center of the box is used. 
+    .. code-block:: python3
 
-Finally, extract the coordinates and the density profiles:
+        rcoor = dcylH2O.results['r']
+        densH2O = dcylH2O.results['dens_mean']
+        densCNT = dcylCNT.results['dens_mean']
 
-.. code-block:: python3
+    Plot it using PyPlot:
 
-    rcoor = dcylH2O.results['r']
-    densH2O = dcylH2O.results['dens_mean']
-    densCNT = dcylCNT.results['dens_mean']
-    
-Plot it using PyPlot: 
+    .. code-block:: python3
 
-.. code-block:: python3
+        fig = plt.figure(figsize = (12,6))
+        plt.plot(rcoor,densH2O,linewidth=2)
+        plt.plot(rcoor,densCNT,linewidth=2)
+        plt.xlabel("r coordinate [nanometer]")
+        plt.ylabel("density [kg/m3]")
+        plt.show()
 
-    fig = plt.figure(figsize = (12,6))
-    plt.plot(rcoor,densH2O,linewidth=2)
-    plt.plot(rcoor,densCNT,linewidth=2)
-    plt.xlabel("r coordinate [nanometer]")
-    plt.ylabel("density [kg/m3]")
-    plt.show()
-	    
-.. image:: ../../images/density_cylinder.png
-    :width: 600    
-   
-|
+    .. image:: ../../images/DensityCylinder.png
+        :width: 600
     """
-
     def __init__(self,
                  atomgroups,
-                 output="density_cylinder.dat",
-                 outfreq=1000,
+                 dens="mass",
                  dim=2,
                  center=None,
                  radius=None,
-                 binwidth=0.1,
                  length=None,
-                 dens="mass",
+                 binwidth=0.1,
+                 output="density_cylinder.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroups, **kwargs)
-        self.output = output
-        self.outfreq = outfreq
+        super(DensityCylinder, self).__init__(atomgroups,
+                                              multi_group=True,
+                                              **kwargs)
         self.dim = dim
         self.binwidth = binwidth
         self.center = center
         self.radius = radius
         self.length = length
         self.dens = dens
-
-    def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
-        parser.add_argument('-dout', dest='outfreq')
-        parser.add_argument('-d', dest='dim')
-        parser.add_argument('-center', dest='center')
-        parser.add_argument('-r', dest='radius')
-        parser.add_argument('-dr', dest='binwidth')
-        parser.add_argument('-l', dest='length')
-        parser.add_argument('-dens', dest='dens')
+        self.output = output
+        self.concfreq = concfreq
 
     def _prepare(self):
-
         if self.dens not in ["mass", "number", "charge", "temp"]:
-            raise ValueError(
-                "Invalid choice for dens: '{}' (choose from 'mass', "
-                "'number', 'charge', 'temp')".format(self.dens))
+            raise ValueError(f"Invalid choice for dens: '{self.dens}' "
+                              "(choose from 'mass', 'number', 'charge', "
+                              "'temp'")
 
-        if self._verbose:
-            if self.dens == 'temp':
-                print('Computing temperature profile along {}-axes.'.format(
-                    'XYZ'[self.dim]))
-            else:
-                print(
-                    'Computing radial {} density profile along {}-axes.'.format(
-                        self.dens, 'XYZ'[self.dim]))
+        if self.dens == 'temp':
+            profile_str = "temperature"
+        else:
+            profile_str = f"{self.dens} density"
+
+        logger.info(f"Computing {profile_str} profile "
+                    f"along {'XYZ'[self.dim]}-axes.")
 
         self.odims = np.roll(np.arange(3), -self.dim)[1:]
 
         if self.center is None:
-            if self._verbose:
-                print("No center given --> Take from box dimensions.")
+            logger.info("No center given --> Take from box dimensions.")
             self.centersel = None
             center = self.atomgroups[0].dimensions[:3] / 2
         else:
@@ -663,25 +680,23 @@ Plot it using PyPlot:
                                    "Please adjust selection!")
             center = self.centersel.center_of_mass()
 
-        if self._verbose:
-            print("Initial center at {}={:.3f} nm and {}={:.3f} nm.".format(
-                'XYZ'[self.odims[0]], center[self.odims[0]] / 10,
-                'XYZ'[self.odims[1]], center[self.odims[1]] / 10))
+        logger.info("Initial center at "
+                    f"{'XYZ'[self.odims[0]]} = "
+                    f"{center[self.odims[0]] / 10:.3f} nm and "
+                    f"{'XYZ'[self.odims[1]]} = "
+                    f"{center[self.odims[1]] / 10:.3f} nm.")
 
         if self.radius is None:
             self.radius = self.atomgroups[0].dimensions[self.odims].min() / 2
-            if self._verbose:
-                print(
-                    "No radius given --> Take smallest box extension (r={:.2f} nm)."
-                        .format(self.radius / 10))
+            logger.info("No radius given --> Take smallest box "
+                        f"extension (r={self.radius / 10:.2f} nm).")
         else:
             self.radius /= 10
 
         if self.length is None:
             self.length = self.atomgroups[0].dimensions[self.dim]
-            if self._verbose:
-                print("No length given --> Take length in {}.".format(
-                    'XYZ'[self.dim]))
+            logger.info("No length given "
+                        f"--> Take length in {'XYZ'[self.dim]}.")
         else:
             self.length /= 10
 
@@ -695,9 +710,7 @@ Plot it using PyPlot:
         self._delta_r_sq = self._r_bins ** 2 - \
                            np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
 
-        if self._verbose:
-            print("\n")
-            print('Using', self.nbins, 'bins.')
+        logger.info(f"Using {self.nbins} bins.")
 
     def _single_frame(self):
         # calculater center of cylinder.
@@ -732,15 +745,15 @@ Plot it using PyPlot:
             else:
                 self.density_mean[:, index] += density_ts * 1000 / (
                         np.pi * self._delta_r_sq * self.length)
-                self.density_mean_sq[:, index] += (
-                                                          density_ts * 1000 /
-                                                          (np.pi * self._delta_r_sq * self.length)) ** 2
+                self.density_mean_sq[:, index] += (density_ts * 1000 /
+                    (np.pi * self._delta_r_sq * self.length)) ** 2
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
         self._index = self._frame_index + 1
 
         self.results.r = (np.copy(self._r_bins) - self._dr / 2) / 10
@@ -753,8 +766,8 @@ Plot it using PyPlot:
         self.results.dens_err = self.results.dens_std / np.sqrt(
             self._index)
 
-    def _save_results(self):
-        # write header
+    def save(self):
+        """Save results of analysis to file."""
         if self.dens == "mass":
             units = "kg m^(-3)"
         elif self.dens == "number":
@@ -765,11 +778,11 @@ Plot it using PyPlot:
             units = "K"
 
         if self.dens == 'temp':
-            columns = "temperature profile [{}]".format(units)
+            columns = f"temperature profile [{units}]"
         else:
-            columns = "{} density profile [{}]".format(self.dens, units)
-        columns += "\nstatistics over {:.1f} picoseconds \npositions [nm]".format(
-            self._index * self._universe.trajectory.dt)
+            columns = f"{self.dens} density profile [{units}]"
+        columns += f"\nstatistics over {self._index * self._trajectory.dt:.1f}"
+        columns += "ps \npositions [nm]"
         for group in self.atomgroups:
             columns += "\t" + atomgroup_header(group)
         for group in self.atomgroups:

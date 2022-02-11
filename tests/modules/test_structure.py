@@ -10,14 +10,22 @@
 import MDAnalysis as mda
 import pytest
 
-from maicos import diporder
+from maicos import Saxs, Diporder
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from datafiles import AIRWATER_TPR, AIRWATER_TRR
+from datafiles import AIRWATER_TPR, AIRWATER_TRR, WATER_TPR, WATER_TRR
 
+class TestSaxs(object):
+    @pytest.fixture()
+    def ag(self):
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
 
-class Test_diporder(object):
+    def test_saxs(sef, ag):
+        Saxs(ag, endq=20).run(stop=5)
+
+class TestDiporder(object):
     @pytest.fixture()
     def result_dict(self):
         res = {}
@@ -55,8 +63,8 @@ class Test_diporder(object):
         return u.atoms
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_diporder(self, ag, dim, result_dict):
-        dip = diporder(ag, binwidth=0.5, dim=dim).run()
+    def test_Diporder(self, ag, dim, result_dict):
+        dip = Diporder(ag, binwidth=0.5, dim=dim).run()
         assert_almost_equal(dip.results['P0'],
                             result_dict[dim]['P0'],
                             decimal=2)
@@ -71,28 +79,32 @@ class Test_diporder(object):
                             decimal=2)
 
     def test_broken_molecules(self, ag):
-        dip = diporder(ag, bpbc=False).run()
+        dip = Diporder(ag, make_whole=False).run()
         assert_almost_equal(dip.results['P0'].mean(), 0.05, decimal=2)
 
     def test_repaired_molecules(self, ag):
-        dip = diporder(ag, bpbc=True).run()
+        dip = Diporder(ag, make_whole=True).run()
         assert_almost_equal(dip.results['P0'].mean(), 0.00, decimal=2)
 
     def test_output(self, ag, tmpdir):
         with tmpdir.as_cwd():
-            dip = diporder(ag, end=20, save=True).run()
+            dip = Diporder(ag, end=20)
+            dip.run()
+            dip.save()
             res_dip = np.loadtxt(dip.output)
             assert_almost_equal(dip.results["P0"], res_dip[:, 1], decimal=2)
 
     def test_Lz(self, ag):
-        dip = diporder(ag, bpbc=False).run()
+        dip = Diporder(ag, bpbc=False).run()
         Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
         assert dip.Lz == Lz
 
     def test_output_name(self, ag, tmpdir):
         with tmpdir.as_cwd():
-            diporder(ag, output="foo.dat", end=20, save=True).run()
+            dip = Diporder(ag, output="foo.dat", end=20)
+            dip.run()
+            dip.save()
             open("foo.dat")
 
     def test_verbose(self, ag):
-        diporder(ag, verbose=True).run()
+        Diporder(ag, verbose=True).run()

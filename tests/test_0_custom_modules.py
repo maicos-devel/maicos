@@ -31,10 +31,10 @@ except FileExistsError:
 
 shutil.copy("../examples/maicos_costum_modules.py", custom_dir)
 shutil.copy("../examples/analysis_example.py", custom_dir)
-from maicos import analysis_example
+from maicos import AnalysisExample
 
 
-class Test_analysis_example(object):
+class TestAnalysisExample(object):
 
     @pytest.fixture()
     def ag(self):
@@ -42,17 +42,19 @@ class Test_analysis_example(object):
         return u.atoms
 
     def test_cli(self):
-        subprocess.check_call(['maicos', "analysis_example", "--help"])
+        subprocess.check_call(['maicos', "analysisexample", "--help"])
 
     def test_analysis_example(self, ag):
-        example = analysis_example(ag).run()
+        example = AnalysisExample(ag).run()
         assert_almost_equal(example.results['volume'].mean(),
                             15443.7,
                             decimal=1)
 
     def test_output(self, ag, tmpdir):
         with tmpdir.as_cwd():
-            example = analysis_example(ag, save=True).run()
+            example = AnalysisExample(ag, save=True)
+            example.run()
+            example.save()
             res_volume = np.loadtxt(example.output)
             assert_almost_equal(example.results["volume"],
                                 res_volume,

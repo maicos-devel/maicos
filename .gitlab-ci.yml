@@ -21,11 +21,6 @@ stages:
     - coverage run --branch -m pytest --disable-pytest-warnings .
     - coverage report -m --show-missing
 
-test-3.6:
-  extends: .test
-  image: python:3.6
-  stage: test
-
 test-3.7:
   extends: .test
   image: python:3.7

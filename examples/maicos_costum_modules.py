@@ -9,4 +9,4 @@
 
 from analysis_example import *
 
-custom_modules = ['analysis_example']
+custom_modules = ['AnalysisExample']
