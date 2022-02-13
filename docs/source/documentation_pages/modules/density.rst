@@ -14,12 +14,12 @@ Density planar
     :undoc-members:
     :show-inheritance:
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   :hidden:
+Tutorial
+--------
 
-   tutorials/density/density_planar
+Follow our `step-by-step tutorial`_.
+
+.. _step-by-step tutorial: ../../tutorials/density/density_planar.ipynb
 
 Density cylinder
 ================
