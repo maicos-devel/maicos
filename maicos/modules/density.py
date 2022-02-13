@@ -65,7 +65,7 @@ And run MAICoS' DensityPlanar module:
 	dplan.run()
 
 Results can be accessed from ``dplan.results``. More details are
-given in the :ref:`tutorial <label_tutorial_DensityPlanar>` below.
+given in the tutorials.
 
 .. _`gmx density`: https://manual.gromacs.org/archive/5.0.7/programs/gmx-density.html
 """
@@ -185,86 +185,6 @@ class DensityPlanar(PlanarBase):
         chemical potential (only if `mu=True`)
     results.dmu : float
         error of chemical potential (only if `mu=True`)
-
-    Tutorial
-    --------
-    .. _label_tutorial_DensityPlanar:
-
-    To follow this tutorial, the data test files of MAICoS are needed.
-    From a terminal, download MAICoS at a location of your choice:
-
-    .. code-block:: bash
-
-        cd mypath
-        git clone git@gitlab.com:maicos-devel/maicos.git
-
-    In a python environment, import MDAnalysis, MAICoS, PyPlot, and NumPy:
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import maicos
-        import matplotlib.pyplot as plt
-        import numpy as np
-
-    Define the path to the ``airwater`` data folder of MAICoS:
-
-    .. code-block:: python3
-
-        datapath = 'mypath/maicos/tests/data/airwater/'
-
-    The system consists of a 2D slab with 352 water molecules in vacuum,
-    where the two water/vacuum interfaces are normal to the axis :math:`z`:
-
-
-    .. image:: ../../images/airwater.png
-    :width: 600
-
-    Create a universe using MDAnalysis and define a group containing
-    the oxygen and the hydrogen atoms of the water molecules:
-
-    .. code-block:: python3
-
-        u = mda.Universe(datapath+'conf.gro', datapath+'traj.trr')
-        grpH2O = u.select_atoms('type O or type H')
-
-    Let us call the ``DensityPlanar`` class:
-
-    .. code-block:: python3
-
-        dplan = maicos.DensityPlanar(grpH2O)
-        dplan.run()
-
-    Extract the coordinate and the density profile:
-
-    .. code-block:: python3
-
-        zcoor = dplan.results['z']
-        dens = dplan.results['dens_mean']
-
-    By default the binwidth is 0.1 nanometers, the units are kg/m3,
-    and the axis is :math:`z`. Plot it using
-
-    .. code-block:: python3
-
-        fig = plt.figure(figsize = (12,6))
-        plt.plot(zcoor,dens,linewidth=2)
-        plt.xlabel("z coordinate [nanometer]")
-        plt.ylabel("density H2O [kg/m3]")
-        plt.show()
-
-    .. image:: ../../images/DensityPlanar.png
-    :width: 600
-
-
-    They are several options you can play with. To know the full
-    list of options, have a look at the ``Inputs`` section below.
-    For instance, you can increase the spacial resolution
-    by reducing the binwidth:
-
-    .. code-block:: python3
-
-        dplan = maicos.DensityPlanar(grp_oxy, binwidth = 0.05)
     """
 
     def __init__(self,
@@ -553,82 +473,6 @@ class DensityCylinder(AnalysisBase):
         density standard deviation
     results.dens_err : np.ndarray
         density error
-
-    Tutorial
-    --------
-    To follow this tutorial, the data test files of MAICoS are needed.
-    From a terminal, download MAICoS at a location of your choice:
-
-    .. code-block:: bash
-
-        cd mypath
-        git clone git@gitlab.com:maicos-devel/maicos.git
-
-    In a python environment, import MDAnalysis, MAICoS, and PyPlot:
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import maicos
-        import matplotlib.pyplot as plt
-
-    Define the path to the ``cntwater`` data folder of MAICoS:
-
-    .. code-block:: python3
-
-        datapath = 'mypath/maicos/tests/data/cntwater/'
-
-    The system consists of a carbon nanotube (CNT) with axis in the
-    :math:`z`: direction, a radius of about 2 nm, a of length 2.2 nm,
-    and filled with 810 water molecules.
-
-    .. image:: ../../images/cntwater.png
-        :width: 400
-
-    Create a universe using MDAnalysis and define two groups,
-    one containing the water molecules, one containing the
-    carbon atoms:
-
-    .. code-block:: python3
-
-        u = mda.Universe(datapath + 'lammps.data', datapath + 'traj.xtc')
-        grpH2O = u.select_atoms('type 1 or type 2')
-        grpCNT = u.select_atoms('type 3')
-
-    Call the ``DensityCylinder`` module for the two groups:
-
-    .. code-block:: python3
-
-        dcylH2O = maicos.DensityCylinder(grpH2O, center='all', binwidth = 0.01)
-        dcylH2O.run()
-        dcylCNT = maicos.DensityCylinder(grpCNT, center='all', binwidth = 0.01)
-        dcylCNT.run()
-
-    With the keyword ``center='all'``, the center of mass of all the atoms
-    of the group is used as the center of the density profile.
-    If not specified, the center of the box is used.
-
-    Finally, extract the coordinates and the density profiles:
-
-    .. code-block:: python3
-
-        rcoor = dcylH2O.results['r']
-        densH2O = dcylH2O.results['dens_mean']
-        densCNT = dcylCNT.results['dens_mean']
-
-    Plot it using PyPlot:
-
-    .. code-block:: python3
-
-        fig = plt.figure(figsize = (12,6))
-        plt.plot(rcoor,densH2O,linewidth=2)
-        plt.plot(rcoor,densCNT,linewidth=2)
-        plt.xlabel("r coordinate [nanometer]")
-        plt.ylabel("density [kg/m3]")
-        plt.show()
-
-    .. image:: ../../images/DensityCylinder.png
-        :width: 600
     """
     def __init__(self,
                  atomgroups,
