@@ -57,9 +57,9 @@ templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-source_suffix = ['.rst', '.ipynb']
+# note: do not add .ipynb when nbspinx is enabled, 
+# otherwise you get the "missing title" error
+source_suffix = ['.rst']
 
 # The master toctree document.
 master_doc = 'index'
@@ -78,15 +78,15 @@ exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 #pygments_style = None
-#pygments_style = 'sphinx'
-pygments_style = 'tango'
+pygments_style = 'sphinx'
+#pygments_style = 'tango'
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'press'
+#html_theme = 'press'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
