@@ -8,3 +8,4 @@ scipy
 pytest
 sphinx
 sphinx-press-theme
+nbsphinx

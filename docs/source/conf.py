@@ -42,10 +42,15 @@ release = version + "-dev"
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'nbsphinx',
 #    'sphinxarg.ext',
 #    'sphinx.ext.napoleon',
 #    'sphinx.ext.autosectionlabel',  
 ]
+
+# Execute the notebooks manually in advance.
+nbsphinx_execute = 'never'
+nbsphinx_allow_errors = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -54,7 +59,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.ipynb']
 
 # The master toctree document.
 master_doc = 'index'
@@ -73,7 +78,8 @@ exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 #pygments_style = None
-pygments_style = 'sphinx'
+#pygments_style = 'sphinx'
+pygments_style = 'tango'
 
 # -- Options for HTML output -------------------------------------------------
 
