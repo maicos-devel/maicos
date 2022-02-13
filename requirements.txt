@@ -13,4 +13,3 @@ scipy
 pytest
 sphinx
 nbsphinx
-pandoc
