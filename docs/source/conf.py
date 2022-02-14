@@ -48,8 +48,8 @@ extensions = [
 #    'sphinx.ext.autosectionlabel',  
 ]
 
-# Execute the notebooks manually in advance.
-nbsphinx_execute = 'never'
+# Execute the notebooks
+nbsphinx_execute = 'always'
 nbsphinx_allow_errors = True
 
 # Add any paths that contain templates here, relative to this directory.
