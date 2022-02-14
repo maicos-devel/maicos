@@ -13,6 +13,7 @@
 import os
 import shutil
 import subprocess
+from pkg_resources import resource_filename
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -29,8 +30,10 @@ try:
 except FileExistsError:
     pass
 
-shutil.copy("../examples/maicos_costum_modules.py", custom_dir)
-shutil.copy("../examples/analysis_example.py", custom_dir)
+
+EXAMPLE_PATH = resource_filename(__name__, "../examples")
+shutil.copy(os.path.join(EXAMPLE_PATH, "maicos_costum_modules.py"), custom_dir)
+shutil.copy(os.path.join(EXAMPLE_PATH, "analysis_example.py"), custom_dir)
 from maicos import AnalysisExample
 
 

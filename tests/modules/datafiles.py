@@ -25,6 +25,7 @@ SALT_WATER_TPR = resource_filename(
     __name__, "../data/salt_water/salt_water.tpr")
 
 # NVE bulk water
-
 NVE_WATER_TPR = resource_filename(__name__, "../data/kineticenergy/nve.tpr")
 NVE_WATER_TRR = resource_filename(__name__, "../data/kineticenergy/nve.trr")
+
+LAMMPS10WATER = resource_filename(__name__, "../data/lammps10water.data")

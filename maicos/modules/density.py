@@ -627,7 +627,7 @@ class DensityCylinder(AnalysisBase):
         plt.ylabel("density [kg/m3]")
         plt.show()
 
-    .. image:: ../../images/DensityCylinder.png
+    .. image:: ../../images/density_cylinder.png
         :width: 600
     """
     def __init__(self,

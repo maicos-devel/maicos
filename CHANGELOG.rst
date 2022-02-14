@@ -15,6 +15,7 @@ v0.5 (XXXX/XX/XX)
 -----------------
 Philip Loche, Srihas Velpuri
 
+- Improved CI including tests for building and linting
 - Create a consistent value of `zmax`` in every frame (!79)
 - Use Results class for attributes and improved docs (!81)
 - Bump minimum Python version to 3.7 (!80)
