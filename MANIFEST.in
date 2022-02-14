@@ -1,4 +1,25 @@
-global-include *.pyx
-global-include *.c
-include maicos/share/*
-include setup.py
+graft docs
+graft maicos
+
+# If you are encounting problems with .c file use
+# git update-index --assume-unchanged maicos/lib/*.c
+
+include *.rst
+include LICENSE
+
+exclude .codacy.yaml
+exclude .codeclimate.yml
+exclude .coveragerc
+exclude .gitignore
+exclude .gitlab-ci.yml
+exclude .readthedocs.yml
+exclude requirements.txt
+exclude tox.ini
+
+prune .gitlab
+prune .tox
+prune developer
+prune tests
+prune examples
+
+global-exclude *.py[cod] __pycache__/* *.so *.dylib

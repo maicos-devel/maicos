@@ -34,5 +34,3 @@ MAICoS
    ./documentation_pages/modules/structure
    ./documentation_pages/modules/timeseries
    ./documentation_pages/modules/transport
-
-

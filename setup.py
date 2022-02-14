@@ -51,9 +51,9 @@ def get_numpy_include():
         import numpy as np
     except ImportError:
         print('*** package "numpy" not found ***')
-        print('MAICoS requires a version of NumPy (>=1.13.3), even for setup.')
-        print('Please get it from http://numpy.scipy.org/ or install it through '
-              'your package manager.')
+        print('MAICoS requires a version of NumPy (>=1.16.0), even for setup.')
+        print('Please get it from http://numpy.scipy.org/ or install it '
+              'through your package manager.')
         sys.exit(-1)
     return np.get_include()
 
@@ -126,14 +126,15 @@ if __name__ == "__main__":
     use_cython = not is_release or bool(os.getenv('USE_CYTHON'))
     source_suffix = '.pyx' if use_cython else '.c'
 
-    pre_exts = [Extension("maicos.lib.sfactor", ["maicos/lib/sfactor" + source_suffix],
-                          include_dirs=[get_numpy_include()],
-                          extra_compile_args=[
-                              '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
-                          ] + has_openmp * ['-fopenmp'],
-                          extra_link_args=has_openmp * ['-fopenmp'],
-                          libraries=mathlib)
-                ]
+    pre_exts = [
+        Extension("maicos.lib.sfactor", ["maicos/lib/sfactor" + source_suffix],
+                  include_dirs=[get_numpy_include()],
+                  extra_compile_args=[
+                      '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
+                  ] + has_openmp * ['-fopenmp'],
+                  extra_link_args=has_openmp * ['-fopenmp'],
+                  libraries=mathlib)
+    ]
 
     if use_cython:
         extensions = cythonize(pre_exts)
@@ -142,76 +143,74 @@ if __name__ == "__main__":
         # Let's check early for missing .c files
         for ext in extensions:
             for source in ext.sources:
-                if not (os.path.isfile(source) and
-                        os.access(source, os.R_OK)):
-                    raise IOError("Source file '{}' not found. This might be "
-                                  "caused by a missing Cython install, or a "
-                                  "failed/disabled Cython build.".format(source))
+                if not (os.path.isfile(source) and os.access(source, os.R_OK)):
+                    raise IOError(f"Source file '{source}' not found. This "
+                                  "might be caused by a missing Cython "
+                                  "install, or a failed/disabled "
+                                  "Cython build.")
 
     with open("README.rst") as summary:
         LONG_DESCRIPTION = summary.read()
 
-    setup(name='maicos',
-          packages=find_packages(),
-          version=VERSION,
-          license='GPL 3',
-          description='Analyse molecular dynamics simulations of '
-          'interfacial and confined systems.',
-          author="Philip Loche et. al.",
-          author_email="ploche@physik.fu-berlin.de",
-          long_description=LONG_DESCRIPTION,
-          long_description_content_type='text/x-rst',
-          maintainer="Philip Loche",
-          maintainer_email="ploche@physik.fu-berlin.de",
-          include_package_data=True,
-          ext_modules=extensions,
-          python_requires='>=3.7',
-          setup_requires=[
-              'numpy>=1.16.0',
-          ],
-          install_requires=[
-              'numpy>=1.16.0',
-              'MDAnalysis>=2.0.0',
-              'matplotlib>=2.0.0',
-              'scipy>=1.0.0',
-              'mdacli>=0.1.12',
-          ],
+    with open("requirements.txt") as requirements:
+        REQUIREMENTS = requirements.read().splitlines()
 
-          entry_points={
-              'console_scripts': ['maicos = maicos.__main__:main'],
-          },
-          keywords=[
-              'Science',
-              'Molecular Dynamics',
-              'Confined Systems',
-              'MDAnalysis',
-            ],
-          project_urls={
-                'Source': 'https://gitlab.com/maicos-devel/maicos',
-                'Documentation': 'https://maicos-devel.gitlab.io/maicos',
-                'Changelog': 'https://maicos-devel.gitlab.io/maicos/documentation_pages/changelog.html',
-                'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
-                'Discord': 'https://discord.com/channels/869537986977603604/',
-            },
-          classifiers=[
-              'Development Status :: 4 - Beta',
-              'Environment :: Console',
-              'Intended Audience :: Science/Research',
-              'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-              'Operating System :: POSIX',
-              'Operating System :: MacOS :: MacOS X',
-              'Operating System :: Microsoft :: Windows ',
-              'Programming Language :: Python',
-              'Programming Language :: Python :: 3',
-              'Programming Language :: Python :: 3.7',
-              'Programming Language :: Python :: 3.8',
-              'Programming Language :: Python :: 3.9',
-              'Programming Language :: C',
-              'Topic :: Scientific/Engineering',
-              'Topic :: Scientific/Engineering :: Bio-Informatics',
-              'Topic :: Scientific/Engineering :: Chemistry',
-              'Topic :: Scientific/Engineering :: Physics',
-              'Topic :: Software Development :: Libraries :: Python Modules',
-              'Topic :: System :: Shells',
-          ],
-          zip_safe=False)
+    setup(
+        name='maicos',
+        packages=find_packages(),
+        version=VERSION,
+        license='GPL 3',
+        description='Analyse molecular dynamics simulations of '
+        'interfacial and confined systems.',
+        author="Philip Loche et. al.",
+        author_email="ploche@physik.fu-berlin.de",
+        long_description=LONG_DESCRIPTION,
+        long_description_content_type='text/x-rst',
+        maintainer="Philip Loche",
+        maintainer_email="ploche@physik.fu-berlin.de",
+        include_package_data=True,
+        ext_modules=extensions,
+        python_requires='>=3.7',
+        setup_requires=[
+            'numpy>=1.16.0',
+        ],
+        install_requires=REQUIREMENTS,
+        entry_points={
+            'console_scripts': ['maicos = maicos.__main__:main'],
+        },
+        keywords=[
+            'Science',
+            'Molecular Dynamics',
+            'Confined Systems',
+            'MDAnalysis',
+        ],
+        project_urls={
+            'Source': 'https://gitlab.com/maicos-devel/maicos',
+            'Documentation': 'https://maicos-devel.gitlab.io/maicos',
+            'Changelog':
+            'https://maicos-devel.gitlab.io/maicos/rst/changelog.html',
+            'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
+            'Discord': 'https://discord.com/channels/869537986977603604/',
+        },
+        classifiers=[
+            'Development Status :: 4 - Beta',
+            'Environment :: Console',
+            'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+            'Operating System :: POSIX',
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: Microsoft :: Windows ',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+            'Programming Language :: C',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: Bio-Informatics',
+            'Topic :: Scientific/Engineering :: Chemistry',
+            'Topic :: Scientific/Engineering :: Physics',
+            'Topic :: Software Development :: Libraries :: Python Modules',
+            'Topic :: System :: Shells',
+        ],
+        zip_safe=False)
