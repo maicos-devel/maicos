@@ -17,7 +17,7 @@ Tutorials
    :titlesonly:
    :maxdepth: 4
    :numbered:
-   :caption: Timeseries
+   :caption: Timeseries modules
    
    ../tutorials/timeseries/dipole_angle
    ../tutorials/timeseries/kinetic_energy
