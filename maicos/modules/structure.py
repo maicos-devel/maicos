@@ -222,14 +222,14 @@ class Saxs(AnalysisBase):
             self.results.q_indices = np.array(
                 list(np.ndindex(tuple(self.maxn))))
             self.results.q = np.linalg.norm(self.results.q_indices *
-                                               self.q_factor[np.newaxis, :],
-                                               axis=1)
+                                            self.q_factor[np.newaxis, :],
+                                            axis=1)
         else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
             nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
             scat_factor = self.struct_factor[nonzeros]
 
-            self.results.q= q[nonzeros]
+            self.results.q = q[nonzeros]
             self.results.scat_factor = scat_factor.sum(axis=1)
 
         self.results.scat_factor /= (self._index * self.atomgroup.n_atoms)
@@ -414,7 +414,8 @@ class Debye(AnalysisBase):
 
         s_tmp = np.loadtxt("{}/{}".format(self._tmp, datfiles[0]))
         for f in datfiles[1:]:
-            s_tmp = np.vstack([s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
+            s_tmp = np.vstack(
+                [s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
 
         nbins = int(np.ceil((self.endq - self.startq) / self.dq))
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
@@ -462,9 +463,7 @@ class Diporder(PlanarBase):
     sym : bool
         symmetrize the profiles
     binmethod : str
-        binning method: center of mass (COM), center of charge (COC)
-        or oxygen position (OXY). Note: `OXY` only works for water
-        oxygens with name `OW*`
+        binning method: center of mass (COM) or center of charge (COC)
     ${MAKE_WHOLE_PARAMETER}
     output : str
         Output filename
@@ -514,12 +513,9 @@ class Diporder(PlanarBase):
         """Set things up before the analysis loop begins"""
         super(Diporder, self)._prepare()
         self.binmethod = self.binmethod.upper()
-        if self.binmethod not in ["COM", "COC", "OXY"]:
+        if self.binmethod not in ["COM", "COC"]:
             raise ValueError('Unknown binning method: {}'.format(
                 self.binmethod))
-
-        if self.binmethod == "OXY":
-            self.oxy = self.atomgroup.select_atoms("name OW*")
 
         # Check if all residues are identical. Choose first residue as reference.
         residue_names = [ag.names for ag in self.atomgroup.split("residue")]
@@ -553,12 +549,11 @@ class Diporder(PlanarBase):
 
         if self.binmethod == 'COM':
             # Calculate the centers of the objects (i.e. Molecules)
-            bin_positions = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
+            bin_positions = self.atomgroup.center_of_mass(
+                compound=check_compound(self.atomgroup))
         elif self.binmethod == 'COC':
             bin_positions = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
-                                         compound=check_compound(self.atomgroup))
-        elif self.binmethod == 'OXY':
-            bin_positions = self.oxy.positions
+                                                  compound=check_compound(self.atomgroup))
 
         bins = self.get_bins(bin_positions)
         bincount = np.bincount(bins, minlength=self.n_bins)
@@ -596,17 +591,19 @@ class Diporder(PlanarBase):
         super(Diporder, self)._conclude()
         self._index = self._frame_index + 1
         self.results.P0 = self.P0 / self._frame_index
-        self.results.rho= self.rho / self._frame_index
+        self.results.rho = self.rho / self._frame_index
 
         with np.errstate(divide='ignore', invalid='ignore'):
-            self.results.cos_theta = np.nan_to_num(self.cos_theta / self.bin_count)
-            self.results.cos_2_theta = np.nan_to_num(self.cos_2_theta / self.bin_count)
+            self.results.cos_theta = np.nan_to_num(
+                self.cos_theta / self.bin_count)
+            self.results.cos_2_theta = np.nan_to_num(
+                self.cos_2_theta / self.bin_count)
 
         if self.sym:
             for i in range(len(self.results.z) - 1):
                 self.results.z[i +
-                                  1] = .5 * (self.results.z[i + 1] +
-                                             self.results.z[i + 1][-1::-1])
+                               1] = .5 * (self.results.z[i + 1] +
+                                          self.results.z[i + 1][-1::-1])
                 self.results.diporder[
                     i + 1] = .5 * (self.results.diporder[i + 1] +
                                    self.results.diporder[i + 1][-1::-1])
