@@ -18,13 +18,13 @@ or a package-specific page by typing, respectively:
 	maicos -h
 
 	maicos <package> -h
-
-For example, to get the help page for the ``density_planar`` module, type:
+	
+For example, to get the help page for the :py:mod:`maicos.DensityPlanar` 
+module, type:
 
 .. code-block:: bash
 
-	maicos density_planar -h
-
+	maicos densityplanar -h
 
 From the Python interpreter
 ---------------------------

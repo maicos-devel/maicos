@@ -8,16 +8,12 @@
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
+# To link modules with autodoc
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
-
 project = 'MAICoS'
 copyright = 'All source code is available under the GNU General Public License v3.0'
 author = 'See the file AUTHORS for the full list of names.'
@@ -32,20 +28,13 @@ release = version + "-dev"
 
 # -- General configuration ---------------------------------------------------
 
-# If your documentation needs a minimal Sphinx version, state it here.
-#
-# needs_sphinx = '1.0'
-
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
+# Add any Sphinx extension module names here, as strings.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'nbsphinx',
-#    'sphinxarg.ext',
-#    'sphinx.ext.napoleon',
-#    'sphinx.ext.autosectionlabel',  
+    'sphinx.ext.autodoc', # import the modules you are documenting
+    'sphinx.ext.viewcode', # tries to find the source files where the objects are contained
+    'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
+    # 'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
+    'nbsphinx', #  provides a source parser for *.ipynb files
 ]
 
 # Execute the notebooks

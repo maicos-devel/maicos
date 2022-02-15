@@ -18,9 +18,6 @@ from .base import AnalysisBase
 class DipoleAngle(AnalysisBase):
     """Calculate angle timeseries of dipole moments with respect to an axis.
 
-    The dipole angle function in the timeseries module computes the dipole
-    moment of an MD simulation trajectory with respect to a reference axis.
-
     Parameters
     ----------
     atomgroup : AtomGroup
@@ -45,84 +42,6 @@ class DipoleAngle(AnalysisBase):
         Average cos^2 of the same between dipole and axis
     resulst.cos_theta_ij : np.ndarray
         Product cos of dipole i and cos of dipole j (i!=j)
-
-    The dipole angle function in the timeseries module computes the dipole
-    moment of a MD simulation trajectory with respect to a reference axis.
-
-    As an example, we analyse a box of water molecules containing around 5000
-    water molecules and simulated for 100 picoseconds (ps) in the NVT ensemble
-    with a timestep of 2 fs. Periodic boundary conditions were employed in all
-    directions and long range electrostatics were modelled using the PME method.
-    LINCS algorithm was used to constraint the H-Bonds at a temperature of 300K.
-    A pulsed and alternating electric field was applied along the x-axis in the
-    form of a Gaussian laser pulse. Please check `gromacs electric field`_ for more details.
-
-    To follow this tutorial, go to the directory
-    which contains ``mdelectric.tpr`` and ``mdelectric.trr``:
-
-    .. code-block:: bash
-
-        cd tests/data/electricfwater
-
-    **From the python interpreter**
-
-    First import `MDAnalysis`_, `matplotlib`_ and MAICoS packages:
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import matplotlib.pyplot as plt
-        import maicos
-
-    Then create a MDAnalysis Universe, and extract its number of atoms:
-
-    .. code-block:: python3
-
-        u = mda.Universe("mdelectric.tpr","mdelectric.trr")
-        at = u.atoms
-
-    Now run the MAICOS dipole angle function:
-
-    .. code-block:: python3
-
-        dipangle = maicos.dipole_angle(at, dim=0)
-        dipangle.run()
-
-    The option ``dim = 0`` specifies the reference vector  ``x-axis``.
-    The run produces a ``python dictionary`` named ``dipangle.results``
-    with ``4 keys`` linked to ``numpy arrays`` as ``values``: timestep, cosine
-    of dipole and x-axis, cosine squared, product of cosine of dipoles i and j (i!=j)
-
-    The results can be visualized as follows:
-
-    .. code-block:: python3
-
-        plt.plot(dipangle.results["t"],dipangle.results["cos_theta_i"])
-        plt.title("Average cos between dipole and x-axis")
-        plt.xlabel("Time (ps)")
-        plt.ylabel(r'cos($\theta_i$)')
-        plt.show()
-
-    The figure generated :
-
-       .. image:: ../../images/dipangle.png
-        :width: 600
-
-
-    **From the command line interface**
-
-    .. code-block:: bash
-
-        maicos dipole_angle -s md.tpr -f md.trr -d 0
-
-    The output file ``dipangle.dat`` is similar to ``dipangle.results`` and contains the data in columns.
-
-    They are several options you can play with. To know the full
-    list of options, have a look at the ``Inputs`` section below.
-
-    .. _`MDAnalysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/
-    .. _`gromacs electric field`: https://manual.gromacs.org/2019-current/reference-manual/special/electric-fields.html#fig-field
     """
     def __init__(self,
                  atomgroup,
@@ -195,7 +114,7 @@ class KineticEnergy(AnalysisBase):
 
     The kinetic energy function computes the translational and rotational kinetic
     energy with respect to molecular center (center of mass, center of charge)
-    of an MD simulation trajectory.
+    of a molecular dynamics simulation trajectory.
 
     Parameters
     ----------
@@ -217,79 +136,6 @@ class KineticEnergy(AnalysisBase):
         translational kinetic energy (kJ/mol)
     results.rot : np.ndarray
         rotational kinetic energy (kJ/mol)
-
-
-    As an example, we analyse a box of water molecules containing around 500
-    water molecules and simulated for 200 ps in the NVE ensemble
-    with a timestep of 4 fs. Periodic boundary conditions were employed in
-    all directions and long range electrostatics were modelled using the PME method.
-    LINCS algorithm was used to constraint the H-Bonds.
-
-    To follow this tutorial, go to the directory
-    which contains ``nve.tpr`` and ``nve.trr``:
-
-    .. code-block:: bash
-
-        cd tests/data/kineticenergy
-
-    **From the python interpreter**
-
-    First, import `MDAnalysis`_, `matplotlib`_ and MAICoS packages:
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import matplotlib.pyplot as plt
-        import maicos
-
-    Then, create an MDAnalysis universe:
-
-    .. code-block:: python3
-
-        u = mda.Universe("nve.tpr","nve.trr")
-        at = u.atoms
-
-    Now, run the MAICOS dipole angle function:
-
-    .. code-block:: python3
-
-        ke = maicos.dipole_angle(at)
-        ke.run()
-
-    The run produces a ``python dictionary`` named ``ke.results`` with ``3 keys``
-    linked to ``numpy arrays`` as ``values``: timestep, translational KE,
-    and rotational KE.
-
-    The results can be visualized as follows:
-
-    .. code-block:: python3
-
-        plt.plot(ke.results['t'],ke.results['trans'] )
-        plt.title("Translational Kinetic Energy")
-        plt.xlabel("Time (ps)")
-        plt.ylabel("KJ/mole")
-        plt.show()
-
-    The figure generated :
-
-       .. image:: ../../images/ket.png
-            :width: 600
-
-    **From the command line interface**
-
-    .. code-block:: bash
-
-        maicos kinetic_energy -s md.tpr -f md.trr -o ke.dat
-
-    The output file ``ke.dat`` is similar to ``ke.results`` and contains
-    the data in columns.
-
-    They are several options you can play with. To know the full
-    list of options, have a look at the ``Inputs`` section.
-
-
-    .. _`MDAnalysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/
     """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):

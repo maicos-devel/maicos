@@ -17,8 +17,8 @@ See the `gmx density`_ manual for details.
 
 **From the command line**
 
-You can extract a density profile from your molecular dynamics
-trajectories directly from the terminal. For this example, we use
+You can extract a density profile from molecular dynamics
+trajectory files directly from the terminal. For this example, we use
 the ``airwater`` data file of MAICoS. First, go to the directory
 
 .. code-block:: bash
@@ -34,7 +34,7 @@ then type:
 Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and
 trajectory files, respectively. The density profile appears in
 a ``.dat`` file. You can visualise all the options of the module
-``DensityPlanar`` by typing
+``densityplanar`` by typing
 
 .. code-block:: bash
 
@@ -47,25 +47,25 @@ first import MAICoS and MDAnalysis:
 
 .. code-block:: python3
 
-	import MDAnalysis as mda
-	import maicos
+    import MDAnalysis as mda
+    import maicos
 
 Then create a MDAnalysis universe:
 
 .. code-block:: python3
 
-	u = mda.Universe('conf.gro', 'traj.trr')
-	grpH2O = u.select_atoms('type O or type H')
+    u = mda.Universe('conf.gro', 'traj.trr')
+    group_H2O = u.select_atoms('type O or type H')
 
-And run MAICoS' DensityPlanar module:
+And run MAICoS' ``densityplanar`` module:
 
 .. code-block:: python3
 
-	dplan = maicos.DensityPlanar(grpH2O)
-	dplan.run()
+    dplan = maicos.densityplanar(group_H2O)
+    dplan.run()
 
 Results can be accessed from ``dplan.results``. More details are
-given in the tutorials.
+given in the :ref:`ref_tutorial`.
 
 .. _`gmx density`: https://manual.gromacs.org/archive/5.0.7/programs/gmx-density.html
 """
@@ -438,7 +438,7 @@ class DensityCylinder(AnalysisBase):
     ----------
     atomgroups : list[AtomGroup]
         A list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the densities are calculated
+        the densities are calculated.
     dens : str
         Density: mass, number, charge, temp
     dim : int
