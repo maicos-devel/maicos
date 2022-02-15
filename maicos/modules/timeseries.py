@@ -203,7 +203,7 @@ class KineticEnergy(AnalysisBase):
        Atomgroup on which the analysis is executed
     refpoint : str
         reference point for molecular center: center of
-        mass (COM), center of charge (COC), or oxygen position (OXY)
+        mass (COM) or center of charge (COC)
         Note: The oxygen position only works for systems of pure water
     output : str
         Output filename
@@ -299,13 +299,9 @@ class KineticEnergy(AnalysisBase):
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
-        if self.refpoint not in ["COM", "COC", "OXY"]:
+        if self.refpoint not in ["COM", "COC"]:
             raise ValueError(
-                "Invalid choice for dens: '{}' (choose from 'COM', "
-                "'COC', 'OXY')".format(self.refpoint))
-
-        if self.refpoint == "OXY":
-            self.oxy = self.atomgroup.select_atoms("name OW*")
+                "Invalid choice for dens: '{}' (choose from 'COM' or " "'COC')".format(self.refpoint))
 
         self.masses = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.masses, compound=check_compound(self.atomgroup))
@@ -335,9 +331,6 @@ class KineticEnergy(AnalysisBase):
             v = self.atomgroup.accumulate(
                 abschargevel, compound=check_compound(self.atomgroup))
             v /= self.abscharges[:, np.newaxis]
-
-        elif self.refpoint == "OXY":
-            v = self.oxy.velocities
 
         self.E_center[self._frame_index] = np.dot(self.masses,
                                                   np.linalg.norm(v, axis=1)**2)

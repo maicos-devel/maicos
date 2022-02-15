@@ -15,6 +15,7 @@ v0.5 (XXXX/XX/XX)
 -----------------
 Philip Loche, Srihas Velpuri
 
+- Removed oxygen binning from diporder (!85)
 - Improved CI including tests for building and linting
 - Create a consistent value of `zmax`` in every frame (!79)
 - Use Results class for attributes and improved docs (!81)
