@@ -13,11 +13,15 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.5 (XXXX/XX/XX)
 -----------------
-Philip Loche, Srihas Velpuri
+Philip Loche, Srihas Velpuri, Simon Gravelle
 
+- Convert Tutorials into notebooks (!93)
+- New docs design (!93)
+- Build gitlab docs only on master branch (!94, #62)
 - Removed oxygen binning from diporder (!85)
 - Improved CI including tests for building and linting
 - Create a consistent value of `zmax`` in every frame (!79)
+- Corrected README for pypi (!83)
 - Use Results class for attributes and improved docs (!81)
 - Bump minimum Python version to 3.7 (!80)
 - Remove spaghetti code in `__main__.py`` and introduce `mdacli` as
@@ -40,7 +44,7 @@ Philip Loche, Srihas Velpuri
 
 v0.4.1 (2021/12/17)
 -------------------
-Philip Loche,
+Philip Loche
 
 - Fixed double counting of the box length in diporder (#58, !76)
 
