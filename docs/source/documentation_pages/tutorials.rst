@@ -4,10 +4,17 @@
 Tutorials
 =========
 
+This section contains self-contained examples of using MAICoS for various tasks. 
+The examples are structured in the form of Jupyter notebooks, rendered for 
+viewing here and available for interactive execution in the top-level 
+``/docs/source/tutorials`` directory of the `repository`_.
+
+.. _repository: https://gitlab.com/maicos-devel/maicos/-/tree/develop/docs/source/tutorials
+
+
 .. toctree::
    :titlesonly:
    :maxdepth: 4
-   :numbered:
    :caption: Density modules
    
    ../tutorials/density/density_planar
@@ -16,7 +23,6 @@ Tutorials
 .. toctree::
    :titlesonly:
    :maxdepth: 4
-   :numbered:
    :caption: Timeseries modules
    
    ../tutorials/timeseries/dipole_angle

@@ -67,16 +67,12 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-#pygments_style = None
-#pygments_style = 'sphinx'
 pygments_style = 'tango'
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'press'
-#html_theme = 'alabaster'
 html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
