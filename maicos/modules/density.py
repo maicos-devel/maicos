@@ -29,16 +29,16 @@ then type:
 
 .. code-block:: bash
 
-    maicos densityplanar -s conf.gro -traj traj.trr
+    maicos DensityPlanar -s conf.gro -traj traj.trr
 
 Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and
 trajectory files, respectively. The density profile appears in
 a ``.dat`` file. You can visualise all the options of the module
-``densityplanar`` by typing
+``DensityPlanar`` by typing
 
 .. code-block:: bash
 
-    maicos densityplanar -h
+    maicos DensityPlanar -h
 
 **From the Python interpreter**
 
@@ -57,11 +57,11 @@ Then create a MDAnalysis universe:
     u = mda.Universe('conf.gro', 'traj.trr')
     group_H2O = u.select_atoms('type O or type H')
 
-And run MAICoS' ``densityplanar`` module:
+And run MAICoS' ``DensityPlanar`` module:
 
 .. code-block:: python3
 
-    dplan = maicos.densityplanar(group_H2O)
+    dplan = maicos.DensityPlanar(group_H2O)
     dplan.run()
 
 Results can be accessed from ``dplan.results``. More details are
