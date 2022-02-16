@@ -781,7 +781,7 @@ class EpsilonCylinder(AnalysisBase):
 @make_whole()
 @charge_neutral(filter="error")
 class DielectricSpectrum(AnalysisBase):
-    r"""Computes the linear dielectric spectrum.
+    r"""Compute the linear dielectric spectrum.
 
     This module, given molecular dynamics trajectory data, produces a
     `.txt` file containing the complex dielectric function as a function of 

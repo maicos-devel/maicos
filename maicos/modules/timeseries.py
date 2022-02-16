@@ -110,7 +110,7 @@ class DipoleAngle(AnalysisBase):
 
 
 class KineticEnergy(AnalysisBase):
-    """Computes the timeseries of energies.
+    """Calculate the timeseries of energies.
 
     The kinetic energy function computes the translational and rotational kinetic
     energy with respect to molecular center (center of mass, center of charge)

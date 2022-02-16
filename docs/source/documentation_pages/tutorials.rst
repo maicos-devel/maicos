@@ -9,7 +9,7 @@ The examples are structured in the form of Jupyter notebooks, rendered for
 viewing here and available for interactive execution in the top-level 
 ``/docs/source/tutorials`` directory of the `repository`_.
 
-.. _repository: https://gitlab.com/maicos-devel/maicos/-/tree/develop/docs/source/tutorials
+.. _repository: https://gitlab.com/maicos-devel/maicos/-/tree/master/docs/source/tutorials
 
 
 .. toctree::

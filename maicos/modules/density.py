@@ -143,7 +143,7 @@ def weight(selection, dens):
 @set_verbose_doc
 @set_planar_class_doc
 class DensityPlanar(PlanarBase):
-    """Compute partial densities/temperature profiles in the cartesian systems.
+    """Compute partial densities/temperature profiles in the Cartesian systems.
 
     Parameters
     ----------
