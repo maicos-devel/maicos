@@ -73,15 +73,13 @@ build:3.10:
 ###########################
 
 docs:
-  image: python:3.9
+  image: python:3.10
   stage: docs
   needs: []
   script: tox -e docs
-  after_script:
-    - cp -r dist/docs public  # GitLab pages want their data at 'public'
   artifacts:
     paths:
-      - public
+      - dist/docs
 
 ###########################
 ######### TESTS ###########
@@ -119,7 +117,7 @@ tests:3.10:
 ######## DEPLOY ###########
 ###########################
 
-deploy:
+deploy:pypi:
   image: python:3.10
   stage: deploy
   variables:
@@ -131,3 +129,15 @@ deploy:
     - twine upload --verbose dist/*
   only:
     - master
+
+deploy:docs:
+  image: python:3.10
+  stage: deploy
+  needs: [docs, deploy:pypi]
+  script:
+    - cp -r dist/docs public
+  only:
+    - master
+  artifacts:
+    paths:
+      - public
