@@ -23,3 +23,6 @@ python:
    install:
    - requirements: docs/requirements.txt
    - requirements: requirements.txt
+   - requirements: cython
+   - method: setuptools
+   - path: .
