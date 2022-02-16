@@ -2,4 +2,4 @@ sphinx
 nbsphinx
 ipykernel
 furo
-pandoc
+cython
