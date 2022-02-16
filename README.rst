@@ -34,7 +34,7 @@ correspond to a water slab in vacuum that was simulated in this case using the
 	import maicos
 	u = mda.Universe('conf.gro', 'traj.trr')
 	grpH2O = u.select_atoms('type O or type H')
-	dplan = maicos.density_planar(grpH2O)
+	dplan = maicos.DensityPlanar(grpH2O)
 	dplan.run()
 
 
@@ -72,31 +72,31 @@ List of analysis modules
    * - Module Name
      - Description
 
-   * - density_planar
+   * - DensityPlanar
      - Compute partial densities/temperature profiles in the Cartesian systems.
-   * - density_cylinder
+   * - DensityCylinder
      - Compute partial densities across a cylinder.
-   * - epsilon_bulk
+   * - EpsilonBulk
      - Compute dipole moment fluctuations and static dielectric constant.
-   * - epsilon_planar
-     - Calculates a planar dielectric profile.
-   * - epsilon_cylinder
+   * - EpsilonPlanar
+     - Calculate planar dielectric profiles.
+   * - EpsilonCylinder
      - Calculate cylindrical dielectric profiles.
-   * - dielectric_spectrum
-     - Computes the linear dielectric spectrum.
-   * - saxs
+   * - DielectricSpectrum
+     - Compute the linear dielectric spectrum.
+   * - Saxs
      - Compute SAXS scattering intensities.
-   * - diporder
-     - Calculation of dipolar order parameters.
-   * - debyer
+   * - Diporder
+     - Calculate dipolar order parameters.
+   * - Debyer
      - Calculate scattering intensities using the debye equation. The `debyer`_
        library needs to be downloaded and build.
-   * - dipole_angle
+   * - DipoleAngle
      - Calculate angle timeseries of dipole moments with respect to an axis.
-   * - kinetic_energy
+   * - KineticEnergy
      - Calculate the timeseries of energies.
-   * - velocity
-     - Mean velocity analysis.
+   * - Velocity
+     - Analyse mean velocity.
 
 .. _`Python3`: https://www.python.org
 .. _`Cython` : https://cython.org/

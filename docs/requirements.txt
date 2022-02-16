@@ -1,2 +1,6 @@
 sphinx
-sphinx-press-theme
+nbsphinx
+ipykernel
+furo
+cython
+numpy>=1.16.0

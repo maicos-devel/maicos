@@ -20,6 +20,7 @@ MAICoS
 
    ./documentation_pages/installation
    ./documentation_pages/usage
+   ./documentation_pages/tutorials
    ./documentation_pages/gettinginvolved
    ./documentation_pages/authors
    ./documentation_pages/changelog

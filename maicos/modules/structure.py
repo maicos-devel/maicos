@@ -449,7 +449,7 @@ class Debye(AnalysisBase):
 @set_planar_class_doc
 @make_whole()
 class Diporder(PlanarBase):
-    """Calculation of dipolar order parameters.
+    """Calculate dipolar order parameters.
 
     Calculations include the projected dipole density
     P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole

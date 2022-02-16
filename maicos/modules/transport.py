@@ -23,7 +23,7 @@ def fitfn(x, alpha, tau1, tau2, pref):
 @set_verbose_doc
 @make_whole()
 class Velocity(AnalysisBase):
-    """Mean Velocity analysis.
+    """Analyse mean velocity..
 
     Reads in coordinates and velocities from a trajectory and calculates a
     velocity profile along a given axis. The obtained profile is averaged over the 4
