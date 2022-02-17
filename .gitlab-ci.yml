@@ -124,7 +124,7 @@ deploy:pypi:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
-    - pip install twine
+    - pip install twine, numpy, cython
     - python setup.py sdist bdist_wheel
     - twine upload --verbose dist/*
   only:
