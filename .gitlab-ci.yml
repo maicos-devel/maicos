@@ -120,13 +120,14 @@ tests:3.10:
 deploy:pypi:
   image: python:3.10
   stage: deploy
+  dependencies: []
   variables:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
     - pip install twine numpy cython
-    - python setup.py sdist
-    - twine upload --verbose dist/maicos*
+    - python3 setup.py sdist
+    - twine upload --verbose dist/*
   only:
     - master
 
