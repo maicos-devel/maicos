@@ -126,7 +126,7 @@ deploy:pypi:
   script:
     - pip install twine numpy cython
     - python setup.py sdist bdist_wheel
-    - twine upload --verbose dist/*
+    - twine upload --verbose dist/maicos*
   only:
     - master
 
