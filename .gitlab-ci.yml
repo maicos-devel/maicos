@@ -125,7 +125,7 @@ deploy:pypi:
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
     - pip install twine numpy cython
-    - python setup.py sdist bdist_wheel
+    - python setup.py sdist
     - twine upload --verbose dist/maicos*
   only:
     - master
