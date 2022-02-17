@@ -11,9 +11,40 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.4.1 (2021/12/17)
+v0.5 (2022/02/17)
 -----------------
-Philip Loche,
+Philip Loche, Srihas Velpuri, Simon Gravelle
+
+- Convert Tutorials into notebooks (!93)
+- New docs design (!93)
+- Build gitlab docs only on master branch (!94, #62)
+- Removed oxygen binning from diporder (!85)
+- Improved CI including tests for building and linting
+- Create a consistent value of `zmax`` in every frame (!79)
+- Corrected README for pypi (!83)
+- Use Results class for attributes and improved docs (!81)
+- Bump minimum Python version to 3.7 (!80)
+- Remove spaghetti code in `__main__.py`` and introduce `mdacli` as
+  cli server library. (!80)
+- Remove `SingleGroupAnalysisBase` and `MultiGroupAnalysisBase`` classes in
+  favour of a unified `AnalysisBase`` class (!80)
+- Change `planar_base`` decorator to a `PlanarBase`` class (!80)
+- Rename modules to be consistent with PEP8
+  (`density_planar`` -> `DensityPlanar``) (!80)
+- Use Numpy's docstyle for doc formatting (!80)
+- Use Python's powerful logger library instead of bare `print` (!80)
+- Use Python 3.6 string formatting (!80)
+- Remove `_calculate_results`` methods. This method is covered by the
+  `_conclude` method. (!80)
+- Make results saving a public function (save) (!80)
+- Added docstring Decorator for `PlanarDocstring` and `verbose` option (!80)
+- Use `MDAnalysis`'s' `center_of_mass` function for center of 
+  mass shifting (!80)
+
+
+v0.4.1 (2021/12/17)
+-------------------
+Philip Loche
 
 - Fixed double counting of the box length in diporder (#58, !76)
 

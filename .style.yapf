@@ -1,5 +1,0 @@
-[style]
-# use the chromium style
-based_on_style = google
-
-# see https://github.com/google/yapf#knobs

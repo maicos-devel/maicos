@@ -1,3 +1,6 @@
+MAICoS
+======
+
 .. image:: images/logo_MAICOS_square.png
    :align: right
    :width: 100
@@ -17,6 +20,7 @@
 
    ./documentation_pages/installation
    ./documentation_pages/usage
+   ./documentation_pages/tutorials
    ./documentation_pages/gettinginvolved
    ./documentation_pages/authors
    ./documentation_pages/changelog
@@ -31,5 +35,3 @@
    ./documentation_pages/modules/structure
    ./documentation_pages/modules/timeseries
    ./documentation_pages/modules/transport
-
-

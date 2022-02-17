@@ -10,120 +10,49 @@
 import numpy as np
 
 from ..utils import check_compound, savetxt
-from .base import SingleGroupAnalysisBase
+from ..decorators import set_verbose_doc
+from .base import AnalysisBase
 
 
-class dipole_angle(SingleGroupAnalysisBase):
+@set_verbose_doc
+class DipoleAngle(AnalysisBase):
     """Calculate angle timeseries of dipole moments with respect to an axis.
-    
-    The dipole angle function in the timeseries module computes the dipole moment of an MD simulation trajectory with respect to a reference axis. 
 
-    The program can be run from either a python environment or a command line interface.
-    As an example, we analyse a box of water molecules simulated for 100 picoseconds (ps) using an NVT ensemble. 
-    The length of the box was 5.45 nm containing around 5000 water molecules. 
-    The time step of simulation was 2 fs. 
-    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
-    LINCS algorithm was used to constraint the H-Bonds at a temperature of 300K. 
-    A pulsed and alternating electric field was applied along the x-axis in the form of a guassian laser pulse. 
-    Please check `gromacs electric field`_ for more details. 
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    dim : int
+        refernce vector for angle (x=0, y=1, z=2)
+    output : str
+       Prefix for output filenames
+    concfreq : int
+        Default number of frames after which results are calculated and files refreshed.
+        If `0` results are only calculated at the end of the analysis and not
+        saved by default.
+    ${VERBOSE_PARAMETER}
 
-    The simulation directory can be downloaded from the repository (shown below) which contains ``mdelectric.tpr`` and ``mdelectric.trr``
-
-    .. code-block:: bash
-
-        cd tests/data/electricfwater
-
-    **From the python interpreter**
-
-    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import matplotlib.pyplot as plt
-        import maicos
-
-    Then create an MD Analysis Universe. 
-
-    .. code-block:: python3
-
-        u = mda.Universe("mdelectric.tpr","mdelectric.trr")
-        at = u.atoms
-
-    Now run the MAICOS dipole angle function.
-
-    .. code-block:: python3
-
-        dipangle = maicos.dipole_angle(at, dim=0)
-        dipangle.run()
-
-    The option ``dim = 0`` specifies the reference vector  ``x-axis``.
-    The run produces a `python dictionary` named ``dipangle.results`` with `4 keys` linked to `numpy arrays` as `values`. 
-    They are timestep, cosine of dipole and x-axis, cosine squared, product of cosine of dipoles i and j (i!=j)
-
-    The results can be visualized as follows:
-
-    .. code-block:: python3
-
-        plt.plot(dipangle.results["t"],dipangle.results["cos_theta_i"])
-        plt.title("Average cos between dipole and x-axis")
-        plt.xlabel("Time (ps)")
-        plt.ylabel(r'cos($\theta_i$)')
-        plt.show()
-
-    The figure generated :
-
-       .. image:: ../images/dipangle.png
-        :width: 600
-
-    MAICOS can also be accessed through command line interface.
-
-    **From the command line interface**
-
-    .. code-block:: bash
-
-        maicos dipole_angle -s md.tpr -f md.trr -d 0
-
-    The output file ``dipangle.dat`` is similar to `dipangle.results` and contains the data in columns. 
-
-    They are several options you can play with. To know the full 
-    list of options, have a look at the ``Inputs`` section below. 
-
-    .. _`MD Analysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/ 
-    .. _`gromacs electric field`: https://manual.gromacs.org/2019-current/reference-manual/special/electric-fields.html#fig-field
-
-
-    **Inputs**
-
-    :param dim (int): refernce vector for angle (x=0, y=1, z=2)
-    :param outfreq (float): Default number of frames after which output files are refreshed
-    :param output (str): Prefix for output filenames
-
-    **Outputs**
-
-    :returns (dict): * t: time (ps)
-                     * cos_theta_i: Average cos between dipole and axis
-                     * cos_theta_ii: Average cos^2 of the same between dipole and axis
-                     * cos_theta_ij: Product cos of dipole i and cos of dipole j (i!=j)
+    Attributes
+    ----------
+    results.t : np.ndarray
+        time (ps)
+    resulst.cos_theta_i : np.ndarray
+        Average cos between dipole and axis
+    resulst.cos_theta_ii : np.ndarray
+        Average cos^2 of the same between dipole and axis
+    resulst.cos_theta_ij : np.ndarray
+        Product cos of dipole i and cos of dipole j (i!=j)
     """
-
     def __init__(self,
                  atomgroup,
-                 output="dipangle.dat",
-                 outfreq=10000,
                  dim=2,
+                 output="dipangle.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroup, **kwargs)
-        self.output = output
+        super(DipoleAngle, self).__init__(atomgroup, **kwargs)
         self.dim = dim
-        self.outfreq = outfreq
-
-    def _configure_parser(self, parser):
-        parser.description = self.__doc__
-        parser.add_argument('-d', dest='dim')
-        parser.add_argument('-dout', dest='outfreq')
-        parser.add_argument('-o', dest='output')
+        self.output = output
+        self.concfreq = concfreq
 
     def _prepare(self):
         self.n_residues = self.atomgroup.residues.n_residues
@@ -157,141 +86,68 @@ class dipole_angle(SingleGroupAnalysisBase):
         self.cos_theta_ij[self._frame_index] /= (self.n_residues**2 -
                                                  self.n_residues)
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
         self._index = self._frame_index + 1
 
-        self.results["t"] = self._trajectory.dt * \
-            np.arange(self.startframe, self.stopframe, self.step)
+        self.results.t = self.times
+        self.results.cos_theta_i = self.cos_theta_i[:self._index]
+        self.results.cos_theta_ii = self.cos_theta_ii[:self._index]
+        self.results.cos_theta_ij = self.cos_theta_ij[:self._index]
 
-        self.results["cos_theta_i"] = self.cos_theta_i[:self._index]
-        self.results["cos_theta_ii"] = self.cos_theta_ii[:self._index]
-        self.results["cos_theta_ij"] = self.cos_theta_ij[:self._index]
-
-    def _save_results(self):
-
+    def save(self):
         savetxt(self.output,
-                np.vstack([
-                    self.results["t"], self.results["cos_theta_i"],
-                    self.results["cos_theta_ii"], self.results["cos_theta_ij"]
-                ]).T,
+                np.vstack([self.results.t,
+                           self.results.cos_theta_i,
+                           self.results.cos_theta_ii,
+                           self.results.cos_theta_ij]).T,
                 header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
                 fmt='%.5e')
 
 
-class kinetic_energy(SingleGroupAnalysisBase):
-    """Computes the timeseries of energies.
+class KineticEnergy(AnalysisBase):
+    """Calculate the timeseries of energies.
 
-    The kinetic energy function computes the translational and rotational Kinetic Energy for the molecular center of an MD simulation trajectory.
+    The kinetic energy function computes the translational and rotational kinetic
+    energy with respect to molecular center (center of mass, center of charge)
+    of a molecular dynamics simulation trajectory.
 
-    The program can be run from either a python environment or a command line interface.
-    As an example, we analyse a simulation of box of water molecules in an NVE ensemble. 
-    The length of the box was 2.5 nm containing around 500 water molecules. 
-    The time step of simulation was 4 fs and it was 200 ps long. 
-    Periodic boundary conditions were employed in all directions and long range electrostatics were modelled using the PME method. 
-    LINCS algorithm was used to constraint the H-Bonds.
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    refpoint : str
+        reference point for molecular center: center of
+        mass (COM) or center of charge (COC)
+        Note: The oxygen position only works for systems of pure water
+    output : str
+        Output filename
+    ${VERBOSE_PARAMETER}
 
-    The simulation directory can be downloaded from the repository (shown below) which contains ``nve.tpr`` and ``nve.trr``
-
-    .. code-block:: bash
-
-        cd tests/data/kineticenergy
-
-    **From the python interpreter**
-
-    We need to import `MD Analysis`_, `matplotlib`_ and maicos packages in the environment
-
-    .. code-block:: python3
-
-        import MDAnalysis as mda
-        import matplotlib.pyplot as plt
-        import maicos
-
-    Then create an MD Analysis Universe. 
-
-    .. code-block:: python3
-
-        u = mda.Universe("nve.tpr","nve.trr")
-        at = u.atoms
-
-    Now run the MAICOS dipole angle function.
-
-    .. code-block:: python3
-
-        ke = maicos.dipole_angle(at)
-        ke.run()
-
-    The run produces a `python dictionary` named ``ke.results`` with `3 keys` linked to `numpy arrays` as `values`. 
-    They are timestep, translational KE, and rotational KE.
-
-    The results can be visualized as follows:
-
-    .. code-block:: python3
-
-        plt.plot(ke.results['t'],ke.results['trans'] )
-        plt.title("Translational Kinetic Energy")
-        plt.xlabel("Time (ps)")
-        plt.ylabel("KJ/mole")
-        plt.show()
-
-    The figure generated :
-
-       .. image:: ../images/ket.png
-            :width: 600
-
-    MAICOS can also be accessed through command line interface.
-
-    **From the command line interface**
-
-    .. code-block:: bash
-
-        maicos kinetic_energy -s md.tpr -f md.trr -o ke.dat
-
-    The output file ``ke.dat`` is similar to `ke.results` and contains the data in columns. 
-
-    They are several options you can play with. To know the full 
-    list of options, have a look at the ``Inputs`` section below. 
-
-
-    .. _`MD Analysis`: https://www.mdanalysis.org/
-    .. _`matplotlib`: https://matplotlib.org/ 
-
-
-    **Inputs**
-
-    :param output (str): Output filename
-    :param refpoint (str): reference point for molecular center: center of
-                            mass (COM), center of charge (COC), or oxygen position (OXY)
-                            Note: The oxygen position only works for systems of pure water
-
-    **Outputs**
-
-    :returns (dict): * t: time (ps)
-                        * trans: translational kinetic energy (kJ/mole)
-                        * rot: rotational kinetic energy (kJ/mole)
+    Attributes
+    ----------
+    results.t : np.ndarray
+        time (ps)
+    results.trans : np.ndarray
+        translational kinetic energy (kJ/mol)
+    results.rot : np.ndarray
+        rotational kinetic energy (kJ/mol)
     """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
-        super().__init__(atomgroup, **kwargs)
+        super(KineticEnergy, self).__init__(atomgroup, **kwargs)
         self.output = output
         self.refpoint = refpoint
 
-    def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
-        parser.add_argument('-r', dest='refpoint')
-
     def _prepare(self):
         """Set things up before the analysis loop begins"""
-        if self.refpoint not in ["COM", "COC", "OXY"]:
+        if self.refpoint not in ["COM", "COC"]:
             raise ValueError(
-                "Invalid choice for dens: '{}' (choose from 'COM', "
-                "'COC', 'OXY')".format(self.refpoint))
-
-        if self.refpoint == "OXY":
-            self.oxy = self.atomgroup.select_atoms("name OW*")
+                "Invalid choice for dens: '{}' (choose from 'COM' or " "'COC')".format(self.refpoint))
 
         self.masses = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.masses, compound=check_compound(self.atomgroup))
@@ -322,23 +178,19 @@ class kinetic_energy(SingleGroupAnalysisBase):
                 abschargevel, compound=check_compound(self.atomgroup))
             v /= self.abscharges[:, np.newaxis]
 
-        elif self.refpoint == "OXY":
-            v = self.oxy.velocities
-
         self.E_center[self._frame_index] = np.dot(self.masses,
                                                   np.linalg.norm(v, axis=1)**2)
 
-    def _calculate_results(self):
-        self.results["t"] = self._trajectory.dt * \
-            np.arange(self.startframe, self.stopframe, self.step)
-        self.results["trans"] = self.E_center / 2 / 100
-        self.results["rot"] = (self.E_kin - self.E_center) / 2 / 100
+    def _conclude(self):
+        self.results.t= self.times
+        self.results.trans = self.E_center / 2 / 100
+        self.results.rot = (self.E_kin - self.E_center) / 2 / 100
 
-    def _save_results(self):
+    def save(self):
         savetxt(self.output,
                 np.vstack([
-                    self.results["t"], self.results["trans"],
-                    self.results["rot"]
+                    self.results.t, self.results.trans,
+                    self.results.rot
                 ]).T,
                 fmt='%.8e',
-                header="t / ps \t E_kin^trans / kJ/mole \t E_kin^rot / kJ/mole")
+                header="t / ps \t E_kin^trans / kJ/mol \t E_kin^rot / kJ/mole")

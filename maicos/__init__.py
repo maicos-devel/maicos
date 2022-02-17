@@ -7,26 +7,35 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+__all__ = [
+    'DensityPlanar',
+    'DensityCylinder',
+    'EpsilonBulk',
+    'EpsilonPlanar',
+    'EpsilonCylinder',
+    'DielectricSpectrum',
+    'Saxs',
+    'Debye',
+    'Diporder',
+    'DipoleAngle',
+    'KineticEnergy',
+    'Velocity',
+]
+
 import warnings
 import sys
 import os
 
-from .modules import *
-
-__all__ = [
-    'density_planar',
-    'density_cylinder',
-    'epsilon_bulk',
-    'epsilon_planar',
-    'epsilon_cylinder',
-    'dielectric_spectrum',
-    'saxs',
-    'debye',
-    'dipole_angle',
-    'kinetic_energy',
-    'diporder',
-    'velocity',
-]
+from .modules.density import DensityPlanar, DensityCylinder
+from .modules.epsilon import (
+    EpsilonBulk,
+    EpsilonPlanar,
+    EpsilonCylinder,
+    DielectricSpectrum
+)
+from .modules.structure import Saxs, Debye, Diporder
+from .modules.timeseries import DipoleAngle, KineticEnergy
+from .modules.transport import Velocity
 
 try:
     sys.path.append(os.path.join(os.path.expanduser("~"),
@@ -37,7 +46,9 @@ except ImportError:
     pass
 
 __authors__ = "Philip Loche et. al."
-__version__ = "0.4.1"  # NOTE: keep in sync with VERSION in setup.py
+# NOTE: keep in sync with VERSION in setup.py
+# NOTE: keep in sync with version in docs/source/conf.py
+__version__ = "0.5"
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')

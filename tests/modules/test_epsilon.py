@@ -10,15 +10,19 @@
 import MDAnalysis as mda
 import pytest
 
-from maicos import epsilon_bulk, epsilon_planar, epsilon_cylinder
-from maicos import dielectric_spectrum
+from maicos import (
+    EpsilonBulk,
+    EpsilonCylinder,
+    EpsilonPlanar,
+    DielectricSpectrum
+)
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 
 
-class Test_epsilon_bulk(object):
+class TestEpsilonBulk(object):
 
     @pytest.fixture()
     def ag(self):
@@ -26,20 +30,22 @@ class Test_epsilon_bulk(object):
         return u.atoms
 
     def test_broken_molecules(self, ag):
-        eps = epsilon_bulk(ag, bpbc=False).run()
+        eps = EpsilonBulk(ag, make_whole=False).run()
         assert_almost_equal(eps.results['eps_mean'], 920.85, decimal=1)
 
     def test_repaired_molecules(self, ag):
-        eps = epsilon_bulk(ag, bpbc=True).run()
+        eps = EpsilonBulk(ag, make_whole=True).run()
         assert_almost_equal(eps.results['eps_mean'], 20.35, decimal=1)
 
     def test_temperature(self, ag):
-        eps = epsilon_bulk(ag, temperature=100).run()
+        eps = EpsilonBulk(ag, temperature=100).run()
         assert_almost_equal(eps.results['eps_mean'], 59.06, decimal=1)
 
     def test_output(self, ag, tmpdir):
         with tmpdir.as_cwd():
-            eps = epsilon_bulk(ag, save=True).run()
+            eps = EpsilonBulk(ag)
+            eps.run()
+            eps.save()
             res = np.loadtxt(eps.output)
             assert_almost_equal(np.hstack(
                 [eps.results["eps_mean"], eps.results["eps"]]).T,
@@ -48,14 +54,13 @@ class Test_epsilon_bulk(object):
 
     def test_output_name(self, ag, tmpdir):
         with tmpdir.as_cwd():
-            epsilon_bulk(ag, output="foo", save=True).run()
+            eps = EpsilonBulk(ag, output="foo", save=True)
+            eps.run()
+            eps.save()
             open("foo.dat")
 
-    def test_verbose(self, ag):
-        epsilon_bulk(ag, verbose=True).run()
 
-
-class Test_epsilon_planar(object):
+class TestEpsilonPlanar(object):
 
     @pytest.fixture()
     def ag(self):
@@ -68,22 +73,24 @@ class Test_epsilon_planar(object):
         return u.atoms
 
     @pytest.mark.parametrize('dim, val_perp, val_par',
-                             ((0, 0.075, -19.18), 
-                              (1, 0.280, -8.1),
-                              (2, 0.109, -15.9)))
+                             ((0, -0.2, 52.7),
+                              (1, -0.248, 43.2),
+                              (2, -0.22, 37.0)))
     def test_broken_molecules(self, ag, dim, val_perp, val_par):
-        eps = epsilon_planar(ag, bpbc=False, dim=dim).run()
+        eps = EpsilonPlanar(ag, make_whole=False, dim=dim).run()
         assert_almost_equal(eps.results['eps_perp'].mean(), val_perp, decimal=1)
         assert_almost_equal(eps.results['eps_par'].mean(), val_par, decimal=1)
 
     def test_repaired_molecules(self, ag):
-        eps = epsilon_planar(ag, bpbc=True).run()
-        assert_almost_equal(eps.results['eps_perp'].mean(), 0.43, decimal=1)
-        assert_almost_equal(eps.results['eps_par'].mean(), 1.94, decimal=1)
+        eps = EpsilonPlanar(ag, make_whole=True).run()
+        assert_almost_equal(eps.results['eps_perp'].mean(), -0.43, decimal=1)
+        assert_almost_equal(eps.results['eps_par'].mean(), 0.32, decimal=1)
 
     def test_output(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
-            eps = epsilon_planar(ag_single_frame, save=True).run()
+            eps = EpsilonPlanar(ag_single_frame)
+            eps.run()
+            eps.save()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_perp"][:, 0],
                                 res_perp[:, 1],
@@ -95,16 +102,14 @@ class Test_epsilon_planar(object):
 
     def test_output_name(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
-            epsilon_planar(ag_single_frame, output_prefix="foo",
-                           save=True).run()
+            eps= EpsilonPlanar(ag_single_frame, output_prefix="foo")
+            eps.run()
+            eps.save()
             open("foo_perp.dat")
             open("foo_par.dat")
 
-    def test_verbose(self, ag_single_frame):
-        epsilon_planar(ag_single_frame, verbose=True).run()
 
-
-class Test_epsilon_cylinder(object):
+class TestEpsilonCylinder(object):
 
     @pytest.fixture()
     def ag(self):
@@ -117,18 +122,20 @@ class Test_epsilon_cylinder(object):
         return u.atoms
 
     def test_broken_molecules(self, ag):
-        eps = epsilon_cylinder(ag, bpbc=False).run()
+        eps = EpsilonCylinder(ag, make_whole=False).run()
         assert_almost_equal(eps.results['eps_ax'].mean(), 1365.9, decimal=1)
         assert_almost_equal(eps.results['eps_rad'].mean(), -9.97, decimal=1)
 
     def test_repaired_molecules(self, ag):
-        eps = epsilon_cylinder(ag, bpbc=True).run()
+        eps = EpsilonCylinder(ag, make_whole=True).run()
         assert_almost_equal(eps.results['eps_ax'].mean(), 19.9, decimal=1)
         assert_almost_equal(eps.results['eps_rad'].mean(), -9.79, decimal=1)
 
     def test_output(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
-            eps = epsilon_cylinder(ag_single_frame, save=True).run()
+            eps = EpsilonCylinder(ag_single_frame)
+            eps.run()
+            eps.save()
             res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
             assert_almost_equal(eps.results["eps_ax"], res_ax[:, 1], decimal=1)
             res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
@@ -138,13 +145,14 @@ class Test_epsilon_cylinder(object):
 
     def test_output_name(self, ag_single_frame, tmpdir):
         with tmpdir.as_cwd():
-            epsilon_cylinder(ag_single_frame, output_prefix="foo",
-                             save=True).run()
+            eps = EpsilonCylinder(ag_single_frame, output_prefix="foo")
+            eps.run()
+            eps.save()
             open("foo_ax.dat")
             open("foo_rad.dat")
 
     def test_verbose(self, ag_single_frame):
-        epsilon_cylinder(ag_single_frame, verbose=True).run()
+        EpsilonCylinder(ag_single_frame, verbose=True).run()
 
 
 class TestDielectricSpectrum(object):
@@ -157,7 +165,7 @@ class TestDielectricSpectrum(object):
     @pytest.mark.parametrize('plotformat', ["pdf", "png", "jpg", "eps"])
     def test_plotformat(self, ag, plotformat, tmpdir):
         with tmpdir.as_cwd():
-            dielectric_spectrum(ag, plotformat=plotformat,
+            DielectricSpectrum(ag, plotformat=plotformat,
                                 output_prefix='test_it').run()
             assert open('test_it_susc_log.' + plotformat)
             assert open('test_it_susc_linlog.' + plotformat)
@@ -165,4 +173,4 @@ class TestDielectricSpectrum(object):
     def test_plotformat_wrong(self, ag):
         with pytest.raises(ValueError,
                            match="Invalid choice for plotformat: 'foo'"):
-            dielectric_spectrum(ag, plotformat="foo").run()
+            DielectricSpectrum(ag, plotformat="foo").run()

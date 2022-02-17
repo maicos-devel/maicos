@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2020 Authors and contributors
+# Copyright (c) 2022 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
-
+import logging
 import os
 import subprocess
 import tempfile
@@ -14,12 +14,17 @@ import tempfile
 import numpy as np
 import MDAnalysis as mda
 
-from .base import SingleGroupAnalysisBase
+from .base import AnalysisBase, PlanarBase
 from .. import tables
+from ..decorators import (
+    make_whole,
+    set_planar_class_doc,
+    set_verbose_doc,
+)
 from ..lib import sfactor
 from ..utils import check_compound, savetxt
-from ..decorators import planar_base
 
+logger = logging.getLogger(__name__)
 
 def compute_form_factor(q, atom_type):
     """Calculate the form factor for the given element for given q (1/nm).
@@ -57,8 +62,8 @@ def compute_form_factor(q, atom_type):
 
     return form_factor
 
-
-class saxs(SingleGroupAnalysisBase):
+@set_verbose_doc
+class Saxs(AnalysisBase):
     """Compute SAXS scattering intensities.
 
     The q vectors are binned
@@ -71,54 +76,59 @@ class saxs(SingleGroupAnalysisBase):
     based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
     profile is calculated. The selection uses the MDAnalysis selection commands.
 
-    **Inputs**
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    noboindata : bool
+        Do not bin the data. Only works reliable for NVT!
+    startq : float
+        Starting q (1/nm)
+    endq : float
+        Ending q (1/nm)
+    dq : float
+        binwidth (1/nm)
+    mintheta float
+        Minimal angle (°) between the q vectors and the z-axis.
+    maxtheta : float
+        Maximal angle (°) between the q vectors and the z-axis.
+    output : str
+        Output filename
+    concfreq : int
+        Default number of frames after which results are calculated and files refreshed.
+        If `0` results are only calculated at the end of the analysis and not
+        saved by default.
+    ${VERBOSE_PARAMETER}
 
-    :param outfreq (float): Number of frames after which the output is updated.
-    :param output (str): Output filename
-    :param noboindata (bool): Do not bin the data. Only works reliable for NVT!
-    :param startq (float): Starting q (1/nm)
-    :param endq (float): Ending q (1/nm)
-    :param dq (float): binwidth (1/nm)
-    :param mintheta (float): Minimal angle (°) between the q vectors and the z-axis.
-    :param maxtheta (float): Maximal angle (°) between the q vectors and the z-axis.
-
-    **Outputs**
-
-    :returns (dict): * q: length of binned q-vectors
-                     * q_indices: Miller indices of q-vector (only if noboindata==True)
-                     * scat_factor: Scattering intensities
+    Attributes
+    ----------
+    results.q : np.ndarray
+        length of binned q-vectors
+    results.q_indices : np.ndarray
+        Miller indices of q-vector (only if noboindata==True)
+    results.scat_factor : np.ndarray
+        Scattering intensities
     """
-
     def __init__(self,
                  atomgroup,
-                 outfreq=100,
-                 output="sq.dat",
                  nobin=False,
                  startq=0,
                  endq=60,
                  dq=0.05,
                  mintheta=0,
                  maxtheta=180,
+                 output="sq.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroup, **kwargs)
-        self.outfreq = outfreq
-        self.output = output
+        super(Saxs, self).__init__(atomgroup, **kwargs)
         self.nobindata = nobin
         self.startq = startq
         self.endq = endq
         self.dq = dq
         self.mintheta = mintheta
         self.maxtheta = maxtheta
-
-    def _configure_parser(self, parser):
-        parser.add_argument('-dout', dest='outfreq')
-        parser.add_argument('-sq', dest='output')
-        parser.add_argument('-startq', dest='startq')
-        parser.add_argument('-endq', dest='endq')
-        parser.add_argument('-nobin', dest='nobindata')
-        parser.add_argument('-dq', dest='dq', type=float, default=0.05, help='')
-        parser.add_argument('-mintheta', dest='mintheta')
-        parser.add_argument('-maxtheta', dest='maxtheta')
+        self.output = output
+        self.concfreq = concfreq
 
     def _prepare(self):
 
@@ -139,26 +149,22 @@ class saxs(SingleGroupAnalysisBase):
 
         self.groups = []
         self.atom_types = []
-        if self._verbose:
-            print("\nMap the following atomtypes:")
+        logger.info("\nMap the following atomtypes:")
         for atom_type in np.unique(self.atomgroup.types).astype(str):
             try:
                 element = tables.atomtypes[atom_type]
             except KeyError:
-                raise RuntimeError(
-                    "No suitable element for '{0}' found. You can add '{0}' together with a suitable element to 'share/atomtypes.dat'."
-                    .format(atom_type))
+                raise RuntimeError(f"No suitable element for '{atom_type}' "
+                                   f"found. You can add '{atom_type}' "
+                                   "together with a suitable element "
+                                   "to 'share/atomtypes.dat'.")
             if element == "DUM":
                 continue
             self.groups.append(
                 self.atomgroup.select_atoms("type {}*".format(atom_type)))
             self.atom_types.append(atom_type)
 
-            if self._verbose:
-                print("{:>14} --> {:>5}".format(atom_type, element))
-
-        if self._verbose:
-            print("")
+            logger.info("{:>14} --> {:>5}".format(atom_type, element))
 
         if self.nobindata:
             self.box = np.diag(
@@ -204,36 +210,37 @@ class saxs(SingleGroupAnalysisBase):
                                               bins=np.arange(self.nbins + 1))[0]
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
         self._index = self._frame_index + 1
         if self.nobindata:
-            self.results["scat_factor"] = self.S_array.sum(axis=3)
-            self.results["q_indices"] = np.array(
+            self.results.scat_factor = self.S_array.sum(axis=3)
+            self.results.q_indices = np.array(
                 list(np.ndindex(tuple(self.maxn))))
-            self.results["q"] = np.linalg.norm(self.results["q_indices"] *
-                                               self.q_factor[np.newaxis, :],
-                                               axis=1)
+            self.results.q = np.linalg.norm(self.results.q_indices *
+                                            self.q_factor[np.newaxis, :],
+                                            axis=1)
         else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
             nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
             scat_factor = self.struct_factor[nonzeros]
 
-            self.results["q"] = q[nonzeros]
-            self.results["scat_factor"] = scat_factor.sum(axis=1)
+            self.results.q = q[nonzeros]
+            self.results.scat_factor = scat_factor.sum(axis=1)
 
-        self.results["scat_factor"] /= (self._index * self.atomgroup.n_atoms)
+        self.results.scat_factor /= (self._index * self.atomgroup.n_atoms)
 
-    def _save_results(self):
+    def save(self):
         """Saves the current profiles to a file."""
 
         if self.nobindata:
             out = np.hstack([
-                self.results["q"][:, np.newaxis], self.results["q_indices"],
-                self.results["scat_factor"].flatten()[:, np.newaxis]
+                self.results.q[:, np.newaxis], self.results.q_indices,
+                self.results.scat_factor.flatten()[:, np.newaxis]
             ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
@@ -249,50 +256,61 @@ class saxs(SingleGroupAnalysisBase):
                     fmt='%.4e')
         else:
             savetxt(self.output,
-                    np.vstack([self.results["q"],
-                               self.results["scat_factor"]]).T,
+                    np.vstack([self.results.q,
+                               self.results.scat_factor]).T,
                     header="q (1/nm)\tS(q) (arb. units)",
                     fmt='%.4e')
 
 
-class debye(SingleGroupAnalysisBase):
+@set_verbose_doc
+class Debye(AnalysisBase):
     """Calculate scattering intensities using the debye equation.
 
-        **Inputs**
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    outfreq float :
+        Number of frames after which the output is updated.
+    output : str
+        Output filename
+    startq : float
+        Starting q (1/nm)
+    endq : float
+        Ending q (1/nm)
+    dq : float
+        binwidth (1/nm)
+    sinc : bool
+        Apply sinc damping
+    debyer : str
+        Path to the debyer executable
+    ${VERBOSE_PARAMETER}
 
-       :param outfreq (float): Number of frames after which the output is updated.
-       :param output (str): Output filename
-       :param startq (float): Starting q (1/nm)
-       :param endq (float): Ending q (1/nm)
-       :param dq (float): binwidth (1/nm)
-       :param sinc (bool): Apply sinc damping
-       :param debyer (str): Path to the debyer executable
-
-        **Outputs**
-
-       :returns (dict): * q: length of binned q-vectors
-                        * scat_factor: Scattering intensities
+    Attributes
+    ----------
+    results.q : np.ndarray
+        length of binned q-vectors
+    results.scat_factor : np.ndarray
+        Scattering intensities
     """
-
     def __init__(self,
                  atomgroup,
-                 sel="all",
-                 outfreq=100,
-                 output="sq.dat",
                  startq=0,
                  endq=60,
                  dq=0.05,
                  sinc=False,
                  debyer="debyer",
+                 output="sq.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroup, **kwargs)
-        self.outfreq = outfreq
-        self.output = output
+        super(Debye, self).__init__(atomgroup, **kwargs)
         self.startq = startq
         self.endq = endq
         self.dq = dq
         self.sinc = sinc
         self.debyer = debyer
+        self.output = output
+        self.concfreq = concfreq
 
     def _configure_parser(self, parser):
         parser.add_argument('-dout', dest='outfreq')
@@ -386,16 +404,18 @@ class debye(SingleGroupAnalysisBase):
                         stderr=self._OUT,
                         shell=True)
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
         datfiles = [f for f in os.listdir(self._tmp) if f.endswith(".dat")]
 
         s_tmp = np.loadtxt("{}/{}".format(self._tmp, datfiles[0]))
         for f in datfiles[1:]:
-            s_tmp = np.vstack([s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
+            s_tmp = np.vstack(
+                [s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
 
         nbins = int(np.ceil((self.endq - self.startq) / self.dq))
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
@@ -408,90 +428,94 @@ class debye(SingleGroupAnalysisBase):
 
         nonzeros = np.where(s_out != 0)[0]
 
-        self.results["q"] = 10 * q[nonzeros]
-        self.results["scat_factor"] = s_out[nonzeros] / len(datfiles)
+        self.results.q = 10 * q[nonzeros]
+        self.results.scat_factor = s_out[nonzeros] / len(datfiles)
 
-    def _conclude(self):
-        for f in os.listdir(self._tmp):
-            os.remove("{}/{}".format(self._tmp, f))
+        # Remove temp files at the end of the analysis
+        if self.n_frames == self._frame_index + 1:
+            for f in os.listdir(self._tmp):
+                os.remove("{}/{}".format(self._tmp, f))
 
-        os.rmdir(self._tmp)
+            os.rmdir(self._tmp)
 
-    def _save_results(self):
+    def save(self):
         savetxt(self.output,
-                np.vstack([self.results["q"], self.results["scat_factor"]]).T,
+                np.vstack([self.results.q, self.results.scat_factor]).T,
                 header="q (1/A)\tS(q)_tot (arb. units)",
                 fmt='%.8e')
 
 
-@planar_base()
-class diporder(SingleGroupAnalysisBase):
-    """Calculation of dipolar order parameters.
-    
-    Calculations include the projected dipole density 
-    P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole 
+@set_verbose_doc
+@set_planar_class_doc
+@make_whole()
+class Diporder(PlanarBase):
+    """Calculate dipolar order parameters.
+
+    Calculations include the projected dipole density
+    P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole
     orientation cos²(Θ[z]) and the number density ρ(z).
 
-    **Inputs**
+    Parameters
+    ----------
+    atomgroup : AtomGroup
+       Atomgroup on which the analysis is executed
+    ${PLANAR_CLASS_PARAMETERS}
+    sym : bool
+        symmetrize the profiles
+    binmethod : str
+        binning method: center of mass (COM) or center of charge (COC)
+    ${MAKE_WHOLE_PARAMETER}
+    output : str
+        Output filename
+    concfreq : int
+        Default number of frames after which results are calculated and files refreshed.
+        If `0` results are only calculated at the end of the analysis and not
+        saved by default.
+    ${VERBOSE_PARAMETER}
 
-    :param output (str): Output filename
-    :param outfreq (int): Default number of frames after which output files are
-                         refreshed
-    :param bsym (bool): symmetrize the profiles
-    :param binmethod (str): binning method: center of Mass (COM), center of charge (COC)
-                            or oxygen position (OXY).
-                            Note: `OXY` only works for water oxygens with name `OW*`
-    :param bpbc (bool): do not make broken molecules whole again
-                       (only works if molecule is smaller than shortest box vector
-
-
-    **Outputs**
-
-   :returns (dict): * z: bins [nm]
-                    * P0: P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
-                    * cos_theta: cos(θ[z])
-                    * cos_2_theta: cos²(Θ[z])
-                    * rho: ρ(z) [1/nm³]
+    Attributes
+    ----------
+    ${PLANAR_CLASS_ATTRIBUTES}
+    results.P0 : np.ndarray
+        P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+    results.cos_theta : np.ndarray
+        cos(θ[z])
+    results.cos_2_theta : np.ndarray
+        cos²(Θ[z])
+    results.rho : np.ndarray
+        ρ(z) [1/nm³]
     """
-
     def __init__(self,
                  atomgroup,
-                 output="diporder.dat",
-                 outfreq=10000,
-                 bsym=False,
-                 binmethod='COM',
-                 bpbc=True,
-                 # Planar base arguments are necessary for buidling CLI
                  dim=2,
                  binwidth=0.1,
                  center=False,
                  comgroup=None,
+                 sym=False,
+                 binmethod='COM',
+                 make_whole=True,
+                 output="diporder.dat",
+                 concfreq=0,
                  **kwargs):
-        super().__init__(atomgroup, **kwargs)
-
-        self.output = output
-        self.outfreq = outfreq
-        self.bsym = bsym
+        super(Diporder, self).__init__(atomgroups=atomgroup,
+                                       dim=dim,
+                                       binwidth=binwidth,
+                                       center=center,
+                                       comgroup=comgroup,
+                                       **kwargs)
+        self.sym = sym
         self.binmethod = binmethod
-        self.bpbc = bpbc
-
-    def _configure_parser(self, parser):
-        parser.add_argument('-o', dest='output')
-        parser.add_argument('-dout', dest="outfreq")
-        parser.add_argument('-sym', dest='bsym')
-        parser.add_argument('-bin', dest='binmethod')
-        parser.add_argument('-nopbcrepair', dest='bpbc')
+        self.make_whole = make_whole
+        self.concfreq = concfreq
+        self.output = output
 
     def _prepare(self):
         """Set things up before the analysis loop begins"""
-
+        super(Diporder, self)._prepare()
         self.binmethod = self.binmethod.upper()
-        if self.binmethod not in ["COM", "COC", "OXY"]:
+        if self.binmethod not in ["COM", "COC"]:
             raise ValueError('Unknown binning method: {}'.format(
                 self.binmethod))
-
-        if self.binmethod == "OXY":
-            self.oxy = self.atomgroup.select_atoms("name OW*")
 
         # Check if all residues are identical. Choose first residue as reference.
         residue_names = [ag.names for ag in self.atomgroup.split("residue")]
@@ -514,10 +538,7 @@ class diporder(SingleGroupAnalysisBase):
         self.unit[self.dim] += 1
 
     def _single_frame(self):
-        # Make molecules whole
-        if self.bpbc:
-            self.atomgroup.unwrap(compound=check_compound(self.atomgroup))
-
+        super(Diporder, self)._single_frame()
         dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
         chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
@@ -528,12 +549,11 @@ class diporder(SingleGroupAnalysisBase):
 
         if self.binmethod == 'COM':
             # Calculate the centers of the objects (i.e. Molecules)
-            bin_positions = self.atomgroup.center_of_mass(compound=check_compound(self.atomgroup))
+            bin_positions = self.atomgroup.center_of_mass(
+                compound=check_compound(self.atomgroup))
         elif self.binmethod == 'COC':
             bin_positions = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
-                                         compound=check_compound(self.atomgroup))
-        elif self.binmethod == 'OXY':
-            bin_positions = self.oxy.positions
+                                                  compound=check_compound(self.atomgroup))
 
         bins = self.get_bins(bin_positions)
         bincount = np.bincount(bins, minlength=self.n_bins)
@@ -558,37 +578,38 @@ class diporder(SingleGroupAnalysisBase):
                 self.unit)**2)[0]
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
-        if self._save and self._frame_index % self.outfreq == 0 and self._frame_index > 0:
-            self._calculate_results()
-            self._save_results()
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+            and self._frame_index > 0:
+            self._conclude()
+            self.save()
 
-    def _calculate_results(self):
+    def _conclude(self):
         """Calculate the results.
 
         Called at the end of the run() method to before the _conclude function.
         Can also called during a run to update the results during processing."""
+        super(Diporder, self)._conclude()
         self._index = self._frame_index + 1
-        self.results["P0"] = self.P0 / self._frame_index
-        self.results["rho"] = self.rho / self._frame_index
+        self.results.P0 = self.P0 / self._frame_index
+        self.results.rho = self.rho / self._frame_index
 
         with np.errstate(divide='ignore', invalid='ignore'):
-            self.results["cos_theta"] = np.nan_to_num(self.cos_theta / self.bin_count)
-            self.results["cos_2_theta"] = np.nan_to_num(self.cos_2_theta / self.bin_count)
+            self.results.cos_theta = np.nan_to_num(
+                self.cos_theta / self.bin_count)
+            self.results.cos_2_theta = np.nan_to_num(
+                self.cos_2_theta / self.bin_count)
 
-        if self.bsym:
-            for i in range(len(self.results["z"]) - 1):
-                self.results["z"][i +
-                                  1] = .5 * (self.results["z"][i + 1] +
-                                             self.results["z"][i + 1][-1::-1])
-                self.results["diporder"][
-                    i + 1] = .5 * (self.results["diporder"][i + 1] +
-                                   self.results["diporder"][i + 1][-1::-1])
+        if self.sym:
+            for i in range(len(self.results.z) - 1):
+                self.results.z[i +
+                               1] = .5 * (self.results.z[i + 1] +
+                                          self.results.z[i + 1][-1::-1])
+                self.results.diporder[
+                    i + 1] = .5 * (self.results.diporder[i + 1] +
+                                   self.results.diporder[i + 1][-1::-1])
 
-    def _save_results(self):
-        """Save results to a file.
-
-        Called at the end of the run() method after _calculate_results and
-        _conclude"""
+    def save(self):
+        """Save results to a file."""
 
         header = "z [nm]\t"
         header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
@@ -598,8 +619,8 @@ class diporder(SingleGroupAnalysisBase):
 
         savetxt(self.output,
                 np.vstack([
-                    self.results["z"], self.results["P0"],
-                    self.results["cos_theta"], self.results["cos_2_theta"],
-                    self.results["rho"]
+                    self.results.z, self.results.P0,
+                    self.results.cos_theta, self.results.cos_2_theta,
+                    self.results.rho
                 ]).T,
                 header=header)

@@ -8,7 +8,7 @@ Epsilon bulk
 Description
 ***********
 
-.. automodule:: maicos.modules.epsilon.epsilon_bulk
+.. automodule:: maicos.modules.epsilon.EpsilonBulk
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,7 +20,7 @@ Epsilon planar
 Description
 ***********
 
-.. automodule:: maicos.modules.epsilon.epsilon_planar
+.. automodule:: maicos.modules.epsilon.EpsilonPlanar
     :members:
     :undoc-members:
     :show-inheritance:
@@ -31,7 +31,7 @@ Epsilon cylinder
 Description
 ***********
 
-.. automodule:: maicos.modules.epsilon.epsilon_cylinder
+.. automodule:: maicos.modules.epsilon.EpsilonCylinder
     :members:
     :undoc-members:
     :show-inheritance:
@@ -43,7 +43,7 @@ Description
 ***********
 
 
-.. automodule:: maicos.modules.epsilon.dielectric_spectrum
+.. automodule:: maicos.modules.epsilon.DielectricSpectrum
     :members:
     :undoc-members:
     :show-inheritance:

@@ -23,4 +23,3 @@ Contributors
 - Simon Gravelle
 - Henrik Jaeger
 - Srihas Velpuri
-

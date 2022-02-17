@@ -2,19 +2,47 @@
 /*.egg-info
 *.pyc
 __pycache__
-
-sfactor.c
+*.DS_store
+*.npz
+*.dat
+*.npy
+*.xvg
+*.egg-info
+.duecredit.p
+.tox/
+.swp
 *.npz
 *.dat
 *.npy
 *.txt
 *.xvg
 
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Sphinx documentation
+docs/_build/
+docs/html
+docs/latex
+
+# editors and IDEs
+*.sw[a-z]
+*~
+.idea
+.vscode
+
 # Ignore build dir
 /build
 /dist
-docs/source/_build
-public
 
 # Ignore the .DS_Store file in the osx file system
 *.DS_store
@@ -22,12 +50,9 @@ public
 # duecredit
 .duecredit.p
 
-# ignore files from tests
-.hypothesis/
-
 # Allow maicos share text files
 !maicos/share/*.dat
-!requirements.txt
+!*requirements.txt
 
 # editors and IDEs
 *.sw[a-z]
