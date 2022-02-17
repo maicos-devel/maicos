@@ -11,7 +11,11 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.5 (XXXX/XX/XX)
+v0.6 (XXXX/XX/XX)
+-----------------
+
+
+v0.5 (2022/02/17)
 -----------------
 Philip Loche, Srihas Velpuri, Simon Gravelle
 

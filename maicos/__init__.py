@@ -48,7 +48,7 @@ except ImportError:
 __authors__ = "Philip Loche et. al."
 # NOTE: keep in sync with VERSION in setup.py
 # NOTE: keep in sync with version in docs/source/conf.py
-__version__ = "0.5-dev"
+__version__ = "0.6-dev"
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')
