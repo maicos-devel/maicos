@@ -2,29 +2,30 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Utilities."""
 
 import os
 import sys
 import warnings
 
 import numpy as np
-from MDAnalysis import NoDataError
+
 
 _share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
 
 
 def repairMolecules(selection):
     """Repairs molecules that are broken due to peridodic boundaries.
-    To this end the center of mass is reset into the central box.
-    CAVE: Only works with small (< half box) molecules."""
 
-    warnings.warn(
-        "repairMolecules is deprecated, use AtomGroup.unwrap() from MDAnalysis instead.",
-        category=DeprecationWarning)
+    To this end the center of mass is reset into the central box.
+    CARE: Only works with small (< half box) molecules.
+    """
+    warnings.warn("repairMolecules is deprecated, use AtomGroup.unwrap() "
+                  "from MDAnalysis instead.", category=DeprecationWarning)
 
     # we repair each moleculetype individually for performance reasons
     for seg in selection.segments:
@@ -33,17 +34,16 @@ def repairMolecules(selection):
         # Make molecules whole, use first atom as reference
         distToFirst = np.empty((seg.atoms.positions.shape))
         for i in range(atomsPerMolecule):
-            distToFirst[i::atomsPerMolecule] = seg.atoms.positions[i::atomsPerMolecule] - \
-                seg.atoms.positions[0::atomsPerMolecule]
+            distToFirst[i::atomsPerMolecule] = \
+                seg.atoms.positions[i::atomsPerMolecule] - seg.atoms.positions[0::atomsPerMolecule]  # noqa: E501
         seg.atoms.positions -= (
-            np.abs(distToFirst) > selection.dimensions[:3] /
-            2.) * selection.dimensions[:3] * np.sign(distToFirst)
+            np.abs(distToFirst) > selection.dimensions[:3]
+            / 2.) * selection.dimensions[:3] * np.sign(distToFirst)
 
         # Calculate the centers of the objects ( i.e. Molecules )
-        masspos = (seg.atoms.positions *
-                   seg.atoms.masses[:, np.newaxis]).reshape(
-                       (seg.atoms.n_atoms // atomsPerMolecule, atomsPerMolecule,
-                        3))
+        masspos = (seg.atoms.positions
+                   * seg.atoms.masses[:, np.newaxis]).reshape(
+            (seg.atoms.n_atoms // atomsPerMolecule, atomsPerMolecule, 3))
         # all molecules should have same mass
         centers = np.sum(masspos.T, axis=1).T / \
             seg.atoms.masses[:atomsPerMolecule].sum()
@@ -56,8 +56,10 @@ def repairMolecules(selection):
 
 
 def check_compound(AtomGroup):
-    """Checks if compound 'molecules' exists. If not it will
-    fallback to 'fragments' or 'residues'.
+    """Check if compound 'molecules' exists.
+
+    If compound molecule does not exist, it
+    fallbacks to 'fragments' or 'residues'.
     """
     if hasattr(AtomGroup, "molnums"):
         return "molecules"
@@ -69,14 +71,17 @@ def check_compound(AtomGroup):
         return "residues"
 
 
-dt_dk_tolerance = 1e-8  # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
+# Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
+dt_dk_tolerance = 1e-8
 
 
 def FT(t, x, indvar=True):
     """Discrete fast fourier transform.
+
     Takes the time series and the function as arguments.
     By default, returns the FT and the frequency:\
-    setting indvar=False means the function returns only the FT."""
+    setting indvar=False means the function returns only the FT.
+    """
     a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
     if (abs((t[1:] - t[:-1] - dt)) > dt_dk_tolerance).any():
@@ -96,9 +101,11 @@ def FT(t, x, indvar=True):
 
 def iFT(k, xf, indvar=True):
     """Inverse discrete fast fourier transform.
+
     Takes the frequency series and the function as arguments.
     By default, returns the iFT and the time series:\
-    setting indvar=False means the function returns only the iFT."""
+    setting indvar=False means the function returns only the iFT.
+    """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
     if (abs((k[1:] - k[:-1] - dk)) > dt_dk_tolerance).any():
         print(np.max(abs(k[1:] - k[:-1])))
@@ -117,21 +124,25 @@ def iFT(k, xf, indvar=True):
 
 
 def Correlation(a, b=None, subtract_mean=False):
-    """Uses fast fourier transforms to give the correlation function
+    """Calculate correlation or autocorrelation.
+
+    Uses fast fourier transforms to give the correlation function
     of two arrays, or, if only one array is given, the autocorrelation.
-    Setting subtract_mean=True causes the mean to be subtracted from the input data."""
+    Setting subtract_mean=True causes the mean to be subtracted from
+    the input data.
+    """
     meana = int(subtract_mean) * np.mean(
         a)  # essentially an if statement for subtracting mean
     a2 = np.append(a - meana,
-                   np.zeros(2**int(np.ceil((np.log(len(a)) / np.log(2)))) -
-                            len(a)))  # round up to a power of 2
+                   np.zeros(2**int(np.ceil((np.log(len(a)) / np.log(2))))
+                            - len(a)))  # round up to a power of 2
     data_a = np.append(a2,
                        np.zeros(len(a2)))  # pad with an equal number of zeros
     fra = np.fft.fft(data_a)  # FT the data
     if b is None:
         sf = np.conj(
             fra
-        ) * fra  # take the conj and multiply pointwise if autocorrelation
+            ) * fra  # take the conj and multiply pointwise if autocorrelation
     else:
         meanb = int(subtract_mean) * np.mean(b)
         b2 = np.append(
@@ -146,9 +157,12 @@ def Correlation(a, b=None, subtract_mean=False):
 
 
 def ScalarProdCorr(a, b=None, subtract_mean=False):
-    """Gives the correlation function of the scalar product of two vector timeseries.
-    Arguments should be given in the form a[t, i], where t is the time variable,
-    along which the correlation is calculated, and i indexes the vector components."""
+    """Give the corr. function of the scalar product of two vector timeseries.
+
+    Arguments should be given in the form a[t, i],
+    where t is the time variable along which the correlation is calculated,
+    and i indexes the vector components.
+    """
     corr = np.zeros(len(a[:, 0]))
 
     if b is None:
@@ -163,36 +177,44 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
 
 
 def get_cli_input():
-    """Returns a proper fomatted string of the command line input"""
+    """Return a proper formatted string of the command line input."""
     program_name = os.path.basename(sys.argv[0])
     # Add additional quotes for connected arguments.
-    arguments = ['"{}"'.format(arg) if " " in arg else arg for arg in sys.argv[1:]]
+    arguments = ['"{}"'.format(arg)
+                 if " " in arg else arg for arg in sys.argv[1:]]
     return "Command line was: {} {}".format(program_name, " ".join(arguments))
 
 
 def savetxt(fname, X, header='', fsuffix=".dat", **kwargs):
-    """An extension of the numpy savetxt function.
-    Adds the command line input to the header and checks for a doubled defined
-    filesuffix."""
+    """Save to text.
+
+    An extension of the numpy savetxt function. Adds the command line
+    input to the header and checks for a doubled defined filesuffix.
+    """
     header = "{}\n{}".format(get_cli_input(), header)
     fname = "{}{}".format(fname, (not fname.endswith(fsuffix)) * fsuffix)
     np.savetxt(fname, X, header=header, **kwargs)
 
 
 def atomgroup_header(AtomGroup):
-    """Returns a string containing infos about the AtmGroup containing
-    the total number of atoms, the including residues and the number of residues.
-    Useful for writing output file headers."""
+    """Return a string containing infos about the AtomGroup.
 
+    Infos include the total number of atoms, the including
+    residues and the number of residues. Useful for writing
+    output file headers.
+    """
     unq_res, n_unq_res = np.unique(AtomGroup.residues.resnames,
                                    return_counts=True)
     return "{} atom(s): {}".format(
         AtomGroup.n_atoms, ", ".join(
             "{} {}".format(*i) for i in np.vstack([n_unq_res, unq_res]).T))
 
+
 def sort_atomgroup(atomgroup):
-    """Sort a atomgroup after its fragments, needed in e.g. LAMMPS,
-    as molecules are not sorted, but randomly distributed in atomgroup.atoms.
+    """Sort a atomgroup after its fragments.
+
+    Needed in e.g. LAMMPS, as molecules are not sorted,
+    but randomly distributed in atomgroup.atoms.
 
     atomgroup: atomgroup to sort
     """

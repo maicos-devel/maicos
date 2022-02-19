@@ -2,11 +2,10 @@
 Transport modules
 =================
 
+.. automodule:: maicos.modules.transport
+
 Velocity
 ========
-
-Description
-***********
 
 .. automodule:: maicos.modules.transport.Velocity
     :members:

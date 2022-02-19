@@ -2,34 +2,40 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+r"""Tools for computing structure properties.
+
+The structure modules of MAICoS allow for calculating Small-Angle X-ray
+Scattering (SAXS) scattering intensities, scattering intensities using the
+Debye equation, and dipolar order parameters from molecular simulation
+trajectory files.
+"""
+
 import logging
 import os
 import subprocess
 import tempfile
 
-import numpy as np
 import MDAnalysis as mda
+import numpy as np
 
-from .base import AnalysisBase, PlanarBase
 from .. import tables
-from ..decorators import (
-    make_whole,
-    set_planar_class_doc,
-    set_verbose_doc,
-)
+from ..decorators import make_whole, set_planar_class_doc, set_verbose_doc
 from ..lib import sfactor
 from ..utils import check_compound, savetxt
+from .base import AnalysisBase, PlanarBase
+
 
 logger = logging.getLogger(__name__)
+
 
 def compute_form_factor(q, atom_type):
     """Calculate the form factor for the given element for given q (1/nm).
 
-       Handles united atom types like CH4 etc ...
+    Handles united atom types like CH4 etc ...
     """
     element = tables.atomtypes[atom_type]
 
@@ -62,19 +68,21 @@ def compute_form_factor(q, atom_type):
 
     return form_factor
 
+
 @set_verbose_doc
 class Saxs(AnalysisBase):
     """Compute SAXS scattering intensities.
 
-    The q vectors are binned
-    by their length using a binwidth given by -dq. Using the -nobin option
-    the raw intensity for each q_{i,j,k} vector
-    is saved using. Note that this only works reliable using constant box vectors!
-    The possible scattering vectors q can be restricted by a miminal and maximal angle with the z-axis.
-    For 0 and 180 all possible vectors are taken into account.
-    For the scattering factor the structure fator is multiplied by a atom type specific form factor
-    based on Cromer-Mann parameters. By using the -sel option atoms can be selected for which the
-    profile is calculated. The selection uses the MDAnalysis selection commands.
+    The q vectors are binned by their length using a binwidth given by -dq.
+    Using the -nobin option the raw intensity for each q_{i,j,k} vector
+    is saved using. Note that this only works reliable using constant
+    box vectors! The possible scattering vectors q can be restricted by a
+    miminal and maximal angle with the z-axis. For 0 and 180 all possible
+    vectors are taken into account. For the scattering factor the structure
+    factor is multiplied by a atom type specific form factor based on
+    Cromer-Mann parameters. By using the -sel option atoms can be selected
+    for which the profile is calculated. The selection uses the
+    MDAnalysis selection commands.
 
     Parameters
     ----------
@@ -95,9 +103,9 @@ class Saxs(AnalysisBase):
     output : str
         Output filename
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated
+        and files refreshed. If `0` results are only calculated at
+        the end of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -109,6 +117,7 @@ class Saxs(AnalysisBase):
     results.scat_factor : np.ndarray
         Scattering intensities
     """
+
     def __init__(self,
                  atomgroup,
                  nobin=False,
@@ -178,7 +187,7 @@ class Saxs(AnalysisBase):
             self.struct_factor = np.zeros([self.nbins, len(self.groups)])
 
     def _single_frame(self):
-        # convert everything to cartesian coordinates
+        # Convert everything to cartesian coordinates.
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
         for i, t in enumerate(self.groups):
             positions = t.atoms.positions - box * \
@@ -200,8 +209,8 @@ class Saxs(AnalysisBase):
                 q_ts = q_ts[nonzeros]
                 S_ts = S_ts[nonzeros]
 
-                bins = ((q_ts - self.startq) /
-                        ((self.endq - self.startq) / self.nbins)).astype(int)
+                bins = ((q_ts - self.startq)
+                        / ((self.endq - self.startq) / self.nbins)).astype(int)
                 struct_ts = np.histogram(bins,
                                          bins=np.arange(self.nbins + 1),
                                          weights=S_ts)[0]
@@ -211,7 +220,7 @@ class Saxs(AnalysisBase):
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -221,8 +230,8 @@ class Saxs(AnalysisBase):
             self.results.scat_factor = self.S_array.sum(axis=3)
             self.results.q_indices = np.array(
                 list(np.ndindex(tuple(self.maxn))))
-            self.results.q = np.linalg.norm(self.results.q_indices *
-                                            self.q_factor[np.newaxis, :],
+            self.results.q = np.linalg.norm(self.results.q_indices
+                                            * self.q_factor[np.newaxis, :],
                                             axis=1)
         else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
@@ -235,25 +244,22 @@ class Saxs(AnalysisBase):
         self.results.scat_factor /= (self._index * self.atomgroup.n_atoms)
 
     def save(self):
-        """Saves the current profiles to a file."""
-
+        """Save the current profiles to a file."""
         if self.nobindata:
             out = np.hstack([
                 self.results.q[:, np.newaxis], self.results.q_indices,
                 self.results.scat_factor.flatten()[:, np.newaxis]
-            ])
+                ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
             selfort = np.selfort(out[:, 0])
             out = out[selfort]
 
-            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, box_z = {2:.3f} nm\n".format(
-                *self.box)
-            savetxt(self.output,
-                    out,
-                    header=boxinfo +
-                    "q (1/nm)\tq_i\t q_j \t q_k \tS(q) (arb. units)",
-                    fmt='%.4e')
+            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, " \
+                      "box_z = {2:.3f} nm\n".format(*self.box)
+            savetxt(self.output, out,
+                    header=boxinfo + "q (1/nm)\tq_i\t q_j \t "
+                                     "q_k \tS(q) (arb. units)", fmt='%.4e')
         else:
             savetxt(self.output,
                     np.vstack([self.results.q,
@@ -264,7 +270,7 @@ class Saxs(AnalysisBase):
 
 @set_verbose_doc
 class Debye(AnalysisBase):
-    """Calculate scattering intensities using the debye equation.
+    """Calculate scattering intensities using the Debye equation.
 
     Parameters
     ----------
@@ -293,6 +299,7 @@ class Debye(AnalysisBase):
     results.scat_factor : np.ndarray
         Scattering intensities
     """
+
     def __init__(self,
                  atomgroup,
                  startq=0,
@@ -320,7 +327,7 @@ class Debye(AnalysisBase):
         parser.add_argument(
             '-dq',
             dest='dq',
-        )
+            )
         parser.add_argument('-sinc', dest='sinc')
         parser.add_argument('-d', dest='debyer')
 
@@ -334,9 +341,9 @@ class Debye(AnalysisBase):
         self.atomgroup = self.atomgroup.select_atoms(
             "not name DUM and not name MW")
 
-        # Create an extra list for the atom names.
-        # This is necessary since it is not possible to efficently add axtra atoms to
-        # a MDAnalysis universe, necessary for the hydrogens in united atom forcefields.
+        # Create an extra list for the atom names. This is necessary since it
+        # is not possible to efficently add axtra atoms to a MDAnalysis
+        # universe, necessary for the hydrogens in united atom forcefields.
 
         self.atom_names = self.atomgroup.n_atoms * ['']
 
@@ -346,10 +353,11 @@ class Debye(AnalysisBase):
             # add hydrogens in the case of united atom forcefields
             if element in ["CH1", "CH2", "CH3", "CH4", "NH", "NH2", "NH3"]:
                 self.atom_names[i] = element[0]
-                for h in range(int(element[-1])):
+                for _h in range(int(element[-1])):
                     self.atom_names.append("H")
-                    # add a extra atom to universe. It got the wrong type but we only
-                    # need the position, since we maintain our own atom type list.
+                    # add an extra atom to universe. It got the wrong
+                    # type but we only need the position, since we maintain
+                    # our own atom type list.
                     self.atomgroup += self.atomgroup.atoms[i]
             else:
                 self.atom_names[i] = element
@@ -369,7 +377,7 @@ class Debye(AnalysisBase):
                 self._tmp))
 
     def _writeXYZ(self, filename):
-        """Writes the positions of the current frame to the given xyz file"""
+        """Write the positions of the current frame to the given xyz file."""
         write = mda.coordinates.XYZ.XYZWriter(filename,
                                               n_atoms=len(self.atom_names),
                                               atoms=self.atom_names)
@@ -382,9 +390,9 @@ class Debye(AnalysisBase):
 
         # convert coordinates in a rectengular box
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
-        self.atomgroup.positions = self.atomgroup.positions \
-            - box * np.round(self.atomgroup.positions /
-                             box)  # minimum image
+        self.atomgroup.positions \
+            = self.atomgroup.positions - box \
+            * np.round(self.atomgroup.positions / box)  # minimum image
 
         self._writeXYZ("{}/{}.xyz".format(self._tmp, self._frame_index))
 
@@ -392,10 +400,13 @@ class Debye(AnalysisBase):
         if ref_q > self.startq:
             self.startq = ref_q
 
-        command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat -a {5} -b {6} -c {7} -r {8} {3}/{4}.xyz".format(
-            round(self.startq, 3), self.endq, self.dq, self._tmp,
-            self._frame_index, box[0], box[1], box[2],
-            np.min(box) / 2.001)
+        command = "-x -f {0} -t {1} -s {2} -o {3}/{4}.dat " \
+                  "-a {5} -b {6} -c {7} -r {8} " \
+                  "{3}/{4}.xyz".format(round(self.startq, 3),
+                                       self.endq, self.dq, self._tmp,
+                                       self._frame_index, box[0],
+                                       box[1], box[2],
+                                       np.min(box) / 2.001)
 
         command += self.sinc * " --sinc"
 
@@ -405,7 +416,7 @@ class Debye(AnalysisBase):
                         shell=True)
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -420,8 +431,8 @@ class Debye(AnalysisBase):
         nbins = int(np.ceil((self.endq - self.startq) / self.dq))
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
 
-        bins = ((s_tmp[:, 0] - self.startq) /
-                ((self.endq - self.startq) / nbins)).astype(int)
+        bins = ((s_tmp[:, 0] - self.startq)
+                / ((self.endq - self.startq) / nbins)).astype(int)
         s_out = np.histogram(bins,
                              bins=np.arange(nbins + 1),
                              weights=s_tmp[:, 1])[0]
@@ -439,6 +450,7 @@ class Debye(AnalysisBase):
             os.rmdir(self._tmp)
 
     def save(self):
+        """Save result."""
         savetxt(self.output,
                 np.vstack([self.results.q, self.results.scat_factor]).T,
                 header="q (1/A)\tS(q)_tot (arb. units)",
@@ -468,9 +480,9 @@ class Diporder(PlanarBase):
     output : str
         Output filename
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated
+        and files refreshed. If `0` results are only calculated at the
+        end of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -485,6 +497,7 @@ class Diporder(PlanarBase):
     results.rho : np.ndarray
         ρ(z) [1/nm³]
     """
+
     def __init__(self,
                  atomgroup,
                  dim=2,
@@ -510,14 +523,15 @@ class Diporder(PlanarBase):
         self.output = output
 
     def _prepare(self):
-        """Set things up before the analysis loop begins"""
+        """Set things up before the analysis loop begins."""
         super(Diporder, self)._prepare()
         self.binmethod = self.binmethod.upper()
         if self.binmethod not in ["COM", "COC"]:
             raise ValueError('Unknown binning method: {}'.format(
                 self.binmethod))
 
-        # Check if all residues are identical. Choose first residue as reference.
+        # Check if all residues are identical.
+        # Choose first residue as reference.
         residue_names = [ag.names for ag in self.atomgroup.split("residue")]
         for names in residue_names[1:]:
             if len(residue_names[0]) != len(names) and np.all(
@@ -541,10 +555,10 @@ class Diporder(PlanarBase):
         super(Diporder, self)._single_frame()
         dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
-        chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.
-                                                                      newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos,
-                                            compound=check_compound(self.atomgroup))
+        chargepos = self.atomgroup.positions \
+            * self.atomgroup.charges[:, np.newaxis]
+        dipoles = self.atomgroup.accumulate(
+            chargepos, compound=check_compound(self.atomgroup))
         dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
@@ -552,8 +566,9 @@ class Diporder(PlanarBase):
             bin_positions = self.atomgroup.center_of_mass(
                 compound=check_compound(self.atomgroup))
         elif self.binmethod == 'COC':
-            bin_positions = self.atomgroup.center(weights=np.abs(self.atomgroup.charges),
-                                                  compound=check_compound(self.atomgroup))
+            bin_positions = self.atomgroup.center(
+                weights=np.abs(self.atomgroup.charges),
+                compound=check_compound(self.atomgroup))
 
         bins = self.get_bins(bin_positions)
         bincount = np.bincount(bins, minlength=self.n_bins)
@@ -579,7 +594,7 @@ class Diporder(PlanarBase):
         self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -587,7 +602,9 @@ class Diporder(PlanarBase):
         """Calculate the results.
 
         Called at the end of the run() method to before the _conclude function.
-        Can also called during a run to update the results during processing."""
+        Can also be called during a run to update the results during
+        processing.
+        """
         super(Diporder, self)._conclude()
         self._index = self._frame_index + 1
         self.results.P0 = self.P0 / self._frame_index
@@ -601,16 +618,15 @@ class Diporder(PlanarBase):
 
         if self.sym:
             for i in range(len(self.results.z) - 1):
-                self.results.z[i +
-                               1] = .5 * (self.results.z[i + 1] +
-                                          self.results.z[i + 1][-1::-1])
-                self.results.diporder[
-                    i + 1] = .5 * (self.results.diporder[i + 1] +
-                                   self.results.diporder[i + 1][-1::-1])
+                self.results.z[i + 1] \
+                    = .5 * (self.results.z[i + 1]
+                            + self.results.z[i + 1][-1::-1])
+                self.results.diporder[i + 1] \
+                    = .5 * (self.results.diporder[i + 1]
+                            + self.results.diporder[i + 1][-1::-1])
 
     def save(self):
         """Save results to a file."""
-
         header = "z [nm]\t"
         header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
         header += "cos(theta(z))\t"
@@ -622,5 +638,5 @@ class Diporder(PlanarBase):
                     self.results.z, self.results.P0,
                     self.results.cos_theta, self.results.cos_2_theta,
                     self.results.rho
-                ]).T,
+                    ]).T,
                 header=header)

@@ -9,10 +9,11 @@
 
 import numpy as np
 
-cimport numpy as np
 cimport cython
-from libc cimport math
+cimport numpy as np
 from cython.parallel cimport prange
+from libc cimport math
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

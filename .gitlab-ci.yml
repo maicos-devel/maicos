@@ -19,7 +19,6 @@ stages:
 .lint:
   stage: lint
   needs: []
-  allow_failure: True
   script:
     - tox -e lint
 

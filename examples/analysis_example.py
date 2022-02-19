@@ -6,18 +6,22 @@
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
+"""An examples Module."""
 
 # Mandatory imports
 import logging
+
 import numpy as np
 
 from maicos.modules.base import AnalysisBase
 from maicos.utils import savetxt
 
+
 logger = logging.getLogger(__name__)
 
+
 class AnalysisExample(AnalysisBase):
-    """Analysis script calcuting the average box volume.
+    """Analysis class calcuting the average box volume.
 
     Parameters
     ----------
@@ -33,6 +37,7 @@ class AnalysisExample(AnalysisBase):
     results.volume: float
         averaged box volume (Å³)
     """
+
     def __init__(self,
                  atomgroup,
                  temperature=300,
@@ -44,13 +49,13 @@ class AnalysisExample(AnalysisBase):
         self.output = output
 
     def _prepare(self):
-        """Set things up before the analysis loop begins"""
+        """Set things up before the analysis loop begins."""
         # self.atomgroup - given atomgroup
         # self._universe - full universe of given atomgroup
         self.volume = 0
 
     def _single_frame(self):
-        """Calculate data from a single frame of trajectory
+        """Calculate data from a single frame of trajectory.
 
         Don't worry about normalising, just deal with a single frame.
         """

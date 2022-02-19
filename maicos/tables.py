@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Tables."""
 
 import os
 
 import numpy as np
 
 from .utils import _share_path
+
 
 # Translation of atomnames to types/element
 atomtypes = {}
@@ -21,8 +23,8 @@ with open(os.path.join(_share_path, "atomtypes.dat")) as f:
             elements = line.split()
             atomtypes[elements[0]] = elements[1]
 
-# Cromer-Mann X-ray scattering factors computed from numerical Hartree-Fock wave functions
-# See Acta Cryst. A 24 (1968) p. 321
+# Cromer-Mann X-ray scattering factors computed from numerical
+# Hartree-Fock wave functions. See Acta Cryst. A 24 (1968) p. 321
 CM_parameters = {}
 with open(os.path.join(_share_path, "sfactor.dat")) as f:
     for line in f:

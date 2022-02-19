@@ -2,23 +2,18 @@
 Dielectric constant modules
 ===========================
 
+.. automodule:: maicos.modules.epsilon
+
 Epsilon bulk
 ============
-
-Description
-***********
 
 .. automodule:: maicos.modules.epsilon.EpsilonBulk
     :members:
     :undoc-members:
     :show-inheritance:
 
-
 Epsilon planar
 ==============
-
-Description
-***********
 
 .. automodule:: maicos.modules.epsilon.EpsilonPlanar
     :members:
@@ -28,9 +23,6 @@ Description
 Epsilon cylinder
 ================
 
-Description
-***********
-
 .. automodule:: maicos.modules.epsilon.EpsilonCylinder
     :members:
     :undoc-members:
@@ -38,10 +30,6 @@ Description
 
 Dielectric spectrum
 ===================
-
-Description
-***********
-
 
 .. automodule:: maicos.modules.epsilon.DielectricSpectrum
     :members:

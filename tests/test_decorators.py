@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2021 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the decorators."""
 
 import MDAnalysis as mda
 import pytest
-
-from maicos.modules.base import AnalysisBase
-from maicos.decorators import charge_neutral
-
 from modules.datafiles import WATER_GRO, WATER_TPR
+
+from maicos.decorators import charge_neutral
+from maicos.modules.base import AnalysisBase
 
 
 def single_class(atomgroup, filter):
+    """Single class."""
     @charge_neutral(filter)
     class SingleCharged(AnalysisBase):
         def __init__(self, atomgroup):
@@ -33,6 +34,7 @@ def single_class(atomgroup, filter):
 
 
 def multi_class(atomgroup, filter):
+    """Multi class."""
     @charge_neutral(filter)
     class MultiCharged(AnalysisBase):
         def __init__(self, atomgroups):
@@ -49,37 +51,46 @@ def multi_class(atomgroup, filter):
 
 
 class TestChargedDecorator(object):
+    """Test charged decorator."""
+
     @pytest.fixture()
     def ag(self):
+        """Import MDA universe."""
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
     def test_charged_single(self, ag):
+        """Test charged single."""
         with pytest.raises(UserWarning):
             single_class(ag.select_atoms("name OW*"),
                          filter="error")._prepare()
 
     def test_charged_Multi(self, ag):
+        """Test charged multi."""
         with pytest.raises(UserWarning):
             multi_class([ag.select_atoms("name OW*"), ag],
                         filter="error")._prepare()
 
     def test_charged_single_warn(self, ag):
+        """Test charged single warn."""
         with pytest.warns(UserWarning):
             single_class(ag.select_atoms("name OW*"),
                          filter="default")._prepare()
 
     def test_charged_Multi_warn(self, ag):
+        """Test charged multi warn."""
         with pytest.warns(UserWarning):
             multi_class([ag.select_atoms("name OW*")],
                         filter="default")._prepare()
 
     def test_universe_charged_single(self, ag):
+        """Test universe charged single."""
         ag[0].charge += 1
         with pytest.raises(UserWarning):
             single_class(ag.select_atoms("name OW*"),
                          filter="error")._prepare()
 
     def test_universe_slightly_charged_single(self, ag):
+        """Test universe slightly charged single."""
         ag[0].charge += 1E-5
         single_class(ag, filter="error")._prepare()
