@@ -2,34 +2,44 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+r"""Tools for computing relative permittivity.
+
+The dielectric constant modules of MAICoS allow for computing dielectric
+profile and dielectric spectrum from molecular simulation trajectory files.
+"""
+
 import logging
 
+import MDAnalysis as mda
 import numpy as np
 import scipy.constants
-import MDAnalysis as mda
 
-from .base import AnalysisBase, PlanarBase
-from ..utils import check_compound, FT, iFT, savetxt
 from ..decorators import (
     charge_neutral,
     make_whole,
     set_planar_class_doc,
     set_verbose_doc,
-)
+    )
+from ..utils import FT, check_compound, iFT, savetxt
+from .base import AnalysisBase, PlanarBase
+
 
 eps0inv = 1. / scipy.constants.epsilon_0
 pref = (scipy.constants.elementary_charge)**2 / 1e-10
 
 logger = logging.getLogger(__name__)
 
-def Bin(a, bins):
-    """Averages array values in bins for easier plotting.
-    Note: "bins" array should contain the INDEX (integer) where that bin begins"""
 
+def Bin(a, bins):
+    """Average array values in bins for easier plotting.
+
+    Note: "bins" array should contain the INDEX (integer)
+    where that bin begins
+    """
     if np.iscomplex(a).any():
         avg = np.zeros(len(bins), dtype=complex)  # average of data
     else:
@@ -63,9 +73,9 @@ class EpsilonBulk(AnalysisBase):
     output : str
         Output filename.
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated and
+        files refreshed. If `0` results are only calculated at the end of
+        the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -78,7 +88,8 @@ class EpsilonBulk(AnalysisBase):
         :math:`\langle \boldsymbol M^2 \rangle` in :math:`(eÅ)^2`
     results.fluct : float
         Directional dependant dipole moment fluctuation
-        :math:`\langle \boldsymbol M^2 \rangle - \langle \boldsymbol M \rangle^2`
+        :math:`\langle \boldsymbol M^2 \rangle
+        - \langle \boldsymbol M \rangle^2`
         in :math:`(eÅ)^2`
     results.eps : numpy.ndarray
         Directional dependant static dielectric constant
@@ -113,7 +124,7 @@ class EpsilonBulk(AnalysisBase):
         self.M2 += M * M
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -133,9 +144,8 @@ class EpsilonBulk(AnalysisBase):
         self.results.eps_mean += 1
 
         if self._verbose:
-            print(
-                "The following averages for the complete trajectory have been calculated:"
-            )
+            print("The following averages for the complete trajectory "
+                  "have been calculated:")
 
             print("")
             for i, d in enumerate("xyz"):
@@ -164,6 +174,7 @@ class EpsilonBulk(AnalysisBase):
             print("")
 
     def save(self):
+        """Save result."""
         savetxt(self.output,
                 np.hstack([self.results.eps_mean, self.results.eps]).T,
                 fmt='%1.2f',
@@ -177,34 +188,34 @@ class EpsilonBulk(AnalysisBase):
 class EpsilonPlanar(PlanarBase):
     """Calculate planar dielectric profiles.
 
-    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details
+    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details.
 
     Parameters
     ----------
     atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the dielectric profiles are calculated
+        List of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the dielectric profiles are calculated.
     ${PLANAR_CLASS_PARAMETERS}
     zmin : float
-        minimal coordinate for evaluation (nm)
+        Minimal coordinate for evaluation (nm).
     zmax : float
-        maximal coordinate for evaluation (nm). If `None` the whole box is 
+        Maximal coordinate for evaluation (nm). If `None` the whole box is
         taken into account.
     xy : bool
-        Use 2D slab geometry
+        Use 2D slab geometry.
     vac : bool
         Use vacuum boundary conditions instead of metallic (2D only!).
     sym : bool
-        symmetrize the profiles
+        Symmetrize the profiles.
     ${MAKE_WHOLE_PARAMETER}
     temperature : float
         temperature (K)
     output_prefix : str
-        Prefix for output files
+        Prefix for output files.
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are
+        calculated and files refreshed. If `0` results are only
+        calculated at the end of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -227,6 +238,7 @@ class EpsilonPlanar(PlanarBase):
     results.eps_perp_coll : np.ndarray
         Collective contribution of Inverse perpendicular dielectric profile
     """
+
     def __init__(self,
                  atomgroups,
                  dim=2,
@@ -309,21 +321,21 @@ class EpsilonPlanar(PlanarBase):
 
         # sum up the averages
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
-        self.M_perp_2[self._frame_index //
-                      self.resample_freq] += this_M_perp**2
+        self.M_perp_2[self._frame_index
+                      // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
             bins = self.get_bins(sel.atoms.positions)
             curQ = np.histogram(bins,
                                 bins=np.arange(self.n_bins + 1),
                                 weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / self.A)
-            self.m_perp[:, i, self._frame_index //
-                        self.resample_freq] += this_m_perp
-            self.mM_perp[:, i, self._frame_index //
-                         self.resample_freq] += this_m_perp * this_M_perp
-            self.mm_perp[:, i] += this_m_perp * this_m_perp * \
-                (self._ts.dimensions[self.dim] /
-                 self.n_bins) * self.A  # self term
+            self.m_perp[:, i, self._frame_index
+                        // self.resample_freq] += this_m_perp
+            self.mM_perp[:, i, self._frame_index // self.resample_freq] \
+                += this_m_perp * this_M_perp
+            self.mm_perp[:, i] += this_m_perp * this_m_perp \
+                * (self._ts.dimensions[self.dim]
+                   / self.n_bins) * self.A  # self term
             # collective contribution
             self.cmM_perp[:, i] += this_m_perp * \
                 (this_M_perp - this_m_perp * (self.A * dz_frame))
@@ -334,8 +346,10 @@ class EpsilonPlanar(PlanarBase):
         nbinsx = 250  # number of virtual cuts ("many")
 
         for i, sel in enumerate(self.atomgroups):
-            # Move all z-positions to 'center of charge' such that we avoid monopoles in z-direction
-            # (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y direction)
+            # Move all z-positions to 'center of charge' such
+            # that we avoid monopoles in z-direction
+            # (compare Eq. 33 in Bonthuis 2012; we only
+            # want to cut in x/y direction)
             centers = sel.center(weights=np.abs(sel.charges),
                                  compound=check_compound(sel))
             comp = check_compound(sel.atoms)
@@ -358,20 +372,20 @@ class EpsilonPlanar(PlanarBase):
                                        bins=[
                                            np.arange(0, self.n_bins + 1),
                                            np.arange(0, nbinsx + 1)
-                                       ],
+                                           ],
                                        weights=sel.atoms.charges)[0]
                 curqx = np.cumsum(curQx, axis=1) / (
-                    self._ts.dimensions[self.xydims[1 - j]] *
-                    (self._ts.dimensions[self.dim] / self.n_bins)
-                )  # integral over x, so uniself._ts of area
+                    self._ts.dimensions[self.xydims[1 - j]]
+                    * (self._ts.dimensions[self.dim] / self.n_bins)
+                    )  # integral over x, so uniself._ts of area
                 this_m_par = -curqx.mean(axis=1)
 
-                self.m_par[:, i, self._frame_index //
-                           self.resample_freq] += this_m_par
-                self.mM_par[:, i, self._frame_index // self.resample_freq] += this_m_par * \
-                    this_M_par[j]
-                self.M_par[self._frame_index //
-                           self.resample_freq] += this_M_par[j]
+                self.m_par[:, i, self._frame_index
+                           // self.resample_freq] += this_m_par
+                self.mM_par[:, i, self._frame_index // self.resample_freq] \
+                    += this_m_par * this_M_par[j]
+                self.M_par[self._frame_index
+                           // self.resample_freq] += this_M_par[j]
                 self.mm_par[:, i] += this_m_par * \
                     this_m_par * dz_frame * self.A
                 # collective contribution
@@ -383,7 +397,7 @@ class EpsilonPlanar(PlanarBase):
         self.V += self._ts.volume
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -396,37 +410,46 @@ class EpsilonPlanar(PlanarBase):
         cov_perp = self.mM_perp.sum(axis=2) / self._index - \
             self.m_perp.sum(axis=2) / self._index * \
             self.M_perp.sum() / self._index
-        dcov_perp = np.sqrt(
-            (self.mM_perp.std(axis=2) / self._index * self.resample)**2 +
-            (self.m_perp.std(axis=2) / self._index * self.resample *
-             self.M_perp.sum() / self._index)**2 +
-            (self.m_perp.sum(axis=2) / self._index * self.M_perp.std() /
-             self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+        dcov_perp = np.sqrt((self.mM_perp.std(axis=2)
+                             / self._index * self.resample)**2
+                            + (self.m_perp.std(axis=2)
+                               / self._index * self.resample
+                               * self.M_perp.sum()
+                               / self._index)**2
+                            + (self.m_perp.sum(axis=2)
+                               / self._index * self.M_perp.std()
+                               / self._index * self.resample)**2
+                            ) / np.sqrt(self.resample - 1)
         cov_perp_self = self.mm_perp / self._index - \
             (self.m_perp.sum(axis=2) / self._index * self.m_perp.sum(axis=2)
              / self._index * self.A * self.Lz / self.n_bins / self._index)
         cov_perp_coll = self.cmM_perp / self._index - \
             self.m_perp.sum(axis=2) / self._index * self.cM_perp / self._index
 
-        var_perp = self.M_perp_2.sum() / self._index - (self.M_perp.sum() /
-                                                        self._index)**2
-        dvar_perp = (self.M_perp_2 / self._index - (self.M_perp / self._index)**2).std() \
+        var_perp = self.M_perp_2.sum() / self._index - (self.M_perp.sum()
+                                                        / self._index)**2
+        dvar_perp = (self.M_perp_2 / self._index
+                     - (self.M_perp / self._index)**2).std() \
             / np.sqrt(self.resample - 1)
 
         cov_par = self.mM_par.sum(axis=2) / self._index - \
             self.m_par.sum(axis=2) / self._index * \
             self.M_par.sum() / self._index
-        cov_par_self = self.mm_par / self._index - \
-            self.m_par.sum(axis=2) / self._index * (self.m_par.sum(axis=2) *
-                                                    self.Lz / self.n_bins / self._index * self.A) / self._index
+        cov_par_self = self.mm_par / self._index \
+            - self.m_par.sum(axis=2) / self._index \
+            * (self.m_par.sum(axis=2) * self.Lz
+               / self.n_bins / self._index * self.A) / self._index
         cov_par_coll = self.cmM_par / self._index - \
             self.m_par.sum(axis=2) / self._index * self.cM_par / self._index
-        dcov_par = np.sqrt(
-            (self.mM_par.std(axis=2) / self._index * self.resample)**2 +
-            (self.m_par.std(axis=2) / self._index * self.resample *
-             self.M_par.sum() / self._index)**2 +
-            (self.m_par.sum(axis=2) / self._index * self.M_par.std() /
-             self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+        dcov_par = np.sqrt((self.mM_par.std(axis=2)
+                            / self._index * self.resample)**2
+                           + (self.m_par.std(axis=2) / self._index
+                              * self.resample * self.M_par.sum()
+                              / self._index)**2
+                           + (self.m_par.sum(axis=2)
+                              / self._index * self.M_par.std()
+                              / self._index * self.resample)**2
+                           ) / np.sqrt(self.resample - 1)
 
         beta = 1 / (scipy.constants.Boltzmann * self.temperature)
 
@@ -450,17 +473,23 @@ class EpsilonPlanar(PlanarBase):
         else:
             self.results.eps_perp = (- eps0inv * beta * pref * cov_perp) \
                 / (1 + eps0inv * beta * pref / self.results.V * var_perp)
-            self.results.deps_perp = np.abs((- eps0inv * beta * pref) /
-                                            (1 + eps0inv * beta * pref / self.results.V * var_perp)) * dcov_perp \
-                + np.abs((- eps0inv * beta * pref * cov_perp) /
-                         (1 + eps0inv * beta * pref / self.results.V * var_perp)**2) * dvar_perp
+            self.results.deps_perp = np.abs((- eps0inv * beta * pref)
+                                            / (1 + eps0inv * beta * pref
+                                               / self.results.V * var_perp)
+                                            ) * dcov_perp \
+                + np.abs((- eps0inv * beta * pref * cov_perp)
+                         / (1 + eps0inv * beta * pref
+                            / self.results.V * var_perp)**2) * dvar_perp
 
-            self.results.eps_perp_self = (- eps0inv * beta * pref * cov_perp_self) \
+            self.results.eps_perp_self = \
+                (- eps0inv * beta * pref * cov_perp_self) \
                 / (1 + eps0inv * beta * pref / self.results.V * var_perp)
-            self.results.eps_perp_coll = (- eps0inv * beta * pref * cov_perp_coll) \
+            self.results.eps_perp_coll = \
+                (- eps0inv * beta * pref * cov_perp_coll) \
                 / (1 + eps0inv * beta * pref / self.results.V * var_perp)
 
     def save(self):
+        """Save results."""
         outdata_perp = np.hstack([
             self.results.z[:, np.newaxis],
             self.results.eps_perp.sum(axis=1)[:, np.newaxis],
@@ -470,7 +499,7 @@ class EpsilonPlanar(PlanarBase):
             self.results.eps_perp_self.sum(axis=1)[:, np.newaxis],
             self.results.eps_perp_coll.sum(axis=1)[:, np.newaxis],
             self.results.eps_perp_self, self.results.eps_perp_coll
-        ])
+            ])
         outdata_par = np.hstack([
             self.results.z[:, np.newaxis],
             self.results.eps_par.sum(axis=1)[:, np.newaxis],
@@ -480,7 +509,7 @@ class EpsilonPlanar(PlanarBase):
             self.results.eps_par_self.sum(axis=1)[:, np.newaxis],
             self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
             self.results.eps_par_self, self.results.eps_par_coll
-        ])
+            ])
 
         # TODO: write general function to symmetrize lists
         # for include in more modules...
@@ -508,7 +537,7 @@ class EpsilonPlanar(PlanarBase):
 class EpsilonCylinder(AnalysisBase):
     """Calculate cylindrical dielectric profiles.
 
-    Components are calculated along the axial (z) and radial (along xy) 
+    Components are calculated along the axial (z) and radial (along xy)
     direction at the system's center of mass.
 
     Parameters
@@ -534,9 +563,9 @@ class EpsilonCylinder(AnalysisBase):
     output_prefix : str
         Prefix for output_prefix files
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated and
+        files refreshed. If `0` results are only calculated at the end of
+        the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -552,6 +581,7 @@ class EpsilonCylinder(AnalysisBase):
     results.deps_rad : np.ndarray
         Error of inverse perpendicular dielectric profile
     """
+
     def __init__(self,
                  atomgroups,
                  binwidth=0.05,
@@ -565,7 +595,7 @@ class EpsilonCylinder(AnalysisBase):
                  output_prefix="eps_cyl",
                  concfreq=0,
                  **kwargs):
-        super(EpsilonCylinder, self).__init__(atomgroups,**kwargs)
+        super(EpsilonCylinder, self).__init__(atomgroups, **kwargs)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.geometry = geometry
@@ -653,15 +683,15 @@ class EpsilonCylinder(AnalysisBase):
                                 bins=np.arange(self.nbins + 1),
                                 weights=self.atomgroup.charges)[0]
         this_m_rad = -np.cumsum(
-            (curQ_rad / self.delta_r_sq) * self.r * self.dr) / (self.r * np.pi *
-                                                                self.length)
+            (curQ_rad / self.delta_r_sq) * self.r * self.dr) / (self.r * np.pi
+                                                                * self.length)
 
         this_M_rad = np.sum(this_m_rad * self.dr)
         self.M_rad[self._frame_index // self.resample_freq] += this_M_rad
 
         self.m_rad[:, self._frame_index // self.resample_freq] += this_m_rad
-        self.mM_rad[:, self._frame_index //
-                    self.resample_freq] += this_m_rad * this_M_rad
+        self.mM_rad[:, self._frame_index
+                    // self.resample_freq] += this_m_rad * this_M_rad
 
         # Use virtual cutting method ( for axial component )
         # ========================================================
@@ -670,14 +700,15 @@ class EpsilonCylinder(AnalysisBase):
         this_M_ax = np.dot(self.atomgroup.charges, positions_cyl[:, 1])
         self.M_ax[self._frame_index // self.resample_freq] += this_M_ax
 
-        # Move all r-positions to 'center of charge' such that we avoid monopoles in r-direction.
-        # We only want to cut in z direction.
+        # Move all r-positions to 'center of charge' such that we avoid
+        # monopoles in r-direction. We only want to cut in z direction.
         chargepos = positions_cyl * np.abs(
             self.atomgroup.charges[:, np.newaxis])
-        centers = self.atomgroup.accumulate(chargepos,
-                                            compound=check_compound(self.atomgroup))
-        centers /= self.atomgroup.accumulate(np.abs(self.atomgroup.charges),
-                                             compound=check_compound(self.atomgroup))[:, np.newaxis]
+        centers = self.atomgroup.accumulate(
+            chargepos, compound=check_compound(self.atomgroup))
+        centers /= self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges),
+            compound=check_compound(self.atomgroup))[:, np.newaxis]
         comp = check_compound(self.atomgroup)
         if comp == "molecules":
             repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
@@ -708,11 +739,11 @@ class EpsilonCylinder(AnalysisBase):
         this_m_ax = -curqz.mean(axis=1)
 
         self.m_ax[:, self._frame_index // self.resample_freq] += this_m_ax
-        self.mM_ax[:, self._frame_index //
-                   self.resample_freq] += this_m_ax * this_M_ax
+        self.mM_ax[:, self._frame_index
+                   // self.resample_freq] += this_m_ax * this_M_ax
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -722,10 +753,10 @@ class EpsilonCylinder(AnalysisBase):
             cov_ax = self.mM_ax.sum(axis=1) / self._index
             cov_rad = self.mM_rad.sum(axis=1) / self._index
 
-            dcov_ax = (self.mM_ax.std(axis=1) / self._index * self.resample) / \
-                np.sqrt(self.resample - 1)
-            dcov_rad = (self.mM_rad.std(axis=1) / self._index * self.resample) / \
-                np.sqrt(self.resample - 1)
+            dcov_ax = (self.mM_ax.std(axis=1) / self._index * self.resample) \
+                / np.sqrt(self.resample - 1)
+            dcov_rad = (self.mM_rad.std(axis=1) / self._index * self.resample) \
+                / np.sqrt(self.resample - 1)
         else:
             cov_ax = self.mM_ax.sum(axis=1) / self._index - \
                 self.m_ax.sum(axis=1) / self._index * \
@@ -735,17 +766,21 @@ class EpsilonCylinder(AnalysisBase):
                 self.M_rad.sum() / self._index
 
             dcov_ax = np.sqrt(
-                (self.mM_ax.std(axis=1) / self._index * self.resample)**2 +
-                (self.m_ax.std(axis=1) / self._index * self.resample *
-                 self.M_ax.sum() / self._index)**2 +
-                (self.m_ax.sum(axis=1) / self._index * self.M_ax.std() /
-                 self._index * self.resample)**2) / np.sqrt(self.resample - 1)
-            dcov_rad = np.sqrt(
-                (self.mM_rad.std(axis=1) / self._index * self.resample)**2 +
-                (self.m_rad.std(axis=1) / self._index * self.resample *
-                 self.M_rad.sum() / self._index)**2 +
-                (self.m_rad.sum(axis=1) / self._index * self.M_rad.std() /
-                 self._index * self.resample)**2) / np.sqrt(self.resample - 1)
+                (self.mM_ax.std(axis=1) / self._index * self.resample)**2
+                + (self.m_ax.std(axis=1) / self._index * self.resample
+                   * self.M_ax.sum() / self._index)**2
+                + (self.m_ax.sum(axis=1) / self._index * self.M_ax.std()
+                   / self._index * self.resample)**2
+                ) / np.sqrt(self.resample - 1)
+            dcov_rad = np.sqrt((self.mM_rad.std(axis=1)
+                                / self._index * self.resample)**2
+                               + (self.m_rad.std(axis=1)
+                                  / self._index * self.resample
+                                  * self.M_rad.sum() / self._index)**2
+                               + (self.m_rad.sum(axis=1)
+                                  / self._index * self.M_rad.std()
+                                  / self._index * self.resample)**2
+                               ) / np.sqrt(self.resample - 1)
 
         beta = 1 / (scipy.constants.Boltzmann * self.temperature)
 
@@ -760,12 +795,13 @@ class EpsilonCylinder(AnalysisBase):
         self.results.r = self.r / 10
 
     def save(self):
+        """Save result."""
         outdata_ax = np.array([
             self.results.r, self.results.eps_ax, self.results.deps_ax
-        ]).T
+            ]).T
         outdata_rad = np.array([
             self.results.r, self.results.eps_rad, self.results.deps_rad
-        ]).T
+            ]).T
 
         header = "statistics over {:.1f} picoseconds".format(
             self._index * self._universe.trajectory.dt)
@@ -784,15 +820,17 @@ class DielectricSpectrum(AnalysisBase):
     r"""Compute the linear dielectric spectrum.
 
     This module, given molecular dynamics trajectory data, produces a
-    `.txt` file containing the complex dielectric function as a function of 
+    `.txt` file containing the complex dielectric function as a function of
     the (linear, not radial -
-    i.e. :math:`\nu` or :math:`f`, rather than :math:`\omega`) frequency, along 
+    i.e. :math:`\nu` or :math:`f`, rather than :math:`\omega`) frequency, along
     with the associated standard deviations.
     The algorithm is based on the Fluctuation Dissipation Relation (FDR):
-    :math:`\chi(f) = -1/(3 V k_B T \varepsilon_0) FT[\theta(t) \langle P(0) dP(t)/dt\rangle]`.
-    By default, the polarization trajectory, time series array and the average system volume are
-    saved in the working directory, and the data are reloaded from these files if they are present.
-    Lin-log and log-log plots of the susceptibility are also produced by default.
+    :math:`\chi(f) = -1/(3 V k_B T \varepsilon_0)
+    FT[\theta(t) \langle P(0) dP(t)/dt\rangle]`.
+    By default, the polarization trajectory, time series array and the average
+    system volume are saved in the working directory, and the data are
+    reloaded from these files if they are present. Lin-log and log-log
+    plots of the susceptibility are also produced by default.
 
     Parameters
     ----------
@@ -835,7 +873,8 @@ class DielectricSpectrum(AnalysisBase):
     ----------
     results
     """
-    # TODO: set up script to calc spectrum at intervals while calculating 
+
+    # TODO: set up script to calc spectrum at intervals while calculating
     # polarization for very big-data trajectories
     # TODO: merge with molecular version?
     def __init__(self,
@@ -937,8 +976,8 @@ class DielectricSpectrum(AnalysisBase):
                 FP = FT(
                     self.results.t,
                     np.append(
-                        self.results.P[s * self.seglen:(s + 1) *
-                                       self.seglen, self._i],
+                        self.results.P[s * self.seglen:(s + 1)
+                                         * self.seglen, self._i],
                         np.zeros(self.seglen)), False)
                 ss += FP.real * FP.real + FP.imag * FP.imag
 
@@ -946,8 +985,8 @@ class DielectricSpectrum(AnalysisBase):
 
             # Get the real part by Kramers Kronig
             ss.real = iFT(
-                self.results.t, 1j * np.sign(self.results.nu) *
-                FT(self.results.nu, ss, False), False).imag
+                self.results.t, 1j * np.sign(self.results.nu)
+                                   * FT(self.results.nu, ss, False), False).imag
 
             if s == 0:
                 self.results.susc += ss[self.seglen:]
@@ -970,7 +1009,8 @@ class DielectricSpectrum(AnalysisBase):
         self.results.susc *= pref / (2 * self.seglen * self.segs * self.dt)
         self.results.dsusc *= pref / (2 * self.seglen * self.segs * self.dt)
 
-        # Discard negative-frequency data; contains the same information as positive regime:
+        # Discard negative-frequency data; contains the same
+        # information as positive regime:
         # Now nu represents positive f instead of omega
         self.results.nu = self.results.nu[self.seglen:] / (2 * np.pi)
 
@@ -1034,17 +1074,17 @@ class DielectricSpectrum(AnalysisBase):
                 ax.set_yscale(yscale)
 
                 ax.fill_between(self.results["nu" + element][1:],
-                                self.results["susc" + element].real[1:] -
-                                self.results["dsusc" + element].real[1:],
-                                self.results["susc" + element].real[1:] +
-                                self.results["dsusc" + element].real[1:],
+                                self.results["susc" + element].real[1:]
+                                - self.results["dsusc" + element].real[1:],
+                                self.results["susc" + element].real[1:]
+                                + self.results["dsusc" + element].real[1:],
                                 color=col2,
                                 alpha=shade)
                 ax.fill_between(self.results["nu" + element][1:],
-                                self.results["susc" + element].imag[1:] -
-                                self.results["dsusc" + element].imag[1:],
-                                self.results["susc" + element].imag[1:] +
-                                self.results["dsusc" + element].imag[1:],
+                                self.results["susc" + element].imag[1:]
+                                - self.results["dsusc" + element].imag[1:],
+                                self.results["susc" + element].imag[1:]
+                                + self.results["dsusc" + element].imag[1:],
                                 color=col1,
                                 alpha=shade)
 
@@ -1097,6 +1137,7 @@ class DielectricSpectrum(AnalysisBase):
             logger.info('Susceptibility plots generated -- finished :)')
 
     def save(self):
+        """Save result."""
         np.save(self.output_prefix + 'tseries.npy', self.results.t)
 
         with open(self.output_prefix + 'V.txt', "w") as Vfile:
@@ -1111,7 +1152,7 @@ class DielectricSpectrum(AnalysisBase):
                 self.results.nu, self.results.susc.real,
                 self.results.dsusc.real, self.results.susc.imag,
                 self.results.dsusc.imag
-            ]),
+                ]),
             delimiter='\t',
             header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
 
@@ -1127,7 +1168,7 @@ class DielectricSpectrum(AnalysisBase):
                         self.results.dsusc_binned.real,
                         self.results.susc_binned.imag,
                         self.results.dsusc_binned.imag
-                    ]),
+                        ]),
                     delimiter='\t',
                     header="freq\tsusc\'\tstd_dev_susc\'\t-"
                     "susc\'\'\tstd_dev_susc\'\'")

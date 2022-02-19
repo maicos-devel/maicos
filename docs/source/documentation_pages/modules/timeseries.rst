@@ -2,11 +2,10 @@
 Timeseries modules
 ==================
 
+.. automodule:: maicos.modules.timeseries
+
 Dipole angle
 ============
-
-Description
-***********
 
 .. automodule:: maicos.modules.timeseries.DipoleAngle
     :members:
@@ -15,9 +14,6 @@ Description
 
 Kinetic energy
 ==============
-
-Description
-***********
 
 .. automodule:: maicos.modules.timeseries.KineticEnergy
     :members:

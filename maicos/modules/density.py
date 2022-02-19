@@ -2,20 +2,20 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
-r"""
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+r"""Tools for computing density temperature, and chemical potential profiles.
 
-The density modules of MAICoS are tools for computing density,
+The density modules of MAICoS allow for computing density,
 temperature, and chemical potential profiles from molecular
 simulation trajectory files. Profiles can be extracted either
 in Cartesian or cylindrical coordinate systems. Units for the density
-are the same as GROMACS, i.e. mass, number or charge.
-See the `gmx density`_ manual for details.
+are the same as GROMACS, i.e. mass, number or charge (see the `gmx density`_
+manual for details about the unit system).
 
-**From the command line**
+**Using the command line**
 
 You can extract a density profile from molecular dynamics
 trajectory files directly from the terminal. For this example, we use
@@ -34,13 +34,13 @@ then type:
 Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and
 trajectory files, respectively. The density profile appears in
 a ``.dat`` file. You can visualise all the options of the module
-``DensityPlanar`` by typing
+``DensityPlanar`` by typing:
 
 .. code-block:: bash
 
     maicos DensityPlanar -h
 
-**From the Python interpreter**
+**Using the Python interpreter**
 
 In order to calculate the density using MAICoS in a Python environment,
 first import MAICoS and MDAnalysis:
@@ -64,29 +64,36 @@ And run MAICoS' ``DensityPlanar`` module:
     dplan = maicos.DensityPlanar(group_H2O)
     dplan.run()
 
-Results can be accessed from ``dplan.results``. More details are
-given in the :ref:`ref_tutorial`.
+Results can be accessed from ``dplan.results``. More details are given
+in the :ref:`ref_tutorial`.
 
-.. _`gmx density`: https://manual.gromacs.org/archive/5.0.7/programs/gmx-density.html
+.. _`gmx density`: https://manual.gromacs.org/documentation/current/onlinehelp/gmx-density.html  # noqa: E501
 """
+
 import logging
 import warnings
 
 import numpy as np
+from MDAnalysis.exceptions import NoDataError
 from scipy import constants
 
+from ..decorators import set_planar_class_doc, set_verbose_doc
+from ..utils import atomgroup_header, savetxt
 from .base import AnalysisBase, PlanarBase
-from ..utils import savetxt, atomgroup_header
-from ..decorators import set_verbose_doc, set_planar_class_doc
 
-from MDAnalysis.exceptions import NoDataError
 
 logger = logging.getLogger(__name__)
 
+
 def mu(rho, temperature, m):
-    """Returns the chemical potential calculated from the density: mu = k_B T log(rho. / m)"""
+    """Return the chemical potential.
+
+    The chemical potential is calculated from the
+    density: mu = k_B T log(rho. / m)
+    """
     # kT in KJ/mol
-    kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
+    kT = temperature * constants.Boltzmann \
+        * constants.Avogadro / constants.kilo
 
     results = []
 
@@ -95,7 +102,7 @@ def mu(rho, temperature, m):
         db = np.sqrt(
             constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
                                 * constants.Boltzmann * temperature)
-        ) / constants.nano
+            ) / constants.nano
 
         if np.all(srho > 0):
             results.append(kT * np.log(srho * db ** 3))
@@ -107,9 +114,12 @@ def mu(rho, temperature, m):
 
 
 def dmu(rho, drho, temperature):
-    """Returns the error of the chemical potential calculated from the density using propagation of uncertainty."""
+    """Return the error of the chemical potential.
 
-    kT = temperature * constants.Boltzmann * constants.Avogadro / constants.kilo
+    The error is calculated from the density using propagation of uncertainty.
+    """
+    kT = temperature * constants.Boltzmann \
+        * constants.Avogadro / constants.kilo
 
     results = []
 
@@ -122,8 +132,11 @@ def dmu(rho, drho, temperature):
 
 
 def weight(selection, dens):
-    """Calculates the weights for the histogram depending on the choosen type of density.
-        Valid values are `mass`, `number`, `charge` or `temp`."""
+    """Calculate the weights for the histogram.
+
+    The calculated weight depends on the chosen type of density.
+    Valid values are `mass`, `number`, `charge` or `temp`.
+    """
     if dens == "mass":
         # amu/nm**3 -> kg/m**3
         return selection.atoms.masses * constants.atomic_mass * 1e27
@@ -134,11 +147,12 @@ def weight(selection, dens):
     elif dens == "temp":
         # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
         prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-        return ((selection.atoms.velocities ** 2).sum(axis=1) *
-                selection.atoms.masses / 2 * prefac)
+        return ((selection.atoms.velocities ** 2).sum(axis=1)
+                * selection.atoms.masses / 2 * prefac)
     else:
         raise ValueError(f"`{dens}` not supported. "
-                          "Use `mass`, `number`, `charge` or `temp`.")
+                         "Use `mass`, `number`, `charge` or `temp`.")
+
 
 @set_verbose_doc
 @set_planar_class_doc
@@ -167,9 +181,9 @@ class DensityPlanar(PlanarBase):
     output : str
         Output filename
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated and
+        files refreshed. If `0` results are only calculated at the end
+        of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -300,7 +314,7 @@ class DensityPlanar(PlanarBase):
                         "Selection contains multiple types of residues and at "
                         "least one them is a molecule. Molecules are not "
                         "supported when selecting multiple residues."
-                    )
+                        )
                 self.n_res = np.append(self.n_res, n_res)
                 self.n_atoms = np.append(self.n_atoms, n_atoms)
                 if get_mass_from_topol:
@@ -322,11 +336,11 @@ class DensityPlanar(PlanarBase):
                 self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
                 self.density_mean[:, index] += density_ts / curV * self.n_bins
-                self.density_mean_sq[:, index] += (density_ts / curV *
-                                                   self.n_bins) ** 2
+                self.density_mean_sq[:, index] += (density_ts / curV
+                                                   * self.n_bins) ** 2
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -338,27 +352,26 @@ class DensityPlanar(PlanarBase):
         self.results.dens_mean_sq = self.density_mean_sq / self._index
 
         self.results.dens_std = np.nan_to_num(
-            np.sqrt(self.results.dens_mean_sq -
-                    self.results.dens_mean**2))
+            np.sqrt(self.results.dens_mean_sq
+                    - self.results.dens_mean**2))
         self.results.dens_err = self.results.dens_std / np.sqrt(self._index)
-
 
         # chemical potential
         if self.mu:
             if self.zpos is not None:
-                self.zpos *= 10 # nm -> Å
+                self.zpos *= 10  # nm -> Å
                 this = (np.rint(
                     (self.zpos + self.binwidth / 2) / self.binwidth)
-                        % self.n_bins).astype(int)
+                    % self.n_bins).astype(int)
                 if self.center:
                     this += np.rint(self.n_bins / 2).astype(int)
                 self.results.mu = mu(self.results.dens_mean[this]
-                                        / self.n_atoms,
-                                        self.temperature, self.mass)
+                                     / self.n_atoms,
+                                     self.temperature, self.mass)
                 self.results.dmu = dmu(self.results.dens_mean[this]
-                                          / self.n_atoms,
-                                          self.results.dens_err[this]
-                                          / self.n_atoms, self.temperature)
+                                       / self.n_atoms,
+                                       self.results.dens_err[this]
+                                       / self.n_atoms, self.temperature)
             else:
                 self.results.mu = np.mean(
                     mu(self.results.dens_mean / self.n_atoms,
@@ -417,7 +430,7 @@ class DensityPlanar(PlanarBase):
                     columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
                 for group in self.atomgroups:
                     columns += atomgroup_header(group) + " μ error [kJ/mol]" \
-                               + "\t"
+                        + "\t"
             except AttributeError:
                 with warnings.catch_warnings():
                     warnings.simplefilter('always')
@@ -456,9 +469,9 @@ class DensityCylinder(AnalysisBase):
     output : str
         Output filename
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated
+        and files refreshed. If `0` results are only calculated at
+        the end of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -474,6 +487,7 @@ class DensityCylinder(AnalysisBase):
     results.dens_err : np.ndarray
         density error
     """
+
     def __init__(self,
                  atomgroups,
                  dens="mass",
@@ -500,8 +514,8 @@ class DensityCylinder(AnalysisBase):
     def _prepare(self):
         if self.dens not in ["mass", "number", "charge", "temp"]:
             raise ValueError(f"Invalid choice for dens: '{self.dens}' "
-                              "(choose from 'mass', 'number', 'charge', "
-                              "'temp'")
+                             "(choose from 'mass', 'number', "
+                             "'charge', 'temp'")
 
         if self.dens == 'temp':
             profile_str = "temperature"
@@ -551,8 +565,8 @@ class DensityCylinder(AnalysisBase):
 
         self._dr = np.ones(self.nbins) * self.radius / self.nbins
         self._r_bins = np.arange(self.nbins) * self._dr + self._dr
-        self._delta_r_sq = self._r_bins ** 2 - \
-                           np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
+        self._delta_r_sq = self._r_bins ** 2 \
+            - np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
 
         logger.info(f"Using {self.nbins} bins.")
 
@@ -567,11 +581,11 @@ class DensityCylinder(AnalysisBase):
 
             # select cylinder of the given length and radius
             cut = selection.atoms[np.where(
-                np.absolute(selection.atoms.positions[:, self.dim] -
-                            center[self.dim]) < self.length / 2)[0]]
+                np.absolute(selection.atoms.positions[:, self.dim]
+                            - center[self.dim]) < self.length / 2)[0]]
             cylinder = cut.atoms[np.where(
-                np.linalg.norm((cut.atoms.positions[:, self.odims] -
-                                center[self.odims]),
+                np.linalg.norm((cut.atoms.positions[:, self.odims]
+                                - center[self.odims]),
                                axis=1) < self.radius)[0]]
 
             radial_positions = np.linalg.norm(
@@ -587,13 +601,14 @@ class DensityCylinder(AnalysisBase):
                 self.density_mean[:, index] += density_ts / bincount
                 self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
-                self.density_mean[:, index] += density_ts * 1000 / (
-                        np.pi * self._delta_r_sq * self.length)
-                self.density_mean_sq[:, index] += (density_ts * 1000 /
-                    (np.pi * self._delta_r_sq * self.length)) ** 2
+                self.density_mean[:, index] += density_ts * 1000 \
+                    / (np.pi * self._delta_r_sq * self.length)
+                self.density_mean_sq[:, index] += (density_ts * 1000
+                                                   / (np.pi * self._delta_r_sq
+                                                      * self.length)) ** 2
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -605,8 +620,8 @@ class DensityCylinder(AnalysisBase):
         self.results.dens_mean_sq = self.density_mean_sq / self._index
 
         self.results.dens_std = np.nan_to_num(
-            np.sqrt(self.results.dens_mean_sq -
-                    self.results.dens_mean ** 2))
+            np.sqrt(self.results.dens_mean_sq
+                    - self.results.dens_mean ** 2))
         self.results.dens_err = self.results.dens_std / np.sqrt(
             self._index)
 

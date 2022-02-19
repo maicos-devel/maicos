@@ -6,7 +6,8 @@
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
+"""Entry point for custom modules."""
+from analysis_example import *  # noqa: F401, F403
 
-from analysis_example import *
 
 custom_modules = ['AnalysisExample']

@@ -13,7 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.6 (XXXX/XX/XX)
 -----------------
+Philip Loche, Simon Gravelle
 
+- Fix lint errors (!95)
 
 v0.5 (2022/02/17)
 -----------------

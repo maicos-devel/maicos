@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Tools for computing timeseries.
+
+The timeseries modules of MAICoS allow for calculating the timeseries angular
+dipole moments and energies from molecular simulation trajectory files. More
+details are given in the :ref:`ref_tutorial`.
+"""
 
 import numpy as np
 
-from ..utils import check_compound, savetxt
 from ..decorators import set_verbose_doc
+from ..utils import check_compound, savetxt
 from .base import AnalysisBase
 
 
@@ -27,9 +33,9 @@ class DipoleAngle(AnalysisBase):
     output : str
        Prefix for output filenames
     concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If `0` results are only calculated at the end of the analysis and not
-        saved by default.
+        Default number of frames after which results are calculated
+        and files refreshed. If `0` results are only calculated at
+        the end of the analysis and not saved by default.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -43,6 +49,7 @@ class DipoleAngle(AnalysisBase):
     resulst.cos_theta_ij : np.ndarray
         Product cos of dipole i and cos of dipole j (i!=j)
     """
+
     def __init__(self,
                  atomgroup,
                  dim=2,
@@ -66,7 +73,6 @@ class DipoleAngle(AnalysisBase):
         self.cos_theta_ij = np.empty(self.n_frames)
 
     def _single_frame(self):
-
         # make broken molecules whole again!
         self.atomgroup.unwrap(compound="molecules")
 
@@ -83,11 +89,11 @@ class DipoleAngle(AnalysisBase):
         self.cos_theta_i[self._frame_index] = cos_theta.mean()
         self.cos_theta_ii[self._frame_index] = trace / self.n_residues
         self.cos_theta_ij[self._frame_index] = (matrix.sum() - trace)
-        self.cos_theta_ij[self._frame_index] /= (self.n_residues**2 -
-                                                 self.n_residues)
+        self.cos_theta_ij[self._frame_index] /= (self.n_residues**2
+                                                 - self.n_residues)
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
-            and self._frame_index > 0:
+                and self._frame_index > 0:
             self._conclude()
             self.save()
 
@@ -100,6 +106,7 @@ class DipoleAngle(AnalysisBase):
         self.results.cos_theta_ij = self.cos_theta_ij[:self._index]
 
     def save(self):
+        """Save result."""
         savetxt(self.output,
                 np.vstack([self.results.t,
                            self.results.cos_theta_i,
@@ -112,9 +119,10 @@ class DipoleAngle(AnalysisBase):
 class KineticEnergy(AnalysisBase):
     """Calculate the timeseries of energies.
 
-    The kinetic energy function computes the translational and rotational kinetic
-    energy with respect to molecular center (center of mass, center of charge)
-    of a molecular dynamics simulation trajectory.
+    The kinetic energy function computes the translational and
+    rotational kinetic energy with respect to molecular center
+    (center of mass, center of charge) of a molecular dynamics
+    simulation trajectory.
 
     Parameters
     ----------
@@ -144,15 +152,18 @@ class KineticEnergy(AnalysisBase):
         self.refpoint = refpoint
 
     def _prepare(self):
-        """Set things up before the analysis loop begins"""
+        """Set things up before the analysis loop begins."""
         if self.refpoint not in ["COM", "COC"]:
             raise ValueError(
-                "Invalid choice for dens: '{}' (choose from 'COM' or " "'COC')".format(self.refpoint))
+                "Invalid choice for dens: '{}' (choose "
+                "from 'COM' or " "'COC')".format(self.refpoint))
 
         self.masses = self.atomgroup.atoms.accumulate(
-            self.atomgroup.atoms.masses, compound=check_compound(self.atomgroup))
+            self.atomgroup.atoms.masses,
+            compound=check_compound(self.atomgroup))
         self.abscharges = self.atomgroup.atoms.accumulate(np.abs(
-            self.atomgroup.atoms.charges), compound=check_compound(self.atomgroup))
+            self.atomgroup.atoms.charges),
+            compound=check_compound(self.atomgroup))
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -182,15 +193,16 @@ class KineticEnergy(AnalysisBase):
                                                   np.linalg.norm(v, axis=1)**2)
 
     def _conclude(self):
-        self.results.t= self.times
+        self.results.t = self.times
         self.results.trans = self.E_center / 2 / 100
         self.results.rot = (self.E_kin - self.E_center) / 2 / 100
 
     def save(self):
+        """Save result."""
         savetxt(self.output,
                 np.vstack([
                     self.results.t, self.results.trans,
                     self.results.rot
-                ]).T,
+                    ]).T,
                 fmt='%.8e',
                 header="t / ps \t E_kin^trans / kJ/mol \t E_kin^rot / kJ/mole")

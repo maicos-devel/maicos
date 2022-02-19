@@ -2,20 +2,23 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Base class."""
 
 import logging
+
+import MDAnalysis.analysis.base
+import numpy as np
+
+from ..decorators import set_planar_class_doc, set_verbose_doc
 from ..utils import sort_atomgroup
 
-import numpy as np
-import MDAnalysis.analysis.base
-
-from ..decorators import set_verbose_doc, set_planar_class_doc
 
 logger = logging.getLogger(__name__)
+
 
 @set_verbose_doc
 class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
@@ -25,7 +28,6 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     This class will automatically take care of setting up the trajectory
     reader for iterating, and it offers to show a progress meter.
     Computed results are stored inside the :attr:`results` attribute.
-
     To define a new analysis, `AnalysisBase` needs to be subclassed
     and :meth:`_single_frame` must be defined. It is also possible to define
     :meth:`_prepare` and :meth:`_conclude` for pre- and post-processing.
@@ -62,6 +64,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         results of calculation are stored after call
         to :meth:`AnalysisBase.run`
     """
+
     def __init__(self,
                  atomgroups,
                  multi_group=False,
@@ -91,11 +94,12 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                                            verbose=verbose,
                                            **kwargs)
 
+
 @set_planar_class_doc
 class PlanarBase(AnalysisBase):
     """Class to provide options and attributes for analysis in planar system.
 
-    Provied the results attribute `z`.
+    Provide the results attribute `z`.
 
     Parameters
     ----------
@@ -125,7 +129,7 @@ class PlanarBase(AnalysisBase):
         self.comgroup = comgroup
 
     def _prepare(self):
-        """Preparations for the planar analysis."""
+        """Prepare the planar analysis."""
         if self.dim not in [0, 1, 2]:
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")
 
@@ -150,14 +154,15 @@ class PlanarBase(AnalysisBase):
         logger.info(f"Using {self.n_bins} bins")
 
         if self.comgroup is not None and self.comgroup.n_atoms == 0:
-            raise ValueError(f"`Comgroup` does not contain any atoms.")
+            raise ValueError("Comgroup does not contain any atoms.")
         if self.comgroup is not None:
             self.center = True  # always center when COM
 
     def get_bins(self, positions, dim=None):
-        """"Calculates bins based on given positions. dim denotes
-        the dimension for calculating bins. If `None` the default
-        dim is taken.
+        """Calculate bins based on given positions.
+
+        dim denotes the dimension for calculating bins.
+        If `None` the default dim is taken.
 
         Attributes
         ----------
@@ -169,7 +174,7 @@ class PlanarBase(AnalysisBase):
         Returns
         -------
         numpy.ndarray
-            binned psoitions
+            binned positions
         """
         dim = self.dim if dim is None else dim
         dz = self._ts.dimensions[dim] / self.n_bins
@@ -205,7 +210,7 @@ class PlanarBase(AnalysisBase):
         dz = (zmax - self.zmin) / self.n_bins
 
         self.results.z = np.linspace(
-            self.zmin+dz/2, zmax-dz/2, self.n_bins,
+            self.zmin + dz / 2, zmax - dz / 2, self.n_bins,
             endpoint=False)
 
         if self.center:

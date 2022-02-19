@@ -5,11 +5,11 @@
 To add your custom module to the maicos library follow these steps
 
 1.  Create a `.maicos` folder in your home directory.
-2.  Copy the `analysis_example.py` and the `maicos_costum_modules.py` to the 
+2.  Copy the `analysis_example.py` and the `maicos_custom_modules.py` to the 
     `.maicos` folder
 3.  Add your analysis code to the `analysis_example.py`
 4.  OPTIONAL: Choose your own name for your module. Note that you also have
-    adjust the names in the `maicos_costum_modules.py` properly
+    adjust the names in the `maicos_custom_modules.py` properly
 
 ## Add modules to the core library (MAICoS developers)
 

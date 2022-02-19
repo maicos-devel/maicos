@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
+"""Setup file for MAICoS package."""
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2020 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import print_function
-from setuptools import setup, Extension, find_packages
+
+import os
+import shutil
+import sys
+import tempfile
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
-import os
-import sys
-import shutil
-import tempfile
+
+from setuptools import Extension, find_packages, setup
+
 
 # NOTE: keep in sync with __version__ in maicos.__init__.py
 # NOTE: keep in sync with version in docs/source/conf.py
@@ -33,11 +37,14 @@ except ImportError:
 
 
 def get_numpy_include():
-    # From MDAnalysis setup.py
-    # Obtain the numpy include directory. This logic works across numpy
-    # versions.
-    # setuptools forgets to unset numpy's setup flag and we get a crippled
-    # version of it unless we do it ourselves.
+    """
+    Obtain the numpy include directory.
+
+    Credit to MDAnalysis setup.py
+    This logic works across numpy versions. Setuptools forgets to unset
+    numpy's setup flag and we get a crippled version of it unless we do
+    it ourselves.
+    """
     try:
         # Python 3 renamed the ``__builin__`` module into ``builtins``.
         # Here we import the python 2 or the python 3 version of the module
@@ -59,7 +66,11 @@ def get_numpy_include():
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
-    # From MDAnalysis setup.py
+    """
+    Check for function.
+
+    Credit to MDAnalysis setup.py.
+    """
     tmpdir = tempfile.mkdtemp(prefix='hasfunction-')
     devnull = oldstderr = None
     try:
@@ -95,7 +106,11 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
 
 def detect_openmp():
     # From MDAnalysis setup.py
-    """Does this compiler support OpenMP parallelization?"""
+    """
+    Support for OpenMP parallelization.
+
+    Check if this compiler support OpenMP parallelization.
+    """
     print("Attempting to autodetect OpenMP support... ", end="")
     compiler = new_compiler()
     customize_compiler(compiler)
@@ -131,10 +146,10 @@ if __name__ == "__main__":
                   include_dirs=[get_numpy_include()],
                   extra_compile_args=[
                       '-std=c99', '-ffast-math', '-O3', '-funroll-loops'
-                  ] + has_openmp * ['-fopenmp'],
+                      ] + has_openmp * ['-fopenmp'],
                   extra_link_args=has_openmp * ['-fopenmp'],
                   libraries=mathlib)
-    ]
+        ]
 
     if use_cython:
         extensions = cythonize(pre_exts)
@@ -173,17 +188,17 @@ if __name__ == "__main__":
         python_requires='>=3.7',
         setup_requires=[
             'numpy>=1.16.0',
-        ],
+            ],
         install_requires=REQUIREMENTS,
         entry_points={
             'console_scripts': ['maicos = maicos.__main__:main'],
-        },
+            },
         keywords=[
             'Science',
             'Molecular Dynamics',
             'Confined Systems',
             'MDAnalysis',
-        ],
+            ],
         project_urls={
             'Source': 'https://gitlab.com/maicos-devel/maicos',
             'Documentation': 'https://maicos-devel.gitlab.io/maicos',
@@ -191,7 +206,7 @@ if __name__ == "__main__":
             'https://maicos-devel.gitlab.io/maicos/rst/changelog.html',
             'Issue Tracker': 'https://gitlab.com/maicos-devel/maicos/-/issues',
             'Discord': 'https://discord.com/channels/869537986977603604/',
-        },
+            },
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
@@ -212,5 +227,5 @@ if __name__ == "__main__":
             'Topic :: Scientific/Engineering :: Physics',
             'Topic :: Software Development :: Libraries :: Python Modules',
             'Topic :: System :: Shells',
-        ],
+            ],
         zip_safe=False)

@@ -2,11 +2,10 @@
 Structure modules
 =================
 
+.. automodule:: maicos.modules.structure
+
 Saxs
 ====
-
-Description
-***********
 
 .. automodule:: maicos.modules.structure.Saxs
     :members:
@@ -16,9 +15,6 @@ Description
 Diporder
 ========
 
-Description
-***********
-
 .. automodule:: maicos.modules.structure.Diporder
     :members:
     :undoc-members:
@@ -26,9 +22,6 @@ Description
 
 Debyer
 ======
-
-Description
-***********
 
 .. automodule:: maicos.modules.structure.Debye
     :members:

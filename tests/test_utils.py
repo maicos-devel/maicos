@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2019 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the utilities."""
 
 import sys
 from unittest.mock import patch
 
-import maicos.utils
-import numpy as np
-from numpy.testing import assert_almost_equal
-from MDAnalysisTests.core.util import UnWrapUniverse
 import MDAnalysis as mda
-
+import numpy as np
+from MDAnalysisTests.core.util import UnWrapUniverse
 from modules.datafiles import LAMMPS10WATER
+from numpy.testing import assert_almost_equal
+
+import maicos.utils
 
 
 def test_FT():
+    """Tests for the Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
     t, sin_FT = maicos.utils.FT(x, sin)
@@ -27,6 +29,7 @@ def test_FT():
 
 
 def test_iFT():
+    """Tests for the inverse Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
     t, sin_FT = maicos.utils.FT(x, sin)
@@ -35,6 +38,7 @@ def test_iFT():
 
 
 def test_check_compound():
+    """Tests check compound."""
     u = UnWrapUniverse()
     assert maicos.utils.check_compound(u.atoms) == "molecules"
 
@@ -44,13 +48,18 @@ def test_check_compound():
     u = UnWrapUniverse(have_molnums=False, have_bonds=False)
     assert maicos.utils.check_compound(u.atoms) == "residues"
 
+
 def test_sort_atomsgroup_lammps():
+    """Tests sort atoms group LAMMPS."""
     u = mda.Universe(LAMMPS10WATER)
     atoms = maicos.utils.sort_atomgroup(u.atoms)
 
     assert np.all(np.diff(atoms.fragindices) >= 0)
 
+
 def test_get_cli_input():
+    """Tests get cli input."""
     testargs = ['maicos', 'foo', "foo bar"]
     with patch.object(sys, 'argv', testargs):
-        assert maicos.utils.get_cli_input() == 'Command line was: maicos foo "foo bar"'
+        assert maicos.utils.get_cli_input() == 'Command line was: ' \
+                                               'maicos foo "foo bar"'
