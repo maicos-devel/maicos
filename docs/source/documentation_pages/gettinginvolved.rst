@@ -1,4 +1,4 @@
-.. include:: ../../../developer/README.rst
+.. include:: ../../../CONTRIBUTING.rst
 
 .. toctree::
    :maxdepth: 4
