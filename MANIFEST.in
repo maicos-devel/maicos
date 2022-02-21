@@ -6,6 +6,7 @@ graft maicos
 
 include *.rst
 include LICENSE
+include requirements.txt
 
 exclude .codacy.yaml
 exclude .codeclimate.yml
@@ -13,7 +14,6 @@ exclude .coveragerc
 exclude .gitignore
 exclude .gitlab-ci.yml
 exclude .readthedocs.yml
-exclude requirements.txt
 exclude tox.ini
 
 prune .gitlab
