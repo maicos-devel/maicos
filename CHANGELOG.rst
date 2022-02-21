@@ -11,6 +11,12 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
+v0.5.1 (2022/02/21)
+-----------------
+Henrik Jaeger
+
+- Fix pypi installation (!98)
+
 v0.5 (2022/02/17)
 -----------------
 Philip Loche, Srihas Velpuri, Simon Gravelle
