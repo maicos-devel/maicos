@@ -15,7 +15,14 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle
 
+- Add Code of Conduct (!97)
 - Fix lint errors (!95)
+
+v0.5.1 (2022/02/21)
+-----------------
+Henrik Jaeger
+
+- Fix pypi installation (!98)
 
 v0.5 (2022/02/17)
 -----------------
