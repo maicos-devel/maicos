@@ -1,5 +1,4 @@
 matplotlib>=2.0.0
 mdacli>=0.1.12
-numpy>=1.16.0
 MDAnalysis>=2.0.0
 scipy>=1.0.0

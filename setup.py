@@ -167,6 +167,9 @@ if __name__ == "__main__":
     with open("README.rst") as summary:
         LONG_DESCRIPTION = summary.read()
 
+    with open("requirements_setup.txt") as requirements:
+        REQUIREMENTS_SETUP = requirements.read().splitlines()
+
     with open("requirements.txt") as requirements:
         REQUIREMENTS = requirements.read().splitlines()
 
@@ -186,10 +189,8 @@ if __name__ == "__main__":
         include_package_data=True,
         ext_modules=extensions,
         python_requires='>=3.7',
-        setup_requires=[
-            'numpy>=1.16.0',
-            ],
-        install_requires=REQUIREMENTS,
+        setup_requires=REQUIREMENTS_SETUP,
+        install_requires=REQUIREMENTS_SETUP + REQUIREMENTS,
         entry_points={
             'console_scripts': ['maicos = maicos.__main__:main'],
             },
