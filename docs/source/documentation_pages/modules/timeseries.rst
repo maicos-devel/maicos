@@ -4,18 +4,12 @@ Timeseries modules
 
 .. automodule:: maicos.modules.timeseries
 
-Dipole angle
-============
+.. toctree::
+   :titlesonly:
+   :maxdepth: 4
+   :caption: Timeseries modules
+   :hidden:
+   
+   dipoleangle
+   kineticenergy
 
-.. automodule:: maicos.modules.timeseries.DipoleAngle
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Kinetic energy
-==============
-
-.. automodule:: maicos.modules.timeseries.KineticEnergy
-    :members:
-    :undoc-members:
-    :show-inheritance:

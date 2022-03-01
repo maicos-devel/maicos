@@ -6,18 +6,11 @@ Density modules
 
 .. automodule:: maicos.modules.density
 
-Density planar
-==============
-
-.. automodule:: maicos.modules.density.DensityPlanar
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Density cylinder
-================
-
-.. automodule:: maicos.modules.density.DensityCylinder
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. toctree::
+   :titlesonly:
+   :maxdepth: 4
+   :caption: Density modules
+   :hidden:
+   
+   densityplanar
+   densitycylinder
