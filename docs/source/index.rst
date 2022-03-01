@@ -24,12 +24,12 @@ MAICoS
    ./documentation_pages/gettinginvolved
    ./documentation_pages/authors
    ./documentation_pages/changelog
-
+   
 .. toctree::
    :maxdepth: 4
    :caption: Modules
    :hidden:
-
+   
    ./documentation_pages/modules/density
    ./documentation_pages/modules/dielectric
    ./documentation_pages/modules/structure
