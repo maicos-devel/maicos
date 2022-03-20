@@ -187,16 +187,23 @@ class PlanarBase(AnalysisBase):
         if self._zmax is None:
             self.zmax = self._ts.dimensions[self.dim]
             self.Lz += self.zmax
-
         if self.comgroup is not None:
-            comshift = self.comgroup.center_of_mass(pbc=True)
+            theta = (self.comgroup.positions[:, self.dim]
+                     / self._ts.dimensions[self.dim]) * 2 * np.pi
+            xi = ((np.cos(theta) * self.comgroup.masses).sum()
+                  / self.comgroup.masses.sum())
+            zeta = ((np.sin(theta) * self.comgroup.masses).sum()
+                    / self.comgroup.masses.sum())
+            theta_com = np.arctan2(-zeta, -xi) + np.pi
+            com = theta_com / (2 * np.pi) * self._ts.dimensions[self.dim]
 
-            if hasattr(self, 'atomgroup'):
+            if hasattr(self, "atomgroup"):
                 groups = [self.atomgroup]
             else:
                 groups = self.atomgroups
             for group in groups:
-                group.atoms.positions += comshift
+                group.atoms.translate(
+                    (0, 0, (self.zmax - self.zmin) / 2 - com))
 
     def _conclude(self):
         """Results calculations for the planar analysis."""

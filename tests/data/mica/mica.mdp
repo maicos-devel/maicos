@@ -1,0 +1,118 @@
+;+++++++++++++  Molecular dynamics parameters for Gromacs 2020.3  ++++++++++++++
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ run control ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+integrator              = md
+
+tinit                   = 0
+init-step               = 0
+dt                      = 0.002
+nsteps                  =    500000
+;                           n  p  f   
+comm-mode               = linear
+nstcomm                 = 100 
+comm-grps               = system
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ output control ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+nstxout                 = 0
+nstvout                 = 0
+nstfout                 = 0
+nstlog                  = 1000
+
+nstcalcenergy           = 100
+nstenergy               = 1000
+
+nstxout-compressed      = 5000
+compressed-x-precision  = 1000
+compressed-x-grps       =
+
+energygrps              =
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ neighbor searching ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+cutoff-scheme           = verlet
+nstlist                 = 20
+pbc                     = xyz
+periodic-molecules      = yes
+
+verlet-buffer-tolerance = 0.005
+rlist                   = 1.2
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ Van der Waals ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+vdwtype                 = cut-off
+vdw-modifier            = potential-shift
+rvdw-switch             =
+rvdw                    = 1.2
+DispCorr                = EnerPres
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ electrostatics ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+coulombtype             = pme
+coulomb-modifier        = potential-shift
+rcoulomb-switch         = 
+rcoulomb                = 1.2
+epsilon-r               = 
+epsilon-rf              = 
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ Ewald ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fourierspacing          =
+fourier-nx              =
+fourier-ny              =
+fourier-nz              =
+pme-order               = 4
+ewald-rtol              = 1.0e-5
+ewald-rtol-lj           = 
+lj-pme-comb-rule        =
+ewald-geometry          = 3d
+epsilon-surface         = 0
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ temperature coupling ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+tcoupl                  = v-rescale
+nsttcouple              = 
+nh-chain-length         =
+
+tc-grps                 = SURF !SURF
+tau-t                   =  0.1 0.1  
+ref-t                   =  300 300  
+
+print-nose-hoover-chain-variables =
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ velocity generation ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+gen_vel                 = yes
+gen-temp                = 300
+gen-seed                = -1
+
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; [ bonds ]
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+constraints             = h-bonds
+constraint-algorithm    = lincs
+continuation            = no  
+shake-tol               = 0.0001
+lincs-order             =
+lincs-iter              =
+lincs-warnangle         =
+morse                   = no
+

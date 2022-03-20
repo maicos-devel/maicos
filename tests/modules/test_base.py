@@ -232,7 +232,7 @@ class TestPlanarBase(object):
         planar_class_obj._single_frame()
 
         assert_allclose(ag.atoms.positions[0, :],
-                        [28.86, 18.32, 38.03], rtol=1e-01)
+                        [19.01, 8.14, 37.62], rtol=1e-01)
 
 
 class TestPlanarBaseChilds:
