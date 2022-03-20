@@ -1,0 +1,12 @@
+#include "ff/forcefield.itp"
+#include "ff/mica.itp"
+#include "ff/tip4p_eps.itp"
+
+[ system ]
+Mica surface with water and counter-ions
+
+[ molecules ]
+SURF     1
+SION    30
+CION	30
+SOL	   587

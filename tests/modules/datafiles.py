@@ -30,4 +30,9 @@ SALT_WATER_TPR = resource_filename(
 NVE_WATER_TPR = resource_filename(__name__, "../data/kineticenergy/nve.tpr")
 NVE_WATER_TRR = resource_filename(__name__, "../data/kineticenergy/nve.trr")
 
+# MICA slab
+MICA_XTC = resource_filename(__name__, "../data/mica/mica.xtc")
+MICA_TPR = resource_filename(__name__, "../data/mica/mica.tpr")
+MICA_GRO = resource_filename(__name__, "../data/mica/mica.gro")
+
 LAMMPS10WATER = resource_filename(__name__, "../data/lammps10water.data")

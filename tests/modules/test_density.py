@@ -12,6 +12,8 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from datafiles import (
+    MICA_TPR,
+    MICA_XTC,
     SALT_WATER_GRO,
     SALT_WATER_TPR,
     WATER_GRO,
@@ -53,6 +55,18 @@ class TestDensityPlanar(object):
         return [u.select_atoms("resname SOL"),
                 u.select_atoms("resname NA"),
                 u.select_atoms("resname CL")]
+
+    @pytest.fixture()
+    def mica_water(self):
+        """Import MDA universe, water components of a slab system."""
+        u = mda.Universe(MICA_TPR, MICA_XTC)
+        return u.select_atoms('resname SOL')
+
+    @pytest.fixture()
+    def mica_surface(self):
+        """Import MDA universe, surface component of a slab system."""
+        u = mda.Universe(MICA_TPR, MICA_XTC)
+        return u.select_atoms('resname SURF')
 
     @pytest.fixture()
     def ag_no_masses(self):
@@ -101,6 +115,23 @@ class TestDensityPlanar(object):
         assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
                             0.1, decimal=2)
         assert_equal(len(dens.results["z"]), n_bins)
+
+    def test_comshift(self, mica_water):
+        """Test comshift."""
+        dens = DensityPlanar(mica_water, comgroup=mica_water).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 979.8, decimal=1)
+
+    def test_comshift_z2(self, mica_water):
+        """Test comshift with an additional shift by z/2."""
+        mica_water.atoms.translate(
+            (0, 0, mica_water.universe.dimensions[2] / 2))
+        dens = DensityPlanar(mica_water, comgroup=mica_water).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 979.8, decimal=1)
+
+    def test_comshift_over_boundaries(self, mica_water, mica_surface):
+        """Test comshift over box boundaries."""
+        dens = DensityPlanar(mica_water, comgroup=mica_surface).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 0, decimal=1)
 
     def test_mu(self, ag):
         """Test mu."""
