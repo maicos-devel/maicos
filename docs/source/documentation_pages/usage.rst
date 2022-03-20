@@ -40,7 +40,13 @@ as well as some (optional) parameters, then use the ``run`` method:
 	ana_obj = maicos.<module>(atomgroup, <paramaters>)
 	ana_obj.run()
 
-Results are available through the objects `results` dictionary.
+Results are available through the objects ``results`` dictionary. Use 
+``verbose=True`` to see a progress bar, and ``start``, ``stop`` and ``step`` to 
+analyse only a subpart of a trajectory file:
+
+.. code-block:: python
+
+	ana_obj.run(verbose = True, stop = 50)
 
 .. toctree::
    :maxdepth: 4
