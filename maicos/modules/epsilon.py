@@ -972,7 +972,7 @@ class DielectricSpectrum(AnalysisBase):
             ss = 0 + 0j
 
             # loop over x, y, z
-            for self._i in range(0, len(self.results.P[0, :])):
+            for self._i in range(3):
                 FP = FT(
                     self.results.t,
                     np.append(
