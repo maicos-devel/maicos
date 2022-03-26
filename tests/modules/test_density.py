@@ -8,6 +8,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import os
+
 import MDAnalysis as mda
 import numpy as np
 import pytest
@@ -19,11 +21,14 @@ from datafiles import (
     WATER_TRR,
     )
 from MDAnalysisTests.datafiles import TPR, TRR
-from numpy.testing import assert_almost_equal, assert_equal, \
-    assert_warns, assert_raises
+from numpy.testing import (
+    assert_almost_equal,
+    assert_equal,
+    assert_raises,
+    assert_warns,
+    )
 
 from maicos import DensityCylinder, DensityPlanar
-import os
 
 
 class TestDensityPlanar(object):
