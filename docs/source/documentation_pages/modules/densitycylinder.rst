@@ -1,4 +1,4 @@
-.. _label_density:
+.. _label_density_cylinder:
 
 ================
 Density cylinder

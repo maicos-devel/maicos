@@ -9,8 +9,7 @@ Dielectric constant modules
    :maxdepth: 4
    :caption: Dielectric constant modules
    :hidden:
-   
-   epsilonbulk
+
    epsilonplanar
    epsiloncylinder
    dielectricspectrum
