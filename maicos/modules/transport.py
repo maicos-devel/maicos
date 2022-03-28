@@ -129,15 +129,17 @@ class Velocity(AnalysisBase):
                                                    compound=check_compound(
                                                        self.atomgroup))
 
-        bins = (coms / (self._universe.dimensions[self.dim]
-                        / self.n_bins)).astype(int) % self.n_bins
-        bincount = np.bincount(bins, minlength=self.n_bins)
+        curvel = np.histogram(coms,
+                              bins=self.n_bins,
+                              range=(0, self._ts.dimensions[self.dim]),
+                              weights=comvels)[0]
+        bincount = np.histogram(coms,
+                                bins=self.n_bins,
+                                range=(0, self._ts.dimensions[self.dim]))[0]
         with np.errstate(divide="ignore", invalid="ignore"):
             # mean velocity in this bin, zero if empty
-            curvel = np.nan_to_num(
-                np.histogram(bins,
-                             bins=np.arange(0, self.n_bins + 1),
-                             weights=comvels)[0] / bincount)
+            curvel /= bincount
+        curvel = np.nan_to_num(curvel)
 
         # add velocities to the average and convert to (m/s)
         self.av_vel[:, self._frame_index // self.blockfreq] += curvel * 100

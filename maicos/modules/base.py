@@ -158,30 +158,6 @@ class PlanarBase(AnalysisBase):
         if self.comgroup is not None:
             self.center = True  # always center when COM
 
-    def get_bins(self, positions, dim=None):
-        """Calculate bins based on given positions.
-
-        dim denotes the dimension for calculating bins.
-        If `None` the default dim is taken.
-
-        Attributes
-        ----------
-        positions : numpy.ndarray
-            3 dimensional positions
-        dim : int
-            dimension for binning (x=0, y=1, z=2)
-
-        Returns
-        -------
-        numpy.ndarray
-            binned positions
-        """
-        dim = self.dim if dim is None else dim
-        dz = self._ts.dimensions[dim] / self.n_bins
-        bins = np.rint(positions[:, dim] / dz)
-        bins %= self.n_bins
-        return bins.astype(int)
-
     def _single_frame(self):
         """Single frame for the planar analysis."""
         if self._zmax is None:

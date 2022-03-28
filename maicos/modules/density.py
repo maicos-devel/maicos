@@ -325,13 +325,17 @@ class DensityPlanar(PlanarBase):
         curV = self._ts.volume / 1000
 
         for index, selection in enumerate(self.atomgroups):
-            bins = self.get_bins(selection.atoms.positions)
-            density_ts = np.histogram(bins,
-                                      bins=np.arange(self.n_bins + 1),
+            pos = selection.atoms.positions[:, self.dim]
+            pos %= self._ts.dimensions[self.dim]
+            density_ts = np.histogram(pos,
+                                      bins=self.n_bins,
+                                      range=(self.zmin, self.zmax),
                                       weights=weight(selection, self.dens))[0]
 
             if self.dens == 'temp':
-                bincount = np.bincount(bins, minlength=self.n_bins)
+                bincount = np.histogram(pos,
+                                        bins=self.n_bins,
+                                        range=(self.zmin, self.zmax))[0]
                 self.density_mean[:, index] += density_ts / bincount
                 self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
@@ -558,17 +562,17 @@ class DensityCylinder(AnalysisBase):
         else:
             self.length /= 10
 
-        self.nbins = int(np.ceil(self.radius / 10 / self.binwidth))
+        self.n_bins = int(np.ceil(self.radius / 10 / self.binwidth))
 
-        self.density_mean = np.zeros((self.nbins, self.n_atomgroups))
-        self.density_mean_sq = np.zeros((self.nbins, self.n_atomgroups))
+        self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
+        self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
 
-        self._dr = np.ones(self.nbins) * self.radius / self.nbins
-        self._r_bins = np.arange(self.nbins) * self._dr + self._dr
+        self._dr = np.ones(self.n_bins) * self.radius / self.n_bins
+        self._r_bins = np.arange(self.n_bins) * self._dr + self._dr
         self._delta_r_sq = self._r_bins ** 2 \
             - np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
 
-        logger.info(f"Using {self.nbins} bins.")
+        logger.info(f"Using {self.n_bins} bins.")
 
     def _single_frame(self):
         # calculater center of cylinder.
@@ -591,13 +595,15 @@ class DensityCylinder(AnalysisBase):
             radial_positions = np.linalg.norm(
                 (cylinder.atoms.positions[:, self.odims] - center[self.odims]),
                 axis=1)
-            bins = np.digitize(radial_positions, self._r_bins)
-            density_ts = np.histogram(bins,
-                                      bins=np.arange(self.nbins + 1),
+            density_ts = np.histogram(radial_positions,
+                                      bins=self.n_bins,
+                                      range=(0, self.radius),
                                       weights=weight(cylinder, self.dens))[0]
 
             if self.dens == 'temp':
-                bincount = np.bincount(bins, minlength=self.nbins)
+                bincount = np.histogram(radial_positions,
+                                        bins=self.n_bins,
+                                        range=(0, self.radius))[0]
                 self.density_mean[:, index] += density_ts / bincount
                 self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:

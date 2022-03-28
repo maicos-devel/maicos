@@ -19,7 +19,7 @@ Philip Loche, Simon Gravelle
 - Fix lint errors (!95)
 
 v0.5.1 (2022/02/21)
------------------
+-------------------
 Henrik Jaeger
 
 - Fix pypi installation (!98)

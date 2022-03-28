@@ -183,8 +183,8 @@ class Saxs(AnalysisBase):
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
             self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
         else:
-            self.nbins = int(np.ceil((self.endq - self.startq) / self.dq))
-            self.struct_factor = np.zeros([self.nbins, len(self.groups)])
+            self.n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
+            self.struct_factor = np.zeros([self.n_bins, len(self.groups)])
 
     def _single_frame(self):
         # Convert everything to cartesian coordinates.
@@ -209,14 +209,14 @@ class Saxs(AnalysisBase):
                 q_ts = q_ts[nonzeros]
                 S_ts = S_ts[nonzeros]
 
-                bins = ((q_ts - self.startq)
-                        / ((self.endq - self.startq) / self.nbins)).astype(int)
-                struct_ts = np.histogram(bins,
-                                         bins=np.arange(self.nbins + 1),
+                struct_ts = np.histogram(q_ts,
+                                         bins=self.n_bins,
+                                         range=(self.startq, self.endq),
                                          weights=S_ts)[0]
                 with np.errstate(divide='ignore', invalid='ignore'):
-                    struct_ts /= np.histogram(bins,
-                                              bins=np.arange(self.nbins + 1))[0]
+                    struct_ts /= np.histogram(q_ts,
+                                              bins=self.n_bins,
+                                              range=(self.startq, self.endq))[0]
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
@@ -428,13 +428,12 @@ class Debye(AnalysisBase):
             s_tmp = np.vstack(
                 [s_tmp, np.loadtxt("{}/{}".format(self._tmp, f))])
 
-        nbins = int(np.ceil((self.endq - self.startq) / self.dq))
+        n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
 
-        bins = ((s_tmp[:, 0] - self.startq)
-                / ((self.endq - self.startq) / nbins)).astype(int)
-        s_out = np.histogram(bins,
-                             bins=np.arange(nbins + 1),
+        s_out = np.histogram(s_tmp[:, 0],
+                             bins=n_bins,
+                             range=(self.startq, self.endq),
                              weights=s_tmp[:, 1])[0]
 
         nonzeros = np.where(s_out != 0)[0]
@@ -570,24 +569,28 @@ class Diporder(PlanarBase):
                 weights=np.abs(self.atomgroup.charges),
                 compound=check_compound(self.atomgroup))
 
-        bins = self.get_bins(bin_positions)
-        bincount = np.bincount(bins, minlength=self.n_bins)
+        bincount = np.histogram(bin_positions,
+                                bins=self.n_bins,
+                                range=(self.zmin, self.zmax))[0]
         self.bin_count += bincount
         A = np.prod(self._ts.dimensions[self.xydims])
 
         self.P0 += np.histogram(
-            bins,
-            bins=np.arange(self.n_bins + 1),
+            bin_positions[:, self.dim],
+            bins=self.n_bins,
+            range=(self.zmin, self.zmax),
             weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
         self.cos_theta += np.histogram(
-            bins,
-            bins=np.arange(self.n_bins + 1),
+            bin_positions[:, self.dim],
+            bins=self.n_bins,
+            range=(self.zmin, self.zmax),
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit))[0]
         self.cos_2_theta += np.histogram(
-            bins,
-            bins=np.arange(self.n_bins + 1),
+            bin_positions[:, self.dim],
+            bins=self.n_bins,
+            range=(self.zmin, self.zmax),
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit)**2)[0]
