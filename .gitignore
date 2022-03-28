@@ -17,6 +17,9 @@ __pycache__
 *.txt
 *.xvg
 
+# Cython generated files
+sfactor.c
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

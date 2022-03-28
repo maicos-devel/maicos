@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Tests for the base modules."""
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
@@ -114,18 +113,6 @@ class TestPlanarBase(object):
         planar_class_obj = PlanarClass(ag, pos_arg=42, opt_arg="bar")
         assert planar_class_obj.pos_arg == 42
         assert planar_class_obj.opt_arg == "bar"
-
-    @pytest.mark.parametrize(('dim', 'bins'),
-                             ((0, [1, 4]), (1, [1, 7]), (2, [0, 4])))
-    def test_get_bins(self, ag, dim, bins):
-        """Test get bins."""
-        planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=0.5)
-        planar_class_obj._prepare()
-        planar_class_obj._ts = planar_class_obj._universe
-
-        # Universe dimensions are [2 nm, 2 nm, 6 nm]
-        positions = np.array([[.1, .1, .1], [.6, 1.2, 2.2]])  # in nm
-        assert_equal(planar_class_obj.get_bins(10 * positions, dim), bins)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_dim(self, ag, dim):
