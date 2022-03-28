@@ -82,9 +82,9 @@ class TestEpsilonPlanar(object):
         return u.atoms
 
     @pytest.mark.parametrize('dim, val_perp, val_par',
-                             ((0, -0.2, 52.7),
-                              (1, -0.248, 43.2),
-                              (2, -0.22, 37.0)))
+                             ((0, 1 / 71 - 1, 1026.1),
+                              (1, 1 / 71 - 1, 943.2),
+                              (2, 1 / 71 - 1, 839.7)))
     def test_broken_molecules(self, ag, dim, val_perp, val_par):
         """Tests broken molecules."""
         eps = EpsilonPlanar(ag, make_whole=False, dim=dim).run()
@@ -94,8 +94,8 @@ class TestEpsilonPlanar(object):
     def test_repaired_molecules(self, ag):
         """Tests repaired molecules."""
         eps = EpsilonPlanar(ag, make_whole=True).run()
-        assert_almost_equal(eps.results['eps_perp'].mean(), -0.43, decimal=1)
-        assert_almost_equal(eps.results['eps_par'].mean(), 0.32, decimal=1)
+        assert_almost_equal(eps.results['eps_perp'].mean(), 0.30, decimal=1)
+        assert_almost_equal(eps.results['eps_par'].mean(), 232.8, decimal=1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
@@ -137,17 +137,29 @@ class TestEpsilonCylinder(object):
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
+    def test_radius(self, ag):
+        """Tests radius set."""
+        eps = EpsilonCylinder(ag, make_whole=False, radius=5)
+        eps.run(start=0, stop=1)
+        assert eps.radius == 50
+
+    def test_radius_box(self, ag):
+        """Tests radius taken from box."""
+        eps = EpsilonCylinder(ag, make_whole=False)
+        eps.run(start=0, stop=1)
+        assert eps.radius == ag.universe.dimensions[:2].min() / 2
+
     def test_broken_molecules(self, ag):
         """Tests broken molecules."""
         eps = EpsilonCylinder(ag, make_whole=False).run()
-        assert_almost_equal(eps.results['eps_ax'].mean(), 1365.9, decimal=1)
-        assert_almost_equal(eps.results['eps_rad'].mean(), -9.97, decimal=1)
+        assert_almost_equal(eps.results['eps_ax'].mean(), 1179.0, decimal=1)
+        assert_almost_equal(eps.results['eps_rad'].mean(), -10, decimal=0)
 
     def test_repaired_molecules(self, ag):
         """Tests repaired molecules."""
         eps = EpsilonCylinder(ag, make_whole=True).run()
-        assert_almost_equal(eps.results['eps_ax'].mean(), 19.9, decimal=1)
-        assert_almost_equal(eps.results['eps_rad'].mean(), -9.79, decimal=1)
+        assert_almost_equal(eps.results['eps_ax'].mean(), 1179.6, decimal=1)
+        assert_almost_equal(eps.results['eps_rad'].mean(), -10, decimal=0)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""
