@@ -76,8 +76,6 @@ List of analysis modules
      - Compute partial densities/temperature profiles in the Cartesian systems.
    * - DensityCylinder
      - Compute partial densities across a cylinder.
-   * - EpsilonBulk
-     - Compute dipole moment fluctuations and static dielectric constant.
    * - EpsilonPlanar
      - Calculate planar dielectric profiles.
    * - EpsilonCylinder
