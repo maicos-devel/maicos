@@ -15,11 +15,12 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle
 
+- Remove EpsilonBulk (!107)
 - Add Code of Conduct (!97)
 - Fix lint errors (!95)
 
 v0.5.1 (2022/02/21)
------------------
+-------------------
 Henrik Jaeger
 
 - Fix pypi installation (!98)

@@ -58,130 +58,6 @@ def Bin(a, bins):
 
 
 @set_verbose_doc
-@make_whole()
-@charge_neutral(filter="default")
-class EpsilonBulk(AnalysisBase):
-    r"""Compute dipole moment fluctuations and static dielectric constant.
-
-    Parameters
-    ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
-    ${MAKE_WHOLE_PARAMETER}
-    temperature : float
-        temperature (K)
-    output : str
-        Output filename.
-    concfreq : int
-        Default number of frames after which results are calculated and
-        files refreshed. If `0` results are only calculated at the end of
-        the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
-
-    Attributes
-    ----------
-    results.M : numpy.ndarray
-        `Directional dependant dipole moment
-        :math:`\langle \boldsymbol M \rangle` in :math:`eÅ`.
-    results.M2 : numpy.ndarray
-        Directional dependant squared dipole moment
-        :math:`\langle \boldsymbol M^2 \rangle` in :math:`(eÅ)^2`
-    results.fluct : float
-        Directional dependant dipole moment fluctuation
-        :math:`\langle \boldsymbol M^2 \rangle
-        - \langle \boldsymbol M \rangle^2`
-        in :math:`(eÅ)^2`
-    results.eps : numpy.ndarray
-        Directional dependant static dielectric constant
-    results.eps_mean : float
-        Static dielectric constant
-    """
-
-    def __init__(self,
-                 atomgroup,
-                 make_whole=True,
-                 temperature=300,
-                 output="eps.dat",
-                 concfreq=0,
-                 **kwargs):
-        super(EpsilonBulk, self).__init__(atomgroup, **kwargs)
-        self.temperature = temperature
-        self.make_whole = make_whole
-        self.concfreq = concfreq
-        self.output = output
-
-    def _prepare(self):
-        self.volume = 0
-        self.M = np.zeros(3)
-        self.M2 = np.zeros(3)
-        self.charges = self.atomgroup.charges
-
-    def _single_frame(self):
-        self.volume += self._ts.volume
-
-        M = np.dot(self.charges, self.atomgroup.positions)
-        self.M += M
-        self.M2 += M * M
-
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
-    def _conclude(self):
-        index = self._frame_index + 1
-        beta = 1. / (scipy.constants.Boltzmann * self.temperature)
-
-        self.results.M = self.M / index
-        self.results.M2 = self.M2 / index
-        self.results.volume = self.volume / index
-        self.results.fluct = self.results.M2 - self.results.M**2
-        self.results.eps = beta * eps0inv * pref * self.results.fluct / \
-            self.results.volume
-        self.results.eps_mean = self.results.eps.mean()
-
-        self.results.eps += 1
-        self.results.eps_mean += 1
-
-        if self._verbose:
-            print("The following averages for the complete trajectory "
-                  "have been calculated:")
-
-            print("")
-            for i, d in enumerate("xyz"):
-                print(" <M_{}> = {:.4f} eÅ".format(d, self.results.M[i]))
-
-            print("")
-            for i, d in enumerate("xyz"):
-                print(" <M_{}²> = {:.4f} (eÅ)²".format(d,
-                                                       self.results.M2[i]))
-
-            print("")
-            print(" <|M|²> = {:.4f} (eÅ)²".format(self.results.M2.mean()))
-            print(" |<M>|² = {:.4f} (eÅ)²".format(
-                (self.results.M**2).mean()))
-
-            print("")
-            print(" <|M|²> - |<M>|² = {:.4f} (eÅ)²".format(
-                self.results.fluct.mean()))
-
-            print("")
-            for i, d in enumerate("xyz"):
-                print(" ε_{} = {:.2f} ".format(d, self.results.eps[i]))
-
-            print("")
-            print(" ε = {:.2f}".format(self.results.eps_mean))
-            print("")
-
-    def save(self):
-        """Save result."""
-        savetxt(self.output,
-                np.hstack([self.results.eps_mean, self.results.eps]).T,
-                fmt='%1.2f',
-                header='eps\teps_x\teps_y\teps_z')
-
-
-@set_verbose_doc
 @set_planar_class_doc
 @make_whole()
 @charge_neutral(filter="error")
@@ -324,9 +200,11 @@ class EpsilonPlanar(PlanarBase):
         self.M_perp_2[self._frame_index
                       // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            bins = self.get_bins(sel.atoms.positions)
-            curQ = np.histogram(bins,
-                                bins=np.arange(self.n_bins + 1),
+            pos = sel.atoms.positions[:, self.dim]
+            pos %= self._ts.dimensions[self.dim]
+            curQ = np.histogram(pos,
+                                bins=self.n_bins,
+                                range=(self.zmin, self.zmax),
                                 weights=sel.atoms.charges)[0]
             this_m_perp = -np.cumsum(curQ / self.A)
             self.m_perp[:, i, self._frame_index
@@ -362,18 +240,28 @@ class EpsilonPlanar(PlanarBase):
                 repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
-            binsz = self.get_bins(testpos)
 
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
-                binsx = self.get_bins(sel.atoms.positions, dim=direction)
-                curQx = np.histogram2d(binsz,
-                                       binsx,
-                                       bins=[
-                                           np.arange(0, self.n_bins + 1),
-                                           np.arange(0, nbinsx + 1)
-                                           ],
-                                       weights=sel.atoms.charges)[0]
+                posx = sel.atoms.positions[:, direction]
+
+                # At this point we should not use the wrap, which causes
+                # unphysical dipoles at the borders
+                binsx = sel.atoms.positions[:, direction]
+                binsx /= (self._ts.dimensions[direction] / nbinsx)
+                binsx = binsx.astype(int)
+                # put all charges back inside box
+                binsx[np.where(binsx < 0)] = 0
+                binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
+
+                curQx = np.histogram2d(
+                    testpos[:, self.dim],
+                    posx,
+                    bins=(self.n_bins, nbinsx),
+                    range=((self.zmin, self.zmax),
+                           (0, self._ts.dimensions[direction])),
+                    weights=sel.atoms.charges)[0]
+
                 curqx = np.cumsum(curQx, axis=1) / (
                     self._ts.dimensions[self.xydims[1 - j]]
                     * (self._ts.dimensions[self.dim] / self.n_bins)
@@ -617,10 +505,10 @@ class EpsilonCylinder(AnalysisBase):
             self.com = self._universe.dimensions[:3] / 2
 
         if self.radius is not None:
-            radius = 10 * self.radius
+            self.radius = 10 * self.radius
         else:
             logger.info("No radius set. Take smallest box extension.")
-            radius = self._universe.dimensions[:2].min() / 2
+            self.radius = self._universe.dimensions[:2].min() / 2
 
         if self.length is not None:
             self.length *= 10
@@ -630,20 +518,20 @@ class EpsilonCylinder(AnalysisBase):
         # Convert nm -> Å
         self.binwidth *= 10
 
-        self.nbins = int(np.ceil(radius / self.binwidth))
+        self.n_bins = int(np.ceil(self.radius / self.binwidth))
 
         if self.variable_dr:
             # variable dr
-            sol = np.ones(self.nbins) * radius**2 / self.nbins
-            mat = np.diag(np.ones(self.nbins)) + np.diag(
-                np.ones(self.nbins - 1) * -1, k=-1)
+            sol = np.ones(self.n_bins) * self.radius**2 / self.n_bins
+            mat = np.diag(np.ones(self.n_bins)) + np.diag(
+                np.ones(self.n_bins - 1) * -1, k=-1)
 
             self.r_bins = np.sqrt(np.linalg.solve(mat, sol))
             self.dr = self.r_bins - np.insert(self.r_bins, 0, 0)[0:-1]
         else:
             # Constant dr
-            self.dr = np.ones(self.nbins) * radius / self.nbins
-            self.r_bins = np.arange(self.nbins) * self.dr + self.dr
+            self.dr = np.ones(self.n_bins) * self.radius / self.n_bins
+            self.r_bins = np.arange(self.n_bins) * self.dr + self.dr
 
         self.delta_r_sq = self.r_bins**2 - np.insert(self.r_bins, 0,
                                                      0)[0:-1]**2  # r_o^2-r_i^2
@@ -654,18 +542,18 @@ class EpsilonCylinder(AnalysisBase):
         self.resample = 10
         self.resample_freq = int(np.ceil(self.n_frames / self.resample))
 
-        self.m_rad = np.zeros((self.nbins, self.resample))
+        self.m_rad = np.zeros((self.n_bins, self.resample))
 
         self.M_rad = np.zeros((self.resample))
         self.mM_rad = np.zeros(
-            (self.nbins, self.resample))  # total fluctuations
+            (self.n_bins, self.resample))  # total fluctuations
 
-        self.m_ax = np.zeros((self.nbins, self.resample))
+        self.m_ax = np.zeros((self.n_bins, self.resample))
         self.M_ax = np.zeros((self.resample))
-        self.mM_ax = np.zeros((self.nbins, self.resample)
+        self.mM_ax = np.zeros((self.n_bins, self.resample)
                               )  # total fluctuations
 
-        logger.info('Using', self.nbins, 'bins.')
+        logger.info('Using', self.n_bins, 'bins.')
 
     def _single_frame(self):
         # Transform from cartesian coordinates [x,y,z] to cylindrical
@@ -674,13 +562,13 @@ class EpsilonCylinder(AnalysisBase):
         positions_cyl[:, 0] = np.linalg.norm(
             (self.atomgroup.positions[:, 0:2] - self.com[0:2]), axis=1)
         positions_cyl[:, 1] = self.atomgroup.positions[:, 2]
+        positions_cyl[:, 1] %= self._ts.dimensions[2]
 
         # Use polarization density ( for radial component )
         # ========================================================
-        bins_rad = np.digitize(positions_cyl[:, 0], self.r_bins)
-
-        curQ_rad = np.histogram(bins_rad,
-                                bins=np.arange(self.nbins + 1),
+        curQ_rad = np.histogram(positions_cyl[:, 0],
+                                bins=self.n_bins,
+                                range=(0, self.radius),
                                 weights=self.atomgroup.charges)[0]
         this_m_rad = -np.cumsum(
             (curQ_rad / self.delta_r_sq) * self.r * self.dr) / (self.r * np.pi
@@ -720,18 +608,12 @@ class EpsilonCylinder(AnalysisBase):
         testpos = np.empty(positions_cyl[:, 0].shape)
         testpos = np.repeat(centers[:, 0], repeats)
 
-        binsr = np.digitize(testpos, self.r_bins)
-
-        dz = np.ones(nbinsz) * self.length / nbinsz
-        z = np.arange(nbinsz) * dz + dz
-
-        binsz = np.digitize(positions_cyl[:, 1], z)
-        binsz[np.where(binsz < 0)] = 0
         curQz = np.histogram2d(
-            binsr,
-            binsz,
-            bins=[np.arange(self.nbins + 1),
-                  np.arange(nbinsz + 1)],
+            testpos,
+            positions_cyl[:, 1],
+            bins=(self.n_bins, nbinsz),
+            range=((0, self.radius),
+                   (0, self._ts.dimensions[2])),
             weights=self.atomgroup.charges)[0]
         curqz = np.cumsum(curQz,
                           axis=1) / (np.pi * self.delta_r_sq)[:, np.newaxis]

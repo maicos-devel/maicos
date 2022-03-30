@@ -116,6 +116,7 @@ class DipoleAngle(AnalysisBase):
                 fmt='%.5e')
 
 
+@set_verbose_doc
 class KineticEnergy(AnalysisBase):
     """Calculate the timeseries of energies.
 

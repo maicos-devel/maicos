@@ -13,6 +13,10 @@ structure factors, or transport properties from trajectories files,
 including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
+**Due to ongoing major restructuring work, some modules are currently
+not working correctly (transport and dielectric analysis). Use `v0.3`
+for your work as shown in the Installation directions.**
+
 .. inclusion-readme-intro-end
 
 For details, tutorials, and examples, please have a look at
@@ -55,7 +59,7 @@ typing in a terminal:
 .. code-block:: bash
 
     pip3 install numpy
-    pip3 install maicos
+    pip3 install maicos==0.3
 
 Alternatively, if you don't have special privileges, install
 the package in your home directory by using the ``--user`` flag.
@@ -76,8 +80,6 @@ List of analysis modules
      - Compute partial densities/temperature profiles in the Cartesian systems.
    * - DensityCylinder
      - Compute partial densities across a cylinder.
-   * - EpsilonBulk
-     - Compute dipole moment fluctuations and static dielectric constant.
    * - EpsilonPlanar
      - Calculate planar dielectric profiles.
    * - EpsilonCylinder

@@ -81,17 +81,17 @@ class TestDensityPlanar(object):
         return [u.select_atoms("resname SOL or resname NA")]
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [1308.2, 23.1]),
-                              ('number', [174.6, 1.6]),
-                              ('charge', [0.7, 0.0]),
-                              ('temp', [222.4, 315.6])))
+                             (('mass', [1350, 20]),
+                              ('number', [178.5, 1.4]),
+                              ('charge', [-1.5, 0.0]),
+                              ('temp', [223, np.nan])))
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = DensityPlanar(multiple_ags, dens=dens_type).run()
-        assert_almost_equal(dens.results['dens_mean'][40], mean, decimal=1)
+        assert_almost_equal(dens.results['dens_mean'][40], mean, decimal=0)
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 987.9), ('number', 99.1),
+                             (('mass', 988), ('number', 99.1),
                               ('charge', 0.0), ('temp', 291.6)))
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_dens(self, ag, dens_type, mean, dim):
@@ -108,6 +108,23 @@ class TestDensityPlanar(object):
         assert_almost_equal(dens.results["z"][1] - dens.results["z"][0],
                             0.1, decimal=2)
         assert_equal(len(dens.results["z"]), n_bins)
+
+    def test_comshift(self, mica_water):
+        """Test comshift."""
+        dens = DensityPlanar(mica_water, comgroup=mica_water).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 966, decimal=1)
+
+    def test_comshift_z2(self, mica_water):
+        """Test comshift with an additional shift by z/2."""
+        mica_water.atoms.translate(
+            (0, 0, mica_water.universe.dimensions[2] / 2))
+        dens = DensityPlanar(mica_water, comgroup=mica_water).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 966, decimal=1)
+
+    def test_comshift_over_boundaries(self, mica_water, mica_surface):
+        """Test comshift over box boundaries."""
+        dens = DensityPlanar(mica_water, comgroup=mica_surface).run()
+        assert_almost_equal(dens.results['dens_mean'][20], 0, decimal=1)
 
     def test_mu(self, ag):
         """Test mu."""
@@ -155,13 +172,13 @@ class TestDensityPlanar(object):
         """Test mu two residues."""
         dens = DensityPlanar(multiple_res_ag, mu=True, dens='number',
                              zpos=0).run()
-        assert_almost_equal(dens.results["mu"], -32.6, decimal=1)
+        assert_almost_equal(dens.results["mu"], -33.6, decimal=1)
 
     def test_mu_multiple_ags(self, multiple_ags_mu):
         """Test mu multiples ags."""
         dens = DensityPlanar(multiple_ags_mu, mu=True, dens='number',
                              zpos=4).run()
-        assert_almost_equal(dens.results["mu"], [-19.3, -30.1, -30.0],
+        assert_almost_equal(dens.results["mu"], [-19.3, -np.inf, -30.0],
                             decimal=1)
 
     def test_mu_mult_res_mult_atoms_ag(self, mult_res_mult_atoms_ag):
