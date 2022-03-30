@@ -14,56 +14,7 @@ import pytest
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
 from numpy.testing import assert_almost_equal
 
-from maicos import (
-    DielectricSpectrum,
-    EpsilonBulk,
-    EpsilonCylinder,
-    EpsilonPlanar,
-    )
-
-
-class TestEpsilonBulk(object):
-    """Tests for the EpsilonBulk class."""
-
-    @pytest.fixture()
-    def ag(self):
-        """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
-        return u.atoms
-
-    def test_broken_molecules(self, ag):
-        """Test broken molecules."""
-        eps = EpsilonBulk(ag, make_whole=False).run()
-        assert_almost_equal(eps.results['eps_mean'], 920.85, decimal=1)
-
-    def test_repaired_molecules(self, ag):
-        """Test repaired molecules."""
-        eps = EpsilonBulk(ag, make_whole=True).run()
-        assert_almost_equal(eps.results['eps_mean'], 20.35, decimal=1)
-
-    def test_temperature(self, ag):
-        """Test temperature."""
-        eps = EpsilonBulk(ag, temperature=100).run()
-        assert_almost_equal(eps.results['eps_mean'], 59.06, decimal=1)
-
-    def test_output(self, ag, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            eps = EpsilonBulk(ag)
-            eps.run()
-            eps.save()
-            res = np.loadtxt(eps.output)
-            assert_almost_equal(np.hstack(
-                [eps.results["eps_mean"], eps.results["eps"]]).T,
-                res, decimal=2)
-
-    def test_output_name(self, ag, tmpdir):
-        """Test output name."""
-        with tmpdir.as_cwd():
-            eps = EpsilonBulk(ag, output="foo", save=True)
-            eps.run()
-            eps.save()
-            open("foo.dat")
+from maicos import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
 
 
 class TestEpsilonPlanar(object):

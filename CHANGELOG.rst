@@ -15,6 +15,7 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle
 
+- Remove EpsilonBulk (!107)
 - Add Code of Conduct (!97)
 - Fix lint errors (!95)
 
