@@ -14,6 +14,8 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from datafiles import (
+    MICA_TPR,
+    MICA_XTC,
     SALT_WATER_GRO,
     SALT_WATER_TPR,
     WATER_GRO,
@@ -60,6 +62,18 @@ class TestDensityPlanar(object):
         return [u.select_atoms("resname SOL"),
                 u.select_atoms("resname NA"),
                 u.select_atoms("resname CL")]
+
+    @pytest.fixture()
+    def mica_water(self):
+        """Import MDA universe, water components of a slab system."""
+        u = mda.Universe(MICA_TPR, MICA_XTC)
+        return u.select_atoms('resname SOL')
+
+    @pytest.fixture()
+    def mica_surface(self):
+        """Import MDA universe, surface component of a slab system."""
+        u = mda.Universe(MICA_TPR, MICA_XTC)
+        return u.select_atoms('resname SURF')
 
     @pytest.fixture()
     def ag_no_masses(self):
