@@ -8,6 +8,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import os
+
 import MDAnalysis as mda
 import numpy as np
 import pytest
@@ -21,7 +23,12 @@ from datafiles import (
     WATER_TRR,
     )
 from MDAnalysisTests.datafiles import TPR, TRR
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_equal,
+    assert_raises,
+    assert_warns,
+    )
 
 from maicos import DensityCylinder, DensityPlanar
 
@@ -223,6 +230,57 @@ class TestDensityPlanar(object):
         """Test density type."""
         with pytest.raises(ValueError):
             DensityPlanar(ag, dens="foo").run()
+    
+    def test_dens_mu(self, ag):
+        """Test conditions in Density & mu."""
+        with assert_warns(UserWarning):
+            assert DensityPlanar(ag, dens=None, mu=True).run()
+
+    def test_dens_mu1(self, ag):
+        """Density =! number and mu us True."""
+        dens = DensityPlanar(ag, dens="charge", mu=True)
+        with assert_raises(ValueError):
+            dens.run()
+
+    def test_dens_None(self, ag):
+        """Testing density None."""
+        dens = DensityPlanar(ag, dens=None)
+        dens.run()
+        assert_equal(dens.dens, "mass")
+
+    def test_save_n(self, ag):
+        """Testing save method."""
+        dens = DensityPlanar(ag, dens="number")
+        dens.run()
+        dens.save()
+        assert_equal(os.path.exists("density.dat"), True)
+
+    def test_save_number(self, ag):
+        """Testing on density number flag."""
+        dens = DensityPlanar(ag, dens="number")
+        dens.run()
+        dens.save()
+        outputf = open("density.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[4], '[nm^(-3)]')
+
+    def test_save_charge(self, ag):
+        """Testing on density charge flag."""
+        dens = DensityPlanar(ag, dens="charge")
+        dens.run()
+        dens.save()
+        outputf = open("density.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[4] + data.split()[5], "[enm^(-3)]")
+
+    def test_save_temp(self, ag):
+        """Test on density temperature flag."""
+        dens = DensityPlanar(ag, dens="temp")
+        dens.run()
+        dens.save()
+        outputf = open("density.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[3], '[K]')
 
 
 class TestDensityCylinder(object):
@@ -284,3 +342,50 @@ class TestDensityCylinder(object):
             dens.run()
             dens.save()
             open("foo.dat")
+
+    def test_dens_type(self, ag):
+        """Testing error."""
+        dens = DensityCylinder(ag, dens="dummy")
+        with assert_raises(ValueError):
+            dens.run()
+
+    def test_dens_radius_length(self, ag):
+        """Testing rescaling of density, radius."""
+        dens = DensityCylinder(ag, radius=10.0, length=10.0)
+        dens.run()
+        assert_equal(dens.radius, 1.0)
+        assert_equal(dens.length, 1.0)
+
+    def test_dens_cyl_save(self, ag):
+        """Testing save method."""
+        dens = DensityCylinder(ag)
+        dens.run()
+        dens.save()
+        assert_equal(os.path.exists("density_cylinder.dat"), True)
+
+    def test_dens_cyl_save_charge(self, ag):
+        """Testing with density flag charge."""
+        dens = DensityCylinder(ag, dens="charge")
+        dens.run()
+        dens.save()
+        outputf = open("density_cylinder.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[4] + data.split()[5], "[enm^(-3)]")
+
+    def test_dens_cyl_save_number(self, ag):
+        """Testing with density flag number."""
+        dens = DensityCylinder(ag, dens="number")
+        dens.run()
+        dens.save()
+        outputf = open("density_cylinder.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[4], "[nm^(-3)]")
+
+    def test_dens_cyl_save_temp(self, ag):
+        """Testing with density flag temperature."""
+        dens = DensityCylinder(ag, dens="temp")
+        dens.run()
+        dens.save()
+        outputf = open("density_cylinder.dat", "r")
+        data = outputf.readlines()[1]
+        assert_equal(data.split()[3], '[K]')
