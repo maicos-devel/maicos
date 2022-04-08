@@ -92,6 +92,10 @@ class EpsilonPlanar(PlanarBase):
         Default number of frames after which results are
         calculated and files refreshed. If `0` results are only
         calculated at the end of the analysis and not saved by default.
+    resample : int
+        Number of blocks to use for resampling.
+    nvcuts : int
+        Number of virtual cuts (bins) along the parallel directions.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -130,6 +134,8 @@ class EpsilonPlanar(PlanarBase):
                  temperature=300,
                  output_prefix="eps",
                  concfreq=0,
+                 resample=10,
+                 nvcuts=250,
                  **kwargs):
         super(EpsilonPlanar, self).__init__(atomgroups=atomgroups,
                                             dim=dim,
@@ -147,13 +153,13 @@ class EpsilonPlanar(PlanarBase):
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.concfreq = concfreq
+        self.resample = resample
+        self.nbinsx = nvcuts
 
     def _prepare(self):
         super(EpsilonPlanar, self)._prepare()
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
 
-        # Use 10 hardoced blocks for resampling
-        self.resample = 10
         self.resample_freq = int(np.ceil(self.n_frames / self.resample))
 
         self.V = 0
@@ -187,25 +193,30 @@ class EpsilonPlanar(PlanarBase):
         dz_frame = self._ts.dimensions[self.dim] / self.n_bins
 
         # precalculate total polarization of the box
-        this_M_perp, this_M_par = np.split(
-            np.roll(
-                np.dot(self._universe.atoms.charges,
-                       self._universe.atoms.positions), -self.dim), [1])
+        this_M = np.dot(self._universe.atoms.charges,
+                        self._universe.atoms.positions)
+
+        this_M_perp = this_M[self.dim]
+        this_M_par = this_M[self.xydims]
 
         # Use polarization density ( for perpendicular component )
         # ========================================================
-
         # sum up the averages
         self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
         self.M_perp_2[self._frame_index
                       // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            pos = sel.atoms.positions[:, self.dim]
-            pos %= self._ts.dimensions[self.dim]
-            curQ = np.histogram(pos,
-                                bins=self.n_bins,
-                                range=(self.zmin, self.zmax),
+            bins = sel.atoms.positions[:, self.dim]
+            bins /= (self._ts.dimensions[self.dim] / self.n_bins)
+            bins = np.floor(bins)
+            # put all charges back inside box
+            bins[np.where(bins < 0)] = 0
+            bins[np.where(bins >= self.n_bins)] = self.n_bins - 1
+
+            curQ = np.histogram(bins,
+                                bins=np.arange(self.n_bins + 1),
                                 weights=sel.atoms.charges)[0]
+
             this_m_perp = -np.cumsum(curQ / self.A)
             self.m_perp[:, i, self._frame_index
                         // self.resample_freq] += this_m_perp
@@ -221,7 +232,6 @@ class EpsilonPlanar(PlanarBase):
 
         # Use virtual cutting method ( for parallel component )
         # ========================================================
-        nbinsx = 250  # number of virtual cuts ("many")
 
         for i, sel in enumerate(self.atomgroups):
             # Move all z-positions to 'center of charge' such
@@ -241,25 +251,25 @@ class EpsilonPlanar(PlanarBase):
             testpos = sel.atoms.positions
             testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
 
+            binsz = testpos[:, self.dim]
+            binsz /= (self._ts.dimensions[self.dim] / self.n_bins)
+            binsz = np.floor(binsz)
+
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
-                posx = sel.atoms.positions[:, direction]
-
                 # At this point we should not use the wrap, which causes
                 # unphysical dipoles at the borders
                 binsx = sel.atoms.positions[:, direction]
-                binsx /= (self._ts.dimensions[direction] / nbinsx)
+                binsx /= (self._ts.dimensions[direction] / self.nbinsx)
                 binsx = binsx.astype(int)
                 # put all charges back inside box
                 binsx[np.where(binsx < 0)] = 0
-                binsx[np.where(binsx >= nbinsx)] = nbinsx - 1
+                binsx[np.where(binsx >= self.nbinsx)] = self.nbinsx - 1
 
                 curQx = np.histogram2d(
-                    testpos[:, self.dim],
-                    posx,
-                    bins=(self.n_bins, nbinsx),
-                    range=((self.zmin, self.zmax),
-                           (0, self._ts.dimensions[direction])),
+                    binsz,
+                    binsx,
+                    bins=(self.n_bins, self.nbinsx),
                     weights=sel.atoms.charges)[0]
 
                 curqx = np.cumsum(curQx, axis=1) / (
