@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.6 (XXXX/XX/XX)
 -----------------
-Philip Loche, Simon Gravelle, Srihas Velpuri
+Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Fix EpsilonPlanar (!108)
 - More tests for `DensityPlanar`, `DensityCylinder`, `KineticEnergy` and
   `DipoleAngle` (!104)
 - Remove EpsilonBulk (!107)

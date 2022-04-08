@@ -104,6 +104,12 @@ class TestPlanarBase(object):
         return u.atoms
 
     @pytest.fixture()
+    def empty_ag(self):
+        """Define an empty atomgroup."""
+        u = mda.Universe.empty(0)
+        return u.atoms
+
+    @pytest.fixture()
     def planar_class_obj(self, ag):
         """Planar class object."""
         return PlanarClass(ag, pos_arg=42)
@@ -119,6 +125,21 @@ class TestPlanarBase(object):
         """Test dim."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
         assert planar_class_obj.dim == dim
+
+    @pytest.mark.parametrize('dim', (3, 'x', -1))
+    def test_wrong_dim(self, ag, dim):
+        """Test dim."""
+        with pytest.raises(ValueError,
+                           match='Dimension can only be x=0, y=1 or z=2.'):
+            planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
+            planar_class_obj._prepare()
+
+    def test_empty_comgroup(self, ag, empty_ag):
+        """Test behaviour for empty comgroup."""
+        with pytest.raises(ValueError,
+                           match='Comgroup does not contain any atoms.'):
+            planar_class_obj = PlanarClass(ag, pos_arg=42, comgroup=empty_ag)
+            planar_class_obj._prepare()
 
     def test_binwidth(self, ag):
         """Test binwidth."""

@@ -32,21 +32,44 @@ class TestEpsilonPlanar(object):
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
-    @pytest.mark.parametrize('dim, val_perp, val_par',
-                             ((0, 1 / 71 - 1, 1026.1),
-                              (1, 1 / 71 - 1, 943.2),
-                              (2, 1 / 71 - 1, 839.7)))
-    def test_broken_molecules(self, ag, dim, val_perp, val_par):
-        """Tests broken molecules."""
-        eps = EpsilonPlanar(ag, make_whole=False, dim=dim).run()
-        assert_almost_equal(eps.results['eps_perp'].mean(), val_perp, decimal=1)
-        assert_almost_equal(eps.results['eps_par'].mean(), val_par, decimal=1)
+    @pytest.fixture()
+    def single_dipole(self):
+        """Single dipole atomgroup.
 
-    def test_repaired_molecules(self, ag):
-        """Tests repaired molecules."""
-        eps = EpsilonPlanar(ag, make_whole=True).run()
-        assert_almost_equal(eps.results['eps_perp'].mean(), 0.30, decimal=1)
-        assert_almost_equal(eps.results['eps_par'].mean(), 232.8, decimal=1)
+        Create MDA universe with a single dipole molecule
+        inside a 1x1x1nm box cubic box.
+        """
+        u = mda.Universe.empty(2,
+                               n_residues=1,
+                               atom_resindex=[0, 0],
+                               n_segments=1,
+                               residue_segindex=[0],
+                               trajectory=True)
+        positions = np.array([[4, 4, 4],
+                              [6, 6, 6]])
+        charges = np.array([-0.5, 0.5])
+        dimensions = np.array([10, 10, 10, 90, 90, 90])
+        u.atoms.positions = positions
+        u.add_TopologyAttr('charges', charges)
+        u.add_TopologyAttr('resid', [0])
+        u.add_TopologyAttr('bonds', [(0, 1)])
+        u.add_TopologyAttr('masses', [1, 1])
+        u.dimensions = dimensions
+        return u.atoms
+
+    @pytest.mark.parametrize('binwidth, bins_par, bins_perp',
+                             ((0.5, [0., 0.01992], [0.005, 0]),
+                              (0.1, [0, 0, 0, 0, 0, 0.0996, 0, 0, 0, 0],
+                               [0, 0, 0, 0, 0.005, 0.005, 0, 0, 0, 0]))
+                             )
+    def test_single_frame(self, single_dipole, binwidth, bins_par, bins_perp):
+        """Test physical quantities."""
+        eps = EpsilonPlanar(single_dipole, binwidth=binwidth)
+        eps.run()
+        assert eps.M_par[0] == 2.
+        assert eps.M_perp[0] == 1.
+        assert np.all(eps.m_par[:, 0, 0] == bins_par)
+        assert np.all(eps.m_perp[:, 0, 0] == bins_perp)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
