@@ -72,11 +72,6 @@ class EpsilonPlanar(PlanarBase):
         List of :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the dielectric profiles are calculated.
     ${PLANAR_CLASS_PARAMETERS}
-    zmin : float
-        Minimal coordinate for evaluation (nm).
-    zmax : float
-        Maximal coordinate for evaluation (nm). If `None` the whole box is
-        taken into account.
     xy : bool
         Use 2D slab geometry.
     vac : bool
@@ -122,11 +117,11 @@ class EpsilonPlanar(PlanarBase):
     def __init__(self,
                  atomgroups,
                  dim=2,
+                 zmin=0,
+                 zmax=None,
                  binwidth=0.05,
                  center=False,
                  comgroup=None,
-                 zmin=0,
-                 zmax=None,
                  xy=False,
                  sym=False,
                  vac=False,
@@ -139,13 +134,13 @@ class EpsilonPlanar(PlanarBase):
                  **kwargs):
         super(EpsilonPlanar, self).__init__(atomgroups=atomgroups,
                                             dim=dim,
+                                            zmin=zmin,
+                                            zmax=zmax,
                                             binwidth=binwidth,
                                             center=center,
                                             comgroup=comgroup,
                                             multi_group=True,
                                             **kwargs)
-        self.zmin = zmin
-        self._zmax = zmax
         self.xy = xy
         self.sym = sym
         self.vac = vac
