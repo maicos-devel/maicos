@@ -500,6 +500,8 @@ class Diporder(PlanarBase):
     def __init__(self,
                  atomgroup,
                  dim=2,
+                 zmin=0,
+                 zmax=None,
                  binwidth=0.1,
                  center=False,
                  comgroup=None,
@@ -511,6 +513,8 @@ class Diporder(PlanarBase):
                  **kwargs):
         super(Diporder, self).__init__(atomgroups=atomgroup,
                                        dim=dim,
+                                       zmin=zmin,
+                                       zmax=zmax,
                                        binwidth=binwidth,
                                        center=center,
                                        comgroup=comgroup,

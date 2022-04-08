@@ -67,12 +67,16 @@ class PlanarClass(PlanarBase):
                  pos_arg,
                  opt_arg="foo",
                  dim=2,
+                 zmin=0,
+                 zmax=None,
                  binwidth=0.1,
                  center=False,
                  comgroup=None,
                  **kwargs):
         super(PlanarClass, self).__init__(atomgroups=atomgroups,
                                           dim=dim,
+                                          zmin=zmin,
+                                          zmax=zmax,
                                           binwidth=binwidth,
                                           center=center,
                                           comgroup=comgroup,
@@ -239,8 +243,8 @@ class TestPlanarBase(object):
         planar_class_obj._ts = planar_class_obj._universe
         planar_class_obj._single_frame()
 
-        assert_allclose(ag.atoms.positions[0, :],
-                        [19.01, 8.14, 37.62], rtol=1e-01)
+        assert_allclose(ag.atoms.positions[0, :], [19.01, 8.14, 37.62],
+                        rtol=1e-01)
 
 
 class TestPlanarBaseChilds:
@@ -261,7 +265,12 @@ class TestPlanarBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(dim=2, binwidth=0.1, comgroup=None, center=False)
+        params = dict(dim=2,
+                      zmin=0,
+                      zmax=None,
+                      binwidth=0.1,
+                      comgroup=None,
+                      center=False)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = PlanarBase(ag_single_frame, **params).run()
 

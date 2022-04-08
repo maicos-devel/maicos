@@ -112,18 +112,26 @@ class PlanarBase(AnalysisBase):
     Attributes
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
-    zmin : float
-        Minimal position for analysis (Å)
     zmax : float
-        Maximal position for analysis (Å)
+        the maximal coordinate for evaluation. If provided `zmax` is
+        `None` it will adjust to box length during analysis.
     n_bins : int
         Number of bins for analysis
-
     """
 
-    def __init__(self, atomgroups, dim, binwidth, comgroup, center, **kwargs):
+    def __init__(self,
+                 atomgroups,
+                 dim,
+                 zmin,
+                 zmax,
+                 binwidth,
+                 comgroup,
+                 center,
+                 **kwargs):
         super(PlanarBase, self).__init__(atomgroups, **kwargs)
         self.dim = dim
+        self.zmin = zmin
+        self._zmax = zmax
         self.binwidth = binwidth
         self.center = center
         self.comgroup = comgroup
@@ -133,19 +141,12 @@ class PlanarBase(AnalysisBase):
         if self.dim not in [0, 1, 2]:
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")
 
-        # Workaround since currently not alle module have option
-        # with zmax and zmin
-        if not hasattr(self, '_zmax'):
-            self._zmax = None
-
         if self._zmax is None:
             self.Lz = 0
             self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax = 10 * self._zmax
 
-        if not hasattr(self, 'zmin'):
-            self.zmin = 0
         self.zmin *= 10
         self.binwidth *= 10
 

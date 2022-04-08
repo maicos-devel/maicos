@@ -24,6 +24,11 @@ verbose_parameter_doc = (
 planar_class_parameters_doc = (
     """dim : int
         Dimension for binning (x=0, y=1, z=2)
+    zmin : float
+        Minimal coordinate for evaluation (nm).
+    zmax : float
+        Maximal coordinate for evaluation (nm). If None, the entire
+        (possibly fluctuating) length of the box is taken into account.
     binwidth : float
         binwidth (nanometer)
     comgroup : AtomGroup

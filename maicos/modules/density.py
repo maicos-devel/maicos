@@ -205,6 +205,8 @@ class DensityPlanar(PlanarBase):
                  atomgroups,
                  dens="mass",
                  dim=2,
+                 zmin=0,
+                 zmax=None,
                  binwidth=0.1,
                  center=False,
                  comgroup=None,
@@ -218,6 +220,8 @@ class DensityPlanar(PlanarBase):
                  **kwargs):
         super(DensityPlanar, self).__init__(atomgroups=atomgroups,
                                             dim=dim,
+                                            zmin=zmin,
+                                            zmax=zmax,
                                             binwidth=binwidth,
                                             center=center,
                                             comgroup=comgroup,
