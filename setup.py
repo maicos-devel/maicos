@@ -152,7 +152,7 @@ if __name__ == "__main__":
         ]
 
     if use_cython:
-        extensions = cythonize(pre_exts)
+        extensions = cythonize(pre_exts, force=True)
     else:
         extensions = pre_exts
         # Let's check early for missing .c files
