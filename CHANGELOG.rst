@@ -15,6 +15,7 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Fix wrong diporder normalization + tests (!111)
 - Add zmin and zmax to DensityPlanar and Diporder (!109)
 - Fix EpsilonPlanar (!108)
 - More tests for `DensityPlanar`, `DensityCylinder`, `KineticEnergy` and
