@@ -117,6 +117,15 @@ class TestEpsilonCylinder(object):
         eps.run(start=0, stop=1)
         assert eps.radius == 50
 
+    def test_one_frame(self, ag):
+        """Test analysis running for one frame.
+        
+        Test if the division by the number of frames is correct.
+        """
+        eps = EpsilonCylinder(ag).run(stop=1)
+        assert not np.isnan(eps.results.eps_rad).any()
+        assert not np.isnan(eps.results.eps_ax).any()
+
     def test_radius_box(self, ag):
         """Tests radius taken from box."""
         eps = EpsilonCylinder(ag, make_whole=False)

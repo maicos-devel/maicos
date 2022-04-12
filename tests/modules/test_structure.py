@@ -30,6 +30,14 @@ class TestSaxs(object):
         """Test Saxs."""
         Saxs(ag, endq=20).run(stop=5)
 
+    def test_one_frame(self, ag):
+        """Test analysis running for one frame.
+        
+        Test if the division by the number of frames is correct.
+        """
+        saxs = Saxs(ag, endq=20).run(stop=1)
+        assert not np.isnan(saxs.results.scat_factor).any()
+
 
 class TestDiporder(object):
     """Tests for the Diporder class."""
@@ -46,12 +54,8 @@ class TestDiporder(object):
         res[0]["cos_2_theta"] = np.array([0.14, 0.13, 0.13, 0.13])
         res[0]["rho"] = np.array([36.82, 40.66, 40.79, 40.61])
 
-        # y-direction
-        res[1] = {}
-        res[1]["P0"] = np.array([-0.01, 0, 0, 0])
-        res[1]["cos_theta"] = np.array([-0.01, -0.01, 0, -0.01])
-        res[1]["cos_2_theta"] = np.array([0.14, 0.13, 0.12, 0.13])
-        res[1]["rho"] = np.array([36.82, 40.66, 40.79, 40.61])
+        # y-direction must be the same as x
+        res[1] = res[0]
 
         # z-direction
         res[2] = {}
@@ -62,7 +66,8 @@ class TestDiporder(object):
         res[2]["cos_2_theta"] = np.array(
             [0.05, 0.09, 0.09, 0.09, 0.33, 0.26, 0.2, 0, 0, 0, 0, 0.19])
         res[2]["rho"] = np.array([
-            110.47, 122, 122.36, 121.81, 33.03, 22.93, 0.41, 0, 0, 0, 0, 0.27])
+            109.38, 120.79, 121.15, 120.61, 32.7, 22.71, 0.4, 0, 0, 0, 0, 0.26
+            ])
 
         return res
 
@@ -87,7 +92,7 @@ class TestDiporder(object):
                             decimal=2)
         assert_almost_equal(dip.results['rho'],
                             result_dict[dim]['rho'],
-                            decimal=2)
+                            decimal=0)
 
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
@@ -113,6 +118,14 @@ class TestDiporder(object):
         dip = Diporder(ag, bpbc=False).run()
         Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
         assert dip.Lz == Lz
+
+    def test_one_frame(self, ag):
+        """Test analysis running for one frame.
+        
+        Test if the division by the number of frames is correct.
+        """
+        dip = Diporder(ag, make_whole=False).run(stop=1)
+        assert not np.isnan(dip.results.P0).any()
 
     def test_output_name(self, ag, tmpdir):
         """Test output name."""

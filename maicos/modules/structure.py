@@ -614,8 +614,8 @@ class Diporder(PlanarBase):
         """
         super(Diporder, self)._conclude()
         self._index = self._frame_index + 1
-        self.results.P0 = self.P0 / self._frame_index
-        self.results.rho = self.rho / self._frame_index
+        self.results.P0 = self.P0 / self._index
+        self.results.rho = self.rho / self._index
 
         with np.errstate(divide='ignore', invalid='ignore'):
             self.results.cos_theta = np.nan_to_num(

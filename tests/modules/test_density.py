@@ -113,6 +113,14 @@ class TestDensityPlanar(object):
         dens = DensityPlanar(ag, dens=dens_type, dim=dim).run()
         assert_almost_equal(dens.results['dens_mean'].mean(), mean, decimal=0)
 
+    def test_one_frame(self, ag):
+        """Test analysis running for one frame.
+        
+        Test if the division by the number of frames is correct.
+        """
+        dens = DensityPlanar(ag).run(stop=1)
+        assert not np.isnan(dens.results.dens_mean).any()
+
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_binwidth(self, ag_single_frame, dim):
         """Test bin width."""
@@ -305,6 +313,14 @@ class TestDensityCylinder(object):
         """Test density."""
         dens = DensityCylinder(ag, dens=dens_type).run()
         assert_almost_equal(dens.results['dens_mean'].mean(), mean, decimal=0)
+
+    def test_one_frame(self, ag):
+        """Test analysis running for one frame.
+        
+        Test if the division by the number of frames is correct.
+        """
+        dens = DensityCylinder(ag).run(stop=1)
+        assert not np.isnan(dens.results.dens_mean).any()
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_binwidth(self, ag_single_frame, dim):
