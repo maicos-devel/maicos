@@ -716,8 +716,7 @@ class DielectricSpectrum(AnalysisBase):
     FT[\theta(t) \langle P(0) dP(t)/dt\rangle]`.
     By default, the polarization trajectory, time series array and the average
     system volume are saved in the working directory, and the data are
-    reloaded from these files if they are present. Lin-log and log-log
-    plots of the susceptibility are also produced by default.
+    reloaded from these files if they are present.
 
     Parameters
     ----------
@@ -734,13 +733,6 @@ class DielectricSpectrum(AnalysisBase):
         The desired frequency spacing in THz.
         This determines the minimum frequency about which there
         is data. Overrides `segs` option.
-    noplots : bool
-        Prevents plots from being generated.
-    plotformat str
-        Allows the user to choose the format of generated
-        plots (choose from 'pdf', 'png', 'jpg', 'eps')
-    ymin : float
-        Manually sets the minimum lower bound for the log-log plot.
     bins : int
         Determines the number of bins used for data averaging;
         (this parameter sets the upper limit).
@@ -771,9 +763,6 @@ class DielectricSpectrum(AnalysisBase):
                  output_prefix="",
                  segs=20,
                  df=None,
-                 noplots=False,
-                 plotformat="pdf",
-                 ymin=None,
                  bins=200,
                  binafter=20,
                  nobin=False,
@@ -784,19 +773,11 @@ class DielectricSpectrum(AnalysisBase):
         self.output_prefix = output_prefix
         self.segs = segs
         self.df = df
-        self.noplots = noplots
-        self.plotformat = plotformat
-        self.ymin = ymin
         self.bins = bins
         self.binafter = binafter
         self.nobin = nobin
 
     def _prepare(self):
-        if self.plotformat not in ["pdf", "png", "jpg", "eps"]:
-            raise ValueError(f"Invalid choice for plotformat: "
-                             f"'{self.plotformat}' "
-                             f"(choose from 'pdf', 'png', 'jpg', 'eps')")
-
         if len(self.output_prefix) > 0:
             self.output_prefix += "_"
 
@@ -811,14 +792,12 @@ class DielectricSpectrum(AnalysisBase):
 
     def _conclude(self):
         self.results.t = self._trajectory.dt * self.frames
+        # CONVERSION: Å^3 -> nm^3
+        self.results.V = self.V * (1e-3 / (self._frame_index + 1))
 
-        self.results.V = self.V
-        self.results.V *= 1e-3 / (self._frame_index + 1)
-
-        self.results.P = self.P
-        # MDAnalysis gives units of Å, we use nm
-        self.results.P /= 10
-
+        # CONVERSION: Å -> nm
+        self.results.P = self.P / 10
+        
         # Find a suitable number of segments if it's not specified:
         if self.df is not None:
             self.segs = np.max([int(self.n_frames * self.dt * self.df), 2])
@@ -925,103 +904,6 @@ class DielectricSpectrum(AnalysisBase):
         # data is binned
         logger.info(f'Not binning data: there are '
                     f'{len(self.results.susc)} datapoints')
-
-        if self.noplots:
-            logger.info('User specified not to generate plots -- finished :)')
-
-        else:
-            if self._verbose:
-                print('Generating plots...')
-
-            import matplotlib.pyplot as plt
-
-            plt.rc('text', usetex=True)
-            plt.rc('font', family='serif')
-
-            # Colors/alpha values/labels/params for plotting
-            col1 = 'royalblue'
-            col2 = 'crimson'
-            curve = 0.9
-            shade = 0.15
-            lw = 1.0
-            nuBuf = 1.4  # buffer factor for extra room in the x direction
-            cp = r'$\chi^{{\prime}}$'
-            cpp = r'$\chi^{{\prime \prime}}$'
-            width = 3.5  # inches
-
-            def my_plot(binned=False):
-                element = binned * "_binned"
-
-                fig, ax = plt.subplots(1, figsize=[width, width / np.sqrt(2)])
-                ax.set_ylabel(r'$\chi$')
-                ax.set_xlabel('$\\nu$ [THz]')
-                ax.set_xlim(self.results.nu[1] / nuBuf,
-                            self.results.nu[-1] * nuBuf)
-                ax.set_xscale('log')
-                ax.set_yscale(yscale)
-
-                ax.fill_between(self.results["nu" + element][1:],
-                                self.results["susc" + element].real[1:]
-                                - self.results["dsusc" + element].real[1:],
-                                self.results["susc" + element].real[1:]
-                                + self.results["dsusc" + element].real[1:],
-                                color=col2,
-                                alpha=shade)
-                ax.fill_between(self.results["nu" + element][1:],
-                                self.results["susc" + element].imag[1:]
-                                - self.results["dsusc" + element].imag[1:],
-                                self.results["susc" + element].imag[1:]
-                                + self.results["dsusc" + element].imag[1:],
-                                color=col1,
-                                alpha=shade)
-
-                ax.plot(self.results["nu" + element][:2],
-                        self.results["susc" + element].real[:2],
-                        color=col2,
-                        alpha=curve,
-                        linestyle=':',
-                        linewidth=lw)
-                ax.plot(self.results["nu" + element][:2],
-                        self.results["susc" + element].imag[:2],
-                        color=col1,
-                        alpha=curve,
-                        linestyle=':',
-                        linewidth=lw)
-                ax.plot(self.results["nu" + element][1:],
-                        self.results["susc" + element].real[1:],
-                        color=col2,
-                        alpha=curve,
-                        label=cp,
-                        linewidth=lw)
-                ax.plot(self.results["nu" + element][1:],
-                        self.results["susc" + element].imag[1:],
-                        color=col1,
-                        alpha=curve,
-                        label=cpp,
-                        linewidth=lw)
-
-                if self._i == 0 and (self.ymin is not None):
-                    plt.set_ylim(ymin=self.ymin)
-                ax.legend(loc='best', frameon=False)
-                fig.tight_layout(pad=0.1)
-                fig.savefig(plotname, format=self.plotformat)
-
-            if self.nobin or self.seglen <= self.bins:
-                binned = False
-            else:
-                binned = True
-
-            yscale = 'log'
-            plotname = self.output_prefix + 'susc_log.' + self.plotformat
-            my_plot(binned)  # log-log
-
-            yscale = 'linear'
-            plotname = self.output_prefix + 'susc_linlog.' + self.plotformat
-            my_plot(binned)  # lin-log
-
-            plt.close('all')
-
-            logger.info('Susceptibility plots generated -- finished :)')
 
     def save(self):
         """Save result."""
