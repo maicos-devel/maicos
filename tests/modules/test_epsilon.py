@@ -180,17 +180,57 @@ class TestDielectricSpectrum(object):
         u = mda.Universe(WATER_TPR, WATER_TRR)
         return u.atoms
 
-    @pytest.mark.parametrize('plotformat', ["pdf", "png", "jpg", "eps"])
-    def test_plotformat(self, ag, plotformat, tmpdir):
-        """Test plot format."""
+    def test_output_name(self, ag, tmpdir):
+        """Test output name."""
         with tmpdir.as_cwd():
-            DielectricSpectrum(ag, plotformat=plotformat,
-                               output_prefix='test_it').run()
-            assert open('test_it_susc_log.' + plotformat)
-            assert open('test_it_susc_linlog.' + plotformat)
+            ds = DielectricSpectrum(ag)
+            ds.run()
+            ds.save()
+            open("susc.dat")
+            open("P_tseries.npy")
+            open("tseries.npy")
+            open("V.txt")
+    
+    def test_output_name_prefix(self, ag, tmpdir):
+        """Test output name with custom prefix."""
+        with tmpdir.as_cwd():
+            ds = DielectricSpectrum(ag, output_prefix="foo")
+            ds.run()
+            ds.save()
+            open("foo_susc.dat")
+            open("foo_P_tseries.npy")
+            open("foo_tseries.npy")
+            open("foo_V.txt")
+    
+    def test_output_name_binned(self, ag, tmpdir):
+        """Test output name of binned data."""
+        """
+        The parameters are not meant to be sensible,
+        but just to force the binned output.
+        """
+        with tmpdir.as_cwd():
+            ds = DielectricSpectrum(ag, bins=5, binafter=0, segs=5)
+            ds.run()
+            ds.save()
+            open("susc.dat")
+            open("susc_binned.dat")
+            open("P_tseries.npy")
+            open("tseries.npy")
+            open("V.txt")
+            
+    def test_output(self, ag, tmpdir):
+        """Test output values by comparing with magic numbers."""
+        with tmpdir.as_cwd():
+            ds = DielectricSpectrum(ag)
+            ds.run()
 
-    def test_plotformat_wrong(self, ag):
-        """Test plot format wrong."""
-        with pytest.raises(ValueError,
-                           match="Invalid choice for plotformat: 'foo'"):
-            DielectricSpectrum(ag, plotformat="foo").run()
+            V = 1559814.4
+            nu = [0., 0.2, 0.5, 0.7, 1.]
+            susc = [27.5 + 0.j, 2.9 + 22.3j, -5.0 + 3.6j,
+                    -0.5 + 10.7j, -16.8 + 3.5j]
+            dsusc = [3.4 + 0.j, 0.4 + 2.9j, 1.0 + 0.5j, 0.3 + 1.5j, 2.0 + 0.6j]
+
+            assert_almost_equal(ds.V, V, decimal=1)
+            assert_almost_equal(ds.results.nu, nu, decimal=1)
+            assert_almost_equal(ds.results.susc, susc, decimal=1)
+            assert_almost_equal(ds.results.dsusc, dsusc, decimal=1)

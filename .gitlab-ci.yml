@@ -1,8 +1,7 @@
 default:
   before_script:
     - apt-get update -q -y
-    - apt-get -y install texlive-base texlive-fonts-recommended
-      texlive-fonts-extra dvipng cm-super pandoc
+    - apt-get -y install pandoc
     - python3 -m pip install -U tox
     - export USE_CYTHON=True
 
