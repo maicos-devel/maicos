@@ -10,6 +10,7 @@
 
 import functools
 import warnings
+from typing import Callable
 
 import numpy as np
 
@@ -38,36 +39,84 @@ planar_class_parameters_doc = (
         Perform the binning relative to the center of the (changing) box."""
     )
 
+profile_planar_class_parameters_doc = (
+    """atomgroups : list[AtomGroup]
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the densities are calculated."""
+    + planar_class_parameters_doc
+    + """output : str
+        Output filename
+    concfreq : int
+        Default number of frames after which results are calculated and
+        files refreshed. If `0` results are only calculated at the end
+        of the analysis and not saved by default."""
+    )
+
 planar_class_attributes_doc = (
     """results.z : list
         bins"""
     )
 
+profile_planar_class_attributes_doc = (
+    planar_class_attributes_doc
+    + """results.profile_mean : np.ndarray
+        calculated profile
+    results.profile_std : np.ndarray
+        profile's standard deviation
+    results.profile_err : np.ndarray
+        profile's error"""
+    )
+
 make_whole_parameter_doc = (
     """make_whole : bool
         Make molecules whole; If the input already contains whole molecules
-        this can be disabled to gain speedup"""
+        this can be disabled to gain speedup."""
     )
 
 
+def set_doc(func: Callable, old: str, new: str) -> Callable:
+    """Replace template phrase in a function with an actual docstring.
+
+    Parameters
+    ----------
+    func : callable
+        The callable (function, class) where the phrase old should be replaced.
+    old : str
+        The template phrase which will be replaced
+    new : str
+        The actual phrase which will appear in the docstring
+        Returns
+        -------
+        Callable
+            callable with replaced phrase
+    """
+    if func.__doc__ is not None:
+        func.__doc__ = func.__doc__.replace(old, new)
+    return func
+
+
 def set_verbose_doc(public_api):
-    """Set verbose for planar class."""
-    if public_api.__doc__ is not None:
-        public_api.__doc__ = public_api.__doc__.replace(
-            "${VERBOSE_PARAMETER}",
-            verbose_parameter_doc)
+    """Set doc for planar class."""
+    public_api = set_doc(public_api, "${VERBOSE_PARAMETER}",
+                         verbose_parameter_doc)
     return public_api
 
 
-def set_planar_class_doc(public_api):
+def set_planar_class_doc(public_api: Callable) -> None:
     """Set doc for planar class."""
-    if public_api.__doc__ is not None:
-        public_api.__doc__ = public_api.__doc__.replace(
-            "${PLANAR_CLASS_PARAMETERS}",
-            planar_class_parameters_doc)
-        public_api.__doc__ = public_api.__doc__.replace(
-            "${PLANAR_CLASS_ATTRIBUTES}",
-            planar_class_attributes_doc)
+    public_api = set_doc(public_api, "${PLANAR_CLASS_PARAMETERS}",
+                         planar_class_parameters_doc)
+    public_api = set_doc(public_api, "${PLANAR_CLASS_ATTRIBUTES}",
+                         planar_class_attributes_doc)
+    return public_api
+
+
+def set_profile_planar_class_doc(public_api: Callable) -> None:
+    """Set doc for profile planar class."""
+    public_api = set_doc(public_api, "${PLANAR_PROFILE_CLASS_PARAMETERS}",
+                         profile_planar_class_parameters_doc)
+    public_api = set_doc(public_api, "${PLANAR_PROFILE_CLASS_ATTRIBUTES}",
+                         profile_planar_class_attributes_doc)
     return public_api
 
 
@@ -138,10 +187,8 @@ def make_whole():
 
             return wrapped
 
-        if original_class.__doc__ is not None:
-            original_class.__doc__ = original_class.__doc__.replace(
-                "${MAKE_WHOLE_PARAMETER}",
-                make_whole_parameter_doc)
+        original_class = set_doc(original_class, "${MAKE_WHOLE_PARAMETER}",
+                                 make_whole_parameter_doc)
         original_class._single_frame = make_whole(original_class._single_frame)
 
         return original_class

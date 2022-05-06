@@ -9,12 +9,17 @@
 """Base class."""
 
 import logging
+import warnings
 
 import MDAnalysis.analysis.base
 import numpy as np
 
-from ..decorators import set_planar_class_doc, set_verbose_doc
-from ..utils import sort_atomgroup
+from ..decorators import (
+    set_planar_class_doc,
+    set_profile_planar_class_doc,
+    set_verbose_doc,
+    )
+from ..utils import atomgroup_header, savetxt, sort_atomgroup
 
 
 logger = logging.getLogger(__name__)
@@ -142,7 +147,7 @@ class PlanarBase(AnalysisBase):
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")
 
         if self._zmax is None:
-            self.Lz = 0
+            self.L_cum = 0
             self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax = 10 * self._zmax
@@ -163,7 +168,7 @@ class PlanarBase(AnalysisBase):
         """Single frame for the planar analysis."""
         if self._zmax is None:
             self.zmax = self._ts.dimensions[self.dim]
-            self.Lz += self.zmax
+            self.L_cum += self.zmax
         if self.comgroup is not None:
             theta = (self.comgroup.positions[:, self.dim]
                      / self._ts.dimensions[self.dim]) * 2 * np.pi
@@ -187,7 +192,7 @@ class PlanarBase(AnalysisBase):
         self._index = self._frame_index + 1
 
         if self._zmax is None:
-            zmax = self.Lz / self._index
+            zmax = self.L_cum / self._index
         else:
             zmax = self.zmax
 
@@ -201,3 +206,149 @@ class PlanarBase(AnalysisBase):
             self.results.z -= self.zmin + (zmax - self.zmin) / 2
 
         self.results.z /= 10
+
+
+@set_verbose_doc
+@set_profile_planar_class_doc
+class ProfilePlanarBase(PlanarBase):
+    """Base class for computing atomistic profiles in a cartesian geometry.
+
+    Parameters
+    ----------
+    function : callable
+        The function calculating the array for the analysis.
+        It must take an `Atomgroup` as first argument and
+        dimension (0, 1, 2) as second. Additional parameters can be given as
+        `f_kwargs`. The function must return a numpy.ndarry with the same
+        length as the number of atoms in `Atomgroup`.
+    normalization : str {'None', 'number', 'volume'}
+        The normalization of the profile performed in every frame.
+        If `None` no normalization is performed. If `number` the histogram
+        is divided by the number of occurences in each bin. If `volume` the
+        profile is divided by the volume of each bin.
+    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    f_kwargs : dict
+        Additional parameters for `function`
+    ${VERBOSE_PARAMETER}
+
+    Attributes
+    ----------
+    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    """
+
+    def __init__(self,
+                 function,
+                 normalization,
+                 atomgroups,
+                 dim,
+                 zmin,
+                 zmax,
+                 binwidth,
+                 center,
+                 comgroup,
+                 output="profile.dat",
+                 concfreq=0,
+                 f_kwargs=None,
+                 **kwargs):
+        super(ProfilePlanarBase, self).__init__(atomgroups=atomgroups,
+                                                dim=dim,
+                                                zmin=zmin,
+                                                zmax=zmax,
+                                                binwidth=binwidth,
+                                                center=center,
+                                                comgroup=comgroup,
+                                                multi_group=True,
+                                                **kwargs)
+        if f_kwargs is None:
+            f_kwargs = {}
+
+        self.function = lambda ag, dim: function(ag, dim, **f_kwargs)
+        self.normalization = normalization.lower()
+        self.output = output
+        self.concfreq = concfreq
+
+    def _prepare(self):
+        super(ProfilePlanarBase, self)._prepare()
+
+        if self.normalization not in ["none", "volume", "number"]:
+            raise ValueError(f"`{self.normalization}` not supported. "
+                             "Use `None`, `Volume` or `Number`.")
+
+        logger.info(f"Computing profile along {'XYZ'[self.dim]}-axes.")
+
+        # Arrays for accumulation
+        self.profile_cum = np.zeros((self.n_bins, self.n_atomgroups))
+        self.profile_cum_sq = np.zeros((self.n_bins, self.n_atomgroups))
+
+    def _single_frame(self):
+        super(ProfilePlanarBase, self)._single_frame()
+
+        for index, selection in enumerate(self.atomgroups):
+            pos = selection.atoms.positions[:, self.dim]
+            # Put atoms back in the central cell
+            pos %= self._ts.dimensions[self.dim]
+            weights = self.function(selection, self.dim)
+            profile_ts, _ = np.histogram(pos,
+                                         bins=self.n_bins,
+                                         range=(self.zmin, self.zmax),
+                                         weights=weights)
+
+            if self.normalization == 'number':
+                bincount = np.histogram(pos,
+                                        bins=self.n_bins,
+                                        range=(self.zmin, self.zmax))[0]
+                # If a bin does not contain any particles we divide by 0.
+                with np.errstate(invalid='ignore'):
+                    profile_ts /= bincount
+                profile_ts = np.nan_to_num(profile_ts)
+            elif self.normalization == "volume":
+                profile_ts /= self._ts.volume / self.n_bins
+                # A^3 to nm^3
+                profile_ts *= 1000
+
+            self.profile_cum[:, index] += profile_ts
+            self.profile_cum_sq[:, index] += profile_ts ** 2
+
+        if self.concfreq and self._frame_index % self.concfreq == 0 \
+                and self._frame_index > 0:
+            self._conclude()
+            self.save()
+
+    def _conclude(self):
+        super(ProfilePlanarBase, self)._conclude()
+        self._index = self._frame_index + 1
+
+        self.results.profile_mean = self.profile_cum / self._index
+        profile_mean_sq = self.profile_cum_sq / self._index
+
+        profile_var = profile_mean_sq - self.results.profile_mean**2
+
+        # Floating point imprecision can lead to slight negative values
+        # leading to nan for the standard deviation.
+        profile_var[profile_var < 0] = 0
+
+        self.results.profile_std = np.sqrt(profile_var)
+        self.results.profile_err = self.results.profile_std
+        self.results.profile_err /= np.sqrt(self._index)
+
+    def save(self):
+        """Save results of analysis to file."""
+        columns = f"statistics over {self._index * self._trajectory.dt:.1f}\n"
+        columns += "ps\npositions [nm]"
+        try:
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group)
+            for group in self.atomgroups:
+                columns += "\t" + atomgroup_header(group) + " error"
+        except AttributeError:
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn("AtomGroup does not contain resnames."
+                              " Not writing residues information to output.")
+
+        # save density profile
+        savetxt(self.output,
+                np.hstack(
+                    (self.results.z[:, np.newaxis],
+                     self.results.profile_mean, self.results.profile_err)),
+                header=columns)

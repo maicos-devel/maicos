@@ -77,16 +77,16 @@ import numpy as np
 from MDAnalysis.exceptions import NoDataError
 from scipy import constants
 
-from ..decorators import set_planar_class_doc, set_verbose_doc
+from ..decorators import set_profile_planar_class_doc, set_verbose_doc
 from ..utils import atomgroup_header, savetxt
-from .base import AnalysisBase, PlanarBase
+from .base import AnalysisBase, ProfilePlanarBase
 
 
 logger = logging.getLogger(__name__)
 
 
 def mu(rho, temperature, m):
-    """Return the chemical potential.
+    """Calculate the chemical potential.
 
     The chemical potential is calculated from the
     density: mu = k_B T log(rho. / m)
@@ -114,7 +114,7 @@ def mu(rho, temperature, m):
 
 
 def dmu(rho, drho, temperature):
-    """Return the error of the chemical potential.
+    """Calculate the error of the chemical potential.
 
     The error is calculated from the density using propagation of uncertainty.
     """
@@ -131,46 +131,49 @@ def dmu(rho, drho, temperature):
     return np.squeeze(np.array(results).T)
 
 
-def weight(selection, dens):
+def _density_weights(ag, dim, dens):
     """Calculate the weights for the histogram.
-
-    The calculated weight depends on the chosen type of density.
-    Valid values are `mass`, `number`, `charge` or `temp`.
+    
+    Supported values are `mass`, `number` or `charge`.
     """
     if dens == "mass":
-        # amu/nm**3 -> kg/m**3
-        return selection.atoms.masses * constants.atomic_mass * 1e27
+        # amu / nm**3 -> kg / m**3
+        return ag.atoms.masses * constants.atomic_mass / constants.nano**3
     elif dens == "number":
-        return np.ones(selection.atoms.n_atoms)
+        return np.ones(ag.atoms.n_atoms)
     elif dens == "charge":
-        return selection.atoms.charges
-    elif dens == "temp":
-        # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
-        prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-        return ((selection.atoms.velocities ** 2).sum(axis=1)
-                * selection.atoms.masses / 2 * prefac)
+        return ag.atoms.charges
+    else:
+        raise ValueError(f"`{dens}` not supported. "
+                         "Use `mass`, `number` or `charge`.")
+
+
+def _temperature(ag, dim):
+    """Calculate contribution of each atom to thetemperature."""
+    # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
+    prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
+    return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
+
+
+def _weights_legacy(ag, dens):
+    """Calculate the weights for the histogram in cylindrical systems."""
+    if dens == "temp":
+        return _temperature(ag, dim=None)
+    elif dens in ["mass", "number", "charge"]:
+        return _density_weights(ag, dim=None, dens=dens)
     else:
         raise ValueError(f"`{dens}` not supported. "
                          "Use `mass`, `number`, `charge` or `temp`.")
 
 
 @set_verbose_doc
-@set_planar_class_doc
-class DensityPlanar(PlanarBase):
-    """Compute partial densities/temperature profiles in the Cartesian systems.
+@set_profile_planar_class_doc
+class ChemicalPotentialPlanar(ProfilePlanarBase):
+    """Compute the chemical potential in a cartesian geometry.
 
     Parameters
     ----------
-    atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the densities are calculated
-    dens : str
-        Density: mass, number, charge, temperature.
-    ${PLANAR_CLASS_PARAMETERS}
-    mu : bool
-        Calculate the chemical potential (requires dens='number')
-    muout : str
-        Prefix for output filename for chemical potential
+    ${PLANAR_PROFILE_CLASS_PARAMETERS}
     temperature : float
         temperature (K) for chemical potential
     mass : float
@@ -178,27 +181,226 @@ class DensityPlanar(PlanarBase):
     zpos : float
         position (nm) at which the chemical potential will be computed.
         By default average over box.
-    output : str
-        Output filename
-    concfreq : int
-        Default number of frames after which results are calculated and
-        files refreshed. If `0` results are only calculated at the end
-        of the analysis and not saved by default.
+    muout : str
+        Prefix for output filename for chemical potential
     ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
-    ${PLANAR_CLASS_ATTRIBUTES}
-    results.dens_mean : np.ndarray
-        calculated densities
-    results.dens_std : np.ndarray
-        density standard deviation
-    results.dens_err : np.ndarray
-        density error
+    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
     results.mu : float
         chemical potential (only if `mu=True`)
     results.dmu : float
         error of chemical potential (only if `mu=True`)
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 dim=2,
+                 zmin=0,
+                 zmax=None,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
+                 output="density.dat",
+                 concfreq=0,
+                 temperature=300,
+                 mass=None,
+                 zpos=None,
+                 muout="muout.dat",
+                 **kwargs):
+        super(ChemicalPotentialPlanar, self).__init__(
+            function=_density_weights,
+            f_kwargs={"dens": "number"},
+            normalization="volume",
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            binwidth=binwidth,
+            center=center,
+            comgroup=comgroup,
+            output=output,
+            concfreq=concfreq,
+            **kwargs)
+
+        self.temperature = temperature
+        self.mass = mass
+        self.zpos = zpos
+        self.muout = muout
+
+    def _prepare(self):
+        super(ChemicalPotentialPlanar, self)._prepare()
+
+        if not self.mass:
+            try:
+                self.atomgroups[0].universe.atoms.masses
+            except NoDataError:
+                raise ValueError("Calculation of the chemical potential "
+                                 "is only possible when masses are "
+                                 "present in the topology or masses are "
+                                 "supplied by the user.")
+            get_mass_from_topol = True
+            self.mass = np.array([])
+        else:
+            if len([self.mass]) == 1:
+                self.mass = np.array([self.mass])
+            else:
+                self.mass = np.array(self.mass)
+            get_mass_from_topol = False
+
+        self.n_res = np.array([])
+        self.n_atoms = np.array([])
+
+        for ag in self.atomgroups:
+            if not len(ag.atoms) == len(ag.residues.atoms):
+                with warnings.catch_warnings():
+                    warnings.simplefilter('always')
+                    warnings.warn("Selections contains incomplete residues."
+                                  "MAICoS uses the total mass of the "
+                                  "residues to calculate the chemical "
+                                  "potential. Your results will be "
+                                  "incorrect! You can supply your own "
+                                  "masses with the -mass flag.")
+
+            ag_res = ag.residues
+            mass = []
+            n_atoms = 0
+            n_res = 0
+            while len(ag_res.atoms):
+                n_res += 1
+                resgroup = ag_res - ag_res
+                n_atoms += len(ag_res.residues[0].atoms)
+
+                for res in ag_res.residues:
+                    if np.all(res.atoms.types
+                              == ag_res.residues[0].atoms.types):
+                        resgroup = resgroup + res
+                ag_res = ag_res - resgroup
+                if get_mass_from_topol:
+                    mass.append(resgroup.total_mass() / resgroup.n_residues)
+            if not n_res == n_atoms and n_res > 1:
+                raise NotImplementedError(
+                    "Selection contains multiple types of residues and at "
+                    "least one them is a molecule. Molecules are not "
+                    "supported when selecting multiple residues."
+                    )
+            self.n_res = np.append(self.n_res, n_res)
+            self.n_atoms = np.append(self.n_atoms, n_atoms)
+            if get_mass_from_topol:
+                self.mass = np.append(self.mass, np.sum(mass))
+
+    def _conclude(self):
+        super(ChemicalPotentialPlanar, self)._conclude()
+
+        if self.zpos is not None:
+            self.zpos *= 10  # nm -> Å
+            this = (np.rint(
+                (self.zpos + self.binwidth / 2) / self.binwidth)
+                % self.n_bins).astype(int)
+            if self.center:
+                this += np.rint(self.n_bins / 2).astype(int)
+            self.results.mu = mu(self.results.profile_mean[this]
+                                 / self.n_atoms,
+                                 self.temperature, self.mass)
+            self.results.dmu = dmu(self.results.profile_mean[this]
+                                   / self.n_atoms,
+                                   self.results.profile_err[this]
+                                   / self.n_atoms, self.temperature)
+        else:
+            self.results.mu = np.mean(
+                mu(self.results.profile_mean / self.n_atoms,
+                   self.temperature,
+                   self.mass), axis=0)
+            self.results.dmu = np.mean(
+                dmu(self.results.profile_mean / self.n_atoms,
+                    self.results.profile_err,
+                    self.temperature), axis=0)
+
+    def save(self):
+        """Save results of analysis to file."""
+        super(ChemicalPotentialPlanar, self).save()
+
+        if self.zpos is not None:
+            columns = "Chemical potential calculated at "
+            columns += f"z = {self.zpos/10} nm."
+        else:
+            columns = "Chemical potential averaged over the whole system."
+        columns += "\nstatistics over "
+        columns += "{self._index * self._trajectory.dt:.1f} ps\n"
+        try:
+            for group in self.atomgroups:
+                columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
+            for group in self.atomgroups:
+                columns += atomgroup_header(group) + " μ error [kJ/mol]" \
+                    + "\t"
+        except AttributeError:
+            with warnings.catch_warnings():
+                warnings.simplefilter('always')
+                warnings.warn("AtomGroup does not contain resnames."
+                              " Not writing residues information to output.")
+        savetxt(self.muout,
+                np.hstack((self.results.mu, self.results.dmu))[None],
+                header=columns)
+
+
+@set_verbose_doc
+@set_profile_planar_class_doc
+class TemperaturePlanar(ProfilePlanarBase):
+    """Compute temperature profile in a cartesian geometry.
+
+    Parameters
+    ----------
+    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    ${VERBOSE_PARAMETER}
+
+    Attributes
+    ----------
+    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 dim=2,
+                 zmin=0,
+                 zmax=None,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
+                 output="temperature.dat",
+                 concfreq=0,
+                 **kwargs):
+                 
+        super(TemperaturePlanar, self).__init__(
+            function=_temperature,
+            normalization="number",
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            binwidth=binwidth,
+            center=center,
+            comgroup=comgroup,
+            output=output,
+            concfreq=concfreq,
+            **kwargs)
+
+
+@set_verbose_doc
+@set_profile_planar_class_doc
+class DensityPlanar(ProfilePlanarBase):
+    """Compute the partial density profile in a cartesian geometry.
+
+    Parameters
+    ----------
+    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    dens : str
+        Density: mass, number or charge.
+    ${VERBOSE_PARAMETER}
+
+    Attributes
+    ----------
+    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
@@ -210,245 +412,24 @@ class DensityPlanar(PlanarBase):
                  binwidth=0.1,
                  center=False,
                  comgroup=None,
-                 mu=False,
-                 muout="muout.dat",
-                 temperature=300,
-                 mass=None,
-                 zpos=None,
                  output="density.dat",
                  concfreq=0,
                  **kwargs):
-        super(DensityPlanar, self).__init__(atomgroups=atomgroups,
-                                            dim=dim,
-                                            zmin=zmin,
-                                            zmax=zmax,
-                                            binwidth=binwidth,
-                                            center=center,
-                                            comgroup=comgroup,
-                                            multi_group=True,
-                                            **kwargs)
-        self.dens = dens
-        self.mu = mu
-        self.muout = muout
-        self.temperature = temperature
-        self.mass = mass
-        self.zpos = zpos
-        self.output = output
-        self.concfreq = concfreq
-
-    def _prepare(self):
-        super(DensityPlanar, self)._prepare()
-        if self.dens is None and self.mu:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn("Chemical potential calculation requested. "
-                              "Using number density.")
-            self.dens = "number"
-        elif self.dens != "number" and self.mu:
-            raise ValueError("Calculation of the chemical potential is only "
-                             "possible when number density is selected.")
-        elif self.dens is None:
-            self.dens = "mass"
-
-        if self.dens not in ["mass", "number", "charge", "temp"]:
-            raise ValueError(f"Invalid choice for dens: {self.dens}"
-                             "(choose from 'mass', 'number', "
-                             "'charge', 'temp')")
-        if self.dens == 'temp':
-            profile_str = "temperature"
-        else:
-            profile_str = f"{self.dens} density"
-
-        logger.info(f"Computing {profile_str} profile "
-                    f"along {'XYZ'[self.dim]}-axes.")
-
-        self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
-        self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
-
-        if self.mu:
-            if not self.mass:
-                try:
-                    self.atomgroups[0].universe.atoms.masses
-                except NoDataError:
-                    raise ValueError("Calculation of the chemical potential "
-                                     "is only possible when masses are "
-                                     "present in the topology or masses are "
-                                     "supplied by the user.")
-                get_mass_from_topol = True
-                self.mass = np.array([])
-            else:
-                if len([self.mass]) == 1:
-                    self.mass = np.array([self.mass])
-                else:
-                    self.mass = np.array(self.mass)
-                get_mass_from_topol = False
-
-            self.n_res = np.array([])
-            self.n_atoms = np.array([])
-
-            for ag in self.atomgroups:
-                if not len(ag.atoms) == len(ag.residues.atoms):
-                    with warnings.catch_warnings():
-                        warnings.simplefilter('always')
-                        warnings.warn("Selections contains incomplete residues."
-                                      "MAICoS uses the total mass of the "
-                                      "residues to calculate the chemical "
-                                      "potential. Your results will be "
-                                      "incorrect! You can supply your own "
-                                      "masses with the -mass flag.")
-
-                ag_res = ag.residues
-                mass = []
-                n_atoms = 0
-                n_res = 0
-                while len(ag_res.atoms):
-                    n_res += 1
-                    resgroup = ag_res - ag_res
-                    n_atoms += len(ag_res.residues[0].atoms)
-
-                    for res in ag_res.residues:
-                        if np.all(res.atoms.types
-                                  == ag_res.residues[0].atoms.types):
-                            resgroup = resgroup + res
-                    ag_res = ag_res - resgroup
-                    if get_mass_from_topol:
-                        mass.append(resgroup.total_mass() / resgroup.n_residues)
-                if not n_res == n_atoms and n_res > 1:
-                    raise NotImplementedError(
-                        "Selection contains multiple types of residues and at "
-                        "least one them is a molecule. Molecules are not "
-                        "supported when selecting multiple residues."
-                        )
-                self.n_res = np.append(self.n_res, n_res)
-                self.n_atoms = np.append(self.n_atoms, n_atoms)
-                if get_mass_from_topol:
-                    self.mass = np.append(self.mass, np.sum(mass))
-
-    def _single_frame(self):
-        super(DensityPlanar, self)._single_frame()
-        curV = self._ts.volume / 1000
-
-        for index, selection in enumerate(self.atomgroups):
-            pos = selection.atoms.positions[:, self.dim]
-            pos %= self._ts.dimensions[self.dim]
-            density_ts = np.histogram(pos,
-                                      bins=self.n_bins,
-                                      range=(self.zmin, self.zmax),
-                                      weights=weight(selection, self.dens))[0]
-
-            if self.dens == 'temp':
-                bincount = np.histogram(pos,
-                                        bins=self.n_bins,
-                                        range=(self.zmin, self.zmax))[0]
-                self.density_mean[:, index] += density_ts / bincount
-                self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
-            else:
-                self.density_mean[:, index] += density_ts / curV * self.n_bins
-                self.density_mean_sq[:, index] += (density_ts / curV
-                                                   * self.n_bins) ** 2
-
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
-    def _conclude(self):
-        super(DensityPlanar, self)._conclude()
-        self._index = self._frame_index + 1
-
-        self.results.dens_mean = self.density_mean / self._index
-        self.results.dens_mean_sq = self.density_mean_sq / self._index
-
-        self.results.dens_std = np.nan_to_num(
-            np.sqrt(self.results.dens_mean_sq
-                    - self.results.dens_mean**2))
-        self.results.dens_err = self.results.dens_std / np.sqrt(self._index)
-
-        # chemical potential
-        if self.mu:
-            if self.zpos is not None:
-                self.zpos *= 10  # nm -> Å
-                this = (np.rint(
-                    (self.zpos + self.binwidth / 2) / self.binwidth)
-                    % self.n_bins).astype(int)
-                if self.center:
-                    this += np.rint(self.n_bins / 2).astype(int)
-                self.results.mu = mu(self.results.dens_mean[this]
-                                     / self.n_atoms,
-                                     self.temperature, self.mass)
-                self.results.dmu = dmu(self.results.dens_mean[this]
-                                       / self.n_atoms,
-                                       self.results.dens_err[this]
-                                       / self.n_atoms, self.temperature)
-            else:
-                self.results.mu = np.mean(
-                    mu(self.results.dens_mean / self.n_atoms,
-                       self.temperature,
-                       self.mass), axis=0)
-                self.results.dmu = np.mean(
-                    dmu(self.results.dens_mean / self.n_atoms,
-                        self.results.dens_err,
-                        self.temperature), axis=0)
-
-    def save(self):
-        """Save results of analysis to file."""
-        if self.dens == "mass":
-            units = "kg m^(-3)"
-        elif self.dens == "number":
-            units = "nm^(-3)"
-        elif self.dens == "charge":
-            units = "e nm^(-3)"
-        elif self.dens == "temp":
-            units = "K"
-
-        if self.dens == 'temp':
-            columns = f"temperature profile [{units}]"
-        else:
-            columns = f"{self.dens} density profile [{units}]"
-        columns += f"\nstatistics over {self._index * self._trajectory.dt:.1f}"
-        columns += " ps \npositions [nm]"
-        try:
-            for group in self.atomgroups:
-                columns += "\t" + atomgroup_header(group)
-            for group in self.atomgroups:
-                columns += "\t" + atomgroup_header(group) + " error"
-        except AttributeError:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn("AtomGroup does not contain resnames."
-                              " Not writing residues information to output.")
-
-        # save density profile
-        savetxt(self.output,
-                np.hstack(
-                    (self.results.z[:, np.newaxis],
-                     self.results.dens_mean, self.results.dens_err)),
-                header=columns)
-
-        if self.mu:
-            if self.zpos is not None:
-                columns = "Chemical potential calculated at "
-                columns += f"z = {self.zpos/10} nm."
-            else:
-                columns = "Chemical potential averaged over the whole system."
-            columns += "\nstatistics over "
-            columns += "{self._index * self._trajectory.dt:.1f} ps\n"
-            try:
-                for group in self.atomgroups:
-                    columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
-                for group in self.atomgroups:
-                    columns += atomgroup_header(group) + " μ error [kJ/mol]" \
-                        + "\t"
-            except AttributeError:
-                with warnings.catch_warnings():
-                    warnings.simplefilter('always')
-                    warnings.warn("AtomGroup does not contain resnames."
-                                  " Not writing residues information to "
-                                  "output.")
-            # save chemical potential
-            savetxt(self.muout,
-                    np.hstack((self.results.mu, self.results.dmu))[None],
-                    header=columns)
+                 
+        super(DensityPlanar, self).__init__(
+            function=_density_weights,
+            f_kwargs={"dens": dens},
+            normalization="volume",
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            binwidth=binwidth,
+            center=center,
+            comgroup=comgroup,
+            output=output,
+            concfreq=concfreq,
+            **kwargs)
 
 
 @set_verbose_doc
@@ -599,10 +580,12 @@ class DensityCylinder(AnalysisBase):
             radial_positions = np.linalg.norm(
                 (cylinder.atoms.positions[:, self.odims] - center[self.odims]),
                 axis=1)
-            density_ts = np.histogram(radial_positions,
-                                      bins=self.n_bins,
-                                      range=(0, self.radius),
-                                      weights=weight(cylinder, self.dens))[0]
+
+            weights = _weights_legacy(cylinder, self.dens)
+            density_ts, _ = np.histogram(radial_positions,
+                                         bins=self.n_bins,
+                                         range=(0, self.radius),
+                                         weights=weights)
 
             if self.dens == 'temp':
                 bincount = np.histogram(radial_positions,

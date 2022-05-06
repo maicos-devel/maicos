@@ -12,19 +12,82 @@ import MDAnalysis as mda
 import pytest
 from modules.datafiles import WATER_GRO, WATER_TPR
 
-from maicos.decorators import charge_neutral
+from maicos import decorators
 from maicos.modules.base import AnalysisBase
+
+
+@pytest.mark.parametrize(
+    "docstring_variable, substring_list",
+    [(decorators.verbose_parameter_doc, ["verbose : bool"]),
+     (decorators.planar_class_parameters_doc,
+      ["dim : int", "zmin : float", "zmax : float", "binwidth"]),
+     (decorators.profile_planar_class_parameters_doc,
+      ["atomgroups : list[AtomGroup]", "output : str", "concfreq : int"]),
+     (decorators.planar_class_attributes_doc, ["results.z : list"]),
+     (decorators.profile_planar_class_attributes_doc, [
+         "results.profile_mean : np.ndarray",
+         "results.profile_std : np.ndarray",
+         "results.profile_err : np.ndarray"]),
+     (decorators.make_whole_parameter_doc, ["make_whole : bool"])])
+def test_docstring(docstring_variable, substring_list):
+    """Test if docstring variable contains substrings."""
+    for s in substring_list:
+        assert s in docstring_variable
+
+
+@pytest.mark.parametrize("doc, new_doc", [("${TEST}", "test"), (None, None),
+                                          ("", ""), ("foo", "foo")])
+def test_set_doc(doc, new_doc):
+    """Test decorator for setting of phrase in documentation."""
+
+    def func():
+        pass
+
+    func.__doc__ = doc
+    func_decorated = decorators.set_doc(func, doc, new_doc)
+    assert func_decorated.__doc__ == new_doc
+
+
+@pytest.mark.parametrize(
+    "new, old, decorator",
+    [(decorators.verbose_parameter_doc,
+     "${VERBOSE_PARAMETER}",
+      decorators.set_verbose_doc),
+     (decorators.planar_class_parameters_doc,
+     "${PLANAR_CLASS_PARAMETERS}",
+      decorators.set_planar_class_doc),
+     (decorators.planar_class_attributes_doc,
+     "${PLANAR_CLASS_ATTRIBUTES}",
+      decorators.set_planar_class_doc),
+     (decorators.profile_planar_class_parameters_doc,
+      "${PLANAR_PROFILE_CLASS_PARAMETERS}",
+      decorators.set_profile_planar_class_doc),
+     (decorators.profile_planar_class_attributes_doc,
+      "${PLANAR_PROFILE_CLASS_ATTRIBUTES}",
+      decorators.set_profile_planar_class_doc)])
+def test_explicit_doc(new, old, decorator):
+    """Test if old phrase is replace by the correct new phrase."""
+
+    def func():
+        pass
+
+    func.__doc__ = old
+    func_decorated = decorator(func)
+    assert new in func_decorated.__doc__
 
 
 def single_class(atomgroup, filter):
     """Single class."""
-    @charge_neutral(filter)
+
+    @decorators.charge_neutral(filter)
     class SingleCharged(AnalysisBase):
+
         def __init__(self, atomgroup):
             self.atomgroup = atomgroup
             self.filter = filter
 
         def _prepare(self):
+
             def inner_func(self):
                 pass
 
@@ -35,13 +98,16 @@ def single_class(atomgroup, filter):
 
 def multi_class(atomgroup, filter):
     """Multi class."""
-    @charge_neutral(filter)
+
+    @decorators.charge_neutral(filter)
     class MultiCharged(AnalysisBase):
+
         def __init__(self, atomgroups):
             self.atomgroups = atomgroups
             self.filter = filter
 
         def _prepare(self):
+
             def inner_func(self):
                 pass
 
