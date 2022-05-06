@@ -85,7 +85,6 @@ def FT(t, x, indvar=True):
     a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
     if (abs((t[1:] - t[:-1] - dt)) > dt_dk_tolerance).any():
-        print(np.max(abs(t[1:] - t[:-1])))
         raise RuntimeError("Time series not equally spaced!")
     N = len(t)
     # calculate frequency values for FT
@@ -108,7 +107,6 @@ def iFT(k, xf, indvar=True):
     """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
     if (abs((k[1:] - k[:-1] - dk)) > dt_dk_tolerance).any():
-        print(np.max(abs(k[1:] - k[:-1])))
         raise RuntimeError("Time series not equally spaced!")
     N = len(k)
     x = np.fft.ifftshift(np.fft.ifft(xf))

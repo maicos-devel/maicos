@@ -8,6 +8,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 __all__ = [
+    'ChemicalPotentialPlanar',
+    'TemperaturePlanar',
     'DensityPlanar',
     'DensityCylinder',
     'EpsilonPlanar',
@@ -19,13 +21,18 @@ __all__ = [
     'DipoleAngle',
     'KineticEnergy',
     'Velocity',
-]
+    ]
 
 import warnings
 import sys
 import os
 
-from .modules.density import DensityPlanar, DensityCylinder
+from .modules.density import (
+    ChemicalPotentialPlanar,
+    TemperaturePlanar,
+    DensityPlanar,
+    DensityCylinder,
+    )
 from .modules.epsilon import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
 from .modules.structure import Saxs, Debye, Diporder
 from .modules.timeseries import DipoleAngle, KineticEnergy

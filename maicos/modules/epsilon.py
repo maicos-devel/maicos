@@ -315,7 +315,7 @@ class EpsilonPlanar(PlanarBase):
                             ) / np.sqrt(self.resample - 1)
         cov_perp_self = self.mm_perp / self._index - \
             (self.m_perp.sum(axis=2) / self._index * self.m_perp.sum(axis=2)
-             / self._index * self.A * self.Lz / self.n_bins / self._index)
+             / self._index * self.A * self.L_cum / self.n_bins / self._index)
         cov_perp_coll = self.cmM_perp / self._index - \
             self.m_perp.sum(axis=2) / self._index * self.cM_perp / self._index
 
@@ -330,7 +330,7 @@ class EpsilonPlanar(PlanarBase):
             self.M_par.sum() / self._index
         cov_par_self = self.mm_par / self._index \
             - self.m_par.sum(axis=2) / self._index \
-            * (self.m_par.sum(axis=2) * self.Lz
+            * (self.m_par.sum(axis=2) * self.L_cum
                / self.n_bins / self._index * self.A) / self._index
         cov_par_coll = self.cmM_par / self._index - \
             self.m_par.sum(axis=2) / self._index * self.cM_par / self._index
@@ -833,8 +833,7 @@ class DielectricSpectrum(AnalysisBase):
 
         # loop over segs
         for s in range(0, self.segs):
-            if self._verbose:
-                print(f'\rSegment {s + 1} of {self.segs}')
+            logger.info(f'\rSegment {s + 1} of {self.segs}')
             ss = 0 + 0j
 
             # loop over x, y, z

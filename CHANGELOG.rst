@@ -15,6 +15,10 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Introduces new `ProfilePlanarBase` (!111)
+- Split new `DensityPlanar` into `ChemicalPotentialPlanar`, `DensityPlanar`,
+  `TemperaturePlanar` (!111)
+- Convert more `print` statements into logger calls (!111)
 - Fix wrong diporder normalization + tests (!111)
 - Add zmin and zmax to DensityPlanar and Diporder (!109)
 - Fix EpsilonPlanar (!108)

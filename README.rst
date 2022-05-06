@@ -77,28 +77,32 @@ List of analysis modules
      - Description
 
    * - DensityPlanar
-     - Compute partial densities/temperature profiles in the Cartesian systems.
+     - partial densities profiles in a cartesian geometry
+   * - TemperaturePlanar
+     - temperature profiles in a cartesian geometry
+   * - ChemicalPotentialPlanar
+     - chemical potential in a cartesian geometry
    * - DensityCylinder
-     - Compute partial densities across a cylinder.
+     - partial densities across a cylinder
    * - EpsilonPlanar
-     - Calculate planar dielectric profiles.
+     - planar dielectric profiles
    * - EpsilonCylinder
-     - Calculate cylindrical dielectric profiles.
+     - cylindrical dielectric profiles
    * - DielectricSpectrum
-     - Compute the linear dielectric spectrum.
+     - linear dielectric spectrum of a bulk system
    * - Saxs
-     - Compute SAXS scattering intensities.
+     - SAXS scattering intensities
    * - Diporder
-     - Calculate dipolar order parameters.
+     - dipolar order parameters
    * - Debyer
-     - Calculate scattering intensities using the debye equation. The `debyer`_
-       library needs to be downloaded and build.
+     - scattering intensities using the debye equation. The `debyer`_
+       library needs to be downloaded and build
    * - DipoleAngle
-     - Calculate angle timeseries of dipole moments with respect to an axis.
+     - angle timeseries of dipole moments with respect to an axis
    * - KineticEnergy
-     - Calculate the timeseries of energies.
+     - energy timeseries.
    * - Velocity
-     - Analyse mean velocity.
+     - mean velocity profile in a cartesian geometry
 
 .. _`Python3`: https://www.python.org
 .. _`Cython` : https://cython.org/

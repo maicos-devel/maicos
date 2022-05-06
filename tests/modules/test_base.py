@@ -9,6 +9,7 @@
 
 import inspect
 import logging
+import os
 
 import MDAnalysis as mda
 import numpy as np
@@ -20,11 +21,12 @@ from datafiles import (
     WATER_TPR,
     WATER_TRR,
     )
-from MDAnalysis.analysis import base
+from MDAnalysis.analysis.base import Results
+from MDAnalysis.core._get_readers import get_reader_for
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos
-from maicos.modules.base import AnalysisBase, PlanarBase
+from maicos.modules import base
 
 
 class Test_AnalysisBase(object):
@@ -37,18 +39,18 @@ class Test_AnalysisBase(object):
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
-        a = AnalysisBase(ag, verbose=True, save_results=True)
+        a = base.AnalysisBase(ag, verbose=True, save_results=True)
 
         assert a.atomgroup.n_atoms == ag.n_atoms
         assert a._trajectory == ag.universe.trajectory
         assert a._universe == ag.universe
         assert a._verbose is True
-        assert type(a.results) is base.Results
+        assert type(a.results) is Results
         assert not hasattr(a, "atomgroups")
 
     def test_multigroups(self, ag):
         """Test multiple groups."""
-        a = AnalysisBase([ag[:10], ag[10:]], multi_group=True)
+        a = base.AnalysisBase([ag[:10], ag[10:]], multi_group=True)
 
         assert a.n_atomgroups == 2
         assert a._universe == ag.universe
@@ -56,10 +58,10 @@ class Test_AnalysisBase(object):
     def test_different_universes(self, ag):
         """Test different universes."""
         with pytest.raises(ValueError, match="Atomgroups belong"):
-            AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
+            base.AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
 
 
-class PlanarClass(PlanarBase):
+class PlanarClass(base.PlanarBase):
     """Tests for the Planar Base class."""
 
     def __init__(self,
@@ -190,15 +192,15 @@ class TestPlanarBase(object):
 
         assert planar_class_obj.zmax == ag.universe.dimensions[2]
 
-    def test_Lz(self, ag):
-        """Test Lz."""
+    def test_L_cum(self, ag):
+        """Test cummulative box length L_cum."""
         planar_class_obj = PlanarClass(ag, pos_arg=42)
         planar_class_obj._zmax = None
         planar_class_obj._trajectory = ag.universe.trajectory
         planar_class_obj.run()
 
-        Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
-        assert planar_class_obj.Lz == Lz
+        L_cum = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
+        assert planar_class_obj.L_cum == L_cum
 
     def test_zmin_zmax(self, ag):
         """Test zmin zmax."""
@@ -214,7 +216,7 @@ class TestPlanarBase(object):
         """Test results z."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, center=False)
         planar_class_obj._prepare()
-        planar_class_obj.Lz = 60
+        planar_class_obj.L_cum = 60
         planar_class_obj._frame_index = 0
         planar_class_obj._conclude()
 
@@ -226,7 +228,7 @@ class TestPlanarBase(object):
         planar_class_obj = PlanarClass(ag, pos_arg=42, center=True)
         planar_class_obj._prepare()
         planar_class_obj._frame_index = 0
-        planar_class_obj.Lz = 60
+        planar_class_obj.L_cum = 60
         planar_class_obj._conclude()
 
         assert (planar_class_obj.results["z"]).min() == -3 + 0.05
@@ -258,8 +260,8 @@ class TestPlanarBaseChilds:
 
     members = []
     for _, member in inspect.getmembers(maicos):
-        if inspect.isclass(member) and issubclass(member, PlanarBase) \
-                and member is not PlanarBase:
+        if inspect.isclass(member) and issubclass(member, base.PlanarBase) \
+                and member is not base.PlanarBase:
             members.append(member)
 
     @pytest.mark.parametrize("Member", members)
@@ -272,10 +274,168 @@ class TestPlanarBaseChilds:
                       comgroup=None,
                       center=False)
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = PlanarBase(ag_single_frame, **params).run()
+        pb_obj = base.PlanarBase(ag_single_frame, **params).run()
 
         assert_equal(ana_obj.results.z, pb_obj.results.z)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
 
         assert ana_obj.zmax == pb_obj.zmax
-        assert ana_obj.Lz == pb_obj.Lz
+        assert ana_obj.L_cum == pb_obj.L_cum
+
+
+class TestProfilePlanarBase:
+    """Test the ProfilePlanarBase class."""
+
+    params = dict(dim=2,
+                  zmin=0,
+                  zmax=None,
+                  binwidth=0.01,
+                  center=False,
+                  comgroup=None)
+
+    @pytest.fixture()
+    def u(self):
+        """Generate a universe containing 125 atoms at random positions.
+
+        Atom positions are drawn from a uniform distribution from 0 to 1 A in
+        each direction. Masses and charges of all particles are 1.
+        The cell dimension is 2A x 2A x 2A.
+        """
+        n_atoms = 125
+        n_frames = 4_000
+
+        universe = mda.Universe.empty(n_atoms=n_atoms,
+                                      n_residues=n_atoms,
+                                      n_segments=n_atoms,
+                                      atom_resindex=np.arange(n_atoms),
+                                      residue_segindex=np.arange(n_atoms))
+
+        for attr in ["charges", "masses"]:
+            universe.add_TopologyAttr(attr, values=np.ones(n_atoms))
+
+        universe.add_TopologyAttr("resids", np.arange(n_atoms))
+
+        rng = np.random.default_rng(1634123)
+        shape = (n_frames, n_atoms, 3)
+        coords = rng.random(shape)
+
+        universe.trajectory = get_reader_for(coords)(coords,
+                                                     order='fac',
+                                                     n_atoms=n_atoms)
+
+        for ts in universe.trajectory:
+            ts.dimensions = np.array([2, 2, 2, 90, 90, 90])
+
+        return universe
+
+    def weights(self, ag, dim, scale=1):
+        """Scalable weights for profile calculations."""
+        return scale * np.ones(ag.n_atoms)
+
+    @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
+    def test_profile(self, u, normalization):
+        """Test profile with different normalizations."""
+        profile_planar = base.ProfilePlanarBase(self.weights,
+                                                normalization=normalization,
+                                                atomgroups=u.atoms,
+                                                **self.params).run()
+
+        if normalization == "volume":
+            # Divide by 2 since only half of the box is filled with atoms.
+            profile_vals = u.atoms.n_atoms / (u.trajectory.ts.volume / 2)
+            # A^3 to nm^3
+            profile_vals *= 1000
+        elif normalization == "number":
+            profile_vals = 1
+        else:  # == None
+            # Divide by 2: Half of the box is filled with atoms.
+            profile_vals = u.atoms.n_atoms * profile_planar.n_bins / 2 / 100
+
+        actual = profile_planar.results.profile_mean.flatten()
+        desired = np.zeros(profile_planar.n_bins)
+        desired[:10] = profile_vals
+
+        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+
+        # TODO: Add test for error and standard deviation.
+        # Needs analytical estimaton of the error
+
+    def test_wrong_normalization(self, u):
+        """Test profile for a non existing normalization."""
+        profile_planar = base.ProfilePlanarBase(self.weights,
+                                                normalization="foo",
+                                                atomgroups=u.atoms,
+                                                **self.params)
+
+        with pytest.raises(ValueError, match="not supported"):
+            profile_planar.run()
+
+    def test_f_kwargs(self, u):
+        """Test an extra keywrod argument."""
+        scale = 3
+        profile_planar = base.ProfilePlanarBase(self.weights,
+                                                normalization="number",
+                                                atomgroups=u.atoms,
+                                                f_kwargs={"scale": scale},
+                                                **self.params).run()
+
+        actual = profile_planar.results.profile_mean.flatten()
+        desired = np.zeros(profile_planar.n_bins)
+        desired[:10] = scale
+
+        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+
+    def test_multigroup(self, u):
+        """Test analysis for a list of atomgroups."""
+        profile_planar = base.ProfilePlanarBase(self.weights,
+                                                normalization="number",
+                                                atomgroups=[u.atoms, u.atoms],
+                                                **self.params).run()
+
+        actual = profile_planar.results.profile_mean
+        desired = np.zeros([profile_planar.n_bins, 2])
+        desired[:10, :] = 1
+
+        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+
+    def test_save_default_name(self, u):
+        """Test default put[ut name of save method."""
+        profile_planar = base.ProfilePlanarBase(self.weights,
+                                                normalization="number",
+                                                atomgroups=u.atoms,
+                                                **self.params).run(stop=1)
+        profile_planar.save()
+        assert os.path.exists("profile.dat")
+
+    def test_output(self, u, tmpdir):
+        """Test output."""
+        with tmpdir.as_cwd():
+            profile_planar = base.ProfilePlanarBase(self.weights,
+                                                    normalization="number",
+                                                    atomgroups=u.atoms,
+                                                    **self.params).run(stop=1)
+            profile_planar.save()
+            res_dens = np.loadtxt(profile_planar.output)
+
+        assert_allclose(profile_planar.results.z,
+                        res_dens[:, 0],
+                        rtol=2)
+
+        assert_allclose(profile_planar.results.profile_mean[:, 0],
+                        res_dens[:, 1],
+                        rtol=2)
+
+        assert_allclose(profile_planar.results.profile_err[:, 0],
+                        res_dens[:, 2],
+                        rtol=2)
+
+    def test_output_name(self, u, tmpdir):
+        """Test output name."""
+        with tmpdir.as_cwd():
+            profile_planar = base.ProfilePlanarBase(self.weights,
+                                                    normalization="number",
+                                                    atomgroups=u.atoms,
+                                                    output="foo",
+                                                    **self.params).run(stop=1)
+            profile_planar.save()
+            open("foo.dat")

@@ -144,13 +144,13 @@ class Saxs(AnalysisBase):
         self.mintheta = min(self.mintheta, self.maxtheta)
         self.maxtheta = max(self.mintheta, self.maxtheta)
 
-        if self.mintheta < 0 and self._verbose:
-            print("mintheta = {}° < 0°: Set mininmal angle to 0°.".format(
-                self.mintheta))
+        if self.mintheta < 0:
+            logger.info(f"mintheta = {self.mintheta}° < 0°: "
+                        "Set mininmal angle to 0°.")
             self.mintheta = 0
-        if self.maxtheta > 180 and self._verbose:
-            print("maxtheta = {}° > 180°: Set maximal angle to 180°.".format(
-                self.maxtheta))
+        if self.maxtheta > 180:
+            logger.info(f"maxtheta = {self.maxtheta}° > 180°: "
+                        "Set maximal angle to 180°.")
             self.maxtheta = np.pi
 
         self.mintheta *= np.pi / 180
@@ -372,9 +372,7 @@ class Debye(AnalysisBase):
         except FileNotFoundError:
             raise RuntimeError("{}: command not found".format(self.debyer))
 
-        if self._verbose:
-            print("{} is the tempory directory for all files.\n".format(
-                self._tmp))
+        logger.info(f"{self._tmp} is the tempory directory for all files.")
 
     def _writeXYZ(self, filename):
         """Write the positions of the current frame to the given xyz file."""

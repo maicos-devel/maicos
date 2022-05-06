@@ -113,11 +113,11 @@ class TestDiporder(object):
             res_dip = np.loadtxt(dip.output)
             assert_almost_equal(dip.results["P0"], res_dip[:, 1], decimal=2)
 
-    def test_Lz(self, ag):
-        """Test Lz."""
+    def test_L_cum(self, ag):
+        """Test cummulataive box length L_cum."""
         dip = Diporder(ag, bpbc=False).run()
-        Lz = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
-        assert dip.Lz == Lz
+        L_cum = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
+        assert dip.L_cum == L_cum
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
