@@ -15,6 +15,9 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Add option to symmetrize profiles using `ProfilePlanarBase` (!116)
+- Fix `comgroup` parameter working only in the z direction (!116)
+- Remove `center` option from `ProfileBase` (!116)
 - Introduces new `ProfilePlanarBase` (!111)
 - Split new `DensityPlanar` into `ChemicalPotentialPlanar`, `DensityPlanar`,
   `TemperaturePlanar` (!111)

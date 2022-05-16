@@ -19,7 +19,7 @@ from ..decorators import (
     set_profile_planar_class_doc,
     set_verbose_doc,
     )
-from ..utils import atomgroup_header, savetxt, sort_atomgroup
+from ..utils import atomgroup_header, savetxt, sort_atomgroup, symmetrize_1D
 
 
 logger = logging.getLogger(__name__)
@@ -131,14 +131,12 @@ class PlanarBase(AnalysisBase):
                  zmax,
                  binwidth,
                  comgroup,
-                 center,
                  **kwargs):
         super(PlanarBase, self).__init__(atomgroups, **kwargs)
         self.dim = dim
         self.zmin = zmin
         self._zmax = zmax
         self.binwidth = binwidth
-        self.center = center
         self.comgroup = comgroup
 
     def _prepare(self):
@@ -161,8 +159,6 @@ class PlanarBase(AnalysisBase):
 
         if self.comgroup is not None and self.comgroup.n_atoms == 0:
             raise ValueError("Comgroup does not contain any atoms.")
-        if self.comgroup is not None:
-            self.center = True  # always center when COM
 
     def _single_frame(self):
         """Single frame for the planar analysis."""
@@ -184,8 +180,9 @@ class PlanarBase(AnalysisBase):
             else:
                 groups = self.atomgroups
             for group in groups:
-                group.atoms.translate(
-                    (0, 0, (self.zmax - self.zmin) / 2 - com))
+                t = [0, 0, 0]
+                t[self.dim] = (self.zmax - self.zmin) / 2 - com
+                group.atoms.translate(t)
 
     def _conclude(self):
         """Results calculations for the planar analysis."""
@@ -202,7 +199,7 @@ class PlanarBase(AnalysisBase):
             self.zmin + dz / 2, zmax - dz / 2, self.n_bins,
             endpoint=False)
 
-        if self.center:
+        if self.comgroup:
             self.results.z -= self.zmin + (zmax - self.zmin) / 2
 
         self.results.z /= 10
@@ -244,8 +241,8 @@ class ProfilePlanarBase(PlanarBase):
                  zmin,
                  zmax,
                  binwidth,
-                 center,
                  comgroup,
+                 sym=False,
                  output="profile.dat",
                  concfreq=0,
                  f_kwargs=None,
@@ -255,7 +252,6 @@ class ProfilePlanarBase(PlanarBase):
                                                 zmin=zmin,
                                                 zmax=zmax,
                                                 binwidth=binwidth,
-                                                center=center,
                                                 comgroup=comgroup,
                                                 multi_group=True,
                                                 **kwargs)
@@ -264,6 +260,7 @@ class ProfilePlanarBase(PlanarBase):
 
         self.function = lambda ag, dim: function(ag, dim, **f_kwargs)
         self.normalization = normalization.lower()
+        self.sym = sym
         self.output = output
         self.concfreq = concfreq
 
@@ -273,6 +270,10 @@ class ProfilePlanarBase(PlanarBase):
         if self.normalization not in ["none", "volume", "number"]:
             raise ValueError(f"`{self.normalization}` not supported. "
                              "Use `None`, `Volume` or `Number`.")
+
+        if self.sym and self.comgroup is None:
+            raise ValueError("For symmetrization the `comgroup` argument is "
+                             "required.")
 
         logger.info(f"Computing profile along {'XYZ'[self.dim]}-axes.")
 
@@ -330,6 +331,11 @@ class ProfilePlanarBase(PlanarBase):
         self.results.profile_std = np.sqrt(profile_var)
         self.results.profile_err = self.results.profile_std
         self.results.profile_err /= np.sqrt(self._index)
+
+        if self.sym:
+            symmetrize_1D(self.results.profile_mean, inplace=True)
+            symmetrize_1D(self.results.profile_std, inplace=True)
+            symmetrize_1D(self.results.profile_err, inplace=True)
 
     def save(self):
         """Save results of analysis to file."""
