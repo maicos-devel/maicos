@@ -174,6 +174,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
     Parameters
     ----------
     ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    center : bool
+        Calculate chemical potential only in the center of the simulation cell.
     temperature : float
         temperature (K) for chemical potential
     mass : float
@@ -200,10 +202,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  zmin=0,
                  zmax=None,
                  binwidth=0.1,
-                 center=False,
                  comgroup=None,
                  output="density.dat",
                  concfreq=0,
+                 center=False,
                  temperature=300,
                  mass=None,
                  zpos=None,
@@ -218,12 +220,12 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             binwidth=binwidth,
-            center=center,
             comgroup=comgroup,
             output=output,
             concfreq=concfreq,
             **kwargs)
 
+        self.center = center
         self.temperature = temperature
         self.mass = mass
         self.zpos = zpos

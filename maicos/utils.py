@@ -174,6 +174,42 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
     return corr
 
 
+def symmetrize_1D(arr, inplace=False):
+    """Symmeterize a 1D-array.
+
+    The array can have additional axes of length one.
+    
+    Paramaters
+    ----------
+    arr : numpy.ndarray
+        array to symmetrize
+    inplace : bool
+        Do symmetrizations inplace. If `False` a new array is returnd.
+
+    Returns
+    -------
+    np.ndarray
+        the symmetrized array
+
+    Raises
+    ------
+    ValueError
+        If the array is not of one dimensional.
+    """
+    if len(arr.squeeze().shape) > 1 or arr.shape[0] == 1:
+        raise ValueError("Only 1 dimensional arrays can be symmeterized")
+
+    if inplace:
+        sym_arr = arr
+    else:
+        sym_arr = np.copy(arr).astype(float)
+
+    sym_arr += arr[::-1]
+    sym_arr /= 2
+
+    return sym_arr
+
+
 def get_cli_input():
     """Return a proper formatted string of the command line input."""
     program_name = os.path.basename(sys.argv[0])

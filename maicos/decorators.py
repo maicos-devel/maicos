@@ -34,9 +34,7 @@ planar_class_parameters_doc = (
         binwidth (nanometer)
     comgroup : AtomGroup
         Perform the binning relative to the center of mass of the
-        selected group.
-    center : bool
-        Perform the binning relative to the center of the (changing) box."""
+        provided AtomGroup."""
     )
 
 profile_planar_class_parameters_doc = (
@@ -44,7 +42,9 @@ profile_planar_class_parameters_doc = (
         a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the densities are calculated."""
     + planar_class_parameters_doc
-    + """output : str
+    + """sym : bool
+        symmetrize the profile. Only works in combinations with `comgroup`.
+    output : str
         Output filename
     concfreq : int
         Default number of frames after which results are calculated and

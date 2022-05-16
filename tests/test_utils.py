@@ -13,9 +13,10 @@ from unittest.mock import patch
 
 import MDAnalysis as mda
 import numpy as np
+import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
 from modules.datafiles import LAMMPS10WATER
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 import maicos.utils
 
@@ -35,6 +36,40 @@ def test_iFT():
     t, sin_FT = maicos.utils.FT(x, sin)
     x_new, sin_new = maicos.utils.iFT(t, sin_FT)
     assert_almost_equal(sin, sin_new.real, decimal=1)
+
+
+def test_symmetrize_even():
+    """Tests symmetrization for even array."""
+    sym_arr = maicos.utils.symmetrize_1D(np.arange(10).astype(float))
+    assert np.all(sym_arr == 4.5)
+
+
+def test_symmetrize_odd():
+    """Tests symmetrization for odd array."""
+    sym_arr = maicos.utils.symmetrize_1D(np.arange(11).astype(float))
+    assert np.all(sym_arr == 5)
+
+
+def test_higher_dimensions():
+    """Tests arrays with higher dimensions of length 1."""
+    arr = np.arange(11).astype(float)[:, np.newaxis]
+    sym_arr = maicos.utils.symmetrize_1D(arr)
+    sym_arr_ref = 5 * np.ones((11, 1))
+    assert_equal(sym_arr, sym_arr_ref)
+
+
+@pytest.mark.parametrize("shape", [(2, 2), (1, 11, 1)])
+def test_not_allowed_dimensions(shape):
+    """Tests error raise for higher dimensions."""
+    with pytest.raises(ValueError, match="Only 1 dimensional arrays"):
+        maicos.utils.symmetrize_1D(np.ones(shape))
+
+
+def test_symmetrize_inplace():
+    """Tests inplace symmetrization."""
+    arr = np.arange(11).astype(float)
+    maicos.utils.symmetrize_1D(arr, inplace=True)
+    assert np.all(arr == 5)
 
 
 def test_check_compound():
