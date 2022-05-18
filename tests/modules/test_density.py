@@ -242,7 +242,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
-        
+
         Test if the division by the number of frames is correct.
         """
         dens = density.DensityPlanar(ag).run(stop=1)
@@ -303,7 +303,7 @@ class TestDensityCylinder(object):
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
-        
+
         Test if the division by the number of frames is correct.
         """
         dens = density.DensityCylinder(ag).run(stop=1)

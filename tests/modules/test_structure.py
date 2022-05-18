@@ -32,7 +32,7 @@ class TestSaxs(object):
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
-        
+
         Test if the division by the number of frames is correct.
         """
         saxs = Saxs(ag, endq=20).run(stop=1)
@@ -121,7 +121,7 @@ class TestDiporder(object):
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
-        
+
         Test if the division by the number of frames is correct.
         """
         dip = Diporder(ag, make_whole=False).run(stop=1)

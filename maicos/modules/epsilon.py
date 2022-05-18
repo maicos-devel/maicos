@@ -797,7 +797,7 @@ class DielectricSpectrum(AnalysisBase):
 
         # CONVERSION: Å -> nm
         self.results.P = self.P / 10
-        
+
         # Find a suitable number of segments if it's not specified:
         if self.df is not None:
             self.segs = np.max([int(self.n_frames * self.dt * self.df), 2])

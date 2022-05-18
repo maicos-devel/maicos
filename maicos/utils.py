@@ -178,7 +178,7 @@ def symmetrize_1D(arr, inplace=False):
     """Symmeterize a 1D-array.
 
     The array can have additional axes of length one.
-    
+
     Paramaters
     ----------
     arr : numpy.ndarray

@@ -133,7 +133,7 @@ def dmu(rho, drho, temperature):
 
 def _density_weights(ag, dim, dens):
     """Calculate the weights for the histogram.
-    
+
     Supported values are `mass`, `number` or `charge`.
     """
     if dens == "mass":
@@ -372,7 +372,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  output="temperature.dat",
                  concfreq=0,
                  **kwargs):
-                 
+
         super(TemperaturePlanar, self).__init__(
             function=_temperature,
             normalization="number",
@@ -417,7 +417,7 @@ class DensityPlanar(ProfilePlanarBase):
                  output="density.dat",
                  concfreq=0,
                  **kwargs):
-                 
+
         super(DensityPlanar, self).__init__(
             function=_density_weights,
             f_kwargs={"dens": dens},

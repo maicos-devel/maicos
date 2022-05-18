@@ -119,7 +119,7 @@ class TestEpsilonCylinder(object):
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
-        
+
         Test if the division by the number of frames is correct.
         """
         eps = EpsilonCylinder(ag).run(stop=1)
@@ -190,7 +190,7 @@ class TestDielectricSpectrum(object):
             open("P_tseries.npy")
             open("tseries.npy")
             open("V.txt")
-    
+
     def test_output_name_prefix(self, ag, tmpdir):
         """Test output name with custom prefix."""
         with tmpdir.as_cwd():
@@ -201,7 +201,7 @@ class TestDielectricSpectrum(object):
             open("foo_P_tseries.npy")
             open("foo_tseries.npy")
             open("foo_V.txt")
-    
+
     def test_output_name_binned(self, ag, tmpdir):
         """Test output name of binned data."""
         """
@@ -217,7 +217,7 @@ class TestDielectricSpectrum(object):
             open("P_tseries.npy")
             open("tseries.npy")
             open("V.txt")
-            
+
     def test_output(self, ag, tmpdir):
         """Test output values by comparing with magic numbers."""
         with tmpdir.as_cwd():

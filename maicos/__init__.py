@@ -23,20 +23,21 @@ __all__ = [
     'Velocity',
     ]
 
-import warnings
-import sys
 import os
+import sys
+import warnings
 
 from .modules.density import (
     ChemicalPotentialPlanar,
-    TemperaturePlanar,
-    DensityPlanar,
     DensityCylinder,
+    DensityPlanar,
+    TemperaturePlanar,
     )
 from .modules.epsilon import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
-from .modules.structure import Saxs, Debye, Diporder
+from .modules.structure import Debye, Diporder, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy
 from .modules.transport import Velocity
+
 
 try:
     sys.path.append(os.path.join(os.path.expanduser("~"),
