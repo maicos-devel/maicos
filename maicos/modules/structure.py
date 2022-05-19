@@ -252,8 +252,8 @@ class Saxs(AnalysisBase):
                 ])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
-            selfort = np.selfort(out[:, 0])
-            out = out[selfort]
+            argsort = np.argsort(out[:, 0])
+            out = out[argsort]
 
             boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, " \
                       "box_z = {2:.3f} nm\n".format(*self.box)
