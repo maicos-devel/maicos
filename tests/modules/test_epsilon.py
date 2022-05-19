@@ -12,7 +12,7 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 from maicos import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
 
@@ -95,6 +95,22 @@ class TestEpsilonPlanar(object):
             open("foo_perp.dat")
             open("foo_par.dat")
 
+    def test_xy_vac(self, ag):
+        """Tests for conditions xy & vac when True."""
+        eps1 = EpsilonPlanar(ag, xy=True)
+        eps1.run()
+        k1 = np.mean(eps1.results.eps_perp)
+        eps2 = EpsilonPlanar(ag, xy=True, vac=True)
+        eps2.run()
+        k2 = np.mean(eps2.results.eps_perp)
+        assert_almost_equal((k1/k2), 1.5, decimal=1)
+
+    def test_sym(self, ag):
+        """Test for symmetric case."""
+        eps = EpsilonPlanar(ag, sym=True)
+        eps.run()
+        assert_almost_equal(np.mean(eps.results.eps_perp), -1.01, decimal=2)
+
 
 class TestEpsilonCylinder(object):
     """Tests for the EpsilonCylinder class."""
@@ -170,6 +186,24 @@ class TestEpsilonCylinder(object):
         """Tests verbose."""
         EpsilonCylinder(ag_single_frame, verbose=True).run()
 
+    def test_length(self, ag):
+        """Test refactoring length."""
+        eps = EpsilonCylinder(ag, length=10)
+        eps.run()
+        assert_equal(eps.length, 100)
+
+    def test_variable_binwidth(self, ag):
+        """Test variable binwidth."""
+        eps = EpsilonCylinder(ag, variable_dr=True)
+        eps.run()
+        assert_almost_equal(np.std(eps.dr), 0.44, decimal=2)
+
+    def test_singleline(self, ag):
+        """Test for single line 1D case."""
+        eps = EpsilonCylinder(ag, single=True)
+        eps.run()
+        assert_almost_equal(np.mean(eps.results.eps_ax), 1282, decimal=0)
+
 
 class TestDielectricSpectrum(object):
     """Tests for the DielectricSpectrum class."""
@@ -234,3 +268,10 @@ class TestDielectricSpectrum(object):
             assert_almost_equal(ds.results.nu, nu, decimal=1)
             assert_almost_equal(ds.results.susc, susc, decimal=1)
             assert_almost_equal(ds.results.dsusc, dsusc, decimal=1)
+
+    def test_binning(self, ag):
+        """Test binning & seglen case."""
+        ds = DielectricSpectrum(ag, nobin=False, segs=2, bins=49)
+        ds.run()
+        assert_almost_equal(np.mean(ds.results.nu_binned), 0.57, decimal=2)
+        ds.save()
