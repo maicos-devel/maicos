@@ -15,6 +15,8 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Higher tolerance for non-neutral systems (1E-4 instead of 1E-5)
+- `charge`neutral decorator uses `check_compound` now
 - Add option to symmetrize profiles using `ProfilePlanarBase` (!116)
 - Fix `comgroup` parameter working only in the z direction (!116)
 - Remove `center` option from `ProfileBase` (!116)
