@@ -571,7 +571,7 @@ class Diporder(PlanarBase):
                 weights=np.abs(self.atomgroup.charges),
                 compound=check_compound(self.atomgroup))
 
-        bincount = np.histogram(bin_positions,
+        bincount = np.histogram(bin_positions[:,self.dim],
                                 bins=self.n_bins,
                                 range=(self.zmin, self.zmax))[0]
         self.bin_count += bincount
