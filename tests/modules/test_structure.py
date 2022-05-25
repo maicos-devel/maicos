@@ -51,23 +51,22 @@ class TestDiporder(object):
         res[0] = {}
         res[0]["P0"] = np.array([0, 0, 0.01, 0])
         res[0]["cos_theta"] = np.array([0, 0, 0.01, 0])
-        res[0]["cos_2_theta"] = np.array([0.14, 0.13, 0.13, 0.13])
-        res[0]["rho"] = np.array([36.82, 40.66, 40.79, 40.61])
+        res[0]["cos_2_theta"] = np.array([0.34, 0.35, 0.35, 0.35])
+        res[0]["rho"] = np.array([14.86, 14.58, 14.64, 14.59])
 
         # y-direction must be the same as x
         res[1] = res[0]
 
         # z-direction
         res[2] = {}
-        res[2]["P0"] = np.array(
-            [0.02, 0, -0, 0, -0, -0.02, 0, 0, 0, 0, 0, -0.])
-        res[2]["cos_theta"] = np.array(
-            [0, 0, -0, 0, -0, -0.02, 0.16, 0, 0, 0, 0, -0.18])
-        res[2]["cos_2_theta"] = np.array(
-            [0.05, 0.09, 0.09, 0.09, 0.33, 0.26, 0.2, 0, 0, 0, 0, 0.19])
-        res[2]["rho"] = np.array([
-            109.38, 120.79, 121.15, 120.61, 32.7, 22.71, 0.4, 0, 0, 0, 0, 0.26
-            ])
+        res[2]["P0"] = np.array([0.02, 0, -0, 0, -0, -0.02, 0, 0, 0,
+                                 0, 0, 0])
+        res[2]["cos_theta"] = np.array([0.02, 0, 0, 0, 0, -0.02,
+                                        0.16, 0, 0, 0, 0, -0.18])
+        res[2]["cos_2_theta"] = np.array([0.25, 0.33, 0.33, 0.33, 0.33,
+                                          0.26, 0.2, 0, 0, 0, 0, 0.19])
+        res[2]["rho"] = np.array([21.1, 32.97, 33.05, 32.81, 32.7, 22.71,
+                                  0.4, 0, 0, 0, 0, 0.26])
 
         return res
 
@@ -86,7 +85,7 @@ class TestDiporder(object):
                             decimal=2)
         assert_almost_equal(dip.results['cos_theta'],
                             result_dict[dim]['cos_theta'],
-                            decimal=2)
+                            decimal=1)
         assert_almost_equal(dip.results['cos_2_theta'],
                             result_dict[dim]['cos_2_theta'],
                             decimal=2)
@@ -97,7 +96,7 @@ class TestDiporder(object):
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
         dip = Diporder(ag, make_whole=False).run()
-        assert_almost_equal(dip.results['P0'].mean(), 0.05, decimal=2)
+        assert_almost_equal(dip.results['P0'].mean(), 0.06, decimal=2)
 
     def test_repaired_molecules(self, ag):
         """Test repaired molecules."""
