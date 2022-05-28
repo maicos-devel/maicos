@@ -1,5 +1,3 @@
-CONTRIBUTING
-############
 
 By contributing to MAICoS, you accept and agree to the following terms and
 conditions for your present and future contributions submitted to MAICoS.
@@ -8,7 +6,7 @@ distributed by MAICoS, you reserve all right, title, and interest in and to
 your contributions.
 
 Code of Conduct
----------------------------------
+---------------
 
 As contributors and maintainers of MAICoS, we pledge to respect all people
 who contribute through reporting issues, posting feature requests, updating
@@ -40,7 +38,7 @@ available at https://contributor-covenant.org/version/1/1/0/
 .. _`Contributor Covenant` : https://contributor-covenant.org
 
 Getting involved
-################
+----------------
 
 Contribution via merge requests are always welcome. Source code is
 available from `GitLab`_. Before submitting a merge request, please
