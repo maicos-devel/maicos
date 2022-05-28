@@ -23,6 +23,13 @@ viewing here and available for interactive execution in the top-level
 .. toctree::
    :titlesonly:
    :maxdepth: 4
+   :caption: Structure modules
+   
+   ../tutorials/structure/diporder
+   
+.. toctree::
+   :titlesonly:
+   :maxdepth: 4
    :caption: Timeseries modules
    
    ../tutorials/timeseries/dipole_angle

@@ -70,7 +70,12 @@ profile_planar_class_attributes_doc = (
 make_whole_parameter_doc = (
     """make_whole : bool
         Make molecules whole; If the input already contains whole molecules
-        this can be disabled to gain speedup."""
+        this can be disabled to gain speedup.
+
+        Note: Currently molecules containing virtual sites (e.g. TIP4P water
+        model) are not supported. In this case, provide unwrapped trajectory
+        file directly, and use the command line flag -no-make_whole.
+        """
     )
 
 

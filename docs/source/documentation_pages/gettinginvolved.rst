@@ -1,3 +1,6 @@
+Contributing
+############
+
 .. include:: ../../../CONTRIBUTING.rst
 
 .. toctree::
