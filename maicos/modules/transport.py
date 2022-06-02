@@ -69,15 +69,15 @@ class Velocity(AnalysisBase):
     results.z : np.ndarray
         bins [nm]
     results.v : np.ndarray
-        velocity profile [m/s]
+        velocity profile [Å/ps]
     results.ees : np.ndarray
-        velocity error estimate [m/s]
+        velocity error estimate [Å/ps]
     results.symz : np.ndarray
-        symmetrized bins [nm]
+        symmetrized bins [Å/ps]
     results.symvel : np.ndarray
-        symmetrized velocity profile [m/s]
+        symmetrized velocity profile [Å/ps]
     results.symees : np.ndarray
-        symmetrized velocity error estimate [m/s]
+        symmetrized velocity error estimate [Å/ps]
     """
 
     def __init__(self,
@@ -141,9 +141,9 @@ class Velocity(AnalysisBase):
             curvel /= bincount
         curvel = np.nan_to_num(curvel)
 
-        # add velocities to the average and convert to (m/s)
-        self.av_vel[:, self._frame_index // self.blockfreq] += curvel * 100
-        self.av_vel_sq[:] += (curvel * 100)**2
+        # add velocities to the average
+        self.av_vel[:, self._frame_index // self.blockfreq] += curvel
+        self.av_vel_sq[:] += (curvel)**2
         # only average velocities if bin is not empty
         self.binframes[:, self._frame_index // self.blockfreq] += bincount > 0
 
@@ -158,7 +158,7 @@ class Velocity(AnalysisBase):
 
         # minimum number of frames where molecules should be present
         self.minframes = self._index / 100
-        avL = self.L / self._index / 10  # in nm
+        avL = self.L / self._index
         dz = avL / self.n_bins
         self.results.symz = np.arange(0, avL / 4 - dz / 2, dz) + dz / 2
 

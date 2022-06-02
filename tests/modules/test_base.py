@@ -71,7 +71,7 @@ class PlanarClass(base.PlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  comgroup=None,
                  **kwargs):
         super(PlanarClass, self).__init__(atomgroups=atomgroups,
@@ -147,12 +147,12 @@ class TestPlanarBase(object):
 
     def test_binwidth(self, ag):
         """Test binwidth."""
-        binwidth = 0.2
+        binwidth = 2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
         planar_class_obj._prepare()
 
-        assert planar_class_obj.binwidth == 10 * binwidth
-        assert planar_class_obj.n_bins == 60 / (10 * binwidth)
+        assert planar_class_obj.binwidth == binwidth
+        assert planar_class_obj.n_bins == 60 / (binwidth)
 
     def test_n_bins(self, planar_class_obj, caplog):
         """Test n bins."""
@@ -165,22 +165,22 @@ class TestPlanarBase(object):
 
     def test_zmin(self, ag):
         """Test zmin."""
-        binwidth = 0.2
+        binwidth = 2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
-        planar_class_obj.zmin = 1
+        planar_class_obj.zmin = 10
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == (60 - 10) / (10 * binwidth)
+        assert planar_class_obj.n_bins == (60 - 10) / (binwidth)
 
     def test_zmax(self, ag):
         """Test zmax."""
-        binwidth = 0.2
+        binwidth = 2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
-        planar_class_obj._zmax = 5
+        planar_class_obj._zmax = 50
         planar_class_obj._prepare()
 
-        assert planar_class_obj._zmax == planar_class_obj.zmax / 10
-        assert planar_class_obj.n_bins == 50 / (10 * binwidth)
+        assert planar_class_obj._zmax == planar_class_obj.zmax
+        assert planar_class_obj.n_bins == 50 / (binwidth)
 
     def test_zmax_dim(self, ag):
         """Test zmax dim."""
@@ -202,13 +202,13 @@ class TestPlanarBase(object):
 
     def test_zmin_zmax(self, ag):
         """Test zmin zmax."""
-        binwidth = 0.2
+        binwidth = 2
         planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
-        planar_class_obj.zmin = 1
-        planar_class_obj._zmax = 5
+        planar_class_obj.zmin = 10
+        planar_class_obj._zmax = 50
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == (50 - 10) / (10 * binwidth)
+        assert planar_class_obj.n_bins == (50 - 10) / (binwidth)
 
     def test_results_z(self, ag):
         """Test results z."""
@@ -219,7 +219,7 @@ class TestPlanarBase(object):
         planar_class_obj._conclude()
 
         assert_allclose(planar_class_obj.results["z"],
-                        np.linspace(0.05, 6 - 0.05, 60, endpoint=False))
+                        np.linspace(0.5, 60 - 0.5, 60, endpoint=False))
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_comgroup_z(self, ag, dim):
@@ -230,7 +230,7 @@ class TestPlanarBase(object):
                                        comgroup=ag.select_atoms("name OW"))
         planar_class_obj.run(stop=1)
 
-        z = [-1 + 0.05, -1 + 0.05, -3 + 0.05]
+        z = [-10 + 0.5, -10 + 0.5, -30 + 0.5]
         assert (planar_class_obj.results["z"]).min() == z[dim]
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -270,7 +270,7 @@ class TestPlanarBaseChilds:
         params = dict(dim=2,
                       zmin=0,
                       zmax=None,
-                      binwidth=0.1,
+                      binwidth=1,
                       comgroup=None,
                       center=False)
         ana_obj = Member(ag_single_frame, **params).run()
@@ -292,7 +292,7 @@ class TestProfilePlanarBase:
         p = dict(dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.01,
+                 binwidth=0.1,
                  center=False,
                  comgroup=None)
         return p
@@ -347,8 +347,6 @@ class TestProfilePlanarBase:
         if normalization == "volume":
             # Divide by 2 since only half of the box is filled with atoms.
             profile_vals = u.atoms.n_atoms / (u.trajectory.ts.volume / 2)
-            # A^3 to nm^3
-            profile_vals *= 1000
         elif normalization == "number":
             profile_vals = 1
         else:  # == None

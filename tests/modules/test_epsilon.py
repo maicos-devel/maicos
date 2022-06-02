@@ -37,7 +37,7 @@ class TestEpsilonPlanar(object):
         """Single dipole atomgroup.
 
         Create MDA universe with a single dipole molecule
-        inside a 1x1x1nm box cubic box.
+        inside a 10 Å x 10 Å x 10 Å box cubic box.
         """
         u = mda.Universe.empty(2,
                                n_residues=1,
@@ -58,8 +58,8 @@ class TestEpsilonPlanar(object):
         return u.atoms
 
     @pytest.mark.parametrize('binwidth, bins_par, bins_perp',
-                             ((0.5, [0., 0.01992], [0.005, 0]),
-                              (0.1, [0, 0, 0, 0, 0, 0.0996, 0, 0, 0, 0],
+                             ((5, [0., 0.01992], [0.005, 0]),
+                              (1, [0, 0, 0, 0, 0, 0.0996, 0, 0, 0, 0],
                                [0, 0, 0, 0, 0.005, 0.005, 0, 0, 0, 0]))
                              )
     def test_single_frame(self, single_dipole, binwidth, bins_par, bins_perp):
@@ -129,7 +129,7 @@ class TestEpsilonCylinder(object):
 
     def test_radius(self, ag):
         """Tests radius set."""
-        eps = EpsilonCylinder(ag, make_whole=False, radius=5)
+        eps = EpsilonCylinder(ag, make_whole=False, radius=50)
         eps.run(start=0, stop=1)
         assert eps.radius == 50
 
@@ -188,7 +188,7 @@ class TestEpsilonCylinder(object):
 
     def test_length(self, ag):
         """Test refactoring length."""
-        eps = EpsilonCylinder(ag, length=10)
+        eps = EpsilonCylinder(ag, length=100)
         eps.run()
         assert_equal(eps.length, 100)
 

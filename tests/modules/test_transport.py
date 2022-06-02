@@ -50,12 +50,12 @@ class TestVelocity(object):
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
         vel = Velocity(ag, bpbc=False).run()
-        assert_almost_equal(vel.results['v'].mean(), -0.16, decimal=1)
+        assert_almost_equal(vel.results['v'].mean(), -0.0026, decimal=1)
 
     def test_repaired_molecules(self, ag):
         """Test repaired molecules."""
         vel = Velocity(ag, bpbc=True).run()
-        assert_almost_equal(vel.results['v'].mean(), -0.26, decimal=1)
+        assert_almost_equal(vel.results['v'].mean(), -0.0026, decimal=1)
 
     def test_output(self, ag, tmpdir):
         """Test output."""

@@ -19,7 +19,7 @@ from datafiles import (
     WATER_TPR,
     WATER_TRR,
     )
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose, assert_equal
 
 from maicos import Diporder, Saxs
 
@@ -81,24 +81,22 @@ class TestDiporder(object):
 
         # x-direction
         res[0] = {}
-        res[0]["P0"] = np.array([0, 0, 0.01, 0])
-        res[0]["cos_theta"] = np.array([0, 0, 0.01, 0])
-        res[0]["cos_2_theta"] = np.array([0.34, 0.35, 0.35, 0.35])
-        res[0]["rho"] = np.array([14.86, 14.58, 14.64, 14.59])
+        res[0]["P0"] = 0
+        res[0]["cos_theta"] = 0
+        res[0]["cos_2_theta"] = 0.35
+        res[0]["rho"] = 0.015
 
         # y-direction must be the same as x
         res[1] = res[0]
 
         # z-direction
         res[2] = {}
-        res[2]["P0"] = np.array([0.02, 0, -0, 0, -0, -0.02, 0, 0, 0,
-                                 0, 0, 0])
-        res[2]["cos_theta"] = np.array([0.02, 0, 0, 0, 0, -0.02,
-                                        0.16, 0, 0, 0, 0, -0.18])
-        res[2]["cos_2_theta"] = np.array([0.25, 0.33, 0.33, 0.33, 0.33,
-                                          0.26, 0.2, 0, 0, 0, 0, 0.19])
-        res[2]["rho"] = np.array([21.1, 32.97, 33.05, 32.81, 32.7, 22.71,
-                                  0.4, 0, 0, 0, 0, 0.26])
+        res[2]["P0"] = 0
+        res[2]["cos_theta"] = [0.02, 0, 0, 0, 0, 0, 0.16, 0, 0, 0, 0, -0.18]
+        res[2]["cos_2_theta"] = [0.25, 0.33, 0.33, 0.33, 0.33, 0.26,
+                                 0.2, 0, 0, 0, 0, 0.19]
+        res[2]["rho"] = [0.021, 0.032, 0.033, 0.033, 0.033, 0.023,
+                         0, 0, 0, 0, 0, 0]
 
         return res
 
@@ -109,65 +107,57 @@ class TestDiporder(object):
         return u.atoms
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_Diporder(self, ag, dim, result_dict):
-        """Test Diporder."""
-        dip1 = Diporder(ag, binwidth=0.5, dim=dim).run()
-        assert_almost_equal(dip1.results['P0'],
-                            result_dict[dim]['P0'],
-                            decimal=2)
-        assert_almost_equal(dip1.results['cos_theta'],
-                            result_dict[dim]['cos_theta'],
-                            decimal=1)
-        assert_almost_equal(dip1.results['cos_2_theta'],
-                            result_dict[dim]['cos_2_theta'],
-                            decimal=2)
-        assert_almost_equal(dip1.results['rho'],
-                            result_dict[dim]['rho'],
-                            decimal=0)
+    def test_Diporder_slab(self, ag, dim, result_dict):
+        """Test Diporder for slab system in z direction."""
+        dip = Diporder(ag, binwidth=5, dim=dim).run()
+        assert_allclose(dip.results['P0'], result_dict[dim]['P0'], atol=1e-2)
+        assert_allclose(dip.results['rho'],
+                        result_dict[dim]['rho'],
+                        rtol=1e-2,
+                        atol=1e-2)
+        assert_allclose(dip.results['cos_theta'],
+                        result_dict[dim]['cos_theta'],
+                        atol=1e-1, rtol=1e-1)
+        assert_allclose(dip.results['cos_2_theta'],
+                        result_dict[dim]['cos_2_theta'],
+                        atol=1e-2)
 
-        # 3 water molecules with angle 0
+    def test_Diporder_3_water_0(self):
+        """Test Diporder for 3 water molecules with angle 0."""
         group_H2O_1 = create_universe(3, 0)
-        dip2 = Diporder(group_H2O_1, binwidth=1).run()
+        dip = Diporder(group_H2O_1, binwidth=10).run()
 
-        assert_almost_equal(np.unique(np.round(dip2.results['P0'], 3)),
-                            0.049, decimal=3)
-        assert_almost_equal(np.unique(dip2.results['rho']),
-                            1.0, decimal=3)
-        assert_almost_equal(np.unique(dip2.results['cos_theta']),
-                            1.0, decimal=3)
-        assert_almost_equal(np.unique(dip2.results['cos_2_theta']),
-                            1.0, decimal=3)
+        assert_allclose(dip.results['P0'], 4.92e-4, rtol=1e-3)
+        assert_equal(dip.results['rho'], 1e-3)
+        assert_allclose(dip.results['cos_theta'], 1, rtol=1e-3)
+        assert_allclose(dip.results['cos_2_theta'], 1, rtol=1e-3)
 
-        # 3 water molecules with angle 90
+    def test_Diporder_3_water_90(self):
+        """Test Diporder for 3 water molecules with angle 90 degrees."""
         group_H2O_2 = create_universe(3, 90)
-        dip3 = Diporder(group_H2O_2, binwidth=1).run()
-        assert_almost_equal(np.unique(np.round(dip3.results['P0'], 3)),
-                            0.0, decimal=3)
-        assert_almost_equal(np.unique(dip3.results['rho']),
-                            1.0, decimal=3)
-        assert_almost_equal(np.unique(dip3.results['cos_theta']),
-                            0.0, decimal=3)
-        assert_almost_equal(np.unique(dip3.results['cos_2_theta']),
-                            0.0, decimal=3)
+        dip = Diporder(group_H2O_2, binwidth=10).run()
+        assert_allclose(dip.results['P0'], 0, atol=1e-9)
+        assert_equal(dip.results['rho'], 1e-3)
+        assert_allclose(dip.results['cos_theta'], 0, atol=1e-5)
+        assert_allclose(dip.results['cos_2_theta'], 0, atol=1e-6)
 
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
         dip = Diporder(ag, make_whole=False).run()
-        assert_almost_equal(dip.results['P0'].mean(), 0.06, decimal=2)
+        assert_allclose(dip.results['P0'].mean(), 0.0006, rtol=1e-1)
 
     def test_repaired_molecules(self, ag):
         """Test repaired molecules."""
         dip = Diporder(ag, make_whole=True).run()
-        assert_almost_equal(dip.results['P0'].mean(), 0.00, decimal=2)
+        assert_allclose(dip.results['P0'].mean(), 0, atol=1e-2)
 
     def test_output(self, ag, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():
-            dip = Diporder(ag, end=20)
-            dip.run()
+            dip = Diporder(ag, end=20).run()
             dip.save()
             res_dip = np.loadtxt(dip.output)
-            assert_almost_equal(dip.results["P0"], res_dip[:, 1], decimal=2)
+            assert_allclose(dip.results["P0"], res_dip[:, 1], rtol=1e-2)
 
     def test_L_cum(self, ag):
         """Test cummulataive box length L_cum."""

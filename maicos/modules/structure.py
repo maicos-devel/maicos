@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def compute_form_factor(q, atom_type):
-    """Calculate the form factor for the given element for given q (1/nm).
+    """Calculate the form factor for the given element for given q (1/Å).
 
     Handles united atom types like CH4 etc ...
     """
@@ -60,8 +60,7 @@ def compute_form_factor(q, atom_type):
             q, "N") + 3 * compute_form_factor(q, "H")
     else:
         form_factor = tables.CM_parameters[element].c
-        # factor of 10 to convert from 1/nm to 1/Angstroms
-        q2 = (q / (4 * np.pi * 10))**2
+        q2 = (q / (4 * np.pi))**2
         for i in range(4):
             form_factor += tables.CM_parameters[element].a[i] * \
                 np.exp(-tables.CM_parameters[element].b[i] * q2)
@@ -91,11 +90,11 @@ class Saxs(AnalysisBase):
     noboindata : bool
         Do not bin the data. Only works reliable for NVT!
     startq : float
-        Starting q (1/nm)
+        Starting q (1/Å)
     endq : float
-        Ending q (1/nm)
+        Ending q (1/Å)
     dq : float
-        binwidth (1/nm)
+        binwidth (1/Å)
     mintheta float
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
@@ -122,8 +121,8 @@ class Saxs(AnalysisBase):
                  atomgroup,
                  nobin=False,
                  startq=0,
-                 endq=60,
-                 dq=0.05,
+                 endq=6,
+                 dq=0.005,
                  mintheta=0,
                  maxtheta=180,
                  output="sq.dat",
@@ -178,7 +177,7 @@ class Saxs(AnalysisBase):
         if self.nobindata:
             self.box = np.diag(
                 mda.lib.mdamath.triclinic_vectors(
-                    self._universe.dimensions)) / 10
+                    self._universe.dimensions))
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
             self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
@@ -190,11 +189,11 @@ class Saxs(AnalysisBase):
         # Convert everything to cartesian coordinates.
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
         for i, t in enumerate(self.groups):
+            # map coordinates onto cubic cell
             positions = t.atoms.positions - box * \
-                np.round(t.atoms.positions / box)  # minimum image
-
+                np.round(t.atoms.positions / box)
             q_ts, S_ts = sfactor.compute_structure_factor(
-                np.double(positions / 10), np.double(box / 10), self.startq,
+                np.double(positions), np.double(box), self.startq,
                 self.endq, self.mintheta, self.maxtheta)
 
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
@@ -255,16 +254,16 @@ class Saxs(AnalysisBase):
             argsort = np.argsort(out[:, 0])
             out = out[argsort]
 
-            boxinfo = "box_x = {0:.3f} nm, box_y = {1:.3f} nm, " \
-                      "box_z = {2:.3f} nm\n".format(*self.box)
+            boxinfo = "box_x = {0:.3f} Å, box_y = {1:.3f} Å, " \
+                      "box_z = {2:.3f} Å\n".format(*self.box)
             savetxt(self.output, out,
-                    header=boxinfo + "q (1/nm)\tq_i\t q_j \t "
+                    header=boxinfo + "q (1/Å)\tq_i\t q_j \t "
                                      "q_k \tS(q) (arb. units)", fmt='%.4e')
         else:
             savetxt(self.output,
                     np.vstack([self.results.q,
                                self.results.scat_factor]).T,
-                    header="q (1/nm)\tS(q) (arb. units)",
+                    header="q (1/Å)\tS(q) (arb. units)",
                     fmt='%.4e')
 
 
@@ -281,11 +280,11 @@ class Debye(AnalysisBase):
     output : str
         Output filename
     startq : float
-        Starting q (1/nm)
+        Starting q (1/Å)
     endq : float
-        Ending q (1/nm)
+        Ending q (1/Å)
     dq : float
-        binwidth (1/nm)
+        binwidth (1/Å)
     sinc : bool
         Apply sinc damping
     debyer : str
@@ -303,8 +302,8 @@ class Debye(AnalysisBase):
     def __init__(self,
                  atomgroup,
                  startq=0,
-                 endq=60,
-                 dq=0.05,
+                 endq=600,
+                 dq=0.005,
                  sinc=False,
                  debyer="debyer",
                  output="sq.dat",
@@ -332,12 +331,6 @@ class Debye(AnalysisBase):
         parser.add_argument('-d', dest='debyer')
 
     def _prepare(self):
-
-        # Convert 1/nm to 1/Å
-        self.startq /= 10
-        self.endq /= 10
-        self.dq /= 10
-
         self.atomgroup = self.atomgroup.select_atoms(
             "not name DUM and not name MW")
 
@@ -436,7 +429,7 @@ class Debye(AnalysisBase):
 
         nonzeros = np.where(s_out != 0)[0]
 
-        self.results.q = 10 * q[nonzeros]
+        self.results.q = q[nonzeros]
         self.results.scat_factor = s_out[nonzeros] / len(datfiles)
 
         # Remove temp files at the end of the analysis
@@ -450,7 +443,7 @@ class Debye(AnalysisBase):
         """Save result."""
         savetxt(self.output,
                 np.vstack([self.results.q, self.results.scat_factor]).T,
-                header="q (1/A)\tS(q)_tot (arb. units)",
+                header="q (1/Å)\tS(q)_tot (arb. units)",
                 fmt='%.8e')
 
 
@@ -486,13 +479,13 @@ class Diporder(PlanarBase):
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
     results.P0 : np.ndarray
-        P_0⋅ρ(z)⋅cos(θ[z]) [e/nm²]
+        P_0⋅ρ(z)⋅cos(θ[z]) [e/Å²]
     results.cos_theta : np.ndarray
         cos(θ[z])
     results.cos_2_theta : np.ndarray
         cos²(Θ[z])
     results.rho : np.ndarray
-        ρ(z) [1/nm³]
+        ρ(z) [1/Å³]
     """
 
     def __init__(self,
@@ -500,7 +493,7 @@ class Diporder(PlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  center=False,
                  comgroup=None,
                  sym=False,
@@ -560,7 +553,6 @@ class Diporder(PlanarBase):
             * self.atomgroup.charges[:, np.newaxis]
         dipoles = self.atomgroup.accumulate(
             chargepos, compound=check_compound(self.atomgroup))
-        dipoles /= 10  # convert to e nm
 
         if self.binmethod == 'COM':
             # Calculate the centers of the objects (i.e. Molecules)
@@ -581,7 +573,7 @@ class Diporder(PlanarBase):
             bin_positions[:, self.dim],
             bins=self.n_bins,
             range=(self.zmin, self.zmax),
-            weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame / 1e3)
+            weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame)
         self.cos_theta += np.histogram(
             bin_positions[:, self.dim],
             bins=self.n_bins,
@@ -596,7 +588,7 @@ class Diporder(PlanarBase):
             weights=np.dot(
                 dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
                 self.unit)**2)[0]
-        self.rho += bincount / (A * dz_frame / 1e3)  # convert to 1/nm^3
+        self.rho += bincount / (A * dz_frame)
 
         if self.concfreq and self._frame_index % self.concfreq == 0 \
                 and self._frame_index > 0:
@@ -632,11 +624,11 @@ class Diporder(PlanarBase):
 
     def save(self):
         """Save results to a file."""
-        header = "z [nm]\t"
-        header += "P_0*rho(z)*cos(Theta[z]) [e/nm^2]\t"
+        header = "z [Å]\t"
+        header += "P_0*rho(z)*cos(Theta[z]) [e/Å^2]\t"
         header += "cos(theta(z))\t"
         header += "cos^2(theta(z))\t"
-        header += "rho(z) [1/nm^3]"
+        header += "rho(z) [1/Å^3]"
 
         savetxt(self.output,
                 np.vstack([

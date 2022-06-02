@@ -119,7 +119,7 @@ class EpsilonPlanar(PlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.05,
+                 binwidth=0.5,
                  center=False,
                  comgroup=None,
                  xy=False,
@@ -441,13 +441,13 @@ class EpsilonCylinder(AnalysisBase):
     geometry : str
         A structure file without water from which com is calculated.
     radius : float
-        Radius of the cylinder (nm)
+        Radius of the cylinder (Å)
     binwidth : float
-        Bindiwdth the binwidth (nm)
+        Bindiwdth the binwidth (Å)
     variable_dr : bool
         Use a variable binwidth, where the volume is kept fixed.
     length : float
-        Length of the cylinder (nm)
+        Length of the cylinder (Å)
     ${MAKE_WHOLE_PARAMETER}
     temperature : float
         temperature (K)
@@ -477,7 +477,7 @@ class EpsilonCylinder(AnalysisBase):
 
     def __init__(self,
                  atomgroups,
-                 binwidth=0.05,
+                 binwidth=0.5,
                  geometry=None,
                  radius=None,
                  variable_dr=False,
@@ -509,19 +509,12 @@ class EpsilonCylinder(AnalysisBase):
                         "Calculate center of geometry from box dimensions.")
             self.com = self._universe.dimensions[:3] / 2
 
-        if self.radius is not None:
-            self.radius = 10 * self.radius
-        else:
+        if self.radius is None:
             logger.info("No radius set. Take smallest box extension.")
             self.radius = self._universe.dimensions[:2].min() / 2
 
-        if self.length is not None:
-            self.length *= 10
-        else:
+        if self.length is None:
             self.length = self._universe.dimensions[2]
-
-        # Convert nm -> Å
-        self.binwidth *= 10
 
         self.n_bins = int(np.ceil(self.radius / self.binwidth))
 
@@ -541,6 +534,8 @@ class EpsilonCylinder(AnalysisBase):
         self.delta_r_sq = self.r_bins**2 - np.insert(self.r_bins, 0,
                                                      0)[0:-1]**2  # r_o^2-r_i^2
         self.r = np.copy(self.r_bins) - self.dr / 2
+
+        self.results.r = self.r
 
         # Use resampling for error estimation.
         # We do block averaging for 10 hardcoded blocks.
@@ -679,8 +674,6 @@ class EpsilonCylinder(AnalysisBase):
         self.results.deps_rad = beta * eps0inv * pref * \
             2 * np.pi * self.r * self.length * dcov_rad
 
-        self.results.r = self.r / 10
-
     def save(self):
         """Save result."""
         outdata_ax = np.array([
@@ -792,11 +785,9 @@ class DielectricSpectrum(AnalysisBase):
 
     def _conclude(self):
         self.results.t = self._trajectory.dt * self.frames
-        # CONVERSION: Å^3 -> nm^3
-        self.results.V = self.V * (1e-3 / (self._frame_index + 1))
+        self.results.V = self.V / (self._frame_index + 1)
 
-        # CONVERSION: Å -> nm
-        self.results.P = self.P / 10
+        self.results.P = self.P
 
         # Find a suitable number of segments if it's not specified:
         if self.df is not None:
@@ -805,9 +796,12 @@ class DielectricSpectrum(AnalysisBase):
         self.seglen = int(self.n_frames / self.segs)
 
         # Prefactor for susceptibility:
-        pref = scipy.constants.e * scipy.constants.e * 1e9 / \
-            (3 * self.results.V * scipy.constants.k
-             * self.temperature * scipy.constants.epsilon_0)
+        # Polarization: eÅ^2 to e m^2
+        pref = (scipy.constants.e)**2 * scipy.constants.angstrom**2
+        # Volume: Å^3 to m^3
+        pref /= 3 * self.results.V * scipy.constants.angstrom**3
+        pref /= scipy.constants.k * self.temperature
+        pref /= scipy.constants.epsilon_0
 
         logger.info('Calculating susceptibilty and errors...')
 

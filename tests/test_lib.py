@@ -52,8 +52,8 @@ class Test_sfactor(object):
 
         return q, S
 
-    @pytest.mark.parametrize('startq', (0, 0.5))
-    @pytest.mark.parametrize('endq', (0.75, 1))
+    @pytest.mark.parametrize('startq', (0, 0.05))
+    @pytest.mark.parametrize('endq', (0.075, 0.1))
     def test_sfactor(self, ag, qS, startq, endq):
         """Test sfactor."""
         q, S = sfactor.compute_structure_factor(
