@@ -11,10 +11,42 @@
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from datafiles import AIRWATER_TPR, AIRWATER_TRR, WATER_TPR, WATER_TRR
+from datafiles import (
+    AIRWATER_TPR,
+    AIRWATER_TRR,
+    SPCE_GRO,
+    SPCE_ITP,
+    WATER_TPR,
+    WATER_TRR,
+    )
 from numpy.testing import assert_almost_equal
 
 from maicos import Diporder, Saxs
+
+
+def create_universe(n_molecules, angle_deg):
+    """Create universe with regularly-spaced water molecules."""
+    fluid = []
+    for _n in range(n_molecules):
+        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
+    dimensions = fluid[0].dimensions
+
+    rotations = [[angle_deg, (0, 1, 0)],
+                 [angle_deg, (0, 1, 0)],
+                 [angle_deg, (0, 1, 0)]]
+    translations = [(0, 0, 5),
+                    (0, 0, 15),
+                    (0, 0, 25)]
+
+    for molecule, rotation, translation in zip(fluid, rotations, translations):
+        molecule.atoms.rotateby(rotation[0], rotation[1])
+        molecule.atoms.translate(translation)
+    u = mda.Merge(*[molecule.atoms for molecule in fluid])
+
+    dimensions[2] *= n_molecules
+    u.dimensions = dimensions
+    u.residues.molnums = list(range(1, n_molecules + 1))
+    return u.select_atoms("name OW HW1 HW2")
 
 
 class TestSaxs(object):
@@ -79,19 +111,44 @@ class TestDiporder(object):
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_Diporder(self, ag, dim, result_dict):
         """Test Diporder."""
-        dip = Diporder(ag, binwidth=0.5, dim=dim).run()
-        assert_almost_equal(dip.results['P0'],
+        dip1 = Diporder(ag, binwidth=0.5, dim=dim).run()
+        assert_almost_equal(dip1.results['P0'],
                             result_dict[dim]['P0'],
                             decimal=2)
-        assert_almost_equal(dip.results['cos_theta'],
+        assert_almost_equal(dip1.results['cos_theta'],
                             result_dict[dim]['cos_theta'],
                             decimal=1)
-        assert_almost_equal(dip.results['cos_2_theta'],
+        assert_almost_equal(dip1.results['cos_2_theta'],
                             result_dict[dim]['cos_2_theta'],
                             decimal=2)
-        assert_almost_equal(dip.results['rho'],
+        assert_almost_equal(dip1.results['rho'],
                             result_dict[dim]['rho'],
                             decimal=0)
+
+        # 3 water molecules with angle 0
+        group_H2O_1 = create_universe(3, 0)
+        dip2 = Diporder(group_H2O_1, binwidth=1).run()
+
+        assert_almost_equal(np.unique(np.round(dip2.results['P0'], 3)),
+                            0.049, decimal=3)
+        assert_almost_equal(np.unique(dip2.results['rho']),
+                            1.0, decimal=3)
+        assert_almost_equal(np.unique(dip2.results['cos_theta']),
+                            1.0, decimal=3)
+        assert_almost_equal(np.unique(dip2.results['cos_2_theta']),
+                            1.0, decimal=3)
+
+        # 3 water molecules with angle 90
+        group_H2O_2 = create_universe(3, 90)
+        dip3 = Diporder(group_H2O_2, binwidth=1).run()
+        assert_almost_equal(np.unique(np.round(dip3.results['P0'], 3)),
+                            0.0, decimal=3)
+        assert_almost_equal(np.unique(dip3.results['rho']),
+                            1.0, decimal=3)
+        assert_almost_equal(np.unique(dip3.results['cos_theta']),
+                            0.0, decimal=3)
+        assert_almost_equal(np.unique(dip3.results['cos_2_theta']),
+                            0.0, decimal=3)
 
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
