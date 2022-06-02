@@ -36,3 +36,5 @@ MICA_TPR = resource_filename(__name__, "../data/mica/mica.tpr")
 MICA_GRO = resource_filename(__name__, "../data/mica/mica.gro")
 
 LAMMPS10WATER = resource_filename(__name__, "../data/lammps10water.data")
+SPCE_ITP = resource_filename(__name__, '../data/spce.itp')
+SPCE_GRO = resource_filename(__name__, '../data/spce.gro')
