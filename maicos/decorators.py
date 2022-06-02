@@ -26,9 +26,9 @@ planar_class_parameters_doc = (
     """dim : int
         Dimension for binning (x=0, y=1, z=2)
     zmin : float
-        Minimal coordinate for evaluation (nm).
+        Minimal coordinate for evaluation (Å).
     zmax : float
-        Maximal coordinate for evaluation (nm). If None, the entire
+        Maximal coordinate for evaluation (Å). If None, the entire
         (possibly fluctuating) length of the box is taken into account.
     binwidth : float
         binwidth (nanometer)

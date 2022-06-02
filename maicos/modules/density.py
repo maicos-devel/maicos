@@ -102,7 +102,7 @@ def mu(rho, temperature, m):
         db = np.sqrt(
             constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
                                 * constants.Boltzmann * temperature)
-            ) / constants.nano
+            ) / constants.angstrom
 
         if np.all(srho > 0):
             results.append(kT * np.log(srho * db ** 3))
@@ -137,8 +137,7 @@ def _density_weights(ag, dim, dens):
     Supported values are `mass`, `number` or `charge`.
     """
     if dens == "mass":
-        # amu / nm**3 -> kg / m**3
-        return ag.atoms.masses * constants.atomic_mass / constants.nano**3
+        return ag.atoms.masses
     elif dens == "number":
         return np.ones(ag.atoms.n_atoms)
     elif dens == "charge":
@@ -181,7 +180,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
     mass : float
         Mass (u) for the chemical potential. By default taken from topology.
     zpos : float
-        position (nm) at which the chemical potential will be computed.
+        position (Å) at which the chemical potential will be computed.
         By default average over box.
     muout : str
         Prefix for output filename for chemical potential
@@ -201,7 +200,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  comgroup=None,
                  output="density.dat",
                  concfreq=0,
@@ -296,7 +295,6 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
         super(ChemicalPotentialPlanar, self)._conclude()
 
         if self.zpos is not None:
-            self.zpos *= 10  # nm -> Å
             this = (np.rint(
                 (self.zpos + self.binwidth / 2) / self.binwidth)
                 % self.n_bins).astype(int)
@@ -325,7 +323,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 
         if self.zpos is not None:
             columns = "Chemical potential calculated at "
-            columns += f"z = {self.zpos/10} nm."
+            columns += f"z = {self.zpos} Å."
         else:
             columns = "Chemical potential averaged over the whole system."
         columns += "\nstatistics over "
@@ -366,7 +364,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  center=False,
                  comgroup=None,
                  output="temperature.dat",
@@ -411,7 +409,7 @@ class DensityPlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=0,
                  zmax=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  center=False,
                  comgroup=None,
                  output="density.dat",
@@ -451,9 +449,9 @@ class DensityCylinder(AnalysisBase):
         Perform the binning relative to the center of this selection
         string of teh first AtomGroup. If `None` center of box is used.
     radius : float
-        Radius of the cylinder (nm). If None smallest box extension is taken.
+        Radius of the cylinder (Å). If None smallest box extension is taken.
     length : float
-        Length of the cylinder (nm). If None length of box in the
+        Length of the cylinder (Å). If None length of box in the
         binning dimension is taken.
     binwidth : float
         binwidth (nanometer)
@@ -486,7 +484,7 @@ class DensityCylinder(AnalysisBase):
                  center=None,
                  radius=None,
                  length=None,
-                 binwidth=0.1,
+                 binwidth=1,
                  output="density_cylinder.dat",
                  concfreq=0,
                  **kwargs):
@@ -531,25 +529,21 @@ class DensityCylinder(AnalysisBase):
 
         logger.info("Initial center at "
                     f"{'XYZ'[self.odims[0]]} = "
-                    f"{center[self.odims[0]] / 10:.3f} nm and "
+                    f"{center[self.odims[0]]:.3f} Å and "
                     f"{'XYZ'[self.odims[1]]} = "
-                    f"{center[self.odims[1]] / 10:.3f} nm.")
+                    f"{center[self.odims[1]]:.3f} Å.")
 
         if self.radius is None:
             self.radius = self.atomgroups[0].dimensions[self.odims].min() / 2
             logger.info("No radius given --> Take smallest box "
-                        f"extension (r={self.radius / 10:.2f} nm).")
-        else:
-            self.radius /= 10
+                        f"extension (r={self.radius:.2f} Å).")
 
         if self.length is None:
             self.length = self.atomgroups[0].dimensions[self.dim]
             logger.info("No length given "
                         f"--> Take length in {'XYZ'[self.dim]}.")
-        else:
-            self.length /= 10
 
-        self.n_bins = int(np.ceil(self.radius / 10 / self.binwidth))
+        self.n_bins = int(np.ceil(self.radius / self.binwidth))
 
         self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
         self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
@@ -596,9 +590,9 @@ class DensityCylinder(AnalysisBase):
                 self.density_mean[:, index] += density_ts / bincount
                 self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
             else:
-                self.density_mean[:, index] += density_ts * 1000 \
+                self.density_mean[:, index] += density_ts \
                     / (np.pi * self._delta_r_sq * self.length)
-                self.density_mean_sq[:, index] += (density_ts * 1000
+                self.density_mean_sq[:, index] += (density_ts
                                                    / (np.pi * self._delta_r_sq
                                                       * self.length)) ** 2
 
@@ -610,7 +604,7 @@ class DensityCylinder(AnalysisBase):
     def _conclude(self):
         self._index = self._frame_index + 1
 
-        self.results.r = (np.copy(self._r_bins) - self._dr / 2) / 10
+        self.results.r = (np.copy(self._r_bins) - self._dr / 2)
         self.results.dens_mean = self.density_mean / self._index
         self.results.dens_mean_sq = self.density_mean_sq / self._index
 
@@ -623,11 +617,11 @@ class DensityCylinder(AnalysisBase):
     def save(self):
         """Save results of analysis to file."""
         if self.dens == "mass":
-            units = "kg m^(-3)"
+            units = "amu Å^(-3)"
         elif self.dens == "number":
-            units = "nm^(-3)"
+            units = "Å^(-3)"
         elif self.dens == "charge":
-            units = "e nm^(-3)"
+            units = "e Å^(-3)"
         elif self.dens == "temp":
             units = "K"
 
@@ -636,7 +630,7 @@ class DensityCylinder(AnalysisBase):
         else:
             columns = f"{self.dens} density profile [{units}]"
         columns += f"\nstatistics over {self._index * self._trajectory.dt:.1f}"
-        columns += "ps \npositions [nm]"
+        columns += "ps \npositions [Å]"
         for group in self.atomgroups:
             columns += "\t" + atomgroup_header(group)
         for group in self.atomgroups:

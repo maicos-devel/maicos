@@ -28,7 +28,6 @@ from numpy.testing import (
     assert_equal,
     assert_raises,
     )
-from scipy import constants
 
 from maicos.modules import density
 
@@ -38,7 +37,6 @@ def test_density_weights_mass():
     u = mda.Universe(WATER_TPR, WATER_TRR)
     weights = density._density_weights(u.atoms, 0, "mass")
     # Convert back to atomic units
-    weights /= constants.atomic_mass / constants.nano**3
     assert_allclose(weights, u.atoms.masses)
 
 
@@ -167,13 +165,13 @@ class TestChemicalPotentialPlanar(ReferenceAtomGroups):
         """Test mu masses."""
         chem_pot = density.ChemicalPotentialPlanar(multiple_ags_mu,
                                                    mass=[18, 25, 40],
-                                                   zpos=4).run()
+                                                   zpos=40).run()
         assert_allclose(chem_pot.results["mu"], [-19.3, -20.5, -22.3],
                         rtol=1e-1)
 
     def test_mu_zpos(self, ag):
         """Test mu z position."""
-        chem_pot = density.ChemicalPotentialPlanar(ag, zpos=2.2).run()
+        chem_pot = density.ChemicalPotentialPlanar(ag, zpos=22).run()
         assert_allclose(chem_pot.results["mu"], -19.27, rtol=1e-1)
 
     def test_mu_no_mass(self, ag_no_masses):
@@ -190,7 +188,7 @@ class TestChemicalPotentialPlanar(ReferenceAtomGroups):
     def test_mu_multiple_ags(self, multiple_ags_mu):
         """Test mu multiples ags."""
         chem_pot = density.ChemicalPotentialPlanar(multiple_ags_mu,
-                                                   zpos=4).run()
+                                                   zpos=40).run()
         assert_allclose(chem_pot.results["mu"], [-19.3, -np.inf, -30.0],
                         rtol=1e-1)
 
@@ -198,7 +196,7 @@ class TestChemicalPotentialPlanar(ReferenceAtomGroups):
         """Test output multiple res multiple atoms ag."""
         with pytest.raises(NotImplementedError):
             density.ChemicalPotentialPlanar(mult_res_mult_atoms_ag,
-                                            zpos=4).run()
+                                            zpos=40).run()
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
@@ -222,8 +220,9 @@ class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the density.DensityPlanar class."""
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [1350, 20]), ('number', [178.5, 1.4]),
-                              ('charge', [-1.5, 0])))
+                             (('mass', [0.8129, 0.0122]),
+                              ('number', [0.1785, 0.0014]),
+                              ('charge', [-1.5E-3, 0])))
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = density.DensityPlanar(multiple_ags, dens=dens_type).run()
@@ -231,7 +230,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
                         rtol=1e-1, atol=1e-1)
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 988), ('number', 99.1),
+                             (('mass', 0.594), ('number', 0.099),
                               ('charge', 0)))
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_dens(self, ag, dens_type, mean, dim):
@@ -251,26 +250,25 @@ class TestDensityPlanar(ReferenceAtomGroups):
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_binwidth(self, ag_single_frame, dim):
         """Test bin width."""
-        dens = density.DensityPlanar(ag_single_frame, binwidth=0.1,
+        dens = density.DensityPlanar(ag_single_frame, binwidth=1,
                                      dim=dim).run()
-        # Divide by 10: Å -> nm
-        n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 10 / 0.1
+        n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 1
         assert_allclose(dens.results["z"][1] - dens.results["z"][0],
-                        0.1,
+                        1,
                         rtol=1e-1)
         assert_equal(len(dens.results["z"]), n_bins)
 
     def test_comshift(self, mica_water):
         """Test comshift."""
         dens = density.DensityPlanar(mica_water, comgroup=mica_water).run()
-        assert_allclose(dens.results['profile_mean'][20], 966, rtol=1e-1)
+        assert_allclose(dens.results['profile_mean'][20], 0.581, rtol=1e-1)
 
     def test_comshift_z2(self, mica_water):
         """Test comshift with an additional shift by z/2."""
         mica_water.atoms.translate(
             (0, 0, mica_water.universe.dimensions[2] / 2))
         dens = density.DensityPlanar(mica_water, comgroup=mica_water).run()
-        assert_allclose(dens.results['profile_mean'][20], 966, rtol=1e-1)
+        assert_allclose(dens.results['profile_mean'][20], 0.5817, rtol=1e-1)
 
     def test_comshift_over_boundaries(self, mica_water, mica_surface):
         """Test comshift over box boundaries."""
@@ -294,12 +292,13 @@ class TestDensityCylinder(object):
         return u.atoms
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 980.7), ('number', 99.1),
+                             (('mass', 0.590), ('number', 0.0991),
                               ('charge', 0.0), ('temp', 291.6)))
     def test_dens(self, ag, dens_type, mean):
         """Test density."""
         dens = density.DensityCylinder(ag, dens=dens_type).run()
-        assert_almost_equal(dens.results['dens_mean'].mean(), mean, decimal=0)
+        assert_allclose(dens.results['dens_mean'].mean(), mean,
+                        atol=1e-4, rtol=1e-1)
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
@@ -312,14 +311,13 @@ class TestDensityCylinder(object):
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_binwidth(self, ag_single_frame, dim):
         """Test binwidth."""
-        dens = density.DensityCylinder(ag_single_frame, binwidth=0.1,
+        dens = density.DensityCylinder(ag_single_frame, binwidth=1,
                                        dim=dim).run()
-        # Divide by 10: Å -> nm
         odims = np.roll(np.arange(3), -dim)[1:]
-        n_bins = ag_single_frame.universe.dimensions[odims].min() / 20 / 0.1
+        n_bins = ag_single_frame.universe.dimensions[odims].min() / 2
         assert_almost_equal(dens.results["r"][1] - dens.results["r"][0],
-                            0.1,
-                            decimal=2)
+                            1,
+                            decimal=1)
         assert_equal(len(dens.results["r"]), np.ceil(n_bins))
 
     def test_no_center_group(self, ag_single_frame):
@@ -356,8 +354,8 @@ class TestDensityCylinder(object):
         """Testing rescaling of density, radius."""
         dens = density.DensityCylinder(ag, radius=10.0, length=10.0)
         dens.run()
-        assert_equal(dens.radius, 1.0)
-        assert_equal(dens.length, 1.0)
+        assert_equal(dens.radius, 10.0)
+        assert_equal(dens.length, 10.0)
 
     def test_dens_cyl_save(self, ag):
         """Testing save method."""
@@ -373,7 +371,7 @@ class TestDensityCylinder(object):
         dens.save()
         outputf = open("density_cylinder.dat", "r")
         data = outputf.readlines()[1]
-        assert_equal(data.split()[4] + data.split()[5], "[enm^(-3)]")
+        assert_equal(data.split()[4] + data.split()[5], "[eÅ^(-3)]")
 
     def test_dens_cyl_save_number(self, ag):
         """Testing with density flag number."""
@@ -382,7 +380,7 @@ class TestDensityCylinder(object):
         dens.save()
         outputf = open("density_cylinder.dat", "r")
         data = outputf.readlines()[1]
-        assert_equal(data.split()[4], "[nm^(-3)]")
+        assert_equal(data.split()[4], "[Å^(-3)]")
 
     def test_dens_cyl_save_temp(self, ag):
         """Testing with density flag temperature."""

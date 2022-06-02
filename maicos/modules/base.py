@@ -148,10 +148,7 @@ class PlanarBase(AnalysisBase):
             self.L_cum = 0
             self.zmax = self._universe.dimensions[self.dim]
         else:
-            self.zmax = 10 * self._zmax
-
-        self.zmin *= 10
-        self.binwidth *= 10
+            self.zmax = self._zmax
 
         self.n_bins = int(np.ceil((self.zmax - self.zmin) / self.binwidth))
 
@@ -201,8 +198,6 @@ class PlanarBase(AnalysisBase):
 
         if self.comgroup:
             self.results.z -= self.zmin + (zmax - self.zmin) / 2
-
-        self.results.z /= 10
 
 
 @set_verbose_doc
@@ -304,8 +299,6 @@ class ProfilePlanarBase(PlanarBase):
                 profile_ts = np.nan_to_num(profile_ts)
             elif self.normalization == "volume":
                 profile_ts /= self._ts.volume / self.n_bins
-                # A^3 to nm^3
-                profile_ts *= 1000
 
             self.profile_cum[:, index] += profile_ts
             self.profile_cum_sq[:, index] += profile_ts ** 2
@@ -340,7 +333,7 @@ class ProfilePlanarBase(PlanarBase):
     def save(self):
         """Save results of analysis to file."""
         columns = f"statistics over {self._index * self._trajectory.dt:.1f}\n"
-        columns += "ps\npositions [nm]"
+        columns += "ps\npositions [Å]"
         try:
             for group in self.atomgroups:
                 columns += "\t" + atomgroup_header(group)
