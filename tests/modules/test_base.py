@@ -27,6 +27,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos
 from maicos.modules import base
+from maicos.modules.density import _density_weights
 
 
 class Test_AnalysisBase(object):
@@ -287,17 +288,6 @@ class TestProfilePlanarBase:
     """Test the ProfilePlanarBase class."""
 
     @pytest.fixture()
-    def params(self):
-        """Fxiture for PlanarBase class atributes."""
-        p = dict(dim=2,
-                 zmin=0,
-                 zmax=None,
-                 binwidth=0.1,
-                 center=False,
-                 comgroup=None)
-        return p
-
-    @pytest.fixture()
     def u(self):
         """Generate a universe containing 125 atoms at random positions.
 
@@ -332,17 +322,62 @@ class TestProfilePlanarBase:
 
         return universe
 
-    def weights(self, ag, dim, scale=1):
+    @pytest.fixture()
+    def u_dimers(self):
+        """Generate a universe containing two dimers with a dipole moment."""
+        universe = mda.Universe.empty(n_atoms=4,
+                                      n_residues=2,
+                                      n_segments=2,
+                                      atom_resindex=[0, 0, 1, 1],
+                                      residue_segindex=[0, 1])
+
+        universe.add_TopologyAttr("masses", [1, 0, 0, 1])
+        universe.add_TopologyAttr("charges", [1, -1, -1, 1])
+        universe.add_TopologyAttr("bonds", ((0, 1), (2, 3)))
+        universe.add_TopologyAttr("resids", [0, 1])
+        universe.add_TopologyAttr("molnums", [0, 1])
+
+        positions = np.array([[0, 0, 0], [0, 1, 0],
+                              [2, 1, 0], [2, 2, 0]])
+
+        universe.trajectory = get_reader_for(positions)(positions,
+                                                        order='fac',
+                                                        n_atoms=4)
+
+        for ts in universe.trajectory:
+            ts.dimensions = np.array([2, 3, 3, 90, 90, 90])
+
+        return universe
+
+    def weights(self, ag, grouping, dim, scale=1):
         """Scalable weights for profile calculations."""
-        return scale * np.ones(ag.n_atoms)
+        return scale * _density_weights(ag, grouping, dim, dens="number")
+
+    @pytest.fixture()
+    def params(self, u):
+        """Fixture for PlanarBase class atributes."""
+        p = dict(function=self.weights,
+                 atomgroups=u.atoms,
+                 normalization="number",
+                 dim=2,
+                 zmin=0,
+                 zmax=None,
+                 binwidth=0.1,
+                 center=False,
+                 comgroup=None,
+                 sym=False,
+                 grouping="atoms",
+                 make_whole=False,
+                 binmethod="com",
+                 concfreq=0,
+                 output="profile.dat")
+        return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):
         """Test profile with different normalizations."""
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization=normalization,
-                                                atomgroups=u.atoms,
-                                                **params).run()
+        params.update(normalization=normalization)
+        profile_planar = base.ProfilePlanarBase(**params).run()
 
         if normalization == "volume":
             # Divide by 2 since only half of the box is filled with atoms.
@@ -362,14 +397,10 @@ class TestProfilePlanarBase:
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
 
-    def test_sim(self, u, params):
-        """Test profile symmetrazation."""
-        params["comgroup"] = u.atoms
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization="number",
-                                                atomgroups=u.atoms,
-                                                sym=True,
-                                                **params).run()
+    def test_sym(self, u, params):
+        """Test profile symmetrization."""
+        params.update(comgroup=u.atoms, sym=True)
+        profile_planar = base.ProfilePlanarBase(**params).run()
 
         actual = profile_planar.results.profile_mean.flatten()
         desired = [0, 0, 0, 0, 0.4, 1, 1, 1, 1, 1]
@@ -377,33 +408,93 @@ class TestProfilePlanarBase:
 
         assert_allclose(actual, desired, atol=1e-2)
 
-    def test_raise_sym_no_comgroup(self, u, params):
-        """Test error raise for symmetrazation without provided comgroup."""
-        with pytest.raises(ValueError, match="For symmetrization the"):
-            base.ProfilePlanarBase(self.weights,
-                                   normalization="number",
-                                   atomgroups=u.atoms,
-                                   sym=True,
-                                   **params).run()
+    @pytest.mark.parametrize("grouping", ["atoms", "segments", "residues",
+                                          "molecules", "fragments"])
+    def test_grouping(self, u_dimers, grouping, params):
+        """Test profile grouping."""
+        params.update(atomgroups=u_dimers.atoms,
+                      dim=1,
+                      binwidth=1,
+                      grouping=grouping)
+        profile_planar = base.ProfilePlanarBase(**params).run()
+        actual = profile_planar.results.profile_mean.flatten()
 
-    def test_wrong_normalization(self, u, params):
+        if grouping == "atoms":
+            desired = [1, 1, 1]
+        else:
+            desired = [1, 0, 1]
+
+        assert_equal(actual, desired)
+
+    @pytest.mark.parametrize("binmethod, desired",
+                             [("cog", [1, 1, 0]),
+                              ("com", [1, 0, 1]),
+                              ("coc", [1, 1, 0])])
+    def test_binmethod(self, u_dimers, binmethod, desired, params):
+        """Test different bin methods."""
+        params.update(atomgroups=u_dimers.atoms,
+                      dim=1,
+                      binwidth=1,
+                      binmethod=binmethod,
+                      grouping="molecules")
+        profile_planar = base.ProfilePlanarBase(**params).run()
+        actual = profile_planar.results.profile_mean.flatten()
+        assert_equal(actual, desired)
+
+    @pytest.mark.parametrize("make_whole, desired",
+                             [(False, [1, 1]), (True, [2, 0])])
+    def test_make_whole(self, u_dimers, make_whole, desired, params):
+        """Test making molecules whole."""
+        params.update(atomgroups=u_dimers.atoms,
+                      dim=0,
+                      binwidth=1,
+                      make_whole=make_whole,
+                      binmethod='com',
+                      normalization="none",
+                      grouping="molecules")
+
+        profile_planar = base.ProfilePlanarBase(**params).run()
+        actual = profile_planar.results.profile_mean.flatten()
+        assert_equal(actual, desired)
+
+    def test_raise_sym_no_comgroup(self, params):
+        """Test error raise for symmetrization without provided comgroup."""
+        params.update(sym=True)
+        with pytest.raises(ValueError, match="For symmetrization the"):
+            base.ProfilePlanarBase(**params).run()
+
+    def test_wrong_normalization(self, params):
         """Test profile for a non existing normalization."""
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization="foo",
-                                                atomgroups=u.atoms,
-                                                **params)
+        params.update(normalization="foo")
 
         with pytest.raises(ValueError, match="not supported"):
-            profile_planar.run()
+            base.ProfilePlanarBase(**params).run()
 
-    def test_f_kwargs(self, u, params):
-        """Test an extra keywrod argument."""
+    def test_wrong_grouping(self, params):
+        """Test grouping for a non existing type."""
+        params.update(grouping="foo")
+
+        with pytest.raises(ValueError, match="is not a valid option for"):
+            base.ProfilePlanarBase(**params).run()
+
+    def test_wrong_binmethod(self, params):
+        """Test error raise for a non existing binmethod."""
+        params.update(binmethod="foo")
+
+        with pytest.raises(ValueError, match="is an unknown binning"):
+            base.ProfilePlanarBase(**params).run()
+
+    def test_make_whole_atoms(self, params):
+        """Test that make_whole is always False for grouping wrt to atoms."""
+        params.update(make_whole=True, grouping="atoms")
+        profile_planar = base.ProfilePlanarBase(**params).run(stop=1)
+        assert profile_planar.make_whole is False
+
+    def test_f_kwargs(self, params):
+        """Test an extra keyword argument."""
         scale = 3
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization="number",
-                                                atomgroups=u.atoms,
-                                                f_kwargs={"scale": scale},
-                                                **params).run()
+        params.update(f_kwargs={"scale": scale})
+        profile_planar = base.ProfilePlanarBase(**params).run()
 
         actual = profile_planar.results.profile_mean.flatten()
         desired = np.zeros(profile_planar.n_bins)
@@ -413,10 +504,8 @@ class TestProfilePlanarBase:
 
     def test_multigroup(self, u, params):
         """Test analysis for a list of atomgroups."""
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization="number",
-                                                atomgroups=[u.atoms, u.atoms],
-                                                **params).run()
+        params.update(atomgroups=[u.atoms, u.atoms])
+        profile_planar = base.ProfilePlanarBase(**params).run()
 
         actual = profile_planar.results.profile_mean
         desired = np.zeros([profile_planar.n_bins, 2])
@@ -424,22 +513,17 @@ class TestProfilePlanarBase:
 
         assert_allclose(actual, desired, atol=2, rtol=1e-2)
 
-    def test_save_default_name(self, u, params):
-        """Test default put[ut name of save method."""
-        profile_planar = base.ProfilePlanarBase(self.weights,
-                                                normalization="number",
-                                                atomgroups=u.atoms,
-                                                **params).run(stop=1)
+    def test_output_name(self, params):
+        """Test output name of save method."""
+        params.update(output="foo.dat")
+        profile_planar = base.ProfilePlanarBase(**params).run(stop=1)
         profile_planar.save()
-        assert os.path.exists("profile.dat")
+        assert os.path.exists(params["output"])
 
-    def test_output(self, u, params, tmpdir):
+    def test_output(self, params, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():
-            profile_planar = base.ProfilePlanarBase(self.weights,
-                                                    normalization="number",
-                                                    atomgroups=u.atoms,
-                                                    **params).run(stop=1)
+            profile_planar = base.ProfilePlanarBase(**params).run(stop=1)
             profile_planar.save()
             res_dens = np.loadtxt(profile_planar.output)
 
@@ -454,14 +538,3 @@ class TestProfilePlanarBase:
         assert_allclose(profile_planar.results.profile_err[:, 0],
                         res_dens[:, 2],
                         rtol=2)
-
-    def test_output_name(self, u, params, tmpdir):
-        """Test output name."""
-        with tmpdir.as_cwd():
-            profile_planar = base.ProfilePlanarBase(self.weights,
-                                                    normalization="number",
-                                                    atomgroups=u.atoms,
-                                                    output="foo",
-                                                    **params).run(stop=1)
-            profile_planar.save()
-            open("foo.dat")

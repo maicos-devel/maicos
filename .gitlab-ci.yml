@@ -22,10 +22,6 @@ stages:
   script:
     - tox -e lint
 
-lint:3.7:
-  image: python:3.7
-  extends: .lint
-
 lint:3.8:
   image: python:3.8
   extends: .lint
@@ -50,10 +46,6 @@ lint:3.10:
   artifacts:
     paths:
       - dist
-
-build:3.7:
-  image: python:3.7
-  extends: .build
 
 build:3.8:
   image: python:3.8
@@ -91,10 +83,6 @@ build:docs:
     - curl -Os https://uploader.codecov.io/latest/linux/codecov
     - chmod +x codecov
     - ./codecov -t $CODECOV_TOKEN
-
-tests:3.7:
-  image: python:3.7
-  extends: .tests
 
 tests:3.8:
   image: python:3.8

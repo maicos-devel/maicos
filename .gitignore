@@ -16,6 +16,7 @@ __pycache__
 *.npy
 *.txt
 *.xvg
+*.lock
 
 # Cython generated files
 sfactor.c

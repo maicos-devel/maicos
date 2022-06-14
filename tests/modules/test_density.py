@@ -35,30 +35,56 @@ from maicos.modules import density
 def test_density_weights_mass():
     """Test mass weights."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = density._density_weights(u.atoms, 0, "mass")
+    weights = density._density_weights(u.atoms, "atoms", 0, "mass")
     # Convert back to atomic units
     assert_allclose(weights, u.atoms.masses)
+
+
+@pytest.mark.parametrize("compound", ["residues", "segments", "molecules",
+                                      "fragments"])
+def test_density_weights_mass_grouping(compound):
+    """Test mass weights with grouping."""
+    u = mda.Universe(WATER_TPR, WATER_TRR)
+    weights = density._density_weights(u.atoms, compound, 0, "mass")
+    assert_allclose(weights, u.atoms.total_mass(compound=compound))
 
 
 def test_density_weights_charge():
     """Test charge weights."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = density._density_weights(u.atoms, 0, "charge")
+    weights = density._density_weights(u.atoms, "atoms", 0, "charge")
     assert_equal(weights, u.atoms.charges)
 
 
-def test_density_weights_number():
-    """Test number weights."""
+@pytest.mark.parametrize("compound", ["residues", "segments", "molecules",
+                                      "fragments"])
+def test_density_weights_charge_grouping(compound):
+    """Test charge weights with grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = density._density_weights(u.atoms, 0, "number")
-    assert_equal(weights, np.ones(u.atoms.n_atoms))
+    weights = density._density_weights(u.atoms, compound, 0, "charge")
+    assert_equal(weights, u.atoms.total_charge(compound=compound))
+
+
+@pytest.mark.parametrize("compound", ["residues", "segments", "fragments"])
+def test_density_weights_number(compound):
+    """Test number weights for grouping."""
+    u = mda.Universe(WATER_TPR, WATER_TRR)
+    weights = density._density_weights(u.atoms, compound, 0, "number")
+    assert_equal(weights, np.ones(getattr(u.atoms, f"n_{compound}")))
+
+
+def test_density_weights_number_molecules():
+    """Test number weights for grouping with respect to molecules."""
+    u = mda.Universe(WATER_TPR, WATER_TRR)
+    weights = density._density_weights(u.atoms, "molecules", 0, "number")
+    assert_equal(weights, np.ones(len(np.unique(u.atoms.molnums))))
 
 
 def test_density_weights_error():
     """Test error raise for non existing weight."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
     with pytest.raises(ValueError, match="not supported"):
-        density._density_weights(u.atoms, 0, "foo")
+        density._density_weights(u.atoms, "atoms", 0, "foo")
 
 
 class ReferenceAtomGroups:
