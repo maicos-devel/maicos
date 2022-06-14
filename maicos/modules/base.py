@@ -9,12 +9,12 @@
 """Base class."""
 
 import logging
-import warnings
 
 import MDAnalysis.analysis.base
 import numpy as np
 
 from ..decorators import (
+    make_whole,
     set_planar_class_doc,
     set_profile_planar_class_doc,
     set_verbose_doc,
@@ -202,17 +202,19 @@ class PlanarBase(AnalysisBase):
 
 @set_verbose_doc
 @set_profile_planar_class_doc
+@make_whole()
 class ProfilePlanarBase(PlanarBase):
-    """Base class for computing atomistic profiles in a cartesian geometry.
+    """Base class for computing profiles in a cartesian geometry.
 
     Parameters
     ----------
     function : callable
         The function calculating the array for the analysis.
-        It must take an `Atomgroup` as first argument and
-        dimension (0, 1, 2) as second. Additional parameters can be given as
-        `f_kwargs`. The function must return a numpy.ndarry with the same
-        length as the number of atoms in `Atomgroup`.
+        It must take an `Atomgroup` as first argument,
+        grouping ('atoms', 'residues', 'segments', 'molecules', 'fragments')
+        as second and a dimension (0, 1, 2) as third. Additional parameters can
+        be given as `f_kwargs`. The function must return a numpy.ndarry with
+        the same length as the number of group members.
     normalization : str {'None', 'number', 'volume'}
         The normalization of the profile performed in every frame.
         If `None` no normalization is performed. If `number` the histogram
@@ -237,9 +239,12 @@ class ProfilePlanarBase(PlanarBase):
                  zmax,
                  binwidth,
                  comgroup,
-                 sym=False,
-                 output="profile.dat",
-                 concfreq=0,
+                 sym,
+                 grouping,
+                 make_whole,
+                 binmethod,
+                 output,
+                 concfreq,
                  f_kwargs=None,
                  **kwargs):
         super(ProfilePlanarBase, self).__init__(atomgroups=atomgroups,
@@ -253,9 +258,13 @@ class ProfilePlanarBase(PlanarBase):
         if f_kwargs is None:
             f_kwargs = {}
 
-        self.function = lambda ag, dim: function(ag, dim, **f_kwargs)
+        self.function = lambda ag, grouping, dim: function(
+            ag, grouping, dim, **f_kwargs)
         self.normalization = normalization.lower()
         self.sym = sym
+        self.grouping = grouping.lower()
+        self.make_whole = make_whole
+        self.binmethod = binmethod.lower()
         self.output = output
         self.concfreq = concfreq
 
@@ -264,13 +273,30 @@ class ProfilePlanarBase(PlanarBase):
 
         if self.normalization not in ["none", "volume", "number"]:
             raise ValueError(f"`{self.normalization}` not supported. "
-                             "Use `None`, `Volume` or `Number`.")
+                             "Use `None`, `volume` or `number`.")
 
         if self.sym and self.comgroup is None:
             raise ValueError("For symmetrization the `comgroup` argument is "
                              "required.")
 
-        logger.info(f"Computing profile along {'XYZ'[self.dim]}-axes.")
+        if self.grouping not in ["atoms", "segments", "residues", "molecules",
+                                 "fragments"]:
+            raise ValueError(f"{self.grouping} is not a valid option for "
+                             "grouping. Use 'atoms', 'residues', "
+                             "'segments', 'molecules' or 'fragments'.")
+
+        if self.make_whole and self.grouping == "atoms":
+            logger.warning("Making molecules whole in combination with atom "
+                           "grouping is superfluous. `make_whole` will be set "
+                           "to `False`.")
+            self.make_whole = False
+
+        if self.binmethod not in ["cog", "com", "coc"]:
+            raise ValueError(f"{self.binmethod} is an unknown binning "
+                             "method. Use `cog`, `com` or `coc`.")
+
+        logger.info(f"Computing {self.grouping} profile along "
+                    f"{'XYZ'[self.dim]}-axes.")
 
         # Arrays for accumulation
         self.profile_cum = np.zeros((self.n_bins, self.n_atomgroups))
@@ -280,19 +306,29 @@ class ProfilePlanarBase(PlanarBase):
         super(ProfilePlanarBase, self)._single_frame()
 
         for index, selection in enumerate(self.atomgroups):
-            pos = selection.atoms.positions[:, self.dim]
-            # Put atoms back in the central cell
-            pos %= self._ts.dimensions[self.dim]
-            weights = self.function(selection, self.dim)
-            profile_ts, _ = np.histogram(pos,
+            if self.grouping == 'atoms':
+                positions = selection.atoms.positions
+            else:
+                kwargs = dict(compound=self.grouping)
+                if self.binmethod == "cog":
+                    positions = selection.atoms.center_of_geometry(**kwargs)
+                elif self.binmethod == "com":
+                    positions = selection.atoms.center_of_mass(**kwargs)
+                elif self.binmethod == "coc":
+                    positions = selection.atoms.center_of_charge(**kwargs)
+
+            positions = positions[:, self.dim]
+            weights = self.function(selection, self.grouping, self.dim)
+
+            profile_ts, _ = np.histogram(positions,
                                          bins=self.n_bins,
                                          range=(self.zmin, self.zmax),
                                          weights=weights)
 
             if self.normalization == 'number':
-                bincount = np.histogram(pos,
-                                        bins=self.n_bins,
-                                        range=(self.zmin, self.zmax))[0]
+                bincount, _ = np.histogram(positions,
+                                           bins=self.n_bins,
+                                           range=(self.zmin, self.zmax))
                 # If a bin does not contain any particles we divide by 0.
                 with np.errstate(invalid='ignore'):
                     profile_ts /= bincount
@@ -340,10 +376,8 @@ class ProfilePlanarBase(PlanarBase):
             for group in self.atomgroups:
                 columns += "\t" + atomgroup_header(group) + " error"
         except AttributeError:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn("AtomGroup does not contain resnames."
-                              " Not writing residues information to output.")
+            logger.warning("AtomGroup does not contain resnames. "
+                           "Not writing residues information to output.")
 
         # save density profile
         savetxt(self.output,

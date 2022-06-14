@@ -22,6 +22,18 @@ verbose_parameter_doc = (
         Turn on more logging and debugging"""
     )
 
+make_whole_parameter_doc = (
+    """make_whole : bool
+        Make molecules that are broken due to the periodic boundary conditions
+        whole again. If the input already contains whole molecules this can
+        be disabled to gain speedup.
+
+        Note: Currently molecules containing virtual sites (e.g. TIP4P water
+        model) are not supported. In this case, provide unwrapped trajectory
+        file directly, and use the command line flag -no-make_whole.
+        """
+    )
+
 planar_class_parameters_doc = (
     """dim : int
         Dimension for binning (x=0, y=1, z=2)
@@ -44,6 +56,15 @@ profile_planar_class_parameters_doc = (
     + planar_class_parameters_doc
     + """sym : bool
         symmetrize the profile. Only works in combinations with `comgroup`.
+    grouping : str {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+          Profile will be computed either on the atom positions (in
+          the case of 'atoms') or on the center of mass of the specified
+          grouping unit ('residues', 'segments', or 'fragments')."""
+    + make_whole_parameter_doc
+    + """binmethod : str
+        Method for position binning; possible options are
+        center of geometry (cog) center of mass (com) or
+        center of charge (coc).
     output : str
         Output filename
     concfreq : int
@@ -65,17 +86,6 @@ profile_planar_class_attributes_doc = (
         profile's standard deviation
     results.profile_err : np.ndarray
         profile's error"""
-    )
-
-make_whole_parameter_doc = (
-    """make_whole : bool
-        Make molecules whole; If the input already contains whole molecules
-        this can be disabled to gain speedup.
-
-        Note: Currently molecules containing virtual sites (e.g. TIP4P water
-        model) are not supported. In this case, provide unwrapped trajectory
-        file directly, and use the command line flag -no-make_whole.
-        """
     )
 
 
@@ -136,9 +146,8 @@ def charge_neutral(filter):
     Parameters
     ----------
     filter : str
-        Filter type to control warning filter
-        Common values are: "error" or "default"
-        See `warnings.simplefilter` for more options.
+        Filter type to control warning filter Common values are: "error"
+        or "default" See `warnings.simplefilter` for more options.
     """
     def inner(original_class):
         def charge_check(function):
@@ -154,16 +163,15 @@ def charge_neutral(filter):
                             0, atol=1E-4):
                         with warnings.catch_warnings():
                             warnings.simplefilter(filter)
-                            warnings.warn(
-                                "At least one AtomGroup has free charges. "
-                                "Analysis for systems with free charges"
-                                "could lead to severe artifacts!")
+                            warnings.warn("At least one AtomGroup has free "
+                                          "charges. Analysis for systems "
+                                          "with free charges could lead to "
+                                          "severe artifacts!")
 
                     if not np.allclose(group.universe.atoms.total_charge(), 0,
                                        atol=1E-4):
-                        raise ValueError(
-                            "Analysis for non-neutral systems is not supported."
-                            )
+                        raise ValueError("Analysis for non-neutral systems "
+                                         "is not supported.")
                 return function(self)
 
             return wrapped

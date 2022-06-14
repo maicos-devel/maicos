@@ -15,6 +15,9 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Added `grouping` and `binmethod` option (!117)
+- Bump minimum MDAnalysis version to 2.2.0 (!117)
+- Bump minimum Python version to 3.8 (!117)
 - Use base units exclusively (!115)
 - Higher tolerance for non-neutral systems (1E-4 instead of 1E-5)
 - `charge`neutral decorator uses `check_compound` now

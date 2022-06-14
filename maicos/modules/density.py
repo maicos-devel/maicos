@@ -131,24 +131,36 @@ def dmu(rho, drho, temperature):
     return np.squeeze(np.array(results).T)
 
 
-def _density_weights(ag, dim, dens):
+def _density_weights(atomgroup, grouping, dim, dens):
     """Calculate the weights for the histogram.
 
     Supported values are `mass`, `number` or `charge`.
     """
-    if dens == "mass":
-        return ag.atoms.masses
-    elif dens == "number":
-        return np.ones(ag.atoms.n_atoms)
+    if dens == "number":
+        # There exist no properrty like n_molecules
+        if grouping == "molecules":
+            numbers = len(np.unique(atomgroup.molnums))
+        else:
+            numbers = getattr(atomgroup, f"n_{grouping}")
+        return np.ones(numbers)
+    elif dens == "mass":
+        if grouping == "atoms":
+            masses = atomgroup.masses
+        else:
+            masses = atomgroup.total_mass(compound=grouping)
+        return masses
     elif dens == "charge":
-        return ag.atoms.charges
+        if grouping == "atoms":
+            return atomgroup.charges
+        else:
+            return atomgroup.total_charge(compound=grouping)
     else:
         raise ValueError(f"`{dens}` not supported. "
                          "Use `mass`, `number` or `charge`.")
 
 
-def _temperature(ag, dim):
-    """Calculate contribution of each atom to thetemperature."""
+def _temperature(ag, grouping, dim):
+    """Calculate contribution of each atom to the temperature."""
     # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
@@ -157,9 +169,9 @@ def _temperature(ag, dim):
 def _weights_legacy(ag, dens):
     """Calculate the weights for the histogram in cylindrical systems."""
     if dens == "temp":
-        return _temperature(ag, dim=None)
+        return _temperature(ag, grouping="atoms", dim=None)
     elif dens in ["mass", "number", "charge"]:
-        return _density_weights(ag, dim=None, dens=dens)
+        return _density_weights(ag, grouping="atoms", dim=None, dens=dens)
     else:
         raise ValueError(f"`{dens}` not supported. "
                          "Use `mass`, `number`, `charge` or `temp`.")
@@ -202,6 +214,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  zmax=None,
                  binwidth=1,
                  comgroup=None,
+                 sym=False,
+                 grouping="atoms",
+                 make_whole=True,
+                 binmethod="com",
                  output="density.dat",
                  concfreq=0,
                  center=False,
@@ -220,6 +236,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             zmax=zmax,
             binwidth=binwidth,
             comgroup=comgroup,
+            sym=sym,
+            grouping=grouping,
+            make_whole=make_whole,
+            binmethod=binmethod,
             output=output,
             concfreq=concfreq,
             **kwargs)
@@ -349,6 +369,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 class TemperaturePlanar(ProfilePlanarBase):
     """Compute temperature profile in a cartesian geometry.
 
+    Currently only atomistic temperature profiles are supported.
+
     Parameters
     ----------
     ${PLANAR_PROFILE_CLASS_PARAMETERS}
@@ -367,6 +389,10 @@ class TemperaturePlanar(ProfilePlanarBase):
                  binwidth=1,
                  center=False,
                  comgroup=None,
+                 sym=False,
+                 grouping="atoms",
+                 make_whole=True,
+                 binmethod="com",
                  output="temperature.dat",
                  concfreq=0,
                  **kwargs):
@@ -381,21 +407,45 @@ class TemperaturePlanar(ProfilePlanarBase):
             binwidth=binwidth,
             center=center,
             comgroup=comgroup,
+            sym=sym,
+            grouping=grouping,
+            make_whole=make_whole,
+            binmethod=binmethod,
             output=output,
             concfreq=concfreq,
             **kwargs)
+
+        if grouping != "atoms":
+            raise NotImplementedError(f"Temperature profiles of '{grouping}'"
+                                      "are not supported. Use 'atoms' "
+                                      "instead.'")
 
 
 @set_verbose_doc
 @set_profile_planar_class_doc
 class DensityPlanar(ProfilePlanarBase):
-    """Compute the partial density profile in a cartesian geometry.
+    r"""Compute the partial density profile in a cartesian geometry.
+
+    Calculation are carried out for mass
+    (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
+    charge (:math:`\rm e \cdot A^{-3}`) density profiles along a certain
+    cartesian axes [x,y,z] of the simulation cell. Supported cells can be of
+    arbitary shapes and as well fluctuate over time.
+
+    For grouping with respect to molecules, residues etc. the corresponding
+    centers (i.e center of mass) using of periodic boundary conditions
+    are calculated.
+    For these center calculations molecules will be unwrapped/made whole.
+    Trajectories containing already whole molecules can be run with
+    `make_whole=False` to gain a speedup.
+    For grouping with respect to atoms the `make_whole` option is always
+    ignored.
 
     Parameters
     ----------
     ${PLANAR_PROFILE_CLASS_PARAMETERS}
-    dens : str
-        Density: mass, number or charge.
+    dens : str {'mass', 'number', 'charge'}
+        density type to be calculated
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -412,6 +462,10 @@ class DensityPlanar(ProfilePlanarBase):
                  binwidth=1,
                  center=False,
                  comgroup=None,
+                 sym=False,
+                 grouping="atoms",
+                 make_whole=True,
+                 binmethod="com",
                  output="density.dat",
                  concfreq=0,
                  **kwargs):
@@ -427,6 +481,10 @@ class DensityPlanar(ProfilePlanarBase):
             binwidth=binwidth,
             center=center,
             comgroup=comgroup,
+            sym=sym,
+            grouping=grouping,
+            make_whole=make_whole,
+            binmethod=binmethod,
             output=output,
             concfreq=concfreq,
             **kwargs)
