@@ -98,3 +98,37 @@ def test_get_cli_input():
     with patch.object(sys, 'argv', testargs):
         assert maicos.utils.get_cli_input() == 'Command line was: ' \
                                                'maicos foo "foo bar"'
+
+
+@pytest.mark.parametrize(
+    ('vector1, vector2, subtract_mean, result'),
+    (
+        (np.linspace(0, 20, 50), None, False, 78.23),
+        (np.linspace(0, 20, 50), np.linspace(0, 20, 50)
+         * np.linspace(0, 20, 50), False, 1294.73),
+        (np.linspace(0, 20, 50), None, True, -21.76),
+
+        ),
+    )
+def test_corr(vector1, vector2, subtract_mean, result):
+    """Tests for correlation."""
+    utils_run = maicos.utils.Correlation(vector1, vector2, subtract_mean)
+    assert_almost_equal(np.mean(utils_run), result, decimal=2)
+
+
+@pytest.mark.parametrize(
+    ('vector1, vector2, subtract_mean, result'),
+    (
+        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)],
+         None, False, 3923.68),
+        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)], [
+         np.linspace(10, 30, 20), np.linspace(30, 50, 20)], False, 10747.36),
+        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)], [
+         np.linspace(10, 30, 20), np.linspace(30, 50, 20)], True, 1947.36),
+
+        ),
+    )
+def test_scalarprod(vector1, vector2, subtract_mean, result):
+    """Tests for scalar product."""
+    utils_run = maicos.utils.Correlation(vector1, vector2, subtract_mean)
+    assert_almost_equal(np.mean(utils_run), result, decimal=2)

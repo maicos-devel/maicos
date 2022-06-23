@@ -15,6 +15,7 @@ v0.6 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
 
+- Removed `repairMolecules` (!119)
 - Added `grouping` and `binmethod` option (!117)
 - Bump minimum MDAnalysis version to 2.2.0 (!117)
 - Bump minimum Python version to 3.8 (!117)
