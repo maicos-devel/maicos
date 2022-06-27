@@ -264,7 +264,10 @@ class EpsilonPlanar(PlanarBase):
                 curQx = np.histogram2d(
                     binsz,
                     binsx,
-                    bins=(self.n_bins, self.nbinsx),
+                    bins=[
+                        np.arange(0, self.n_bins + 1),
+                        np.arange(0, self.nbinsx + 1)
+                        ],
                     weights=sel.atoms.charges)[0]
 
                 curqx = np.cumsum(curQx, axis=1) / (
