@@ -1,5 +1,7 @@
 sphinx
 nbsphinx
+nbval
 ipykernel
 ipywidgets
 furo
+pytest
