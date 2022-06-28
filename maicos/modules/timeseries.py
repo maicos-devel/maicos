@@ -98,8 +98,6 @@ class DipoleAngle(AnalysisBase):
             self.save()
 
     def _conclude(self):
-        self._index = self._frame_index + 1
-
         self.results.t = self.times
         self.results.cos_theta_i = self.cos_theta_i[:self._index]
         self.results.cos_theta_ii = self.cos_theta_ii[:self._index]

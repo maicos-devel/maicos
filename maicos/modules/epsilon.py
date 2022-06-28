@@ -292,14 +292,8 @@ class EpsilonPlanar(PlanarBase):
 
         self.V += self._ts.volume
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
         super(EpsilonPlanar, self)._conclude()
-        self._index = self._frame_index + 1
 
         self.results.V = self.V / self._index
 
@@ -627,13 +621,7 @@ class EpsilonCylinder(AnalysisBase):
         self.mM_ax[:, self._frame_index
                    // self.resample_freq] += this_m_ax * this_M_ax
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
-        self._index = self._frame_index + 1
         if self.single:  # removed average of M if single line water.
             cov_ax = self.mM_ax.sum(axis=1) / self._index
             cov_rad = self.mM_rad.sum(axis=1) / self._index
@@ -788,7 +776,7 @@ class DielectricSpectrum(AnalysisBase):
 
     def _conclude(self):
         self.results.t = self._trajectory.dt * self.frames
-        self.results.V = self.V / (self._frame_index + 1)
+        self.results.V = self.V / self._index
 
         self.results.P = self.P
 

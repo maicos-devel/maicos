@@ -654,14 +654,7 @@ class DensityCylinder(AnalysisBase):
                                                    / (np.pi * self._delta_r_sq
                                                       * self.length)) ** 2
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
-        self._index = self._frame_index + 1
-
         self.results.r = (np.copy(self._r_bins) - self._dr / 2)
         self.results.dens_mean = self.density_mean / self._index
         self.results.dens_mean_sq = self.density_mean_sq / self._index
