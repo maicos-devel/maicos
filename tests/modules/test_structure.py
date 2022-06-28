@@ -7,6 +7,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import os
 
 import MDAnalysis as mda
 import numpy as np
@@ -69,6 +70,22 @@ class TestSaxs(object):
         """
         saxs = Saxs(ag, endq=20).run(stop=1)
         assert not np.isnan(saxs.results.scat_factor).any()
+
+    def test_theta(self, ag):
+        """Test min & max theta conditions."""
+        saxs = Saxs(ag, mintheta=-10, maxtheta=190, verbose=True)
+        saxs.run()
+        saxs.save()
+        assert_allclose(saxs.mintheta, 0)
+        assert_equal(os.path.exists("sq.dat"), True)
+
+    def test_nobindata(self, ag):
+        """Test when nobindata is True."""
+        saxs = Saxs(ag, nobin=True)
+        saxs.run()
+        assert_equal(type(saxs.q_factor).__name__ == 'ndarray', True)
+        saxs.save()
+        assert_equal(os.path.exists("sq.dat"), True)
 
 
 class TestDiporder(object):

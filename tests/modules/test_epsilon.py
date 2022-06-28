@@ -7,6 +7,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import os
 
 import MDAnalysis as mda
 import numpy as np
@@ -31,45 +32,6 @@ class TestEpsilonPlanar(object):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
-
-    @pytest.fixture()
-    def single_dipole(self):
-        """Single dipole atomgroup.
-
-        Create MDA universe with a single dipole molecule
-        inside a 10 Å x 10 Å x 10 Å box cubic box.
-        """
-        u = mda.Universe.empty(2,
-                               n_residues=1,
-                               atom_resindex=[0, 0],
-                               n_segments=1,
-                               residue_segindex=[0],
-                               trajectory=True)
-        positions = np.array([[4, 4, 4],
-                              [6, 6, 6]])
-        charges = np.array([-0.5, 0.5])
-        dimensions = np.array([10, 10, 10, 90, 90, 90])
-        u.atoms.positions = positions
-        u.add_TopologyAttr('charges', charges)
-        u.add_TopologyAttr('resid', [0])
-        u.add_TopologyAttr('bonds', [(0, 1)])
-        u.add_TopologyAttr('masses', [1, 1])
-        u.dimensions = dimensions
-        return u.atoms
-
-    @pytest.mark.parametrize('binwidth, bins_par, bins_perp',
-                             ((5, [0., 0.01992], [0.005, 0]),
-                              (1, [0, 0, 0, 0, 0, 0.0996, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0.005, 0.005, 0, 0, 0, 0]))
-                             )
-    def test_single_frame(self, single_dipole, binwidth, bins_par, bins_perp):
-        """Test physical quantities."""
-        eps = EpsilonPlanar(single_dipole, binwidth=binwidth)
-        eps.run()
-        assert eps.M_par[0] == 2.
-        assert eps.M_perp[0] == 1.
-        assert np.all(eps.m_par[:, 0, 0] == bins_par)
-        assert np.all(eps.m_perp[:, 0, 0] == bins_perp)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
@@ -110,6 +72,13 @@ class TestEpsilonPlanar(object):
         eps = EpsilonPlanar(ag, sym=True)
         eps.run()
         assert_almost_equal(np.mean(eps.results.eps_perp), -1.01, decimal=2)
+
+    def test_sym_ofile(self, ag):
+        """Test for output file in symmetric case."""
+        eps = EpsilonPlanar(ag, sym=True)
+        eps.run()
+        eps.save()
+        assert os.path.exists("eps_par.dat")
 
 
 class TestEpsilonCylinder(object):

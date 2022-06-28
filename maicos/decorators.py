@@ -170,8 +170,9 @@ def charge_neutral(filter):
 
                     if not np.allclose(group.universe.atoms.total_charge(), 0,
                                        atol=1E-4):
-                        raise ValueError("Analysis for non-neutral systems "
-                                         "is not supported.")
+                        raise ValueError(
+                            "Analysis for non-neutral systems is not supported."
+                            )
                 return function(self)
 
             return wrapped
