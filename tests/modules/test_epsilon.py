@@ -7,6 +7,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import os
 
 import MDAnalysis as mda
 import numpy as np
@@ -71,6 +72,13 @@ class TestEpsilonPlanar(object):
         eps = EpsilonPlanar(ag, sym=True)
         eps.run()
         assert_almost_equal(np.mean(eps.results.eps_perp), -1.01, decimal=2)
+
+    def test_sym_ofile(self, ag):
+        """Test for output file in symmetric case."""
+        eps = EpsilonPlanar(ag, sym=True)
+        eps.run()
+        eps.save()
+        assert os.path.exists("eps_par.dat")
 
 
 class TestEpsilonCylinder(object):
