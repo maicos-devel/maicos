@@ -12,6 +12,7 @@ import logging
 
 import MDAnalysis.analysis.base
 import numpy as np
+from MDAnalysis.lib.log import ProgressBar
 
 from ..decorators import (
     make_whole,
@@ -45,6 +46,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         Atomgroups taken for the Analysis
     multi_group : bool
         Analysis is able to work with list of atomgroups
+    concfreq : int
+        Call the conclcude function and write the output files every n frames
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -74,6 +77,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                  atomgroups,
                  multi_group=False,
                  verbose=False,
+                 concfreq=0,
                  **kwargs):
         if multi_group:
             if type(atomgroups) not in (list, tuple):
@@ -94,10 +98,47 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self._allow_multiple_atomgroups = False
 
         self._trajectory = self._universe.trajectory
+        self.concfreq = concfreq
 
         super(AnalysisBase, self).__init__(trajectory=self._trajectory,
                                            verbose=verbose,
                                            **kwargs)
+
+    def run(self, start=None, stop=None, step=None, verbose=None):
+        """Iterate over the trajectory."""
+        logger.info("Choosing frames to analyze")
+        # if verbose unchanged, use class default
+        verbose = getattr(self, '_verbose',
+                          False) if verbose is None else verbose
+
+        self._setup_frames(self._trajectory, start, stop, step)
+        logger.info("Starting preparation")
+        self._prepare()
+
+        module_has_save = callable(getattr(self.__class__, 'save', None))
+
+        for i, ts in enumerate(ProgressBar(
+                self._trajectory[self.start:self.stop:self.step],
+                verbose=verbose)):
+            self._frame_index = i
+            self._index = self._frame_index + 1
+
+            self._ts = ts
+            self.frames[i] = ts.frame
+            self.times[i] = ts.time
+            # logger.info("--> Doing frame {} of {}".format(i+1, self.n_frames))
+            self._single_frame()
+            if self.concfreq and self._index % self.concfreq == 0 \
+               and self._frame_index > 0:
+                self._conclude()
+                if module_has_save:
+                    self.save()
+
+        logger.info("Finishing up")
+        self._conclude()
+        if module_has_save:
+            self.save()
+        return self
 
 
 @set_planar_class_doc
@@ -183,8 +224,6 @@ class PlanarBase(AnalysisBase):
 
     def _conclude(self):
         """Results calculations for the planar analysis."""
-        self._index = self._frame_index + 1
-
         if self._zmax is None:
             zmax = self.L_cum / self._index
         else:
@@ -244,7 +283,6 @@ class ProfilePlanarBase(PlanarBase):
                  make_whole,
                  binmethod,
                  output,
-                 concfreq,
                  f_kwargs=None,
                  **kwargs):
         super(ProfilePlanarBase, self).__init__(atomgroups=atomgroups,
@@ -266,7 +304,6 @@ class ProfilePlanarBase(PlanarBase):
         self.make_whole = make_whole
         self.binmethod = binmethod.lower()
         self.output = output
-        self.concfreq = concfreq
 
     def _prepare(self):
         super(ProfilePlanarBase, self)._prepare()
@@ -339,14 +376,8 @@ class ProfilePlanarBase(PlanarBase):
             self.profile_cum[:, index] += profile_ts
             self.profile_cum_sq[:, index] += profile_ts ** 2
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
         super(ProfilePlanarBase, self)._conclude()
-        self._index = self._frame_index + 1
 
         self.results.profile_mean = self.profile_cum / self._index
         profile_mean_sq = self.profile_cum_sq / self._index

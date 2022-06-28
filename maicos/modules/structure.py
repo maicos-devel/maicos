@@ -218,13 +218,7 @@ class Saxs(AnalysisBase):
                                               range=(self.startq, self.endq))[0]
                 self.struct_factor[:, i] += np.nan_to_num(struct_ts)
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
-        self._index = self._frame_index + 1
         if self.nobindata:
             self.results.scat_factor = self.S_array.sum(axis=3)
             self.results.q_indices = np.array(
@@ -406,11 +400,6 @@ class Debye(AnalysisBase):
                         stderr=self._OUT,
                         shell=True)
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
         datfiles = [f for f in os.listdir(self._tmp) if f.endswith(".dat")]
 
@@ -590,11 +579,6 @@ class Diporder(PlanarBase):
                 self.unit)**2)[0]
         self.rho += bincount / (A * dz_frame)
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
         """Calculate the results.
 
@@ -603,7 +587,6 @@ class Diporder(PlanarBase):
         processing.
         """
         super(Diporder, self)._conclude()
-        self._index = self._frame_index + 1
         self.results.P0 = self.P0 / self._index
         self.results.rho = self.rho / self._index
 

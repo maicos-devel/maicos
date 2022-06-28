@@ -147,15 +147,8 @@ class Velocity(AnalysisBase):
         # only average velocities if bin is not empty
         self.binframes[:, self._frame_index // self.blockfreq] += bincount > 0
 
-        if self.concfreq and self._frame_index % self.concfreq == 0 \
-                and self._frame_index > 0:
-            self._conclude()
-            self.save()
-
     def _conclude(self):
         """Calculate the results."""
-        self._index = self._frame_index + 1
-
         # minimum number of frames where molecules should be present
         self.minframes = self._index / 100
         avL = self.L / self._index

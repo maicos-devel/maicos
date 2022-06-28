@@ -30,6 +30,27 @@ from maicos.modules import base
 from maicos.modules.density import _density_weights
 
 
+class Conclude(base.AnalysisBase):
+    """Class creating an empty file in the current directory.
+
+    A new file with a file name of the current analysis frame number
+    is created every time the `_conclude` method is called.
+    """
+
+    def _prepare(self):
+        self.conclude_count = 0
+
+    def _single_frame(self):
+        pass
+
+    def _conclude(self):
+        self.conclude_count += 1
+
+    def save(self):
+        """Save a file named after the current number of frames."""
+        open(f'out_{self._index}', 'w').close()
+
+
 class Test_AnalysisBase(object):
     """Tests for the Analysis base class."""
 
@@ -37,6 +58,12 @@ class Test_AnalysisBase(object):
     def ag(self):
         """Import MDA universe."""
         return mda.Universe(WATER_TPR, WATER_TRR).atoms
+
+    @pytest.fixture()
+    def ag_single_frame(self):
+        """Import MDA univers."""
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
@@ -60,6 +87,43 @@ class Test_AnalysisBase(object):
         """Test different universes."""
         with pytest.raises(ValueError, match="Atomgroups belong"):
             base.AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
+
+    @pytest.mark.parametrize('concfreq, files',
+                             [(0, ['out_101']),
+                              (40, ['out_40', 'out_80', 'out_101']),
+                              (100, ['out_100', 'out_101'])])
+    def test_conclude_multi_frame(self, ag, tmpdir, concfreq, files):
+        """Test the conclude and save methods for multi frame trajectories."""
+        with tmpdir.as_cwd():
+            conclude = Conclude(ag, concfreq=concfreq)
+            conclude.run()
+            # check that all expected files have been written
+            for file in files:
+                assert os.path.exists(file)
+            # check that the _conclude method is running
+            # the expected number of times
+            if concfreq != 0:
+                conclude_count = np.ceil(conclude.n_frames / concfreq)
+            else:
+                conclude_count = 1
+            assert conclude.conclude_count == conclude_count
+            # check that no more files than the expected
+            # ones have been written
+            assert len(files) == len(os.listdir(tmpdir))
+
+    @pytest.mark.parametrize('concfreq, file', [(0, 'out_1'),
+                                                (50, 'out_1')])
+    def test_conclude_single_frame(self, ag_single_frame,
+                                   tmpdir, concfreq, file):
+        """Test the conclude and save methods for single frame trajectories."""
+        with tmpdir.as_cwd():
+            conclude = Conclude(ag_single_frame, concfreq=concfreq)
+            conclude.run()
+            assert os.path.exists(file)
+            # check that no extra files are written
+            assert len(os.listdir(tmpdir)) == 1
+            # check that no double execution of the _conclude method happens
+            assert conclude.conclude_count == 1
 
 
 class PlanarClass(base.PlanarBase):
@@ -217,6 +281,7 @@ class TestPlanarBase(object):
         planar_class_obj._prepare()
         planar_class_obj.L_cum = 60
         planar_class_obj._frame_index = 0
+        planar_class_obj._index = 1
         planar_class_obj._conclude()
 
         assert_allclose(planar_class_obj.results["z"],
