@@ -163,6 +163,12 @@ class TestTemperaturProfile(ReferenceAtomGroups):
         dens = density.TemperaturePlanar(ag, dim=dim).run()
         assert_allclose(dens.results.profile_mean.mean(), 291.6, rtol=1e1)
 
+    def test_grouping(self, ag):
+        """Test when grouping != atoms."""
+        with assert_raises(NotImplementedError):
+            temp = density.TemperaturePlanar(ag, grouping="molecule")
+            temp.run()
+
 
 class TestChemicalPotentialPlanar(ReferenceAtomGroups):
     """Tests for the density.ChemicalPotentialPlanar class."""

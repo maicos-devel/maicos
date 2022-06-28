@@ -119,16 +119,18 @@ def test_corr(vector1, vector2, subtract_mean, result):
 @pytest.mark.parametrize(
     ('vector1, vector2, subtract_mean, result'),
     (
-        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)],
-         None, False, 3923.68),
-        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)], [
-         np.linspace(10, 30, 20), np.linspace(30, 50, 20)], False, 10747.36),
-        ([np.linspace(0, 10, 20), np.linspace(10, 20, 20)], [
-         np.linspace(10, 30, 20), np.linspace(30, 50, 20)], True, 1947.36),
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         None, False, 2184.21),
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+         False, 5868.42),
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+         True, 0.0),
 
         ),
     )
 def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
-    utils_run = maicos.utils.Correlation(vector1, vector2, subtract_mean)
+    utils_run = maicos.utils.ScalarProdCorr(vector1, vector2, subtract_mean)
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
