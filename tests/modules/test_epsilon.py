@@ -65,7 +65,7 @@ class TestEpsilonPlanar(object):
         eps2 = EpsilonPlanar(ag, xy=True, vac=True)
         eps2.run()
         k2 = np.mean(eps2.results.eps_perp)
-        assert_almost_equal((k1/k2), 1.5, decimal=1)
+        assert_almost_equal((k1 / k2), 1.5, decimal=1)
 
     def test_sym(self, ag):
         """Test for symmetric case."""
