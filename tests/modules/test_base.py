@@ -89,7 +89,7 @@ class Test_AnalysisBase(object):
             base.AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
 
     @pytest.mark.parametrize('concfreq, files',
-                             [(0, ['out_101']),
+                             [(0, []),
                               (40, ['out_40', 'out_80', 'out_101']),
                               (100, ['out_100', 'out_101'])])
     def test_conclude_multi_frame(self, ag, tmpdir, concfreq, files):
@@ -98,8 +98,11 @@ class Test_AnalysisBase(object):
             conclude = Conclude(ag, concfreq=concfreq)
             conclude.run()
             # check that all expected files have been written
-            for file in files:
-                assert os.path.exists(file)
+            if concfreq != 0:
+                for file in files:
+                    assert os.path.exists(file)
+            else:
+                assert len(os.listdir(tmpdir)) == 0
             # check that the _conclude method is running
             # the expected number of times
             if concfreq != 0:
@@ -111,17 +114,21 @@ class Test_AnalysisBase(object):
             # ones have been written
             assert len(files) == len(os.listdir(tmpdir))
 
-    @pytest.mark.parametrize('concfreq, file', [(0, 'out_1'),
-                                                (50, 'out_1')])
+    @pytest.mark.parametrize('concfreq, file', [(0, []),
+                                                (50, ['out_1'])])
     def test_conclude_single_frame(self, ag_single_frame,
                                    tmpdir, concfreq, file):
         """Test the conclude and save methods for single frame trajectories."""
         with tmpdir.as_cwd():
             conclude = Conclude(ag_single_frame, concfreq=concfreq)
             conclude.run()
-            assert os.path.exists(file)
+            if concfreq != 0:
+                assert os.path.exists(file[0])
             # check that no extra files are written
-            assert len(os.listdir(tmpdir)) == 1
+            if concfreq != 0:
+                assert len(os.listdir(tmpdir)) == 1
+            else:
+                assert len(os.listdir(tmpdir)) == 0
             # check that no double execution of the _conclude method happens
             assert conclude.conclude_count == 1
 
