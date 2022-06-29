@@ -1,25 +1,28 @@
+..
+    Names should be in alphabetical order
 
-Maintainer
-----------
+Maintainers
+-----------
 
 - Philip Loche
-
-Authors
--------
-
+- Henrik Jaeger
 - Alexander Schlaich
-- Philip Loche
+
+Devlopers
+---------
+
+- Maximilian Becker
+- Simon Gravelle
+- Philipp Stärk
+- Srihas Velpuri
+
 
 Contributors
 ------------
 
-- Maximilian Becker
 - Shane Carlson
 - Julian Kappler
+- Laura Scalfi
 - Julius Schulz
 - Dominik Wille
 - Amanuel Wolde-Kidan
-- Philipp Stärk
-- Simon Gravelle
-- Henrik Jaeger
-- Srihas Velpuri
