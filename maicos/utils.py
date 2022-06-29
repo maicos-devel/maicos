@@ -200,11 +200,10 @@ def atomgroup_header(AtomGroup):
     residues and the number of residues. Useful for writing
     output file headers.
     """
-    unq_res, n_unq_res = np.unique(AtomGroup.residues.resnames,
-                                   return_counts=True)
-    return "{} atom(s): {}".format(
-        AtomGroup.n_atoms, ", ".join(
-            "{} {}".format(*i) for i in np.vstack([n_unq_res, unq_res]).T))
+    unique, unique_counts = np.unique(AtomGroup.types,
+                                      return_counts=True)
+    return " & ".join(
+        "{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
 
 
 def sort_atomgroup(atomgroup):

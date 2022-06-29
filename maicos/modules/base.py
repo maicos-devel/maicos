@@ -136,7 +136,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         logger.info("Finishing up")
         self._conclude()
-        if module_has_save:
+        if self.concfreq and module_has_save:
             self.save()
         return self
 
