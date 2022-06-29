@@ -16,7 +16,6 @@ __all__ = [
     'EpsilonCylinder',
     'DielectricSpectrum',
     'Saxs',
-    'Debye',
     'Diporder',
     'DipoleAngle',
     'KineticEnergy',
@@ -34,7 +33,7 @@ from .modules.density import (
     TemperaturePlanar,
     )
 from .modules.epsilon import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
-from .modules.structure import Debye, Diporder, Saxs
+from .modules.structure import Diporder, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy
 from .modules.transport import Velocity
 
