@@ -30,7 +30,7 @@ def minimum_image_distance(a, b, L):
     """
     a, b, L = np.array(a), np.array(b), np.array(L)
 
-    return np.linalg.norm((a - b) - np.rint((a-b) / L) * L)
+    return np.linalg.norm((a - b) - np.rint((a - b) / L) * L)
 
 
 def test_FT():

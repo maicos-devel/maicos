@@ -202,8 +202,8 @@ class PlanarBase(AnalysisBase):
             self.zmax = self._zmax
         try:
             if self._binwidth > 0:
-                self.n_bins = int(np.ceil((self.zmax - self.zmin) /
-                                          self._binwidth))
+                self.n_bins = int(np.ceil((self.zmax - self.zmin)
+                                          / self._binwidth))
             else:
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
