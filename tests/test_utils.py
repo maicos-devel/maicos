@@ -15,10 +15,22 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
-from modules.datafiles import LAMMPS10WATER
+from modules.datafiles import LAMMPS10WATER, SPCE_GRO, SPCE_ITP
 from numpy.testing import assert_almost_equal, assert_equal
 
 import maicos.utils
+
+
+def minimum_image_distance(a, b, L):
+    """Return the minimum image distance of two vectors.
+
+    L is the size of the periodic box. This method should only be
+    used for testing against code where one does not want or is
+    not able to use the MDanalysis methods (i.e. 1D distances).
+    """
+    a, b, L = np.array(a), np.array(b), np.array(L)
+
+    return np.linalg.norm((a - b) - np.rint((a-b) / L) * L)
 
 
 def test_FT():
@@ -134,3 +146,39 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
     utils_run = maicos.utils.ScalarProdCorr(vector1, vector2, subtract_mean)
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
+
+
+@pytest.mark.parametrize('dim', (0, 1, 2))
+def test_cluster_com(dim):
+    """Tests for pbc com."""
+    e_z = np.isin([0, 1, 2], dim)
+
+    dimensions = [20, 30, 100, 90, 90, 90]
+
+    water1 = mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp')
+    water1.atoms.translate(-water1.atoms.center_of_mass())
+
+    water2 = water1.copy()
+
+    water1.atoms.translate(e_z * dimensions[dim] * 0.2)
+    water2.atoms.translate(e_z * dimensions[dim] * 0.8)
+
+    water = mda.Merge(water1.atoms, water2.atoms)
+    water.dimensions = dimensions
+
+    for z in np.linspace(0, dimensions[dim], 10):
+        water_shifted = water.copy()
+        water_shifted.atoms.translate(e_z * z)
+        water_shifted.atoms.wrap()
+        com = maicos.utils.cluster_com(water_shifted.atoms)[dim]
+        assert_almost_equal(minimum_image_distance(com, z, dimensions[dim]),
+                            0, decimal=5)
+
+
+@pytest.mark.parametrize('vec1, vec2, box, length',
+                         [([0, 0, 0], [1, 1, 1], [10, 10, 10], np.sqrt(3)),
+                          ([0, 0, 0], [9, 9, 9], [10, 10, 10], np.sqrt(3)),
+                          ([0, 0, 0], [9, 19, 29], [10, 20, 30], np.sqrt(3))])
+def test_minimal_image(vec1, vec2, box, length):
+    """Tests the minimal image function used in other tests."""
+    assert minimum_image_distance(vec1, vec2, box) == length

@@ -300,7 +300,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
         mica_water.atoms.translate(
             (0, 0, mica_water.universe.dimensions[2] / 2))
         dens = density.DensityPlanar(mica_water, comgroup=mica_water).run()
-        assert_allclose(dens.results['profile_mean'][20], 0.5817, rtol=1e-1)
+        assert_allclose(dens.results['profile_mean'][20], 0.56, rtol=1e-1)
 
     def test_comshift_over_boundaries(self, mica_water, mica_surface):
         """Test comshift over box boundaries."""

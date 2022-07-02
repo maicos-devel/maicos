@@ -20,7 +20,13 @@ from ..decorators import (
     set_profile_planar_class_doc,
     set_verbose_doc,
     )
-from ..utils import atomgroup_header, savetxt, sort_atomgroup, symmetrize_1D
+from ..utils import (
+    atomgroup_header,
+    cluster_com,
+    savetxt,
+    sort_atomgroup,
+    symmetrize_1D,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -176,8 +182,12 @@ class PlanarBase(AnalysisBase):
         super(PlanarBase, self).__init__(atomgroups, **kwargs)
         self.dim = dim
         self.zmin = zmin
+
+        # These values are requested by the user,
+        # but the actual ones are calculated during runtime
         self._zmax = zmax
-        self.binwidth = binwidth
+        self._binwidth = binwidth
+
         self.comgroup = comgroup
 
     def _prepare(self):
@@ -190,8 +200,14 @@ class PlanarBase(AnalysisBase):
             self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax = self._zmax
-
-        self.n_bins = int(np.ceil((self.zmax - self.zmin) / self.binwidth))
+        try:
+            if self._binwidth > 0:
+                self.n_bins = int(np.ceil((self.zmax - self.zmin) /
+                                          self._binwidth))
+            else:
+                raise ValueError("Binwidth must be a positive number.")
+        except TypeError:
+            raise ValueError("Binwidth must be a number.")
 
         logger.info(f"Using {self.n_bins} bins")
 
@@ -204,36 +220,27 @@ class PlanarBase(AnalysisBase):
             self.zmax = self._ts.dimensions[self.dim]
             self.L_cum += self.zmax
         if self.comgroup is not None:
-            theta = (self.comgroup.positions[:, self.dim]
-                     / self._ts.dimensions[self.dim]) * 2 * np.pi
-            xi = ((np.cos(theta) * self.comgroup.masses).sum()
-                  / self.comgroup.masses.sum())
-            zeta = ((np.sin(theta) * self.comgroup.masses).sum()
-                    / self.comgroup.masses.sum())
-            theta_com = np.arctan2(-zeta, -xi) + np.pi
-            com = theta_com / (2 * np.pi) * self._ts.dimensions[self.dim]
+            center_of_box = self._universe.dimensions[:3] / 2
+            center_of_box[self.dim] = (self.zmax - self.zmin) / 2
 
-            if hasattr(self, "atomgroup"):
-                groups = [self.atomgroup]
-            else:
-                groups = self.atomgroups
-            for group in groups:
-                t = [0, 0, 0]
-                t[self.dim] = (self.zmax - self.zmin) / 2 - com
-                group.atoms.translate(t)
+            com_comgroup = cluster_com(self.comgroup)
+            t = center_of_box - com_comgroup
+            self._universe.atoms.translate(t)
+            self._universe.atoms.wrap()
 
     def _conclude(self):
         """Results calculations for the planar analysis."""
         if self._zmax is None:
-            zmax = self.L_cum / self._index
+            zmax = self.L_cum / (self._frame_index + 1)
         else:
             zmax = self.zmax
 
-        dz = (zmax - self.zmin) / self.n_bins
+        self.binwidth = (zmax - self.zmin) / self.n_bins
 
         self.results.z = np.linspace(
-            self.zmin + dz / 2, zmax - dz / 2, self.n_bins,
-            endpoint=False)
+            self.zmin + self.binwidth / 2,
+            zmax - self.binwidth / 2, self.n_bins,
+            endpoint=True)
 
         if self.comgroup:
             self.results.z -= self.zmin + (zmax - self.zmin) / 2
