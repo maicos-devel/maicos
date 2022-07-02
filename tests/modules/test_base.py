@@ -210,6 +210,14 @@ class TestPlanarBase(object):
             planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
             planar_class_obj._prepare()
 
+    @pytest.mark.parametrize('binwidth', (0, -0.5, 'x'))
+    def test_wrong_binwidth(self, ag, binwidth):
+        """Test binwidth."""
+        with pytest.raises(ValueError,
+                           match=r'Binwidth must be a.* number.'):
+            planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
+            planar_class_obj._prepare()
+
     def test_empty_comgroup(self, ag, empty_ag):
         """Test behaviour for empty comgroup."""
         with pytest.raises(ValueError,
@@ -217,14 +225,24 @@ class TestPlanarBase(object):
             planar_class_obj = PlanarClass(ag, pos_arg=42, comgroup=empty_ag)
             planar_class_obj._prepare()
 
-    def test_binwidth(self, ag):
+    @pytest.mark.parametrize('binwidth', (1, 7.75, 125))
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    def test_binwidth(self, ag, dim, binwidth):
         """Test binwidth."""
-        binwidth = 2
-        planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
-        planar_class_obj._prepare()
+        planar_class_obj = PlanarClass(ag,
+                                       pos_arg=42,
+                                       dim=dim,
+                                       binwidth=binwidth)
+        planar_class_obj._frame_index = 0
 
-        assert planar_class_obj.binwidth == binwidth
-        assert planar_class_obj.n_bins == 60 / (binwidth)
+        planar_class_obj._prepare()
+        planar_class_obj.L_cum = ag.universe.dimensions[dim]
+        planar_class_obj._conclude()
+
+        assert planar_class_obj.n_bins == \
+            int(np.ceil(planar_class_obj.L_cum / binwidth))
+        assert planar_class_obj.binwidth \
+            == planar_class_obj.L_cum / planar_class_obj.n_bins
 
     def test_n_bins(self, planar_class_obj, caplog):
         """Test n bins."""
@@ -282,29 +300,44 @@ class TestPlanarBase(object):
 
         assert planar_class_obj.n_bins == (50 - 10) / (binwidth)
 
-    def test_results_z(self, ag):
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize('binwidth', (1, 7.75))
+    def test_results_z(self, ag, dim, binwidth):
         """Test results z."""
-        planar_class_obj = PlanarClass(ag, pos_arg=42)
-        planar_class_obj._prepare()
-        planar_class_obj.L_cum = 60
-        planar_class_obj._frame_index = 0
-        planar_class_obj._index = 1
-        planar_class_obj._conclude()
+        planar_class_obj = PlanarClass(ag, dim=dim,
+                                       binwidth=binwidth, pos_arg=42)
+        planar_class_obj.run(stop=1)
 
+        zmax = ag.universe.dimensions[dim]
+        n_bins = int(np.ceil(zmax / binwidth))
+        shift = zmax / n_bins / 2
         assert_allclose(planar_class_obj.results["z"],
-                        np.linspace(0.5, 60 - 0.5, 60, endpoint=False))
+                        np.linspace(shift,
+                                    zmax - shift,
+                                    n_bins,
+                                    endpoint=True)
+                        )
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_comgroup_z(self, ag, dim):
+    @pytest.mark.parametrize('binwidth', (1, 7.75))
+    def test_comgroup_z(self, ag, dim, binwidth):
         """Test z list."""
         planar_class_obj = PlanarClass(ag,
                                        pos_arg=42,
                                        dim=dim,
+                                       binwidth=binwidth,
                                        comgroup=ag.select_atoms("name OW"))
         planar_class_obj.run(stop=1)
 
-        z = [-10 + 0.5, -10 + 0.5, -30 + 0.5]
-        assert (planar_class_obj.results["z"]).min() == z[dim]
+        zmax = ag.universe.dimensions[dim]
+        n_bins = int(np.ceil(zmax / binwidth))
+        shift = zmax / n_bins / 2
+        comshift = planar_class_obj.zmin + (zmax - planar_class_obj.zmin) / 2
+        assert_allclose(planar_class_obj.results["z"],
+                        np.linspace(shift - comshift,
+                                    zmax - shift - comshift,
+                                    n_bins, endpoint=True),
+                        atol=0.01)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_comgroup(self, ag, dim):
@@ -318,7 +351,7 @@ class TestPlanarBase(object):
         planar_class_obj._single_frame()
 
         assert_allclose(ag.atoms.positions[0, dim],
-                        [28.41, 6.36, 37.62][dim],
+                        [8.41, 6.36, 37.62][dim],
                         rtol=1e-01)
 
 

@@ -142,7 +142,7 @@ def symmetrize_1D(arr, inplace=False):
 
     The array can have additional axes of length one.
 
-    Paramaters
+    Parameters
     ----------
     arr : numpy.ndarray
         array to symmetrize
@@ -223,3 +223,61 @@ def sort_atomgroup(atomgroup):
         return atomgroup[np.argsort(atomgroup.molnums)]
     else:
         return atomgroup
+
+
+def cluster_com(ag):
+    """Calculate the center of mass of the atomgroup.
+
+    Parameters
+    ----------
+    ag : mda.AtomGroup
+        Group of atoms to calculate the center of mass for.
+
+    Returns
+    -------
+    com : np.ndarray
+        The center of mass.
+
+    Without proper treatment of periodic boundrary conditions most algorithms
+    will result in wrong center of mass calculations where molecules or clusters
+    of particles are broken over the boundrary.
+
+    Example:
+    +-----------+
+    |           |
+    | 1   x   2 |
+    |           |
+    +-----------+
+
+    Following
+
+    Linge Bai & David Breen (2008)
+    Calculating Center of Mass in an Unbounded 2D Environment,
+    Journal of Graphics Tools, 13:4, 53-60,
+    DOI: 10.1080/2151237X.2008.10129266
+
+    the coordinates of the particles are projected on a circle and weighted by
+    their mass in this two dimensional space. The center of mass is obtained by
+    transforming this point back to the corresponding point in the real system.
+    This is done seperately for each dimension.
+
+    Reasons for doing this include the analysis of clusters in periodic
+    boundrary conditions and consistent center of mass calculation across
+    box boundraries. This procedure results in the right center of mass
+    as seen below.
+
+    +-----------+
+    |           |
+    x 1       2 |
+    |           |
+    +-----------+
+    """
+    L = ag.universe.dimensions[:3]
+    theta = (ag.positions / L) * 2 * np.pi
+    xi = ((np.cos(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
+          / ag.masses.sum())
+    zeta = ((np.sin(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
+            / ag.masses.sum())
+    theta_com = np.arctan2(-zeta, -xi) + np.pi
+    com = theta_com / (2 * np.pi) * L
+    return com
