@@ -12,6 +12,7 @@ import logging
 
 import MDAnalysis.analysis.base
 import numpy as np
+from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 
 from ..decorators import (
@@ -23,6 +24,8 @@ from ..decorators import (
 from ..utils import (
     atomgroup_header,
     cluster_com,
+    new_mean,
+    new_variance,
     savetxt,
     sort_atomgroup,
     symmetrize_1D,
@@ -123,6 +126,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         module_has_save = callable(getattr(self.__class__, 'save', None))
 
+        self.results.frame = Results()
+
         for i, ts in enumerate(ProgressBar(
                 self._trajectory[self.start:self.stop:self.step],
                 verbose=verbose)):
@@ -134,6 +139,25 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self.times[i] = ts.time
             # logger.info("--> Doing frame {} of {}".format(i+1, self.n_frames))
             self._single_frame()
+            # This if condition is needed so that modules don't need to define
+            # the observables in the _prepare method.
+            if self._frame_index == 0:
+                self.results.means = self.results.frame.copy()
+                self.results.vars = Results().fromkeys(self.results.frame, 0)
+            else:
+                for key in self.results.frame.keys():
+                    old_mean = self.results.means[key]
+                    self.results.means[key] = \
+                        new_mean(self.results.means[key],
+                                 self.results.frame[key],
+                                 self._index)
+                    self.results.vars[key] = \
+                        new_variance(self.results.vars[key],
+                                     old_mean,
+                                     self.results.means[key],
+                                     self.results.frame[key],
+                                     self._index)
+
             if self.concfreq and self._index % self.concfreq == 0 \
                and self._frame_index > 0:
                 self._conclude()

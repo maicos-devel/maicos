@@ -23,15 +23,29 @@ from datafiles import (
     )
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.core._get_readers import get_reader_for
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 import maicos
 from maicos.modules import base
 from maicos.modules.density import _density_weights
 
 
-class Conclude(base.AnalysisBase):
+class Series(base.AnalysisBase):
     """Class creating an empty file in the current directory.
+
+    A new file with a file name of the current analysis frame number
+    is created every time the `_conclude` method is called.
+    """
+
+    def _prepare(self):
+        self.series = np.random.rand(self.n_frames)
+
+    def _single_frame(self):
+        self.results.frame.observable = self.series[self._frame_index]
+
+
+class Conclude(base.AnalysisBase):
+    """Class sampling random data to test the .
 
     A new file with a file name of the current analysis frame number
     is created every time the `_conclude` method is called.
@@ -87,6 +101,18 @@ class Test_AnalysisBase(object):
         """Test different universes."""
         with pytest.raises(ValueError, match="Atomgroups belong"):
             base.AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
+
+    def test_frame_data(self, ag):
+        """Test the calculation of the frame, means and vars results dicts."""
+        ana = Series(ag)
+        ana.run()
+
+        assert_almost_equal(ana.results.means.observable,
+                            np.mean(ana.series),
+                            decimal=6)
+        assert_almost_equal(ana.results.vars.observable,
+                            np.std(ana.series)**2,
+                            decimal=6)
 
     @pytest.mark.parametrize('concfreq, files',
                              [(0, []),
