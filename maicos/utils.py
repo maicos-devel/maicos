@@ -225,6 +225,97 @@ def sort_atomgroup(atomgroup):
         return atomgroup
 
 
+def new_mean(old_mean, data, length):
+    r"""Compute the arithmetic mean of a series iteratively.
+
+    Compute the arithmetic mean of n samples based on an
+    existing mean of n-1 and the n-th value.
+
+    Given the mean of a data series
+    .. math::
+        \bar x_N = \frac{1}{N} \sum_{n=1}^N x_n
+    we seperate the last value
+    .. math::
+        \bar x_N = \frac{1}{N} \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
+    .. math::
+    and multiply 1 = (N - 1)/(N - 1)
+        \bar x_N = \frac{N-1}{N} \frac{1}{N-1} \
+        \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
+    The first term can be identified as the mean of the first N - 1 values
+    and we arrive at
+    .. math::
+        \bar x_N = \frac{N-1}{N} \bar x_{N-1} + \frac{x_N}{N}
+
+
+    Parameters
+    ----------
+    old_mean : float
+        arithmetic mean of the first n - 1 samples.
+    data : float
+        n-th value of the series.
+    length : int
+        Length of the updated series, here called n.
+
+    Returns
+    -------
+    new_mean : float
+        Updated mean of the series of n values.
+
+    Examples
+    --------
+    The mean of a data set can easily be calculated from the data points.
+    However this requires one to keep all data points on hand until the
+    end of the calculation.
+    >>> np.mean([1,3,5,7])
+    4.0
+    Alternatively, one can update an existing mean, this requires only
+    knowledge of the total number of samples.
+    >>> maicos.utils.new_mean(np.mean([1, 3, 5]), 7, 4)
+    4.0
+    """
+    return ((length - 1) * old_mean + data) / length
+
+
+def new_variance(old_variance, old_mean, new_mean, data, length):
+    """Calculate the variance of a timeseries iteratively.
+
+    The variance of a timeseries can be calculated iteratively by
+    using the following formula:
+        S_n = S_n-1 + (n-1) * (data_n - mean_n-1)^2 / (n-1)
+
+    Parameters
+    ----------
+    old_variance : float
+        The variance of the first n-1 samples.
+    old_mean : float
+        The mean of the first n-1 samples.
+    new_mean : folat
+        The mean of the full n samples.
+    data : float
+        The n-th value of the series.
+    length : int
+        Length of the updated series, here called n.
+
+    Returns
+    -------
+    new_variance : float
+        Updated variance of the series of n values.
+
+    Examples
+    --------
+    The data set [1,5,5,1] has a variance of 4.0
+    >>> np.var([1,5,5,1])
+    4.0
+    Knowing the total number of data points, this operation
+    can be performed iteratively.
+    >>> maicos.utils.new_variance(np.var([1,5,5]), 1, 4)
+    4.0
+    """
+    S_old = old_variance * (length - 1)
+    S_new = S_old + (data - old_mean) * (data - new_mean)
+    return S_new / length
+
+
 def cluster_com(ag):
     """Calculate the center of mass of the atomgroup.
 

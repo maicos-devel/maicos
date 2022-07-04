@@ -148,6 +148,31 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
 
 
+def test_new_mean():
+    """Tests the new_mean method with random data."""
+    series = np.random.rand(100)
+    mean = series[0]
+    i = 1
+    for value in series[1:]:
+        i += 1
+        mean = maicos.utils.new_mean(mean, value, i)
+    assert_almost_equal(mean, np.mean(series), decimal=6)
+
+
+def test_new_variance():
+    """Tests the new_variance method with random data."""
+    series = np.random.rand(100)
+    var = 0
+    mean = series[0]
+    i = 1
+    for value in series[1:]:
+        i += 1
+        old_mean = mean
+        mean = maicos.utils.new_mean(mean, value, i)
+        var = maicos.utils.new_variance(var, old_mean, mean, value, i)
+    assert_almost_equal(var, np.std(series)**2, decimal=6)
+
+
 @pytest.mark.parametrize('dim', (0, 1, 2))
 def test_cluster_com(dim):
     """Tests for pbc com."""
