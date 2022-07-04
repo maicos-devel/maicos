@@ -226,7 +226,7 @@ class Velocity(AnalysisBase):
             if np.sum(self.binframes[i]) > self.minframes:
                 pref = prefs[count]
 
-                def modfitfn(x, alpha, tau1, tau2):
+                def modfitfn(x, alpha, tau1, tau2, pref=pref):
                     return fitfn(x, alpha, tau1, tau2, pref)
 
                 [alpha, tau1, tau2], pcov = curve_fit(
@@ -265,7 +265,7 @@ class Velocity(AnalysisBase):
             if np.sum(self.results.symbinframes[i]) > self.minframes:
                 pref = prefs[count]
 
-                def modfitfn(x, alpha, tau1, tau2):
+                def modfitfn(x, alpha, tau1, tau2, pref=pref):
                     return fitfn(x, alpha, tau1, tau2, pref)
 
                 [alpha, tau1, tau2], pcov = curve_fit(
