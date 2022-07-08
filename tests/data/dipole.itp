@@ -1,0 +1,12 @@
+[ moleculetype ]
+; molname   nrexcl
+DIP     2
+
+[ atoms ]
+;   nr   type  resnr residue  atom   cgnr     charge       mass
+     1      X      1    DIP      A      1    -1.0000    1.00000
+     2      X      1    DIP      B      1     1.0000    1.00000
+
+[ bonds ]
+; i j   funct   length  force.c.
+1   2   1   0.1   0  0           0

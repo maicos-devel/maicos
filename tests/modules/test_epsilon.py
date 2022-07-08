@@ -7,15 +7,43 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 import os
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from datafiles import WATER_GRO, WATER_TPR, WATER_TRR
+from datafiles import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR
 from numpy.testing import assert_almost_equal, assert_equal
 
 from maicos import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
+
+
+def dipoles(positions, orientations):
+    """Atomgroup consisting of defined dipoles."""
+    """
+    Create MDA universe with dipole molecules
+    inside a 10 Å x 10 Å x 10 Å box cubic box.
+    """
+
+    dipoles = []
+    for position, orientation in zip(positions, orientations):
+        position = np.array(position)
+        orientation = np.array(orientation)
+        dipole = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format='itp')
+        # The dipole from the itp file is oriented in the x-direction
+        angle = np.arccos(orientation[0] / np.linalg.norm(orientation))
+        direction = np.cross(np.array([1, 0, 0]), np.array(orientation))
+        # Don't rotate already correctly oriented dipoles
+        if np.all(np.linalg.norm(orientation) * orientation == [1, 0, 0]):
+            pass
+        else:
+            dipole.atoms.rotateby(np.rad2deg(angle), direction)
+        dipole.atoms.translate(position)
+        dipoles.append(dipole.atoms)
+    u = mda.Merge(*dipoles)
+    u.dimensions = [10, 10, 10, 90, 90, 90]
+    return u.atoms
 
 
 class TestEpsilonPlanar(object):
@@ -32,6 +60,29 @@ class TestEpsilonPlanar(object):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
+
+    @pytest.mark.parametrize('orientation, M_par, M_perp', (
+        ([0, 0, 1], [0, 0], 1),
+        ([1, 0, 0], [1, 0], 0),
+        ([0, 1, 0], [0, 1], 0),
+        ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
+        )
+    def test_single_dipole_orientations(self, orientation, M_par, M_perp):
+        """Test for dipole case."""
+        dipole = dipoles([[5, 5, 5]], [orientation])
+        # very fine binning to get the correct value for the dipole
+        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
+        eps.run()
+        assert np.allclose(eps.results.frame.M_par, M_par, rtol=0.1)
+        assert np.allclose(
+            np.sum(eps.results.frame.m_par[:, :, 0], axis=0)
+            * eps.results.frame.V_bin,
+            M_par, rtol=0.1)
+        assert np.allclose(eps.results.frame.M_perp, M_perp, rtol=0.1)
+        assert np.allclose(
+            np.sum(eps.results.frame.m_perp[:, 0], axis=0)
+            * eps.results.frame.V_bin,
+            M_perp, rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
@@ -73,12 +124,13 @@ class TestEpsilonPlanar(object):
         eps.run()
         assert_almost_equal(np.mean(eps.results.eps_perp), -1.01, decimal=2)
 
-    def test_sym_ofile(self, ag):
+    def test_sym_ofile(self, ag, tmpdir):
         """Test for output file in symmetric case."""
-        eps = EpsilonPlanar(ag, sym=True)
-        eps.run()
-        eps.save()
-        assert os.path.exists("eps_par.dat")
+        with tmpdir.as_cwd():
+            eps = EpsilonPlanar(ag, sym=True)
+            eps.run()
+            eps.save()
+            assert os.path.exists("eps_par.dat")
 
 
 class TestEpsilonCylinder(object):
