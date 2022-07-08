@@ -28,9 +28,6 @@ from ..utils import FT, check_compound, iFT, savetxt
 from .base import AnalysisBase, PlanarBase
 
 
-eps0inv = 1. / scipy.constants.epsilon_0
-pref = (scipy.constants.elementary_charge)**2 / 1e-10
-
 logger = logging.getLogger(__name__)
 
 
@@ -83,14 +80,8 @@ class EpsilonPlanar(PlanarBase):
         temperature (K)
     output_prefix : str
         Prefix for output files.
-    concfreq : int
-        Default number of frames after which results are
-        calculated and files refreshed. If `0` results are only
-        calculated at the end of the analysis and not saved by default.
-    resample : int
-        Number of blocks to use for resampling.
-    nvcuts : int
-        Number of virtual cuts (bins) along the parallel directions.
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
     ${VERBOSE_PARAMETER}
 
     Attributes
@@ -129,8 +120,7 @@ class EpsilonPlanar(PlanarBase):
                  temperature=300,
                  output_prefix="eps",
                  concfreq=0,
-                 resample=10,
-                 nvcuts=250,
+                 vcutwidth=0.1,
                  **kwargs):
         super(EpsilonPlanar, self).__init__(atomgroups=atomgroups,
                                             dim=dim,
@@ -148,214 +138,185 @@ class EpsilonPlanar(PlanarBase):
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.concfreq = concfreq
-        self.resample = resample
-        self.nbinsx = nvcuts
+        self.vcutwidth = vcutwidth
 
     def _prepare(self):
         super(EpsilonPlanar, self)._prepare()
         self.xydims = np.roll(np.arange(3), -self.dim)[1:]
 
-        self.resample_freq = int(np.ceil(self.n_frames / self.resample))
+        self.results.frame.V = 0
 
-        self.V = 0
-        self.A = np.prod(self._universe.dimensions[self.xydims])
+        self.results.frame.M_par = np.zeros(2)
+        self.results.frame.M_perp = 0
+        self.results.frame.M_perp_2 = 0
 
-        self.m_par = np.zeros(
-            (self.n_bins, len(self.atomgroups), self.resample))
-        self.mM_par = np.zeros((self.n_bins, len(self.atomgroups),
-                                self.resample))  # total fluctuations
-        self.mm_par = np.zeros((self.n_bins, len(self.atomgroups)))  # self
-        self.cmM_par = np.zeros(
-            (self.n_bins, len(self.atomgroups)))  # collective contribution
-        self.cM_par = np.zeros((self.n_bins, len(self.atomgroups)))
-        self.M_par = np.zeros((self.resample))
+        n_ag = len(self.atomgroups)
 
-        # Same for perpendicular
-        self.m_perp = np.zeros(
-            (self.n_bins, len(self.atomgroups), self.resample))
-        self.mM_perp = np.zeros((self.n_bins, len(self.atomgroups),
-                                 self.resample))  # total fluctuations
-        self.mm_perp = np.zeros((self.n_bins, len(self.atomgroups)))  # self
-        self.cmM_perp = np.zeros(
-            (self.n_bins, len(self.atomgroups)))  # collective contribution
-        self.cM_perp = np.zeros(
-            (self.n_bins, len(self.atomgroups)))  # collective contribution
-        self.M_perp = np.zeros((self.resample))
-        self.M_perp_2 = np.zeros((self.resample))
+        self.results.frame.m_par = np.zeros((self.n_bins, 2, n_ag))
+        self.results.frame.mM_par = np.zeros((self.n_bins, n_ag))
+        self.results.frame.mm_par = np.zeros((self.n_bins, n_ag))
+        self.results.frame.cmM_par = np.zeros((self.n_bins, n_ag))
+        self.results.frame.cM_par = np.zeros((self.n_bins, 2, n_ag))
+
+        self.results.frame.m_perp = np.zeros((self.n_bins, n_ag))
+        self.results.frame.mM_perp = np.zeros((self.n_bins, n_ag))
+        self.results.frame.mm_perp = np.zeros((self.n_bins, n_ag))
+        self.results.frame.cmM_perp = np.zeros((self.n_bins, n_ag))
+        self.results.frame.cM_perp = np.zeros((self.n_bins, n_ag))
 
     def _single_frame(self):
         super(EpsilonPlanar, self)._single_frame()
-        dz_frame = self._ts.dimensions[self.dim] / self.n_bins
+        A = np.prod(self._universe.dimensions[self.xydims])
+        dz = (self.zmax - self.zmin) / self.n_bins
+        self.results.frame.V = (self.zmax - self.zmin) * A
+        self.results.frame.V_bin = A * dz
 
         # precalculate total polarization of the box
-        this_M = np.dot(self._universe.atoms.charges,
-                        self._universe.atoms.positions)
+        self.results.frame.M = np.dot(self._universe.atoms.charges,
+                                      self._universe.atoms.positions)
 
-        this_M_perp = this_M[self.dim]
-        this_M_par = this_M[self.xydims]
+        self.results.frame.M_perp = self.results.frame.M[self.dim]
+        self.results.frame.M_par = self.results.frame.M[self.xydims]
 
         # Use polarization density ( for perpendicular component )
         # ========================================================
-        # sum up the averages
-        self.M_perp[self._frame_index // self.resample_freq] += this_M_perp
-        self.M_perp_2[self._frame_index
-                      // self.resample_freq] += this_M_perp**2
         for i, sel in enumerate(self.atomgroups):
-            bins = sel.atoms.positions[:, self.dim]
-            bins /= (self._ts.dimensions[self.dim] / self.n_bins)
-            bins = np.floor(bins)
-            # put all charges back inside box
-            bins[np.where(bins < 0)] = 0
-            bins[np.where(bins >= self.n_bins)] = self.n_bins - 1
+            zpos = np.zeros(len(sel))
+            np.clip(sel.atoms.positions[:, self.dim],
+                    self.zmin, self.zmax, zpos)
 
-            curQ = np.histogram(bins,
-                                bins=np.arange(self.n_bins + 1),
+            curQ = np.histogram(zpos,
+                                bins=self.n_bins,
+                                range=[self.zmin, self.zmax],
                                 weights=sel.atoms.charges)[0]
 
-            this_m_perp = -np.cumsum(curQ / self.A)
-            self.m_perp[:, i, self._frame_index
-                        // self.resample_freq] += this_m_perp
-            self.mM_perp[:, i, self._frame_index // self.resample_freq] \
-                += this_m_perp * this_M_perp
-            self.mm_perp[:, i] += this_m_perp * this_m_perp \
-                * (self._ts.dimensions[self.dim]
-                   / self.n_bins) * self.A  # self term
-            # collective contribution
-            self.cmM_perp[:, i] += this_m_perp * \
-                (this_M_perp - this_m_perp * (self.A * dz_frame))
-            self.cM_perp[:, i] += this_M_perp - this_m_perp * self.A * dz_frame
+            self.results.frame.m_perp[:, i] = -np.cumsum(curQ / A)
+            self.results.frame.mM_perp[:, i] = \
+                self.results.frame.m_perp[:, i] * self.results.frame.M_perp
+            self.results.frame.mm_perp[:, i] = \
+                self.results.frame.m_perp[:, i]**2 * self.results.frame.V_bin
+            self.results.frame.cmM_perp[:, i] = \
+                self.results.frame.m_perp[:, i] \
+                * (self.results.frame.M_perp
+                   - self.results.frame.m_perp[:, i]
+                   * self.results.frame.V_bin)
 
-        # Use virtual cutting method ( for parallel component )
-        # ========================================================
+            self.results.frame.cM_perp[:, i] = \
+                self.results.frame.M_perp \
+                - self.results.frame.m_perp[:, i] \
+                * self.results.frame.V_bin
 
-        for i, sel in enumerate(self.atomgroups):
+            # Use virtual cutting method ( for parallel component )
+            # ========================================================
             # Move all z-positions to 'center of charge' such
             # that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only
             # want to cut in x/y direction)
-            centers = sel.center(weights=np.abs(sel.charges),
-                                 compound=check_compound(sel))
             comp = check_compound(sel.atoms)
             if comp == "molecules":
-                repeats = np.unique(sel.atoms.molnums, return_counts=True)[1]
+                repeats = np.unique(sel.atoms.molnums,
+                                    return_counts=True)[1]
             elif comp == "fragments":
                 repeats = np.unique(sel.atoms.fragindices,
                                     return_counts=True)[1]
             else:
-                repeats = np.unique(sel.atoms.resids, return_counts=True)[1]
-            testpos = sel.atoms.positions
-            testpos[:, self.dim] = np.repeat(centers[:, self.dim], repeats)
+                repeats = np.unique(sel.atoms.resids,
+                                    return_counts=True)[1]
 
-            binsz = testpos[:, self.dim]
-            binsz /= (self._ts.dimensions[self.dim] / self.n_bins)
-            binsz = np.floor(binsz)
+            if np.all(repeats == repeats[0]):
+                # selection contains identical components and we can
+                # supercharge the calculation. (mda.atomgroup.center
+                # with the compound option is slow!)
+                chargepos = (
+                    np.abs(sel.charges)
+                    * sel.atoms.positions[:, 2]
+                    ).reshape(len(repeats), repeats[0])
 
+                centers = np.sum(chargepos, axis=1)
+
+            else:
+                centers = sel.center(weights=np.abs(sel.charges),
+                                     compound=check_compound(sel))[:, self.dim]
+
+            testpos = np.repeat(centers, repeats)
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
                 # At this point we should not use the wrap, which causes
                 # unphysical dipoles at the borders
-                binsx = sel.atoms.positions[:, direction]
-                binsx /= (self._ts.dimensions[direction] / self.nbinsx)
-                binsx = binsx.astype(int)
-                # put all charges back inside box
-                binsx[np.where(binsx < 0)] = 0
-                binsx[np.where(binsx >= self.nbinsx)] = self.nbinsx - 1
+                Lx = self._ts.dimensions[direction]
+                vbinsx = np.ceil(Lx / self.vcutwidth)
+                vbinsx = (self.n_bins
+                          * np.rint(vbinsx / self.n_bins)).astype(int)
+                Ax = self._ts.dimensions[self.xydims[1 - j]] * dz
+
+                xpos = np.zeros(len(sel))
+                np.clip(sel.atoms.positions[:, direction], 0, Lx, xpos)
 
                 curQx = np.histogram2d(
-                    binsz,
-                    binsx,
-                    bins=[
-                        np.arange(0, self.n_bins + 1),
-                        np.arange(0, self.nbinsx + 1)
-                        ],
+                    testpos, xpos,
+                    bins=[self.n_bins, vbinsx],
+                    range=[[self.zmin, self.zmax], [0, Lx]],
                     weights=sel.atoms.charges)[0]
 
-                curqx = np.cumsum(curQx, axis=1) / (
-                    self._ts.dimensions[self.xydims[1 - j]]
-                    * (self._ts.dimensions[self.dim] / self.n_bins)
-                    )  # integral over x, so uniself._ts of area
-                this_m_par = -curqx.mean(axis=1)
+                # integral over x, so uniself._ts of area
+                curqx = -np.cumsum(curQx / Ax, axis=1).mean(axis=1)
+                self.results.frame.m_par[:, j, i] = curqx
+            self.results.frame.mM_par[:, i] = \
+                np.dot(self.results.frame.m_par[:, :, i],
+                       self.results.frame.M_par)
+            self.results.frame.mm_par[:, i] = (
+                self.results.frame.m_par[:, :, i]
+                * self.results.frame.m_par[:, :, i]
+                ).sum(axis=1) \
+                * self.results.frame.V_bin
+            self.results.frame.cmM_par[:, i] = \
+                (self.results.frame.m_par[:, :, i]
+                 * (self.results.frame.M_par
+                    - self.results.frame.m_par[:, :, i]
+                    * self.results.frame.V_bin)
+                 ).sum(axis=1)
+            self.results.frame.cM_par[:, :, i] = \
+                self.results.frame.M_par \
+                - self.results.frame.m_par[:, :, i] \
+                * self.results.frame.V_bin
 
-                self.m_par[:, i, self._frame_index
-                           // self.resample_freq] += this_m_par
-                self.mM_par[:, i, self._frame_index // self.resample_freq] \
-                    += this_m_par * this_M_par[j]
-                self.M_par[self._frame_index
-                           // self.resample_freq] += this_M_par[j]
-                self.mm_par[:, i] += this_m_par * \
-                    this_m_par * dz_frame * self.A
-                # collective contribution
-                self.cmM_par[:, i] += this_m_par * \
-                    (this_M_par[j] - this_m_par * dz_frame * self.A)
-                self.cM_par[:, i] += this_M_par[j] - \
-                    this_m_par * dz_frame * self.A
-
-        self.V += self._ts.volume
-
-        return this_M_par[0]
+        return self.results.frame.M_par[0]
 
     def _conclude(self):
         super(EpsilonPlanar, self)._conclude()
 
-        self.results.V = self.V / self._index
+        pref = 1 / scipy.constants.epsilon_0
+        pref /= scipy.constants.Boltzmann * self.temperature
+        # Convert from ~e^2/m to ~base units
+        pref /= scipy.constants.angstrom / \
+            (scipy.constants.elementary_charge)**2
 
-        cov_perp = self.mM_perp.sum(axis=2) / self._index - \
-            self.m_perp.sum(axis=2) / self._index * \
-            self.M_perp.sum() / self._index
-        dcov_perp = np.sqrt((self.mM_perp.std(axis=2)
-                             / self._index * self.resample)**2
-                            + (self.m_perp.std(axis=2)
-                               / self._index * self.resample
-                               * self.M_perp.sum()
-                               / self._index)**2
-                            + (self.m_perp.sum(axis=2)
-                               / self._index * self.M_perp.std()
-                               / self._index * self.resample)**2
-                            ) / np.sqrt(self.resample - 1)
-        cov_perp_self = self.mm_perp / self._index - \
-            (self.m_perp.sum(axis=2) / self._index * self.m_perp.sum(axis=2)
-             / self._index * self.A * self.L_cum / self.n_bins / self._index)
-        cov_perp_coll = self.cmM_perp / self._index - \
-            self.m_perp.sum(axis=2) / self._index * self.cM_perp / self._index
+        self.results.pref = pref
+        self.results.V = self.results.means.V
 
-        var_perp = self.M_perp_2.sum() / self._index - (self.M_perp.sum()
-                                                        / self._index)**2
-        dvar_perp = (self.M_perp_2 / self._index
-                     - (self.M_perp / self._index)**2).std() \
-            / np.sqrt(self.resample - 1)
+        cov_perp = self.results.means.mM_perp \
+            - self.results.means.m_perp \
+            * self.results.means.M_perp
 
-        cov_par = self.mM_par.sum(axis=2) / self._index - \
-            self.m_par.sum(axis=2) / self._index * \
-            self.M_par.sum() / self._index
-        cov_par_self = self.mm_par / self._index \
-            - self.m_par.sum(axis=2) / self._index \
-            * (self.m_par.sum(axis=2) * self.L_cum
-               / self.n_bins / self._index * self.A) / self._index
-        cov_par_coll = self.cmM_par / self._index - \
-            self.m_par.sum(axis=2) / self._index * self.cM_par / self._index
-        dcov_par = np.sqrt((self.mM_par.std(axis=2)
-                            / self._index * self.resample)**2
-                           + (self.m_par.std(axis=2) / self._index
-                              * self.resample * self.M_par.sum()
-                              / self._index)**2
-                           + (self.m_par.sum(axis=2)
-                              / self._index * self.M_par.std()
-                              / self._index * self.resample)**2
-                           ) / np.sqrt(self.resample - 1)
+        dcov_perp = np.sqrt(
+            self.results.vars.mM_perp
+            + self.results.means.M_perp**2 * self.results.vars.m_perp
+            + self.results.means.m_perp**2 * self.results.vars.M_perp
+            )
 
-        beta = 1 / (scipy.constants.Boltzmann * self.temperature)
+        var_perp = self.results.vars.M_perp
 
-        self.results.eps_par = beta * eps0inv * pref / 2 * cov_par
-        self.results.deps_par = beta * eps0inv * pref / 2 * dcov_par
-        self.results.eps_par_self = beta * eps0inv * pref / 2 * cov_par_self
-        self.results.eps_par_coll = beta * eps0inv * pref / 2 * cov_par_coll
+        cov_perp_self = self.results.means.mm_perp \
+            - (self.results.means.m_perp**2
+               * self.results.means.V / self.n_bins)
+        cov_perp_coll = self.results.means.cmM_perp \
+            - self.results.means.m_perp * self.results.means.cM_perp
 
         if self.xy:
-            self.results.eps_perp = -beta * eps0inv * pref * cov_perp
-            self.results.eps_perp_self = -beta * eps0inv * pref * cov_perp_self
-            self.results.eps_perp_coll = -beta * eps0inv * pref * cov_perp_coll
-            self.results.deps_perp = np.abs(
-                -eps0inv * beta * pref) * dcov_perp
+            self.results.eps_perp = -pref * cov_perp
+            self.results.eps_perp_self = - pref * cov_perp_self
+            self.results.eps_perp_coll = - pref * cov_perp_coll
+            self.results.deps_perp = pref * dcov_perp
             if (self.vac):
                 self.results.eps_perp *= 2. / 3.
                 self.results.eps_perp_self *= 2. / 3.
@@ -363,22 +324,48 @@ class EpsilonPlanar(PlanarBase):
                 self.results.deps_perp *= 2. / 3.
 
         else:
-            self.results.eps_perp = (- eps0inv * beta * pref * cov_perp) \
-                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
-            self.results.deps_perp = np.abs((- eps0inv * beta * pref)
-                                            / (1 + eps0inv * beta * pref
-                                               / self.results.V * var_perp)
-                                            ) * dcov_perp \
-                + np.abs((- eps0inv * beta * pref * cov_perp)
-                         / (1 + eps0inv * beta * pref
-                            / self.results.V * var_perp)**2) * dvar_perp
+            self.results.eps_perp = \
+                - cov_perp / (pref**-1 + var_perp / self.results.means.V)
+            self.results.deps_perp = pref * dcov_perp
 
             self.results.eps_perp_self = \
-                (- eps0inv * beta * pref * cov_perp_self) \
-                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
+                (- pref * cov_perp_self) \
+                / (1 + pref / self.results.means.V * var_perp)
             self.results.eps_perp_coll = \
-                (- eps0inv * beta * pref * cov_perp_coll) \
-                / (1 + eps0inv * beta * pref / self.results.V * var_perp)
+                (- pref * cov_perp_coll) \
+                / (1 + pref / self.results.means.V * var_perp)
+
+        cov_par = np.zeros((self.n_bins, len(self.atomgroups)))
+        dcov_par = np.zeros((self.n_bins, len(self.atomgroups)))
+        cov_par_self = np.zeros((self.n_bins, len(self.atomgroups)))
+        cov_par_coll = np.zeros((self.n_bins, len(self.atomgroups)))
+
+        for i, _ in enumerate(self.atomgroups):
+            cov_par[:, i] = 0.5 * (self.results.means.mM_par[:, i]
+                                   - np.dot(self.results.means.m_par[:, :, i],
+                                            self.results.means.M_par))
+
+            dcov_par[:, i] = 0.5 * np.sqrt(
+                self.results.vars.mM_par[:, i]
+                + np.dot(self.results.vars.m_par[:, :, i],
+                         self.results.means.M_par**2)
+                + np.dot(self.results.means.m_par[:, :, i]**2,
+                         self.results.vars.M_par)
+                )
+
+            cov_par_self[:, i] = 0.5 * (
+                self.results.means.mm_par[:, i]
+                - np.dot(self.results.means.m_par[:, :, i],
+                         self.results.means.m_par[:, :, i].sum(axis=0)))
+            cov_par_coll[:, i] = \
+                0.5 * (self.results.means.cmM_par[:, i]
+                       - (self.results.means.m_par[:, :, i]
+                       * self.results.means.cM_par[:, :, i]).sum(axis=1))
+
+        self.results.eps_par = pref * cov_par
+        self.results.deps_par = pref * dcov_par
+        self.results.eps_par_self = pref * cov_par_self
+        self.results.eps_par_coll = pref * cov_par_coll
 
     def save(self):
         """Save results."""
@@ -624,6 +611,9 @@ class EpsilonCylinder(AnalysisBase):
                    // self.resample_freq] += this_m_ax * this_M_ax
 
     def _conclude(self):
+        eps0inv = 1. / scipy.constants.epsilon_0
+        pref = (scipy.constants.elementary_charge)**2 / 1e-10
+
         if self.single:  # removed average of M if single line water.
             cov_ax = self.mM_ax.sum(axis=1) / self._index
             cov_rad = self.mM_rad.sum(axis=1) / self._index

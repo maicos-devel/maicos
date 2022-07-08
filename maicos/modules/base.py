@@ -124,13 +124,14 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         self._setup_frames(self._trajectory, start, stop, step)
         logger.info("Starting preparation")
+
+        self.results.frame = Results()
+
         self._prepare()
 
         module_has_save = callable(getattr(self.__class__, 'save', None))
 
         timeseries = np.zeros(self.n_frames)
-
-        self.results.frame = Results()
 
         for i, ts in enumerate(ProgressBar(
                 self._trajectory[self.start:self.stop:self.step],
@@ -149,7 +150,13 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             # the observables in the _prepare method.
             if self._frame_index == 0:
                 self.results.means = self.results.frame.copy()
-                self.results.vars = Results().fromkeys(self.results.frame, 0)
+                self.results.vars = Results()
+                for key in self.results.frame.keys():
+                    if type(self.results.frame[key]) is np.ndarray:
+                        self.results.vars[key] = \
+                            np.zeros(self.results.frame[key].shape)
+                    else:
+                        self.results.vars[key] = 0
             else:
                 for key in self.results.frame.keys():
                     old_mean = self.results.means[key]
