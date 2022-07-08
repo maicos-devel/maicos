@@ -225,6 +225,51 @@ def sort_atomgroup(atomgroup):
         return atomgroup
 
 
+def correlation_time(x_n, method='Sokal', c=8, mintime=3):
+    """Compute the integrated correlation time of a timeseries.
+
+    Parameters
+    ----------
+    x_n : np.ndarray, float
+        timeseries
+    method : str
+        Method to choose integration cutoff Should be one of
+        'Sokal'
+        'Chodera'
+    c : float
+        cut-off factor for calculation of correlation time tau for Sokal method.
+        cut-off T for integration is determined to be T >= c * tau
+    mintime: int
+        minimum possible value for cut-off
+
+    Returns
+    -------
+    tau : float
+        integrated correlation time
+    """
+    corr = Correlation(x_n, subtract_mean=True)
+
+    if method == 'Sokal':
+
+        cutoff = tau = mintime
+        for cutoff in range(mintime, len(x_n)):
+            tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
+                         * corr[1:cutoff] / corr[0])
+            if cutoff > tau * c:
+                break
+
+            if cutoff > len(x_n) / 3:
+                return -1
+
+    if method == 'Chodera':
+
+        cutoff = max(mintime, np.min(np.argwhere(corr < 0)))
+        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
+                     * corr[1:cutoff] / corr[0])
+
+    return tau
+
+
 def new_mean(old_mean, data, length):
     r"""Compute the arithmetic mean of a series iteratively.
 

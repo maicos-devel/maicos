@@ -21,6 +21,24 @@ from numpy.testing import assert_almost_equal, assert_equal
 import maicos.utils
 
 
+def generate_correlated_data(T, repeat, seed=0):
+    """Generate correlated data to be used in test_correlation_time.
+
+    T : int
+        length of timeseries to be generated
+    corr_t : int
+        correlation time in step size
+    seed : int
+        seed the random number generator
+    returns : ndarray, shape (n,)
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    t = T // repeat
+    return np.repeat(np.random.normal(size=t), repeat)
+
+
 def minimum_image_distance(a, b, L):
     """Return the minimum image distance of two vectors.
 
@@ -115,6 +133,26 @@ def test_get_cli_input():
 @pytest.mark.parametrize(
     ('vector1, vector2, subtract_mean, result'),
     (
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         None, False, 2184.21),
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+         False, 5868.42),
+        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+         True, 0.0),
+
+        ),
+    )
+def test_scalarprod(vector1, vector2, subtract_mean, result):
+    """Tests for scalar product."""
+    utils_run = maicos.utils.ScalarProdCorr(vector1, vector2, subtract_mean)
+    assert_almost_equal(np.mean(utils_run), result, decimal=2)
+
+
+@pytest.mark.parametrize(
+    ('vector1, vector2, subtract_mean, result'),
+    (
         (np.linspace(0, 20, 50), None, False, 78.23),
         (np.linspace(0, 20, 50), np.linspace(0, 20, 50)
          * np.linspace(0, 20, 50), False, 1294.73),
@@ -131,21 +169,36 @@ def test_corr(vector1, vector2, subtract_mean, result):
 @pytest.mark.parametrize(
     ('vector1, vector2, subtract_mean, result'),
     (
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         None, False, 2184.21),
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
-         False, 5868.42),
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
-         True, 0.0),
-
+        (2 * generate_correlated_data(int(1E7), 5) + 2,
+         None, True, np.mean(4 * (1 - np.arange(0, 6) / 5))),
+        (2 * generate_correlated_data(int(1E7), 5) + 2,
+         None, False, np.mean(4 * (1 - np.arange(0, 6) / 5) + 4)),
         ),
     )
-def test_scalarprod(vector1, vector2, subtract_mean, result):
-    """Tests for scalar product."""
-    utils_run = maicos.utils.ScalarProdCorr(vector1, vector2, subtract_mean)
-    assert_almost_equal(np.mean(utils_run), result, decimal=2)
+def test_corr2(vector1, vector2, subtract_mean, result):
+    """Tests for Correlation function."""
+    utils_run = np.mean(maicos.utils.Correlation(vector1, vector2,
+                                                 subtract_mean)[:6])
+    assert_almost_equal(utils_run, result, decimal=2)
+
+
+@pytest.mark.parametrize(
+    ('vector, method, c, mintime, result'),
+    (
+        (generate_correlated_data(int(1E6), 5), 'Sokal', 8, 3,
+         np.sum(1 - np.arange(1, 5) / 5)),
+        (generate_correlated_data(int(1E6), 10), 'Sokal', 8, 3,
+         np.sum(1 - np.arange(1, 10) / 10)),
+        (generate_correlated_data(int(1E6), 5), 'Chodera', 8, 3,
+         np.sum(1 - np.arange(1, 5) / 5)),
+        (generate_correlated_data(int(1E6), 10), 'Chodera', 8, 3,
+         np.sum(1 - np.arange(1, 10) / 10)),
+        ),
+    )
+def test_correlation_time(vector, method, c, mintime, result):
+    """Tests for correlation_time."""
+    utils_run = maicos.utils.correlation_time(vector, method, c, mintime)
+    assert_almost_equal(np.mean(utils_run), result, decimal=1)
 
 
 def test_new_mean():

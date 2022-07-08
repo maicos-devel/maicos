@@ -9,6 +9,7 @@
 """Base class."""
 
 import logging
+import warnings
 
 import MDAnalysis.analysis.base
 import numpy as np
@@ -24,6 +25,7 @@ from ..decorators import (
 from ..utils import (
     atomgroup_header,
     cluster_com,
+    correlation_time,
     new_mean,
     new_variance,
     savetxt,
@@ -126,6 +128,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         module_has_save = callable(getattr(self.__class__, 'save', None))
 
+        timeseries = np.zeros(self.n_frames)
+
         self.results.frame = Results()
 
         for i, ts in enumerate(ProgressBar(
@@ -138,7 +142,9 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self.frames[i] = ts.frame
             self.times[i] = ts.time
             # logger.info("--> Doing frame {} of {}".format(i+1, self.n_frames))
-            self._single_frame()
+
+            timeseries[i] = self._single_frame()
+
             # This if condition is needed so that modules don't need to define
             # the observables in the _prepare method.
             if self._frame_index == 0:
@@ -165,6 +171,22 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                     self.save()
 
         logger.info("Finishing up")
+
+        if len(timeseries > 4) and (timeseries[0] is not None):
+            corrtime = correlation_time(timeseries)
+            if corrtime == -1:
+                warnings.warn("Your trajectory does not provide sufficient"
+                              "statistics to estimate a correlation time."
+                              "Use the calculated error estimates with"
+                              "caution.")
+            if corrtime > 0.5:
+                warnings.warn("Your data seems to be correlated with a "
+                              f"correlation time which is {corrtime + 1:.2f} "
+                              "times larger than your step size. "
+                              "Consider increasing your step size by a factor "
+                              f"of {int(np.ceil(2 * corrtime + 1)):d} to get a "
+                              "reasonable error estimate.")
+
         self._conclude()
         if self.concfreq and module_has_save:
             self.save()
