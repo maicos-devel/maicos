@@ -292,6 +292,8 @@ class EpsilonPlanar(PlanarBase):
 
         self.V += self._ts.volume
 
+        return this_M_par[0]
+
     def _conclude(self):
         super(EpsilonPlanar, self)._conclude()
 
