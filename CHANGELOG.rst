@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.6 (XXXX/XX/XX)
 -----------------
-Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger
+Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger, Kira Fischer
 
+- Add `RDFPlanar` (!133) 
 - Removed `repairMolecules` (!119)
 - Added `grouping` and `binmethod` option (!117)
 - Bump minimum MDAnalysis version to 2.2.0 (!117)

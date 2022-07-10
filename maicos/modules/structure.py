@@ -18,6 +18,7 @@ import logging
 
 import MDAnalysis as mda
 import numpy as np
+from MDAnalysis.lib.distances import capped_distance
 
 from .. import tables
 from ..decorators import make_whole, set_planar_class_doc, set_verbose_doc
@@ -442,3 +443,235 @@ class Diporder(PlanarBase):
                     self.results.rho
                     ]).T,
                 header=header)
+
+
+@set_verbose_doc
+@set_planar_class_doc
+class RDFPlanar(PlanarBase):
+    r"""Compute slab wise planar two dimensional radial distribution functions.
+
+    The radial distribution function :math:`g_\text{planar}(r)` describes the
+    spatial correlation between atoms in `g1` and atoms in `g2`. The 2D RDF can
+    be used in systems that are inhomogeneous along one axis, and homogeneous
+    along a plane. It gives the average number density of `g2` as a
+    function of lateral distance from a centered `g1` atom. In fully
+    homogeneous systems and in the limit of small 'dzheight' :math:`\Delta z`,
+    it is the same as the well known three dimensional RDF.
+
+    .. math::
+
+     g_\text{planar}(r) =
+     \frac{1}{N_{g1}2 \Delta z} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
+     \delta(r - r_{ij}) \cdot \left( \theta \left(|z_{ij}| + {\Delta z}
+     \right) - \theta \left( |z_{ij}| - {\Delta z} \right) \right) .
+
+    As the density to normalise the RDF with is unknown, the output
+    is in the dimension of number/volume in 1/Å^3.
+
+    Functionally, RDFPlanar bins all pairwise `g1`-`g2` distances
+    where the z distance is smaller than `dzheight` in a histogram.
+
+    Parameters
+    ----------
+    g1 : AtomGroup
+        First AtomGroup
+    g2 : AtomGroup
+        Second AtomGroup
+    rdf_binwidth : int
+        Binwidth of bins in the histogram of the RDF (Å)
+    dzheight : float
+        dz height of a RDF slab (Å)
+    range: (float, float)
+        the minimum and maximum pairwise distance between 'g1' and 'g2'. (Å)
+    binmethod : str
+        Method for position binning; possible options are
+        center of geometry (cog), center of mass (com) or
+        center of charge (coc).
+    ${PLANAR_CLASS_PARAMETERS}
+    ${VERBOSE_PARAMETER}
+
+
+    Attributes
+    ----------
+    ${PLANAR_CLASS_ATTRIBUTES}
+    results.bins: np.ndarray
+        distances to which the RDF is calculated with shape (rdf_nbins) (Å)
+    results.rdf: np.ndrray
+        RDF with shape (rdf_nbins, n_bins) (1/Å^3)
+    """
+
+    def __init__(self,
+                 g1,
+                 g2=None,
+                 rdf_binwidth=0.3,
+                 dzheight=0.1,
+                 range=(0.0, None),
+                 binmethod="com",
+                 # Planar base arguments
+                 dim=2,
+                 binwidth=1,
+                 center=False,
+                 comgroup=None,
+                 zmin=0,
+                 zmax=None,
+                 output="rdf.dat",
+                 concfreq=0,
+                 **kwargs):
+
+        super(RDFPlanar, self).__init__(atomgroups=g1,
+                                        dim=dim,
+                                        zmin=zmin,
+                                        zmax=zmax,
+                                        binwidth=binwidth,
+                                        center=center,
+                                        comgroup=comgroup,
+                                        concfreq=concfreq,
+                                        **kwargs)
+
+        self.g1 = g1
+        if g2 is None:
+            self.g2 = g1
+        else:
+            self.g2 = g2
+        self.range = range
+        self.rdf_binwidth = rdf_binwidth
+        self.dzheight = dzheight
+        self.output = output
+        self.binmethod = binmethod.lower()
+
+    def _prepare(self):
+        super(RDFPlanar, self)._prepare()
+        if self._verbose:
+            logger.info('Compute radial distribution function.')
+
+        self.odims = np.roll(np.arange(3), -self.dim)[1:]
+        half_of_box_size = min(self._universe.dimensions[self.odims]) / 2
+        if self.range[1] is None:
+            self.range = (self.range[0], half_of_box_size)
+            logger.info("Setting maximum range of RDF to half the box size"
+                        f"({self.range[1]} Å).")
+        elif self.range[1] > half_of_box_size:
+            raise ValueError("Range of RDF exceeds half of the box size. "
+                             f"Set to smaller than {half_of_box_size} Å.")
+
+        try:
+            if self.rdf_binwidth > 0:
+                self.rdf_nbins = int(np.ceil((self.range[1] - self.range[0])
+                                     / self.rdf_binwidth))
+            else:
+                raise ValueError("RDF binwidth must be a positive number.")
+        except TypeError:
+            raise ValueError("RDF binwidth must be a number.")
+
+        if self.binmethod not in ["cog", "com", "coc"]:
+            raise ValueError(f"{self.binmethod} is an unknown binning "
+                             "method. Use `cog`, `com` or `coc`.")
+
+        logger.info(f"Using {self.rdf_nbins} rdf bins.")
+
+        # Empty histogram self.count to store the RDF.
+        self.count = np.zeros((self.n_bins, self.rdf_nbins))
+        self.edges = np.histogram([-1], bins=self.rdf_nbins,
+                                  range=self.range)[1]
+        self.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
+        self.n_g1_total = np.zeros((self.n_bins, 1))
+
+        # Set the max range to filter the search radius.
+        self._maxrange = self.range[1]
+
+    def _single_frame(self):
+        super(RDFPlanar, self)._single_frame()
+        binwidth = (self.zmax - self.zmin) / self.n_bins
+
+        if self.binmethod == 'com':
+            g1_bin_positions = self.g1.center_of_mass(
+                compound=check_compound(self.g1))
+            g2_bin_positions = self.g2.center_of_mass(
+                compound=check_compound(self.g2))
+        elif self.binmethod == 'coc':
+            g1_bin_positions = self.g1.center_of_charge(
+                compound=check_compound(self.g1))
+            g2_bin_positions = self.g2.center_of_charge(
+                compound=check_compound(self.g2))
+        elif self.binmethod == 'cog':
+            g1_bin_positions = self.g1.center_of_geometry(
+                compound=check_compound(self.g1))
+            g2_bin_positions = self.g2.center_of_geometry(
+                compound=check_compound(self.g2))
+
+        # Calculate planar rdf per bin by averaging over all atoms in one bin.
+        for z_bin in range(0, self.n_bins):
+            # Set zmin and zmax of the bin.
+            z_min = self.zmin + binwidth * z_bin
+            z_max = self.zmin + binwidth * (z_bin + 1)
+
+            # Get all atoms in a bin.
+            g1_in_zbin_positions = g1_bin_positions[np.logical_and(
+                g1_bin_positions[:, self.dim] >= z_min,
+                g1_bin_positions[:, self.dim] < z_max)]
+
+            g2_in_zbin_positions = g2_bin_positions[np.logical_and(
+                g2_bin_positions[:, self.dim] >= z_min - self.dzheight,
+                g2_bin_positions[:, self.dim] < z_max + self.dzheight)]
+
+            n_g1 = len(g1_in_zbin_positions)
+            n_g2 = len(g2_in_zbin_positions)
+            self.n_g1_total[z_bin] += n_g1
+
+            # Extract z coordinate.
+            z_g1 = np.copy(g1_in_zbin_positions)
+            z_g2 = np.copy(g2_in_zbin_positions)
+            # Set other coordinates to 0.
+            z_g1[:, self.odims] = 0
+            z_g2[:, self.odims] = 0
+
+            # Automatically filter only those pairs with delta z < dz.
+            z_pairs, _ = capped_distance(z_g1,
+                                         z_g2,
+                                         self.dzheight,
+                                         box=self._universe.dimensions)
+
+            # Calculate pairwise distances between g1 and g2.
+            pairs, xy_distances = capped_distance(g1_in_zbin_positions,
+                                                  g2_in_zbin_positions,
+                                                  self._maxrange,
+                                                  box=self.
+                                                  _universe.dimensions)
+
+            # Map pairs (i, j) to a number i+N*j (so we can use np.isin).
+            z_pairs_encode = z_pairs[:, 0] + n_g2 * z_pairs[:, 1]
+            pairs_encode = pairs[:, 0] + n_g2 * pairs[:, 1]
+
+            mask_in_dz = np.isin(pairs_encode, z_pairs_encode)
+            mask_different_atoms = np.where(xy_distances > 0, True, False)
+
+            relevant_xy_distances = xy_distances[mask_in_dz
+                                                 * mask_different_atoms]
+            # Histogram the pairwise distances.
+            self.count[z_bin] += np.histogram(relevant_xy_distances,
+                                              bins=self.rdf_nbins,
+                                              range=self.range)[0]
+
+    def _conclude(self):
+        super(RDFPlanar, self)._conclude()
+
+        # Normalise rdf using the volumes of a ring with height dz.
+        ring_volumes = (np.pi * (self.edges[1:]**2 - self.edges[:-1]**2)
+                        * self.dzheight)
+        ring_volumes = np.expand_dims(ring_volumes, axis=0)
+        self.results.bins = self.bins
+        self.results.rdf = self.count / self.n_g1_total / ring_volumes / 2
+        self.results.rdf = self.results.rdf.T
+
+    def save(self):
+        """Save results."""
+        zstring = ""
+        for z in self.results.z:
+            zstring += f"{z} \t "
+
+        savetxt(self.output,
+                np.hstack([self.results.bins[:, np.newaxis],
+                           self.results.rdf]),
+                header="bin center in A \t rdf in particles/A^3 for z "
+                + zstring,
+                fmt='%.8e')

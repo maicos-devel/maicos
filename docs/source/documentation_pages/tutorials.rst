@@ -26,6 +26,7 @@ viewing here and available for interactive execution in the top-level
    :caption: Structure modules
    
    ../tutorials/structure/diporder
+   ../tutorials/structure/radial_distribution_function.ipynb
    
 .. toctree::
    :titlesonly:

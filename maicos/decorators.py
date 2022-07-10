@@ -63,7 +63,7 @@ profile_planar_class_parameters_doc = (
     + make_whole_parameter_doc
     + """binmethod : str
         Method for position binning; possible options are
-        center of geometry (cog) center of mass (com) or
+        center of geometry (cog), center of mass (com) or
         center of charge (coc).
     output : str
         Output filename
