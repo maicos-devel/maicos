@@ -13,4 +13,5 @@ Structure modules
    saxs
    diporder
    debyer
+   rdfplanar
 

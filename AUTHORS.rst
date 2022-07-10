@@ -8,7 +8,7 @@ Maintainers
 - Henrik Jaeger
 - Alexander Schlaich
 
-Devlopers
+Developers
 ---------
 
 - Maximilian Becker
@@ -21,6 +21,7 @@ Contributors
 ------------
 
 - Shane Carlson
+- Kira Fischer
 - Julian Kappler
 - Laura Scalfi
 - Julius Schulz

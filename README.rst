@@ -94,6 +94,8 @@ List of analysis modules
      - SAXS scattering intensities
    * - Diporder
      - dipolar order parameters
+   * - RDFPlanar
+     - planar radial distribution function
    * - Debyer
      - scattering intensities using the debye equation. The `debyer`_
        library needs to be downloaded and build
