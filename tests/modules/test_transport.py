@@ -11,8 +11,9 @@
 import MDAnalysis as mda
 import numpy as np
 import pytest
+from create_mda_universe import isolated_water_universe
 from datafiles import WATER_TPR, WATER_TRR
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 
 from maicos import Velocity
 
@@ -21,16 +22,40 @@ class TestVelocity(object):
     """Tests for the velocity class."""
 
     @pytest.fixture()
-    def vel_array(self):
+    def vel_array_1(self):
         """Set velocity array."""
-        v_array = []
+        v_array_1 = []
         # dim = 0:
-        v_array.append([0.46, -0.21, 0.72])
+        v_array_1.append([-0.0019, -0.0029, 0.00058])
         # dim = 1:
-        v_array.append([0.13, -0.19, -0.34])
+        v_array_1.append([-0.0019, -0.0029, 0.00058])
         # dim = 2:
-        v_array.append([-0.26, 1.34, 1.47])
-        return v_array
+        v_array_1.append([-0.0019, -0.0029, 0.00058])
+        return v_array_1
+
+    @pytest.fixture()
+    def vel_array_2(self):
+        """Set velocity array."""
+        v_array_2 = [[1.0, 0.0, 0.0],
+                     [0.0, 1.0, 0.0],
+                     [0.0, 0.0, 1.0]]
+        return v_array_2
+
+    @pytest.fixture()
+    def vel_array_3(self):
+        """Set velocity array."""
+        v_array_3 = [[1.0, 0.0, 0.0],
+                     [0.0, 1.0, 0.0],
+                     [0.0, 0.0, 1.0]]
+        return v_array_3
+
+    @pytest.fixture()
+    def flux_array_1(self):
+        """Set flux array."""
+        f_array_1 = [[3.0, 0.0, 0.0],
+                     [0.0, 3.0, 0.0],
+                     [0.0, 0.0, 3.0]]
+        return f_array_1
 
     @pytest.fixture()
     def ag(self):
@@ -40,40 +65,60 @@ class TestVelocity(object):
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     @pytest.mark.parametrize('vdim', (0, 1, 2))
-    def test_dens(self, ag, dim, vdim, vel_array):
-        """Test velocity."""
+    @pytest.fixture()
+    def test_vel_1(self, ag, dim, vdim, vel_array_1):
+        """Test velocity module using WATER_TPR data."""
         vel = Velocity(ag, dim=dim, vdim=vdim).run()
-        assert_almost_equal(vel.results['v'].mean(),
-                            vel_array[dim][vdim],
-                            decimal=0)
+        assert_allclose(vel.results['profile_mean'].mean(),
+                        vel_array_1[dim][vdim])
 
-    def test_broken_molecules(self, ag):
-        """Test broken molecules."""
-        vel = Velocity(ag, bpbc=False).run()
-        assert_almost_equal(vel.results['v'].mean(), -0.0026, decimal=1)
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize('vdim', (0, 1, 2))
+    def test_vel_molecules(self, dim, vdim, vel_array_2):
+        """Test velocity module with 1 water with grouping by molecules."""
+        myvel = np.zeros(3)
+        myvel[dim] += 1
 
-    def test_repaired_molecules(self, ag):
-        """Test repaired molecules."""
-        vel = Velocity(ag, bpbc=True).run()
-        assert_almost_equal(vel.results['v'].mean(), -0.0026, decimal=1)
+        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        vol = np.prod(ag_v.dimensions[:3])
 
-    def test_output(self, ag, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            vel = Velocity(ag, end=20, save=True, mu=True)
-            vel.run()
-            vel.save()
-            res_vel = np.loadtxt("vel_{}.dat".format(vel.output_suffix))
-            assert_almost_equal(vel.results["v"], res_vel[:, 1], decimal=2)
+        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
+                       grouping="molecules").run()
 
-    def test_output_name(self, ag, tmpdir):
-        """Test output name."""
-        with tmpdir.as_cwd():
-            vel = Velocity(ag, output_suffix="foo", end=20, save=True).run()
-            vel.run()
-            vel.save()
-            open("vel_foo.dat")
+        # Divide by volume for normalization as in module.
+        assert_allclose(vel.results['profile_mean'].mean(),
+                        vel_array_2[dim][vdim] / vol, rtol=1e-6)
 
-    def test_verbose(self, ag):
-        """Test verbose."""
-        Velocity(ag, verbose=True).run()
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize('vdim', (0, 1, 2))
+    def test_vel_atoms(self, dim, vdim, vel_array_3):
+        """Test velocity module with 1 water with grouping by atoms."""
+        myvel = np.zeros(3)
+        myvel[dim] += 1
+
+        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        vol = np.prod(ag_v.dimensions[:3])
+
+        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
+                       grouping="atoms").run()
+
+        # Divide by volume for normalization as in module.
+        assert_allclose(vel.results['profile_mean'].mean(),
+                        vel_array_3[dim][vdim] / vol)
+
+    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize('vdim', (0, 1, 2))
+    def test_flux(self, dim, vdim, flux_array_1):
+        """Measure flux with 1 water molecules."""
+        myvel = np.zeros(3)
+        myvel[dim] += 1
+
+        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        vol = np.prod(ag_v.dimensions[:3])
+
+        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
+                       grouping="atoms", flux=True).run()
+
+        # Divide by volume for normalization as in module.
+        assert_allclose(vel.results['profile_mean'].mean(),
+                        flux_array_1[dim][vdim] / vol)

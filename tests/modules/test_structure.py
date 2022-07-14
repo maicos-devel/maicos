@@ -12,6 +12,7 @@ import os
 import MDAnalysis as mda
 import numpy as np
 import pytest
+from create_mda_universe import isolated_water_universe
 from datafiles import (
     AIRWATER_TPR,
     AIRWATER_TRR,
@@ -23,31 +24,6 @@ from datafiles import (
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import Diporder, RDFPlanar, Saxs, utils
-
-
-def create_universe(n_molecules, angle_deg):
-    """Create universe with regularly-spaced water molecules."""
-    fluid = []
-    for _n in range(n_molecules):
-        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
-    dimensions = fluid[0].dimensions
-
-    rotations = [[angle_deg, (0, 1, 0)],
-                 [angle_deg, (0, 1, 0)],
-                 [angle_deg, (0, 1, 0)]]
-    translations = [(0, 0, 5),
-                    (0, 0, 15),
-                    (0, 0, 25)]
-
-    for molecule, rotation, translation in zip(fluid, rotations, translations):
-        molecule.atoms.rotateby(rotation[0], rotation[1])
-        molecule.atoms.translate(translation)
-    u = mda.Merge(*[molecule.atoms for molecule in fluid])
-
-    dimensions[2] *= n_molecules
-    u.dimensions = dimensions
-    u.residues.molnums = list(range(1, n_molecules + 1))
-    return u.select_atoms("name OW HW1 HW2")
 
 
 class TestSaxs(object):
@@ -141,7 +117,7 @@ class TestDiporder(object):
 
     def test_Diporder_3_water_0(self):
         """Test Diporder for 3 water molecules with angle 0."""
-        group_H2O_1 = create_universe(3, 0)
+        group_H2O_1 = isolated_water_universe(n_molecules=3, angle_deg=0)
         dip = Diporder(group_H2O_1, binwidth=10).run()
 
         assert_allclose(dip.results['P0'], 4.92e-4, rtol=1e-3)
@@ -151,7 +127,7 @@ class TestDiporder(object):
 
     def test_Diporder_3_water_90(self):
         """Test Diporder for 3 water molecules with angle 90 degrees."""
-        group_H2O_2 = create_universe(3, 90)
+        group_H2O_2 = isolated_water_universe(n_molecules=3, angle_deg=90)
         dip = Diporder(group_H2O_2, binwidth=10).run()
         assert_allclose(dip.results['P0'], 0, atol=1e-9)
         assert_equal(dip.results['rho'], 1e-3)
