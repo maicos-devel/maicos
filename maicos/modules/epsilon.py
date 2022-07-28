@@ -232,16 +232,13 @@ class EpsilonPlanar(PlanarBase):
                     * sel.atoms.positions[:, 2]
                     ).reshape(len(repeats), repeats[0])
 
-                centers = (
-                    np.sum(chargepos, axis=1)
-                    / np.sum(np.abs(sel.charges)[:repeats[0]])
-                    )
+                centers = np.sum(chargepos, axis=1)
+
             else:
                 centers = sel.center(weights=np.abs(sel.charges),
                                      compound=check_compound(sel))[:, self.dim]
 
             testpos = np.repeat(centers, repeats)
-
             # Average parallel directions
             for j, direction in enumerate(self.xydims):
                 # At this point we should not use the wrap, which causes
@@ -255,9 +252,6 @@ class EpsilonPlanar(PlanarBase):
                 xpos = np.zeros(len(sel))
                 np.clip(sel.atoms.positions[:, direction], 0, Lx, xpos)
 
-                if vbinsx == 0:
-                    vbinsx = 250
-
                 curQx = np.histogram2d(
                     testpos, xpos,
                     bins=[self.n_bins, vbinsx],
@@ -267,7 +261,6 @@ class EpsilonPlanar(PlanarBase):
                 # integral over x, so uniself._ts of area
                 curqx = -np.cumsum(curQx / Ax, axis=1).mean(axis=1)
                 self.results.frame.m_par[:, j, i] = curqx
-
             self.results.frame.mM_par[:, i] = \
                 np.dot(self.results.frame.m_par[:, :, i],
                        self.results.frame.M_par)
