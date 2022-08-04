@@ -232,8 +232,8 @@ class EpsilonPlanar(PlanarBase):
                     * sel.atoms.positions[:, 2]
                     ).reshape(len(repeats), repeats[0])
 
-                centers = np.sum(chargepos, axis=1)
-
+                centers = np.sum(chargepos, axis=1) \
+                    / np.sum(np.abs(sel.charges)[:repeats[0]])
             else:
                 centers = sel.center(weights=np.abs(sel.charges),
                                      compound=check_compound(sel))[:, self.dim]
@@ -244,10 +244,8 @@ class EpsilonPlanar(PlanarBase):
                 # At this point we should not use the wrap, which causes
                 # unphysical dipoles at the borders
                 Lx = self._ts.dimensions[direction]
-                vbinsx = np.ceil(Lx / self.vcutwidth)
-                vbinsx = (self.n_bins
-                          * np.rint(vbinsx / self.n_bins)).astype(int)
                 Ax = self._ts.dimensions[self.xydims[1 - j]] * dz
+                vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
 
                 xpos = np.zeros(len(sel))
                 np.clip(sel.atoms.positions[:, direction], 0, Lx, xpos)
