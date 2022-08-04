@@ -262,7 +262,7 @@ class TestRDFPlanar(object):
         bin1 = 0
         bin2 = 8 / (np.pi * (9**2 - 8**2)) / 6 / 2
         bin3 = 2 / (np.pi * (10**2 - 9**2)) / 6 / 2
-        assert(rdfplanar.dim == 0)
+        assert rdfplanar.dim == 0
         assert_allclose(rdfplanar.results.rdf[:, 0], [bin1, bin2, bin3])
 
     def test_single_atom_com(self, get_universe):

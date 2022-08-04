@@ -49,6 +49,37 @@ def dipoles(positions, orientations):
 class TestEpsilonPlanar(object):
     """Tests for the EpsilonPlanar class."""
 
+    """
+
+    Number of times EpsilonPlanar broke: |||
+
+    If you are reading this, most likely you are investigating a bug in the
+    EpsilonPlanar class. To calculate the local electric permittivity in a
+    system, the module needs two quantities: the total dipole moment and the
+    local dipole moment density.
+
+    The total dipole moment is the sum of the charges times the positions of the
+    atoms. It is checked first in every test case, so make sure this is correct.
+
+    The local dipole moment density is determined by the virtual cutting method.
+    In short, charges are tallied in bins according to their positions and the
+    resulting histogram is integrated.
+    (see Schlaich et al, Phys. Rev. Lett. 117, 048001 and its SI for more info.)
+
+    The correctness of the local dipole moment density is checked by integrating
+    it and comparing it to the total dipole moment (which should be equal). Some
+    things that broke this method in the past where:
+        - Incorrect treatment of the charges at the box edges. Molecules have to
+          be unwrapped to keep the system charge neutral overall. Charges that
+          cross over the box limits in the lateral direction are capped (i.e.
+          shifted) to the box edge so they will land in the first/last bin when
+          doing the charge histograms.
+        - For the parallel component, the positions of charges in the normal
+          direction are shifted to the center of charge of the molecule they
+          belong to. If something goes wrong here and charges are shifted out
+          of the box, they are no longer counted in the histogram.
+    """
+
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
@@ -68,21 +99,92 @@ class TestEpsilonPlanar(object):
         ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
         )
     def test_single_dipole_orientations(self, orientation, M_par, M_perp):
-        """Test for dipole case."""
+        """Test the dipole density with a single dipole."""
+        """
+        This test places a single dipole (two unit charges separated by a 1 Å
+        bond) with dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
+
+        The dipole is oriented in a given direction and the computed total
+        dipole moment of the system is checked against the expected value.
+
+        To check if the virtual cutting method produces the right results,
+        the local dipole moment density is integrated over the entire system
+        and checked against total dipole moment.
+        """
+
         dipole = dipoles([[5, 5, 5]], [orientation])
         # very fine binning to get the correct value for the dipole
         eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
+        # Check the total dipole moment of the system
         assert np.allclose(eps.results.frame.M_par, M_par, rtol=0.1)
+        assert np.allclose(eps.results.frame.M_perp, M_perp, rtol=0.1)
+        # Check the local dipole moment density by integrating it over the
+        # volume and comparing with the total dipole moment of the system.
         assert np.allclose(
             np.sum(eps.results.frame.m_par[:, :, 0], axis=0)
             * eps.results.frame.V_bin,
             M_par, rtol=0.1)
-        assert np.allclose(eps.results.frame.M_perp, M_perp, rtol=0.1)
         assert np.allclose(
             np.sum(eps.results.frame.m_perp[:, 0], axis=0)
             * eps.results.frame.V_bin,
             M_perp, rtol=0.1)
+
+    @pytest.mark.parametrize('orientation, M_par, M_perp', (
+        ([0, 0, 1], [0, 0], 1),
+        ([1, 0, 0], [1, 0], 0),
+        ([0, 1, 0], [0, 1], 0),
+        ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
+        )
+    def test_multiple_dipole_orientations(self, orientation, M_par, M_perp):
+        """Test the dipole moment density with multiple dipoles."""
+        """
+        This test places a grid of 5x5x5 dipoles (two unit charges separated by
+        a 1 Å bond) with dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
+
+        The dipoles are oriented in a given direction and the computed total
+        dipole moment of the system is checked against the expected value.
+
+        To check if the virtual cutting method produces the right results,
+        the local dipole moment density is integrated over the entire system
+        and checked against total dipole moment.
+
+        This test is a variation of `test_single_dipole_orientations` to catch
+        problems with system scaling of shifting that are not catched by the
+        single dipole test. For example if some positions of charges are
+        erroneously shifted out of the system.
+
+        See https://gitlab.com/maicos-devel/maicos/-/issues/83 for more infos.
+        """
+        xx, yy, zz = np.meshgrid(np.arange(0, 10, 2) + 1,
+                                 np.arange(0, 10, 2) + 1,
+                                 np.arange(0, 10, 2) + 1)
+
+        pos = np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T.tolist()
+        n_dipoles = len(pos)
+        dipole = dipoles(pos, [orientation] * n_dipoles)
+
+        # very fine binning to get the correct value for the dipole
+        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001,
+                            make_whole=False)
+        eps.run()
+        # Check the total dipole moment of the system
+        assert np.allclose(eps.results.frame.M_par,
+                           np.multiply(M_par, n_dipoles),
+                           rtol=0.1)
+        assert np.allclose(eps.results.frame.M_perp,
+                           np.multiply(M_perp, n_dipoles),
+                           rtol=0.1)
+        # Check the local dipole moment density by integrating it over the
+        # volume and comparing with the total dipole moment of the system.
+        assert np.allclose(np.sum(eps.results.frame.m_par[:, :, 0], axis=0)
+                           * eps.results.frame.V_bin,
+                           np.multiply(M_par, n_dipoles),
+                           rtol=0.1)
+        assert np.allclose(np.sum(eps.results.frame.m_perp[:, 0], axis=0)
+                           * eps.results.frame.V_bin,
+                           np.multiply(M_perp, n_dipoles),
+                           rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
