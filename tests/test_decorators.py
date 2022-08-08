@@ -26,7 +26,6 @@ from maicos.modules.base import AnalysisBase
      (decorators.planar_class_attributes_doc, ["results.z : list"]),
      (decorators.profile_planar_class_attributes_doc, [
          "results.profile_mean : np.ndarray",
-         "results.profile_std : np.ndarray",
          "results.profile_err : np.ndarray"]),
      (decorators.make_whole_parameter_doc, ["make_whole : bool"])])
 def test_docstring(docstring_variable, substring_list):

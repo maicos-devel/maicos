@@ -146,30 +146,28 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
             timeseries[i] = self._single_frame()
 
-            # This if condition is needed so that modules don't need to define
-            # the observables in the _prepare method.
-            if self._frame_index == 0:
-                self.results.means = self.results.frame.copy()
-                self.results.vars = Results()
-                for key in self.results.frame.keys():
-                    if type(self.results.frame[key]) is np.ndarray:
-                        self.results.vars[key] = \
-                            np.zeros(self.results.frame[key].shape)
-                    else:
-                        self.results.vars[key] = 0
-            else:
+            try:
                 for key in self.results.frame.keys():
                     old_mean = self.results.means[key]
+                    old_var = self.results.sems[key]**2 * (self._index - 1)
                     self.results.means[key] = \
                         new_mean(self.results.means[key],
-                                 self.results.frame[key],
-                                 self._index)
-                    self.results.vars[key] = \
-                        new_variance(self.results.vars[key],
-                                     old_mean,
-                                     self.results.means[key],
-                                     self.results.frame[key],
-                                     self._index)
+                                 self.results.frame[key], self._index)
+                    self.results.sems[key] = \
+                        np.sqrt(new_variance(old_var, old_mean,
+                                             self.results.means[key],
+                                             self.results.frame[key],
+                                             self._index) / self._index)
+            except AttributeError:
+                logger.info("Preparing error estimation.")
+                # the results.means and results.sems are not yet defined.
+                # We initialize the means with the data from the first frame
+                # and set the sems to zero (with the correct shape).
+                self.results.means = self.results.frame.copy()
+                self.results.sems = Results()
+                for key in self.results.frame.keys():
+                    self.results.sems[key] = \
+                        np.zeros(self.results.frame[key].shape)
 
             if self.concfreq and self._index % self.concfreq == 0 \
                and self._frame_index > 0:
@@ -396,8 +394,10 @@ class ProfilePlanarBase(PlanarBase):
                     f"{'XYZ'[self.dim]}-axes.")
 
         # Arrays for accumulation
-        self.profile_cum = np.zeros((self.n_bins, self.n_atomgroups))
-        self.profile_cum_sq = np.zeros((self.n_bins, self.n_atomgroups))
+        self.results.frame.profile = np.zeros((self.n_bins,
+                                               self.n_atomgroups))
+        self.results.frame.profile_sq = np.zeros((self.n_bins,
+                                                  self.n_atomgroups))
 
     def _single_frame(self):
         super(ProfilePlanarBase, self)._single_frame()
@@ -433,28 +433,17 @@ class ProfilePlanarBase(PlanarBase):
             elif self.normalization == "volume":
                 profile_ts /= self._ts.volume / self.n_bins
 
-            self.profile_cum[:, index] += profile_ts
-            self.profile_cum_sq[:, index] += profile_ts ** 2
+            self.results.frame.profile[:, index] = profile_ts
+            self.results.frame.profile_sq[:, index] = profile_ts ** 2
 
     def _conclude(self):
         super(ProfilePlanarBase, self)._conclude()
 
-        self.results.profile_mean = self.profile_cum / self._index
-        profile_mean_sq = self.profile_cum_sq / self._index
-
-        profile_var = profile_mean_sq - self.results.profile_mean**2
-
-        # Floating point imprecision can lead to slight negative values
-        # leading to nan for the standard deviation.
-        profile_var[profile_var < 0] = 0
-
-        self.results.profile_std = np.sqrt(profile_var)
-        self.results.profile_err = self.results.profile_std
-        self.results.profile_err /= np.sqrt(self._index)
+        self.results.profile_mean = self.results.means.profile
+        self.results.profile_err = self.results.sems.profile
 
         if self.sym:
             symmetrize_1D(self.results.profile_mean, inplace=True)
-            symmetrize_1D(self.results.profile_std, inplace=True)
             symmetrize_1D(self.results.profile_err, inplace=True)
 
     def save(self):
