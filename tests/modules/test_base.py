@@ -23,7 +23,7 @@ from datafiles import (
     )
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.core._get_readers import get_reader_for
-from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
 import maicos
 from maicos.modules import base
@@ -107,12 +107,9 @@ class Test_AnalysisBase(object):
         ana = Series(ag)
         ana.run()
 
-        assert_almost_equal(ana.results.means.observable,
-                            np.mean(ana.series),
-                            decimal=6)
-        assert_almost_equal(ana.results.vars.observable,
-                            np.std(ana.series)**2,
-                            decimal=6)
+        assert_allclose(ana.results.means.observable, np.mean(ana.series))
+        assert_allclose(ana.results.sems.observable,
+                        np.std(ana.series) / np.sqrt(ana.n_frames))
 
     @pytest.mark.parametrize('concfreq, files',
                              [(0, []),

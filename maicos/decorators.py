@@ -82,8 +82,6 @@ profile_planar_class_attributes_doc = (
     planar_class_attributes_doc
     + """results.profile_mean : np.ndarray
         calculated profile
-    results.profile_std : np.ndarray
-        profile's standard deviation
     results.profile_err : np.ndarray
         profile's error"""
     )

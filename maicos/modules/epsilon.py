@@ -176,6 +176,7 @@ class EpsilonPlanar(PlanarBase):
                                       self._universe.atoms.positions)
 
         self.results.frame.M_perp = self.results.frame.M[self.dim]
+        self.results.frame.M_perp_2 = self.results.frame.M[self.dim]**2
         self.results.frame.M_par = self.results.frame.M[self.xydims]
 
         # Use polarization density ( for perpendicular component )
@@ -297,12 +298,12 @@ class EpsilonPlanar(PlanarBase):
             * self.results.means.M_perp
 
         dcov_perp = np.sqrt(
-            self.results.vars.mM_perp
-            + self.results.means.M_perp**2 * self.results.vars.m_perp
-            + self.results.means.m_perp**2 * self.results.vars.M_perp
+            self.results.sems.mM_perp
+            + self.results.means.M_perp**2 * self.results.sems.m_perp
+            + self.results.means.m_perp**2 * self.results.sems.M_perp
             )
 
-        var_perp = self.results.vars.M_perp
+        var_perp = self.results.means.M_perp_2 - self.results.means.M_perp**2
 
         cov_perp_self = self.results.means.mm_perp \
             - (self.results.means.m_perp**2
@@ -344,11 +345,11 @@ class EpsilonPlanar(PlanarBase):
                                             self.results.means.M_par))
 
             dcov_par[:, i] = 0.5 * np.sqrt(
-                self.results.vars.mM_par[:, i]
-                + np.dot(self.results.vars.m_par[:, :, i],
+                self.results.sems.mM_par[:, i]
+                + np.dot(self.results.sems.m_par[:, :, i],
                          self.results.means.M_par**2)
                 + np.dot(self.results.means.m_par[:, :, i]**2,
-                         self.results.vars.M_par)
+                         self.results.sems.M_par)
                 )
 
             cov_par_self[:, i] = 0.5 * (
