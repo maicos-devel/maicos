@@ -28,13 +28,14 @@ class TestDipoleAngle(object):
         u = mda.Universe(WATER_TPR, WATER_TRR)
         return u.select_atoms('type OW or type H')
 
-    def test_DipoleAngle(self, ag):
+    def test_DipoleAngle(self, ag, tmpdir):
         """Test dipole angle."""
-        dipa = DipoleAngle(ag)
-        dipa.run()
-        dipa.save()
-        assert_equal(os.path.exists("dipangle.dat"), True)
-        assert_almost_equal(np.sum(dipa.cos_theta_i), -3.99, decimal=2)
+        with tmpdir.as_cwd():
+            dipa = DipoleAngle(ag)
+            dipa.run()
+            dipa.save()
+            assert_equal(os.path.exists("dipangle.dat"), True)
+            assert_almost_equal(np.sum(dipa.cos_theta_i), -3.99, decimal=2)
 
 
 class TestKineticEnergy(object):
@@ -51,12 +52,13 @@ class TestKineticEnergy(object):
         ke = KineticEnergy(ag, refpoint="COM").run()
         assert_almost_equal(np.mean(ke.results.trans), 2156, decimal=0)
 
-    def test_ke_rot(self, ag):
+    def test_ke_rot(self, ag, tmpdir):
         """Test rotational kinetic energy."""
-        ke = KineticEnergy(ag).run()
-        ke.save()
-        assert_equal(os.path.exists("dipangle.dat"), True)
-        assert_almost_equal(np.mean(ke.results.rot), 2193, decimal=0)
+        with tmpdir.as_cwd():
+            ke = KineticEnergy(ag).run()
+            ke.save()
+            assert_equal(os.path.exists("ke.dat"), True)
+            assert_almost_equal(np.mean(ke.results.rot), 2193, decimal=0)
 
     def test_prepare(self, ag):
         """Test Value error when refpoint is not COM or COC."""

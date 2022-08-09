@@ -392,9 +392,10 @@ class TestDielectricSpectrum(object):
             assert_almost_equal(ds.results.susc, susc, decimal=1)
             assert_almost_equal(ds.results.dsusc, dsusc, decimal=1)
 
-    def test_binning(self, ag):
+    def test_binning(self, ag, tmpdir):
         """Test binning & seglen case."""
-        ds = DielectricSpectrum(ag, nobin=False, segs=2, bins=49)
-        ds.run()
-        assert_almost_equal(np.mean(ds.results.nu_binned), 0.57, decimal=2)
-        ds.save()
+        with tmpdir.as_cwd():
+            ds = DielectricSpectrum(ag, nobin=False, segs=2, bins=49)
+            ds.run()
+            assert_almost_equal(np.mean(ds.results.nu_binned), 0.57, decimal=2)
+            ds.save()

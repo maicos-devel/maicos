@@ -389,36 +389,40 @@ class TestDensityCylinder(object):
         assert_equal(dens.radius, 10.0)
         assert_equal(dens.length, 10.0)
 
-    def test_dens_cyl_save(self, ag):
+    def test_dens_cyl_save(self, ag, tmpdir):
         """Testing save method."""
-        dens = density.DensityCylinder(ag)
-        dens.run()
-        dens.save()
-        assert_equal(os.path.exists("density_cylinder.dat"), True)
+        with tmpdir.as_cwd():
+            dens = density.DensityCylinder(ag)
+            dens.run()
+            dens.save()
+            assert_equal(os.path.exists("density_cylinder.dat"), True)
 
-    def test_dens_cyl_save_charge(self, ag):
+    def test_dens_cyl_save_charge(self, ag, tmpdir):
         """Testing with density flag charge."""
-        dens = density.DensityCylinder(ag, dens="charge")
-        dens.run()
-        dens.save()
-        outputf = open("density_cylinder.dat", "r")
-        data = outputf.readlines()[1]
-        assert_equal(data.split()[4] + data.split()[5], "[eÅ^(-3)]")
+        with tmpdir.as_cwd():
+            dens = density.DensityCylinder(ag, dens="charge")
+            dens.run()
+            dens.save()
+            outputf = open("density_cylinder.dat", "r")
+            data = outputf.readlines()[1]
+            assert_equal(data.split()[4] + data.split()[5], "[eÅ^(-3)]")
 
-    def test_dens_cyl_save_number(self, ag):
+    def test_dens_cyl_save_number(self, ag, tmpdir):
         """Testing with density flag number."""
-        dens = density.DensityCylinder(ag, dens="number")
-        dens.run()
-        dens.save()
-        outputf = open("density_cylinder.dat", "r")
-        data = outputf.readlines()[1]
-        assert_equal(data.split()[4], "[Å^(-3)]")
+        with tmpdir.as_cwd():
+            dens = density.DensityCylinder(ag, dens="number")
+            dens.run()
+            dens.save()
+            outputf = open("density_cylinder.dat", "r")
+            data = outputf.readlines()[1]
+            assert_equal(data.split()[4], "[Å^(-3)]")
 
-    def test_dens_cyl_save_temp(self, ag):
+    def test_dens_cyl_save_temp(self, ag, tmpdir):
         """Testing with density flag temperature."""
-        dens = density.DensityCylinder(ag, dens="temp")
-        dens.run()
-        dens.save()
-        outputf = open("density_cylinder.dat", "r")
-        data = outputf.readlines()[1]
-        assert_equal(data.split()[3], '[K]')
+        with tmpdir.as_cwd():
+            dens = density.DensityCylinder(ag, dens="temp")
+            dens.run()
+            dens.save()
+            outputf = open("density_cylinder.dat", "r")
+            data = outputf.readlines()[1]
+            assert_equal(data.split()[3], '[K]')
