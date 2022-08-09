@@ -641,12 +641,13 @@ class TestProfilePlanarBase:
 
         assert_allclose(actual, desired, atol=2, rtol=1e-2)
 
-    def test_output_name(self, params):
+    def test_output_name(self, params, tmpdir):
         """Test output name of save method."""
-        params.update(output="foo.dat")
-        profile_planar = base.ProfilePlanarBase(**params).run(stop=1)
-        profile_planar.save()
-        assert os.path.exists(params["output"])
+        with tmpdir.as_cwd():
+            params.update(output="foo.dat")
+            profile_planar = base.ProfilePlanarBase(**params).run(stop=1)
+            profile_planar.save()
+            assert os.path.exists(params["output"])
 
     def test_output(self, params, tmpdir):
         """Test output."""

@@ -47,21 +47,23 @@ class TestSaxs(object):
         saxs = Saxs(ag, endq=20).run(stop=1)
         assert not np.isnan(saxs.results.scat_factor).any()
 
-    def test_theta(self, ag):
+    def test_theta(self, ag, tmpdir):
         """Test min & max theta conditions."""
-        saxs = Saxs(ag, mintheta=-10, maxtheta=190, verbose=True)
-        saxs.run()
-        saxs.save()
-        assert_allclose(saxs.mintheta, 0)
-        assert_equal(os.path.exists("sq.dat"), True)
+        with tmpdir.as_cwd():
+            saxs = Saxs(ag, mintheta=-10, maxtheta=190, verbose=True)
+            saxs.run()
+            saxs.save()
+            assert_allclose(saxs.mintheta, 0)
+            assert_equal(os.path.exists("sq.dat"), True)
 
-    def test_nobindata(self, ag):
+    def test_nobindata(self, ag, tmpdir):
         """Test when nobindata is True."""
-        saxs = Saxs(ag, nobin=True)
-        saxs.run()
-        assert_equal(type(saxs.q_factor).__name__ == 'ndarray', True)
-        saxs.save()
-        assert_equal(os.path.exists("sq.dat"), True)
+        with tmpdir.as_cwd():
+            saxs = Saxs(ag, nobin=True)
+            saxs.run()
+            assert_equal(type(saxs.q_factor).__name__ == 'ndarray', True)
+            saxs.save()
+            assert_equal(os.path.exists("sq.dat"), True)
 
 
 class TestDiporder(object):
@@ -204,7 +206,6 @@ class TestRDFPlanar(object):
 
         u.dimensions = [20, 20, 20, 90, 90, 90]
         u.residues.molnums = list(range(1, 17))
-        u.atoms.write("universe.pdb")
         return u.select_atoms("name OW HW1 HW2")
 
     def run_rdf(self, get_universe, **kwargs):
