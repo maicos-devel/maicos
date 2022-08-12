@@ -137,40 +137,93 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
     return corr
 
 
-def symmetrize_1D(arr, inplace=False):
-    """Symmeterize a 1D-array.
+def symmetrize(m, axis=None, inplace=False):
+    """Symmeterize an array.
 
-    The array can have additional axes of length one.
+    The shape of the array is preserved, but the elements are symmetrized
+    with respect to the given axis.
 
     Parameters
     ----------
-    arr : numpy.ndarray
-        array to symmetrize
+    m : array_like
+        Input array to symmetrize
+    axis : None or int or tuple of ints
+         Axis or axes along which to symmetrize over. The default,
+         axis=None, will symmetrize over all of the axes of the input array.
+         If axis is negative it counts from the last to the first axis.
+         If axis is a tuple of ints, symmetrizing is performed on all of the
+         axes specified in the tuple.
     inplace : bool
         Do symmetrizations inplace. If `False` a new array is returnd.
 
     Returns
     -------
-    np.ndarray
+    out : array_like
         the symmetrized array
 
-    Raises
-    ------
-    ValueError
-        If the array is not of one dimensional.
+    Notes
+    -----
+    symmetrize uses :meth:`np.flip` for flipping the indices.
+
+    Examples
+    --------
+    >>> A = np.arange(10).astype(float)
+    >>> A
+    array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
+    >>> maicos.utils.symmetrize(A)
+    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
+    >>> maicos.utils.symmetrize(A, inplace=True)
+    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
+    >>> A
+    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
+
+    It also works for arrays with more than 1 dimensions in a
+    general dimension.
+
+    >>> A = np.arange(20).astype(float).reshape(2,10).T
+    >>> A
+    array([[ 0., 10.],
+        [ 1., 11.],
+        [ 2., 12.],
+        [ 3., 13.],
+        [ 4., 14.],
+        [ 5., 15.],
+        [ 6., 16.],
+        [ 7., 17.],
+        [ 8., 18.],
+        [ 9., 19.]])
+    >>> maicos.utils.symmetrize(A)
+    array([[9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5],
+        [9.5, 9.5]])
+    >>> maicos.utils.symmetrize(A, axis=0)
+    array([[ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5],
+        [ 4.5, 14.5]])
     """
-    if len(arr.squeeze().shape) > 1 or arr.shape[0] == 1:
-        raise ValueError("Only 1 dimensional arrays can be symmeterized")
-
     if inplace:
-        sym_arr = arr
+        out = m
     else:
-        sym_arr = np.copy(arr).astype(float)
+        out = np.copy(m)
 
-    sym_arr += arr[::-1]
-    sym_arr /= 2
+    out += np.flip(m, axis=axis)
+    out /= 2
 
-    return sym_arr
+    return out
 
 
 def get_cli_input():

@@ -70,35 +70,43 @@ def test_iFT():
 
 def test_symmetrize_even():
     """Tests symmetrization for even array."""
-    sym_arr = maicos.utils.symmetrize_1D(np.arange(10).astype(float))
-    assert np.all(sym_arr == 4.5)
+    A_sym = maicos.utils.symmetrize(np.arange(10).astype(float))
+    assert np.all(A_sym == 4.5)
 
 
 def test_symmetrize_odd():
     """Tests symmetrization for odd array."""
-    sym_arr = maicos.utils.symmetrize_1D(np.arange(11).astype(float))
-    assert np.all(sym_arr == 5)
+    A_sym = maicos.utils.symmetrize(np.arange(11).astype(float))
+    assert np.all(A_sym == 5)
+
+
+def test_higher_dimensions_length_1():
+    """Tests arrays with higher dimensions of length 1."""
+    A = np.arange(11).astype(float)[:, np.newaxis]
+    A_sym = maicos.utils.symmetrize(A)
+    A_sym_ref = 5 * np.ones((11, 1))
+    assert_equal(A_sym, A_sym_ref)
 
 
 def test_higher_dimensions():
-    """Tests arrays with higher dimensions of length 1."""
-    arr = np.arange(11).astype(float)[:, np.newaxis]
-    sym_arr = maicos.utils.symmetrize_1D(arr)
-    sym_arr_ref = 5 * np.ones((11, 1))
-    assert_equal(sym_arr, sym_arr_ref)
+    """Tests array with higher dimensions."""
+    A = np.arange(20).astype(float).reshape(2, 10).T
+    A_sym = maicos.utils.symmetrize(A)
+    assert_equal(A_sym, 9.5)
 
 
-@pytest.mark.parametrize("shape", [(2, 2), (1, 11, 1)])
-def test_not_allowed_dimensions(shape):
-    """Tests error raise for higher dimensions."""
-    with pytest.raises(ValueError, match="Only 1 dimensional arrays"):
-        maicos.utils.symmetrize_1D(np.ones(shape))
+def test_higher_dimensions_axis():
+    """Tests array with higher dimensions with respect to given axis."""
+    A = np.arange(20).astype(float).reshape(2, 10).T
+    A_sym = maicos.utils.symmetrize(A, axis=0)
+    A_sym_ref = np.vstack((4.5 * np.ones(10), 14.5 * np.ones(10))).T
+    assert_equal(A_sym, A_sym_ref)
 
 
 def test_symmetrize_inplace():
     """Tests inplace symmetrization."""
     arr = np.arange(11).astype(float)
-    maicos.utils.symmetrize_1D(arr, inplace=True)
+    maicos.utils.symmetrize(arr, inplace=True)
     assert np.all(arr == 5)
 
 
