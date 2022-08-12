@@ -8,8 +8,6 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import os
-
 import MDAnalysis as mda
 import numpy as np
 import pytest
@@ -51,7 +49,7 @@ class TestEpsilonPlanar(object):
 
     """
 
-    Number of times EpsilonPlanar broke: |||
+    Number of times EpsilonPlanar broke: ||||
 
     If you are reading this, most likely you are investigating a bug in the
     EpsilonPlanar class. To calculate the local electric permittivity in a
@@ -220,19 +218,22 @@ class TestEpsilonPlanar(object):
         k2 = np.mean(eps2.results.eps_perp)
         assert_almost_equal((k1 / k2), 1.5, decimal=1)
 
-    def test_sym(self, ag):
+    def test_sym(self, ag_single_frame):
         """Test for symmetric case."""
-        eps = EpsilonPlanar(ag, sym=True)
-        eps.run()
-        assert_almost_equal(np.mean(eps.results.eps_perp), -1.01, decimal=2)
+        eps_sym = EpsilonPlanar(
+            [ag_single_frame, ag_single_frame[:-30]], sym=True).run()
+        eps = EpsilonPlanar(
+            [ag_single_frame, ag_single_frame[:-30]], sym=False).run()
 
-    def test_sym_ofile(self, ag, tmpdir):
-        """Test for output file in symmetric case."""
-        with tmpdir.as_cwd():
-            eps = EpsilonPlanar(ag, sym=True)
-            eps.run()
-            eps.save()
-            assert os.path.exists("eps_par.dat")
+        # Check that the z column is not changed
+        assert_equal(eps.results.z, eps_sym.results.z)
+
+        # Check that the all eps components are symmetric
+        for d in ["eps_perp", "deps_perp", "eps_perp_self", "eps_perp_coll",
+                  "eps_par", "deps_par", "eps_par_self", "eps_par_coll"]:
+            A = (eps.results[d] + eps.results[d][::-1]) / 2
+
+            assert_equal(A, eps_sym.results[d])
 
 
 class TestEpsilonCylinder(object):

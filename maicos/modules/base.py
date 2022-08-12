@@ -30,7 +30,7 @@ from ..utils import (
     new_variance,
     savetxt,
     sort_atomgroup,
-    symmetrize_1D,
+    symmetrize,
     )
 
 
@@ -443,8 +443,8 @@ class ProfilePlanarBase(PlanarBase):
         self.results.profile_err = self.results.sems.profile
 
         if self.sym:
-            symmetrize_1D(self.results.profile_mean, inplace=True)
-            symmetrize_1D(self.results.profile_err, inplace=True)
+            symmetrize(self.results.profile_mean, inplace=True)
+            symmetrize(self.results.profile_err, inplace=True)
 
     def save(self):
         """Save results of analysis to file."""

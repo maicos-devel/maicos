@@ -24,7 +24,7 @@ from ..decorators import (
     set_planar_class_doc,
     set_verbose_doc,
     )
-from ..utils import FT, check_compound, iFT, savetxt
+from ..utils import FT, check_compound, iFT, savetxt, symmetrize
 from .base import AnalysisBase, PlanarBase
 
 
@@ -366,6 +366,17 @@ class EpsilonPlanar(PlanarBase):
         self.results.eps_par_self = pref * cov_par_self
         self.results.eps_par_coll = pref * cov_par_coll
 
+        if self.sym:
+            symmetrize(self.results.eps_perp, axis=0, inplace=True)
+            symmetrize(self.results.deps_perp, axis=0, inplace=True)
+            symmetrize(self.results.eps_perp_self, axis=0, inplace=True)
+            symmetrize(self.results.eps_perp_coll, axis=0, inplace=True)
+
+            symmetrize(self.results.eps_par, axis=0, inplace=True)
+            symmetrize(self.results.deps_par, axis=0, inplace=True)
+            symmetrize(self.results.eps_par_self, axis=0, inplace=True)
+            symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
+
     def save(self):
         """Save results."""
         outdata_perp = np.hstack([
@@ -388,16 +399,6 @@ class EpsilonPlanar(PlanarBase):
             self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
             self.results.eps_par_self, self.results.eps_par_coll
             ])
-
-        # TODO: write general function to symmetrize lists
-        # for include in more modules...
-        if (self.sym):
-            for i in range(len(outdata_par) - 1):
-                outdata_par[i + 1] = .5 * \
-                    (outdata_par[i + 1] + outdata_par[i + 1][-1::-1])
-            for i in range(len(outdata_perp) - 1):
-                outdata_perp[i + 1] = .5 * \
-                    (outdata_perp[i + 1] + outdata_perp[i + 1][-1::-1])
 
         header = "statistics over {:.1f} picoseconds".format(
             self._index * self._universe.trajectory.dt)
