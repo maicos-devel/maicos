@@ -396,8 +396,6 @@ class ProfilePlanarBase(PlanarBase):
         # Arrays for accumulation
         self.results.frame.profile = np.zeros((self.n_bins,
                                                self.n_atomgroups))
-        self.results.frame.profile_sq = np.zeros((self.n_bins,
-                                                  self.n_atomgroups))
 
     def _single_frame(self):
         super(ProfilePlanarBase, self)._single_frame()
@@ -434,7 +432,6 @@ class ProfilePlanarBase(PlanarBase):
                 profile_ts /= self._ts.volume / self.n_bins
 
             self.results.frame.profile[:, index] = profile_ts
-            self.results.frame.profile_sq[:, index] = profile_ts ** 2
 
     def _conclude(self):
         super(ProfilePlanarBase, self)._conclude()
