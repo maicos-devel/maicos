@@ -297,10 +297,11 @@ class EpsilonPlanar(PlanarBase):
             - self.results.means.m_perp \
             * self.results.means.M_perp
 
+        # Using propagation of uncertainties
         dcov_perp = np.sqrt(
-            self.results.sems.mM_perp
-            + self.results.means.M_perp**2 * self.results.sems.m_perp
-            + self.results.means.m_perp**2 * self.results.sems.M_perp
+            self.results.sems.mM_perp**2
+            + (self.results.means.M_perp * self.results.sems.m_perp)**2
+            + (self.results.means.m_perp * self.results.sems.M_perp)**2
             )
 
         var_perp = self.results.means.M_perp_2 - self.results.means.M_perp**2
@@ -344,12 +345,13 @@ class EpsilonPlanar(PlanarBase):
                                    - np.dot(self.results.means.m_par[:, :, i],
                                             self.results.means.M_par))
 
+            # Using propagation of uncertainties
             dcov_par[:, i] = 0.5 * np.sqrt(
-                self.results.sems.mM_par[:, i]
-                + np.dot(self.results.sems.m_par[:, :, i],
+                self.results.sems.mM_par[:, i]**2
+                + np.dot(self.results.sems.m_par[:, :, i]**2,
                          self.results.means.M_par**2)
                 + np.dot(self.results.means.m_par[:, :, i]**2,
-                         self.results.sems.M_par)
+                         self.results.sems.M_par**2)
                 )
 
             cov_par_self[:, i] = 0.5 * (
