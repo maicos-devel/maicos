@@ -12,7 +12,7 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from datafiles import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
 
@@ -184,6 +184,22 @@ class TestEpsilonPlanar(object):
                            np.multiply(M_perp, n_dipoles),
                            rtol=0.1)
 
+    def test_epsilon(self, ag):
+        """Test that epsilon is constructed correctly from covariances."""
+        eps = EpsilonPlanar(ag, xy=True).run()
+
+        cov_perp = eps.results.means.mM_perp \
+            - eps.results.means.m_perp * eps.results.means.M_perp
+        assert_equal(eps.results.eps_perp,
+                     1 - eps.results.pref * cov_perp)
+
+        cov_par = 0.5 * (eps.results.means.mM_par[:, 0]
+                         - np.dot(eps.results.means.m_par[:, :, 0],
+                                  eps.results.means.M_par))
+
+        assert_equal(eps.results.eps_par[:, 0],
+                     1 + eps.results.pref * cov_par)
+
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():
@@ -191,13 +207,9 @@ class TestEpsilonPlanar(object):
             eps.run()
             eps.save()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
-            assert_almost_equal(eps.results["eps_perp"][:, 0],
-                                res_perp[:, 1],
-                                decimal=1)
+            assert_allclose(eps.results.eps_perp[:, 0], res_perp[:, 1])
             res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
-            assert_almost_equal(eps.results["eps_par"][:, 0],
-                                res_par[:, 1],
-                                decimal=2)
+            assert_allclose(eps.results.eps_par[:, 0], res_par[:, 1])
 
     def test_output_name(self, ag_single_frame, tmpdir):
         """Test output name."""
@@ -212,11 +224,11 @@ class TestEpsilonPlanar(object):
         """Tests for conditions xy & vac when True."""
         eps1 = EpsilonPlanar(ag, xy=True)
         eps1.run()
-        k1 = np.mean(eps1.results.eps_perp)
+        k1 = np.mean(eps1.results.eps_perp - 1)
         eps2 = EpsilonPlanar(ag, xy=True, vac=True)
         eps2.run()
-        k2 = np.mean(eps2.results.eps_perp)
-        assert_almost_equal((k1 / k2), 1.5, decimal=1)
+        k2 = np.mean(eps2.results.eps_perp - 1)
+        assert_allclose((k1 / k2), 1.5, rtol=1e-1)
 
     def test_sym(self, ag_single_frame):
         """Test for symmetric case."""
@@ -275,14 +287,14 @@ class TestEpsilonCylinder(object):
     def test_broken_molecules(self, ag):
         """Tests broken molecules."""
         eps = EpsilonCylinder(ag, make_whole=False).run()
-        assert_almost_equal(eps.results['eps_ax'].mean(), 1179.0, decimal=1)
-        assert_almost_equal(eps.results['eps_rad'].mean(), -10, decimal=0)
+        assert_allclose(eps.results['eps_ax'].mean(), 1179.0, rtol=1e-1)
+        assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 
     def test_repaired_molecules(self, ag):
         """Tests repaired molecules."""
         eps = EpsilonCylinder(ag, make_whole=True).run()
-        assert_almost_equal(eps.results['eps_ax'].mean(), 1179.6, decimal=1)
-        assert_almost_equal(eps.results['eps_rad'].mean(), -10, decimal=0)
+        assert_allclose(eps.results['eps_ax'].mean(), 1179.6, rtol=1e-1)
+        assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""
@@ -291,11 +303,9 @@ class TestEpsilonCylinder(object):
             eps.run()
             eps.save()
             res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
-            assert_almost_equal(eps.results["eps_ax"], res_ax[:, 1], decimal=1)
+            assert_allclose(eps.results["eps_ax"], res_ax[:, 1], rtol=1e-1)
             res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
-            assert_almost_equal(eps.results["eps_rad"],
-                                res_rad[:, 1],
-                                decimal=2)
+            assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
 
     def test_output_name(self, ag_single_frame, tmpdir):
         """Tests output name."""
@@ -320,13 +330,13 @@ class TestEpsilonCylinder(object):
         """Test variable binwidth."""
         eps = EpsilonCylinder(ag, variable_dr=True)
         eps.run()
-        assert_almost_equal(np.std(eps.dr), 0.44, decimal=2)
+        assert_allclose(np.std(eps.dr), 0.44, rtol=1e-1)
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""
         eps = EpsilonCylinder(ag, single=True)
         eps.run()
-        assert_almost_equal(np.mean(eps.results.eps_ax), 1282, decimal=0)
+        assert_allclose(np.mean(eps.results.eps_ax), 1282, rtol=1e-1)
 
 
 class TestDielectricSpectrum(object):
@@ -388,15 +398,15 @@ class TestDielectricSpectrum(object):
                     -0.5 + 10.7j, -16.8 + 3.5j]
             dsusc = [3.4 + 0.j, 0.4 + 2.9j, 1.0 + 0.5j, 0.3 + 1.5j, 2.0 + 0.6j]
 
-            assert_almost_equal(ds.V, V, decimal=1)
-            assert_almost_equal(ds.results.nu, nu, decimal=1)
-            assert_almost_equal(ds.results.susc, susc, decimal=1)
-            assert_almost_equal(ds.results.dsusc, dsusc, decimal=1)
+            assert_allclose(ds.V, V, rtol=1e-1)
+            assert_allclose(ds.results.nu, nu, rtol=1)
+            assert_allclose(ds.results.susc, susc, rtol=1e-1)
+            assert_allclose(ds.results.dsusc, dsusc, rtol=1e-1)
 
     def test_binning(self, ag, tmpdir):
         """Test binning & seglen case."""
         with tmpdir.as_cwd():
             ds = DielectricSpectrum(ag, nobin=False, segs=2, bins=49)
             ds.run()
-            assert_almost_equal(np.mean(ds.results.nu_binned), 0.57, decimal=2)
+            assert_allclose(np.mean(ds.results.nu_binned), 0.57, rtol=1e-2)
             ds.save()
