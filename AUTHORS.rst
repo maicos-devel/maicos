@@ -9,7 +9,7 @@ Maintainers
 - Alexander Schlaich
 
 Developers
----------
+----------
 
 - Maximilian Becker
 - Simon Gravelle

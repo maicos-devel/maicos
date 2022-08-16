@@ -1,8 +1,8 @@
 graft docs
-graft maicos
+graft src
 
 # If you are encounting problems with .c file use
-# git update-index --assume-unchanged maicos/lib/*.c
+# git update-index --assume-unchanged src/maicos/lib/*.c
 
 include *.rst
 include LICENSE

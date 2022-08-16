@@ -13,10 +13,6 @@ structure factors, or transport properties from trajectories files,
 including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
-**Due to ongoing major restructuring work, some modules are currently
-not working correctly (transport and dielectric analysis). Use `v0.3`
-for your work as shown in the Installation directions.**
-
 .. inclusion-readme-intro-end
 
 For details, tutorials, and examples, please have a look at
@@ -96,9 +92,6 @@ List of analysis modules
      - dipolar order parameters
    * - RDFPlanar
      - planar radial distribution function
-   * - Debyer
-     - scattering intensities using the debye equation. The `debyer`_
-       library needs to be downloaded and build
    * - DipoleAngle
      - angle timeseries of dipole moments with respect to an axis
    * - KineticEnergy
@@ -111,6 +104,5 @@ List of analysis modules
 .. _`GROMACS` : https://www.gromacs.org/
 .. _`MDAnalysis`: https://www.mdanalysis.org
 .. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
-.. _`debyer`: https://github.com/wojdyr/debyer
 
 .. inclusion-readme-end

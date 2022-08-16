@@ -33,13 +33,14 @@ extensions = [
     'sphinx.ext.autodoc', # import the modules you are documenting
     'sphinx.ext.viewcode', # tries to find the source files where the objects are contained
     'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
+    'sphinx.ext.mathjax', # Render math via JavaScript
     # 'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
     'nbsphinx', #  provides a source parser for *.ipynb files
 ]
 
 # Execute the notebooks
 nbsphinx_execute = 'always'
-nbsphinx_allow_errors = True
+nbsphinx_allow_errors = False  # Fail if there are errors in notebook
 exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,7 +60,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -181,3 +182,12 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+# Configuration for intersphinx: refer to the Python standard library
+# and other packages used by MAICoS
+intersphinx_mapping = {'https://docs.python.org/3/': None,
+                       'https://docs.scipy.org/doc/scipy/': None,
+                       'https://matplotlib.org/stable/': None,
+                       'https://docs.mdanalysis.org/stable/': None,
+                       'https://numpy.org/doc/stable/': None,
+                       }

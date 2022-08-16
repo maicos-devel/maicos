@@ -13,9 +13,25 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.6 (XXXX/XX/XX)
 -----------------
-Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger, Kira Fischer
+Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger,
+Alexander Schlaich, Maximilian Becker, Kira Fischer
 
-- Add `RDFPlanar` (!133) 
+- Write total epsilon as defined in paper (!155)
+- Introduce generic header (!149)
+- Fix error estimate in `EpsilonPlanar` (!153)
+- Fix sym option in `EpsilonPlanar` (!148)
+- Use standard error of the mean instead of variance for error estimate (!147)
+- Make all tests that write file use temporary file directory (!151)
+- Rewrite `Velocity` module using `ProfilePlanarBase` (!142)
+- Add `RDFPlanar` (!133)
+- Refactor `EpsilonPlanar` (!139)
+- Add a correlation time estimator (!137)
+- Add `frame` dict to `AnalysisBase` (!138)
+- Generalize `comgroup` attribute to all dimensions (!132)
+- Output headers do not require residue names anymore (!134)
+- Remove `Debyer` class (!130)
+- Generalize `concfreq` attribute in `AnalysisBase` (!122)
+- Fix broken binning in `EpsilonPlanar` (!125)
 - Removed `repairMolecules` (!119)
 - Added `grouping` and `binmethod` option (!117)
 - Bump minimum MDAnalysis version to 2.2.0 (!117)
@@ -30,12 +46,12 @@ Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger, Kira Fischer
 - Split new `DensityPlanar` into `ChemicalPotentialPlanar`, `DensityPlanar`,
   `TemperaturePlanar` (!111)
 - Convert more `print` statements into logger calls (!111)
-- Fix wrong diporder normalization + tests (!111)
-- Add zmin and zmax to DensityPlanar and Diporder (!109)
+- Fix wrong `Diporder` normalization + tests (!111)
+- Add `zmin` and `zmax` to DensityPlanar and Diporder (!109)
 - Fix EpsilonPlanar (!108)
 - More tests for `DensityPlanar`, `DensityCylinder`, `KineticEnergy` and
   `DipoleAngle` (!104)
-- Remove EpsilonBulk (!107)
+- Remove `EpsilonBulk` (!107)
 - Add Code of Conduct (!97)
 - Fix lint errors (!95)
 
@@ -72,7 +88,7 @@ Philip Loche, Srihas Velpuri, Simon Gravelle
   `_conclude` method. (!80)
 - Make results saving a public function (save) (!80)
 - Added docstring Decorator for `PlanarDocstring` and `verbose` option (!80)
-- Use `MDAnalysis`'s' `center_of_mass` function for center of 
+- Use `MDAnalysis`'s' `center_of_mass` function for center of
   mass shifting (!80)
 
 

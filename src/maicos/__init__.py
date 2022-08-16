@@ -48,7 +48,7 @@ try:
 except ImportError:
     pass
 
-__authors__ = "Philip Loche et. al."
+__authors__ = "MAICoS Developer Team"
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')
