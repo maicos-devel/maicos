@@ -88,21 +88,24 @@ class EpsilonPlanar(PlanarBase):
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
     results.dens_mean : np.ndarray
-        eps_par: Parallel dielectric profile (ε_∥ - 1)
+        eps_par: Parallel dielectric profile ε_∥
     results.deps_par : np.ndarray
         Error of parallel dielectric profile
     results.eps_par_self : np.ndarray
-        Self contribution of parallel dielectric profile
+        Reduced self contribution of parallel dielectric profile (ε_∥_self - 1)
     results.eps_par_coll : np.ndarray
-        Collective contribution of parallel dielectric profile
+        Reduced collective contribution of parallel dielectric profile
+        (ε_∥_coll - 1)
     results.eps_perp : np.ndarray
-        Inverse perpendicular dielectric profile (ε^{-1}_⟂ - 1)
+        Inverse perpendicular dielectric profile ε^{-1}_⟂
     results.deps_perp : np.ndarray
         Error of inverse perpendicular dielectric profile
     results.eps_par_self : np.ndarray
-        Self contribution of Inverse perpendicular dielectric profile
+        Reduced self contribution of Inverse perpendicular dielectric profile
+        (ε^{-1}_⟂_self - 1)
     results.eps_perp_coll : np.ndarray
-        Collective contribution of Inverse perpendicular dielectric profile
+        Reduced collective contribution of Inverse perpendicular
+        dielectric profile (ε^{-1}_⟂_coll - 1)
     """
 
     def __init__(self,
@@ -150,7 +153,7 @@ class EpsilonPlanar(PlanarBase):
         self.results.frame.M_perp = 0
         self.results.frame.M_perp_2 = 0
 
-        n_ag = len(self.atomgroups)
+        n_ag = self.n_atomgroups
 
         self.results.frame.m_par = np.zeros((self.n_bins, 2, n_ag))
         self.results.frame.mM_par = np.zeros((self.n_bins, n_ag))
@@ -179,8 +182,8 @@ class EpsilonPlanar(PlanarBase):
         self.results.frame.M_perp_2 = self.results.frame.M[self.dim]**2
         self.results.frame.M_par = self.results.frame.M[self.xydims]
 
-        # Use polarization density ( for perpendicular component )
-        # ========================================================
+        # Use polarization density (for perpendicular component)
+        # ======================================================
         for i, sel in enumerate(self.atomgroups):
             zpos = np.zeros(len(sel))
             np.clip(sel.atoms.positions[:, self.dim],
@@ -207,8 +210,8 @@ class EpsilonPlanar(PlanarBase):
                 - self.results.frame.m_perp[:, i] \
                 * self.results.frame.V_bin
 
-            # Use virtual cutting method ( for parallel component )
-            # ========================================================
+            # Use virtual cutting method (for parallel component)
+            # ===================================================
             # Move all z-positions to 'center of charge' such
             # that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only
@@ -293,6 +296,8 @@ class EpsilonPlanar(PlanarBase):
         self.results.pref = pref
         self.results.V = self.results.means.V
 
+        # Perpendicular component
+        # =======================
         cov_perp = self.results.means.mM_perp \
             - self.results.means.m_perp \
             * self.results.means.M_perp
@@ -335,12 +340,16 @@ class EpsilonPlanar(PlanarBase):
                 (- pref * cov_perp_coll) \
                 / (1 + pref / self.results.means.V * var_perp)
 
-        cov_par = np.zeros((self.n_bins, len(self.atomgroups)))
-        dcov_par = np.zeros((self.n_bins, len(self.atomgroups)))
-        cov_par_self = np.zeros((self.n_bins, len(self.atomgroups)))
-        cov_par_coll = np.zeros((self.n_bins, len(self.atomgroups)))
+        self.results.eps_perp += 1
 
-        for i, _ in enumerate(self.atomgroups):
+        # Parallel component
+        # ==================
+        cov_par = np.zeros((self.n_bins, self.n_atomgroups))
+        dcov_par = np.zeros((self.n_bins, self.n_atomgroups))
+        cov_par_self = np.zeros((self.n_bins, self.n_atomgroups))
+        cov_par_coll = np.zeros((self.n_bins, self.n_atomgroups))
+
+        for i in range(self.n_atomgroups):
             cov_par[:, i] = 0.5 * (self.results.means.mM_par[:, i]
                                    - np.dot(self.results.means.m_par[:, :, i],
                                             self.results.means.M_par))
@@ -367,6 +376,8 @@ class EpsilonPlanar(PlanarBase):
         self.results.deps_par = pref * dcov_par
         self.results.eps_par_self = pref * cov_par_self
         self.results.eps_par_coll = pref * cov_par_coll
+
+        self.results.eps_par += 1
 
         if self.sym:
             symmetrize(self.results.eps_perp, axis=0, inplace=True)
@@ -409,11 +420,11 @@ class EpsilonPlanar(PlanarBase):
             columns.append(f"ε_r ({i+1})")
         for i, _ in enumerate(self.atomgroups):
             columns.append(f"Δε_r ({i+1})")
-        columns += ["self ε_r (system)", "collective ε_r (system)"]
+        columns += ["self ε_r - 1 (system)", "coll. ε_r - 1 (system)"]
         for i, _ in enumerate(self.atomgroups):
-            columns.append(f"self ε_r ({i+1})")
+            columns.append(f"self ε_r - 1 ({i+1})")
         for i, _ in enumerate(self.atomgroups):
-            columns.append(f"collective ε_r ({i+1})")
+            columns.append(f"coll. ε_r - 1 ({i+1})")
 
         self.savetxt("{}{}".format(self.output_prefix, "_perp"),
                      outdata_perp, columns=columns)
