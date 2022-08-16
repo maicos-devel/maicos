@@ -232,18 +232,7 @@ def get_cli_input():
     # Add additional quotes for connected arguments.
     arguments = ['"{}"'.format(arg)
                  if " " in arg else arg for arg in sys.argv[1:]]
-    return "Command line was: {} {}".format(program_name, " ".join(arguments))
-
-
-def savetxt(fname, X, header='', fsuffix=".dat", **kwargs):
-    """Save to text.
-
-    An extension of the numpy savetxt function. Adds the command line
-    input to the header and checks for a doubled defined filesuffix.
-    """
-    header = "{}\n{}".format(get_cli_input(), header)
-    fname = "{}{}".format(fname, (not fname.endswith(fsuffix)) * fsuffix)
-    np.savetxt(fname, X, header=header, **kwargs)
+    return "{} {}".format(program_name, " ".join(arguments))
 
 
 def atomgroup_header(AtomGroup):
@@ -253,6 +242,10 @@ def atomgroup_header(AtomGroup):
     residues and the number of residues. Useful for writing
     output file headers.
     """
+    if not hasattr(AtomGroup, 'types'):
+        warnings.warn("AtomGroup does not contain atom types. "
+                      "Not writing AtomGroup information to output.")
+        return f"{len(AtomGroup.atoms)} unkown particles"
     unique, unique_counts = np.unique(AtomGroup.types,
                                       return_counts=True)
     return " & ".join(

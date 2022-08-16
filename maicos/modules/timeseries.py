@@ -16,7 +16,7 @@ details are given in the :ref:`ref_tutorial`.
 import numpy as np
 
 from ..decorators import set_verbose_doc
-from ..utils import check_compound, savetxt
+from ..utils import check_compound
 from .base import AnalysisBase
 
 
@@ -105,13 +105,14 @@ class DipoleAngle(AnalysisBase):
 
     def save(self):
         """Save result."""
-        savetxt(self.output,
-                np.vstack([self.results.t,
-                           self.results.cos_theta_i,
-                           self.results.cos_theta_ii,
-                           self.results.cos_theta_ij]).T,
-                header="t\t<cos(θ_i)>\t<cos(θ_i)cos(θ_i)>\t<cos(θ_i)cos(θ_j)>",
-                fmt='%.5e')
+        self.savetxt(self.output,
+                     np.vstack([self.results.t,
+                                self.results.cos_theta_i,
+                                self.results.cos_theta_ii,
+                                self.results.cos_theta_ij]).T,
+                     columns=["t", "<cos(θ_i)>",
+                              "<cos(θ_i)cos(θ_i)>",
+                              "<cos(θ_i)cos(θ_j)>"])
 
 
 @set_verbose_doc
@@ -198,10 +199,10 @@ class KineticEnergy(AnalysisBase):
 
     def save(self):
         """Save result."""
-        savetxt(self.output,
-                np.vstack([
-                    self.results.t, self.results.trans,
-                    self.results.rot
-                    ]).T,
-                fmt='%.8e',
-                header="t / ps \t E_kin^trans / kJ/mol \t E_kin^rot / kJ/mole")
+        self.savetxt(self.output,
+                     np.vstack([
+                         self.results.t, self.results.trans,
+                         self.results.rot
+                         ]).T,
+                     columns=["t", "E_kin^trans [kJ/mol]",
+                              "E_kin^rot [kJ/mol]"])

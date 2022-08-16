@@ -134,8 +134,7 @@ def test_get_cli_input():
     """Tests get cli input."""
     testargs = ['maicos', 'foo', "foo bar"]
     with patch.object(sys, 'argv', testargs):
-        assert maicos.utils.get_cli_input() == 'Command line was: ' \
-                                               'maicos foo "foo bar"'
+        assert maicos.utils.get_cli_input() == 'maicos foo "foo bar"'
 
 
 @pytest.mark.parametrize(

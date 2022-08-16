@@ -404,8 +404,8 @@ class TestDensityCylinder(object):
             dens.run()
             dens.save()
             outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[1]
-            assert_equal(data.split()[4] + data.split()[5], "[eÅ^(-3)]")
+            data = outputf.readlines()[14]
+            assert_equal(data.split()[5] + data.split()[6], "[eÅ^(-3)]")
 
     def test_dens_cyl_save_number(self, ag, tmpdir):
         """Testing with density flag number."""
@@ -414,8 +414,8 @@ class TestDensityCylinder(object):
             dens.run()
             dens.save()
             outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[1]
-            assert_equal(data.split()[4], "[Å^(-3)]")
+            data = outputf.readlines()[14]
+            assert_equal(data.split()[6], "[Å^(-3)]")
 
     def test_dens_cyl_save_temp(self, ag, tmpdir):
         """Testing with density flag temperature."""
@@ -424,5 +424,5 @@ class TestDensityCylinder(object):
             dens.run()
             dens.save()
             outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[1]
-            assert_equal(data.split()[3], '[K]')
+            data = outputf.readlines()[14]
+            assert_equal(data.split()[5], '[K]')

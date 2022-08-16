@@ -78,7 +78,7 @@ from MDAnalysis.exceptions import NoDataError
 from scipy import constants
 
 from ..decorators import set_profile_planar_class_doc, set_verbose_doc
-from ..utils import atomgroup_header, savetxt
+from ..utils import atomgroup_header
 from .base import AnalysisBase, ProfilePlanarBase
 
 
@@ -359,9 +359,9 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                 warnings.simplefilter('always')
                 warnings.warn("AtomGroup does not contain resnames."
                               " Not writing residues information to output.")
-        savetxt(self.muout,
-                np.hstack((self.results.mu, self.results.dmu))[None],
-                header=columns)
+        self.savetxt(self.muout,
+                     np.hstack((self.results.mu, self.results.dmu))[None],
+                     columns=columns)
 
 
 @set_verbose_doc
@@ -662,8 +662,7 @@ class DensityCylinder(AnalysisBase):
         self.results.dens_std = np.nan_to_num(
             np.sqrt(self.results.dens_mean_sq
                     - self.results.dens_mean ** 2))
-        self.results.dens_err = self.results.dens_std / np.sqrt(
-            self._index)
+        self.results.dens_err = self.results.dens_std / np.sqrt(self._index)
 
     def save(self):
         """Save results of analysis to file."""
@@ -677,19 +676,18 @@ class DensityCylinder(AnalysisBase):
             units = "K"
 
         if self.dens == 'temp':
-            columns = f"temperature profile [{units}]"
+            profile_type = f"temperature [{units}]"
         else:
-            columns = f"{self.dens} density profile [{units}]"
-        columns += f"\nstatistics over {self._index * self._trajectory.dt:.1f}"
-        columns += "ps \npositions [Å]"
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group)
-        for group in self.atomgroups:
-            columns += "\t" + atomgroup_header(group) + " error"
+            profile_type = f"{self.dens} dens. [{units}]"
+        columns = ["positions [Å]"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"{profile_type} {i+1}")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"{profile_type} error {i+1}")
 
         # save density profile
-        savetxt(self.output,
-                np.hstack(
-                    ((self.results.r[:, np.newaxis]),
-                     self.results.dens_mean, self.results.dens_err)),
-                header=columns)
+        self.savetxt(self.output,
+                     np.hstack(
+                         ((self.results.r[:, np.newaxis]),
+                          self.results.dens_mean, self.results.dens_err)),
+                     columns=columns)

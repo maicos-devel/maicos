@@ -435,6 +435,8 @@ class TestProfilePlanarBase:
         for attr in ["charges", "masses"]:
             universe.add_TopologyAttr(attr, values=np.ones(n_atoms))
 
+        # Toggle this comment to get a universe with types
+        # universe.add_TopologyAttr("type", ["X"] * n_atoms)
         universe.add_TopologyAttr("resids", np.arange(n_atoms))
 
         rng = np.random.default_rng(1634123)
