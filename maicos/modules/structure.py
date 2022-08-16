@@ -23,7 +23,7 @@ from MDAnalysis.lib.distances import capped_distance
 from .. import tables
 from ..decorators import make_whole, set_planar_class_doc, set_verbose_doc
 from ..lib import sfactor
-from ..utils import check_compound, savetxt
+from ..utils import check_compound
 from .base import AnalysisBase, PlanarBase
 
 
@@ -239,8 +239,7 @@ class Saxs(AnalysisBase):
         if self.nobindata:
             out = np.hstack([
                 self.results.q[:, np.newaxis], self.results.q_indices,
-                self.results.scat_factor.flatten()[:, np.newaxis]
-                ])
+                self.results.scat_factor.flatten()[:, np.newaxis]])
             nonzeros = np.where(out[:, 4] != 0)[0]
             out = out[nonzeros]
             argsort = np.argsort(out[:, 0])
@@ -248,15 +247,14 @@ class Saxs(AnalysisBase):
 
             boxinfo = "box_x = {0:.3f} Å, box_y = {1:.3f} Å, " \
                       "box_z = {2:.3f} Å\n".format(*self.box)
-            savetxt(self.output, out,
-                    header=boxinfo + "q (1/Å)\tq_i\t q_j \t "
-                                     "q_k \tS(q) (arb. units)", fmt='%.4e')
+            self.savetxt(self.output, out,
+                         columns=[boxinfo, "q (1/Å)", "q_i", "q_j",
+                                  "q_k", "S(q) (arb. units)"])
         else:
-            savetxt(self.output,
-                    np.vstack([self.results.q,
-                               self.results.scat_factor]).T,
-                    header="q (1/Å)\tS(q) (arb. units)",
-                    fmt='%.4e')
+            self.savetxt(self.output,
+                         np.vstack([self.results.q,
+                                    self.results.scat_factor]).T,
+                         columns=["q (1/Å)", "S(q) (arb. units)"])
 
 
 @set_verbose_doc
@@ -430,19 +428,19 @@ class Diporder(PlanarBase):
 
     def save(self):
         """Save results to a file."""
-        header = "z [Å]\t"
-        header += "P_0*rho(z)*cos(Theta[z]) [e/Å^2]\t"
-        header += "cos(theta(z))\t"
-        header += "cos^2(theta(z))\t"
-        header += "rho(z) [1/Å^3]"
+        header = ["z [Å]"]
+        header.append("P_0*rho(z)*cos(Theta[z]) [e/Å^2]")
+        header.append("cos(theta(z))")
+        header.append("cos^2(theta(z))")
+        header.append("rho(z) [1/Å^3]")
 
-        savetxt(self.output,
-                np.vstack([
-                    self.results.z, self.results.P0,
-                    self.results.cos_theta, self.results.cos_2_theta,
-                    self.results.rho
-                    ]).T,
-                header=header)
+        self.savetxt(self.output,
+                     np.vstack([
+                         self.results.z, self.results.P0,
+                         self.results.cos_theta, self.results.cos_2_theta,
+                         self.results.rho
+                         ]).T,
+                     columns=header)
 
 
 @set_verbose_doc
@@ -661,17 +659,15 @@ class RDFPlanar(PlanarBase):
         ring_volumes = np.expand_dims(ring_volumes, axis=0)
         self.results.bins = self.bins
         self.results.rdf = self.count / self.n_g1_total / ring_volumes / 2
-        self.results.rdf = self.results.rdf.T
+        self.results.rdf = np.nan_to_num(self.results.rdf.T, nan=0)
 
     def save(self):
         """Save results."""
-        zstring = ""
+        columns = ["r [Å]"]
         for z in self.results.z:
-            zstring += f"{z} \t "
+            columns.append(f"rdf at {z:.2f} Å [Å^-3]")
 
-        savetxt(self.output,
-                np.hstack([self.results.bins[:, np.newaxis],
-                           self.results.rdf]),
-                header="bin center in A \t rdf in particles/A^3 for z "
-                + zstring,
-                fmt='%.8e')
+        self.savetxt(self.output,
+                     np.hstack([self.results.bins[:, np.newaxis],
+                                self.results.rdf]),
+                     columns=columns)

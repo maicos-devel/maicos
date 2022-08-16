@@ -24,7 +24,7 @@ from ..decorators import (
     set_planar_class_doc,
     set_verbose_doc,
     )
-from ..utils import FT, check_compound, iFT, savetxt, symmetrize
+from ..utils import FT, check_compound, iFT, symmetrize
 from .base import AnalysisBase, PlanarBase
 
 
@@ -384,32 +384,41 @@ class EpsilonPlanar(PlanarBase):
         outdata_perp = np.hstack([
             self.results.z[:, np.newaxis],
             self.results.eps_perp.sum(axis=1)[:, np.newaxis],
+            np.linalg.norm(self.results.deps_perp, axis=1)[:, np.newaxis],
             self.results.eps_perp,
-            np.linalg.norm(self.results.deps_perp,
-                           axis=1)[:, np.newaxis], self.results.deps_perp,
+            self.results.deps_perp,
             self.results.eps_perp_self.sum(axis=1)[:, np.newaxis],
             self.results.eps_perp_coll.sum(axis=1)[:, np.newaxis],
-            self.results.eps_perp_self, self.results.eps_perp_coll
+            self.results.eps_perp_self,
+            self.results.eps_perp_coll
             ])
         outdata_par = np.hstack([
             self.results.z[:, np.newaxis],
             self.results.eps_par.sum(axis=1)[:, np.newaxis],
+            np.linalg.norm(self.results.deps_par, axis=1)[:, np.newaxis],
             self.results.eps_par,
-            np.linalg.norm(self.results.deps_par,
-                           axis=1)[:, np.newaxis], self.results.deps_par,
+            self.results.deps_par,
             self.results.eps_par_self.sum(axis=1)[:, np.newaxis],
             self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
-            self.results.eps_par_self, self.results.eps_par_coll
+            self.results.eps_par_self,
+            self.results.eps_par_coll
             ])
 
-        header = "statistics over {:.1f} picoseconds".format(
-            self._index * self._universe.trajectory.dt)
-        savetxt("{}{}".format(self.output_prefix, "_perp"),
-                outdata_perp,
-                header=header)
-        savetxt("{}{}".format(self.output_prefix, "_par"),
-                outdata_par,
-                header=header)
+        columns = ["position [Å]", "ε_r (system)", "Δε_r (system)"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"ε_r ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"Δε_r ({i+1})")
+        columns += ["self ε_r (system)", "collective ε_r (system)"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"self ε_r ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"collective ε_r ({i+1})")
+
+        self.savetxt("{}{}".format(self.output_prefix, "_perp"),
+                     outdata_perp, columns=columns)
+        self.savetxt("{}{}".format(self.output_prefix, "_par"),
+                     outdata_par, columns=columns)
 
 
 @set_verbose_doc
@@ -668,14 +677,17 @@ class EpsilonCylinder(AnalysisBase):
             self.results.r, self.results.eps_rad, self.results.deps_rad
             ]).T
 
-        header = "statistics over {:.1f} picoseconds".format(
-            self._index * self._universe.trajectory.dt)
-        savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
-                outdata_ax,
-                header=header)
-        savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
-                outdata_rad,
-                header=header)
+        columns = "positions [Å] | "
+        columns += "eps_sum"
+        columns += f" | {'eps_ax'} ({1}) | {'eps_ax'} ({1})"
+        columns += f" | {'eps_rad'} ({1}) error | {'eps_rad'} ({1}) error"
+
+        self.savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
+                     outdata_ax,
+                     columns=columns)
+        self.savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
+                     outdata_rad,
+                     columns=columns)
 
 
 @set_verbose_doc
@@ -892,32 +904,31 @@ class DielectricSpectrum(AnalysisBase):
 
         np.save(self.output_prefix + 'P_tseries.npy', self.results.P)
 
-        suscfilename = "{}{}".format(self.output_prefix, 'susc')
-        savetxt(
+        suscfilename = "{}{}".format(self.output_prefix, 'susc.dat')
+        self.savetxt(
             suscfilename,
             np.transpose([
                 self.results.nu, self.results.susc.real,
                 self.results.dsusc.real, self.results.susc.imag,
                 self.results.dsusc.imag
                 ]),
-            delimiter='\t',
-            header='freq\tsusc\'\tstd_dev_susc\'\t-susc\'\'\tstd_dev_susc\'\'')
+            columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)",
+                                "Δ imag(χ)"])
 
         logger.info('Susceptibility data saved as ' + suscfilename)
 
         if not (self.nobin or self.seglen <= self.bins):
 
-            suscfilename = "{}{}".format(self.output_prefix, 'susc_binned')
-            savetxt(suscfilename,
-                    np.transpose([
-                        self.results.nu_binned,
-                        self.results.susc_binned.real,
-                        self.results.dsusc_binned.real,
-                        self.results.susc_binned.imag,
-                        self.results.dsusc_binned.imag
-                        ]),
-                    delimiter='\t',
-                    header="freq\tsusc\'\tstd_dev_susc\'\t-"
-                    "susc\'\'\tstd_dev_susc\'\'")
+            suscfilename = "{}{}".format(self.output_prefix, 'susc_binned.dat')
+            self.savetxt(suscfilename,
+                         np.transpose([
+                             self.results.nu_binned,
+                             self.results.susc_binned.real,
+                             self.results.dsusc_binned.real,
+                             self.results.susc_binned.imag,
+                             self.results.dsusc_binned.imag
+                             ]),
+                         columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)",
+                                  "Δ imag(χ)"])
 
             logger.info('Binned susceptibility data saved as ' + suscfilename)

@@ -37,6 +37,7 @@ from .modules.epsilon import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
 from .modules.structure import Diporder, RDFPlanar, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy
 from .modules.transport import Velocity
+from .version import __version__
 
 
 try:
@@ -48,9 +49,6 @@ except ImportError:
     pass
 
 __authors__ = "Philip Loche et. al."
-# NOTE: keep in sync with VERSION in setup.py
-# NOTE: keep in sync with version in docs/source/conf.py
-__version__ = "0.6-dev"
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')

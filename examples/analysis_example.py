@@ -14,7 +14,6 @@ import logging
 import numpy as np
 
 from maicos.modules.base import AnalysisBase
-from maicos.utils import savetxt
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +77,6 @@ class AnalysisExample(AnalysisBase):
 
         Called at the end of the run() method after _conclude.
         """
-        savetxt(self.output,
-                np.array([self.results.volume]),
-                fmt='%1.2f',
-                header='volume / Å³')
+        self.savetxt(self.output,
+                     np.array([self.results.volume]),
+                     columns='volume / Å³')
