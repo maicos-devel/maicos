@@ -1,3 +1,0 @@
-mdacli>=0.1.12
-MDAnalysis>=2.2.0
-scipy>=1.0.0

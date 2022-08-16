@@ -1,6 +1,6 @@
-====
+=========
 RDFPlanar
-====
+=========
 
 .. automodule:: maicos.modules.structure.RDFPlanar
     :members:

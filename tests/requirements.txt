@@ -1,5 +1,0 @@
-coverage[toml]
-hypothesis
-MDAnalysisTests
-pytest
-pytest-cov
