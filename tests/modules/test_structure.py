@@ -138,12 +138,12 @@ class TestDiporder(object):
 
     def test_broken_molecules(self, ag):
         """Test broken molecules."""
-        dip = Diporder(ag, make_whole=False).run()
+        dip = Diporder(ag, unwrap=False).run()
         assert_allclose(dip.results['P0'].mean(), 0.0006, rtol=1e-1)
 
     def test_repaired_molecules(self, ag):
         """Test repaired molecules."""
-        dip = Diporder(ag, make_whole=True).run()
+        dip = Diporder(ag, unwrap=True).run()
         assert_allclose(dip.results['P0'].mean(), 0, atol=1e-2)
 
     def test_output(self, ag, tmpdir):
@@ -154,18 +154,12 @@ class TestDiporder(object):
             res_dip = np.loadtxt(dip.output)
             assert_allclose(dip.results["P0"], res_dip[:, 1], rtol=1e-2)
 
-    def test_L_cum(self, ag):
-        """Test cummulataive box length L_cum."""
-        dip = Diporder(ag, bpbc=False).run()
-        L_cum = ag.universe.trajectory.n_frames * ag.universe.dimensions[2]
-        assert dip.L_cum == L_cum
-
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
 
         Test if the division by the number of frames is correct.
         """
-        dip = Diporder(ag, make_whole=False).run(stop=1)
+        dip = Diporder(ag, unwrap=False).run(stop=1)
         assert not np.isnan(dip.results.P0).any()
 
     def test_output_name(self, ag, tmpdir):

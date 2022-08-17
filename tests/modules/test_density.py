@@ -7,8 +7,6 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-import os
-
 import MDAnalysis as mda
 import numpy as np
 import pytest
@@ -22,12 +20,7 @@ from datafiles import (
     WATER_TRR,
     )
 from MDAnalysisTests.datafiles import TPR, TRR
-from numpy.testing import (
-    assert_allclose,
-    assert_almost_equal,
-    assert_equal,
-    assert_raises,
-    )
+from numpy.testing import assert_allclose, assert_equal, assert_raises
 
 from maicos.modules import density
 
@@ -292,19 +285,19 @@ class TestDensityPlanar(ReferenceAtomGroups):
 
     def test_comshift(self, mica_water):
         """Test comshift."""
-        dens = density.DensityPlanar(mica_water, comgroup=mica_water).run()
+        dens = density.DensityPlanar(mica_water, refgroup=mica_water).run()
         assert_allclose(dens.results['profile_mean'][20], 0.581, rtol=1e-1)
 
     def test_comshift_z2(self, mica_water):
         """Test comshift with an additional shift by z/2."""
         mica_water.atoms.translate(
             (0, 0, mica_water.universe.dimensions[2] / 2))
-        dens = density.DensityPlanar(mica_water, comgroup=mica_water).run()
+        dens = density.DensityPlanar(mica_water, refgroup=mica_water).run()
         assert_allclose(dens.results['profile_mean'][20], 0.56, rtol=1e-1)
 
     def test_comshift_over_boundaries(self, mica_water, mica_surface):
         """Test comshift over box boundaries."""
-        dens = density.DensityPlanar(mica_water, comgroup=mica_surface).run()
+        dens = density.DensityPlanar(mica_water, refgroup=mica_surface).run()
         assert_allclose(dens.results['profile_mean'][20], 0.0, rtol=1e-1)
 
 
@@ -317,112 +310,11 @@ class TestDensityCylinder(object):
         u = mda.Universe(WATER_TPR, WATER_TRR)
         return u.atoms
 
-    @pytest.fixture()
-    def ag_single_frame(self):
-        """Import MDA universe, single frame."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
-        return u.atoms
-
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.590), ('number', 0.0991),
-                              ('charge', 0.0), ('temp', 291.6)))
+                             (('mass', 0.59), ('number', 0.099),
+                              ('charge', -1e-4)))
     def test_dens(self, ag, dens_type, mean):
         """Test density."""
         dens = density.DensityCylinder(ag, dens=dens_type).run()
-        assert_allclose(dens.results['dens_mean'].mean(), mean,
-                        atol=1e-4, rtol=1e-1)
-
-    def test_one_frame(self, ag):
-        """Test analysis running for one frame.
-
-        Test if the division by the number of frames is correct.
-        """
-        dens = density.DensityCylinder(ag).run(stop=1)
-        assert not np.isnan(dens.results.dens_mean).any()
-
-    @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_binwidth(self, ag_single_frame, dim):
-        """Test binwidth."""
-        dens = density.DensityCylinder(ag_single_frame, binwidth=1,
-                                       dim=dim).run()
-        odims = np.roll(np.arange(3), -dim)[1:]
-        n_bins = ag_single_frame.universe.dimensions[odims].min() / 2
-        assert_almost_equal(dens.results["r"][1] - dens.results["r"][0],
-                            1,
-                            decimal=1)
-        assert_equal(len(dens.results["r"]), np.ceil(n_bins))
-
-    def test_no_center_group(self, ag_single_frame):
-        """Test no center group."""
-        with pytest.raises(RuntimeError):
-            density.DensityCylinder(ag_single_frame, center="name foo").run()
-
-    def test_output(self, ag_single_frame, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag_single_frame)
-            dens.run()
-            dens.save()
-            res = np.loadtxt(dens.output)
-            assert_almost_equal(dens.results["dens_mean"][:, 0],
-                                res[:, 1],
-                                decimal=2)
-
-    def test_output_name(self, ag_single_frame, tmpdir):
-        """Test output name."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag_single_frame, output="foo")
-            dens.run()
-            dens.save()
-            open("foo.dat")
-
-    def test_dens_type(self, ag):
-        """Testing error."""
-        dens = density.DensityCylinder(ag, dens="dummy")
-        with assert_raises(ValueError):
-            dens.run()
-
-    def test_dens_radius_length(self, ag):
-        """Testing rescaling of density, radius."""
-        dens = density.DensityCylinder(ag, radius=10.0, length=10.0)
-        dens.run()
-        assert_equal(dens.radius, 10.0)
-        assert_equal(dens.length, 10.0)
-
-    def test_dens_cyl_save(self, ag, tmpdir):
-        """Testing save method."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag)
-            dens.run()
-            dens.save()
-            assert_equal(os.path.exists("density_cylinder.dat"), True)
-
-    def test_dens_cyl_save_charge(self, ag, tmpdir):
-        """Testing with density flag charge."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag, dens="charge")
-            dens.run()
-            dens.save()
-            outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[14]
-            assert_equal(data.split()[5] + data.split()[6], "[eÅ^(-3)]")
-
-    def test_dens_cyl_save_number(self, ag, tmpdir):
-        """Testing with density flag number."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag, dens="number")
-            dens.run()
-            dens.save()
-            outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[14]
-            assert_equal(data.split()[6], "[Å^(-3)]")
-
-    def test_dens_cyl_save_temp(self, ag, tmpdir):
-        """Testing with density flag temperature."""
-        with tmpdir.as_cwd():
-            dens = density.DensityCylinder(ag, dens="temp")
-            dens.run()
-            dens.save()
-            outputf = open("density_cylinder.dat", "r")
-            data = outputf.readlines()[14]
-            assert_equal(data.split()[5], '[K]')
+        assert_allclose(dens.results.profile_mean.mean(), mean,
+                        atol=1e-4, rtol=1e-2)

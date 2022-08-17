@@ -7,7 +7,6 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Decorators adding functionalities to MAICoS classes."""
-
 import functools
 import warnings
 from typing import Callable
@@ -17,120 +16,118 @@ import numpy as np
 from .utils import check_compound
 
 
-verbose_parameter_doc = (
-    """verbose : bool
-        Turn on more logging and debugging"""
-    )
-
-make_whole_parameter_doc = (
-    """make_whole : bool
+doc_dict = dict(
+    ATOMGROUP_PARAMETER="""atomgroup : AtomGroup
+        A :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the calculations are performed.""",
+    ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        the calculations are calculated.""",
+    BASE_CLASS_PARAMETERS="""refgroup : AtomGroup
+        Perform the calculation relative to the center of mass of the
+        provided AtomGroup. If `None` the calculations are performed relative
+        to the center of the fluctuating box.
+    unwrap : bool
         Make molecules that are broken due to the periodic boundary conditions
         whole again. If the input already contains whole molecules this can
         be disabled to gain speedup.
 
         Note: Currently molecules containing virtual sites (e.g. TIP4P water
         model) are not supported. In this case, provide unwrapped trajectory
-        file directly, and use the command line flag -no-make_whole.
-        """
-    )
-
-planar_class_parameters_doc = (
-    """dim : int
+        file directly, and use the command line flag -no-unwrap.
+    concfreq : int
+        Call the conclcude function and write the output files every n frames
+    verbose : bool
+        Turn on more logging and debugging""",
+    PLANAR_CLASS_PARAMETERS="""dim : int, default: 2
         Dimension for binning (x=0, y=1, z=2)
-    zmin : float
-        Minimal coordinate for evaluation (Å).
-    zmax : float
-        Maximal coordinate for evaluation (Å). If None, the entire
-        (possibly fluctuating) length of the box is taken into account.
+    zmin : float, default: None
+        Minimal coordinate for evaluation (Å) with respect to the refgroup.
+        If `None` all coordinates
+        up to the cell boundary are taken into account.
+    zmax : float, default: None
+        Maximal coordinate for evaluation (Å) with respect to the refgroup.
+        If `None` all coordinates
+        up to the cell boundary are taken into account.
     binwidth : float
-        binwidth (nanometer)
-    comgroup : AtomGroup
-        Perform the binning relative to the center of mass of the
-        provided AtomGroup."""
-    )
-
-profile_planar_class_parameters_doc = (
-    """atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the densities are calculated."""
-    + planar_class_parameters_doc
-    + """sym : bool
-        symmetrize the profile. Only works in combinations with `comgroup`.
-    grouping : str {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        binwidth""",
+    CYLINDER_CLASS_PARAMETERS="""rmin : float
+        Minimal r-coordinate relative to the comgroup center of mass for
+        evaluation (Å).
+    rmax : float
+        Maximal z-coordinate relative to the comgroup center of mass for
+        evaluation (Å). If None the box extension is taken.""",
+    SYM_PARAMETER="""sym : bool
+        symmetrize the profile. Only works in combinations with `refgroup`.""",
+    PROFILE_CLASS_PARAMETERS="""grouping : str {'atoms', 'residues', 'segments', 'molecules', 'fragments'}"""    # noqa
+    """
           Profile will be computed either on the atom positions (in
           the case of 'atoms') or on the center of mass of the specified
-          grouping unit ('residues', 'segments', or 'fragments')."""
-    + make_whole_parameter_doc
-    + """binmethod : str
+          grouping unit ('residues', 'segments', or 'fragments').
+    binmethod : str
         Method for position binning; possible options are
         center of geometry (cog), center of mass (com) or
         center of charge (coc).
     output : str
-        Output filename
-    concfreq : int
-        Default number of frames after which results are calculated and
-        files refreshed. If `0` results are only calculated at the end
-        of the analysis and not saved by default."""
-    )
-
-planar_class_attributes_doc = (
-    """results.z : list
-        bins"""
-    )
-
-profile_planar_class_attributes_doc = (
-    planar_class_attributes_doc
-    + """results.profile_mean : np.ndarray
+        Output filename""",
+    PLANAR_CLASS_ATTRIBUTES="""results.z : list
+        Bin position ranging from `zmin` to `zmax`.""",
+    CYLINDER_CLASS_ATTRIBUTES="""results.r : list
+        Bin position ranging from `rmin` to `rmax`.""",
+    PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : np.ndarray
         calculated profile
     results.profile_err : np.ndarray
         profile's error"""
     )
 
+# Inherit docstrings
+doc_dict["PLANAR_CLASS_PARAMETERS"] = \
+    doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["PLANAR_CLASS_PARAMETERS"]
 
-def set_doc(func: Callable, old: str, new: str) -> Callable:
-    """Replace template phrase in a function with an actual docstring.
+doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
+    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["CYLINDER_CLASS_PARAMETERS"]
+
+doc_dict["PROFILE_PLANAR_CLASS_PARAMETERS"] = \
+    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["SYM_PARAMETER"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_PARAMETERS"]
+
+doc_dict["PROFILE_CYLINDER_CLASS_PARAMETERS"] = \
+    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    doc_dict["CYLINDER_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_PARAMETERS"]
+
+doc_dict["PROFILE_PLANAR_CLASS_ATTRIBUTES"] = \
+    doc_dict["PLANAR_CLASS_ATTRIBUTES"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+
+doc_dict["PROFILE_CYLINDER_CLASS_ATTRIBUTES"] = \
+    doc_dict["CYLINDER_CLASS_ATTRIBUTES"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+
+
+def render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
+    """Replace all template phrases in the functions docstring.
 
     Parameters
     ----------
     func : callable
         The callable (function, class) where the phrase old should be replaced.
-    old : str
-        The template phrase which will be replaced
-    new : str
-        The actual phrase which will appear in the docstring
-        Returns
-        -------
-        Callable
-            callable with replaced phrase
+    doc_dict : str
+        The dictionary containing phrase which will be replaced
+    Returns
+    -------
+    Callable
+        callable with replaced phrase
     """
     if func.__doc__ is not None:
-        func.__doc__ = func.__doc__.replace(old, new)
+        for pattern in doc_dict.keys():
+            func.__doc__ = func.__doc__.replace(f"${{{pattern}}}",
+                                                doc_dict[pattern])
     return func
-
-
-def set_verbose_doc(public_api):
-    """Set doc for planar class."""
-    public_api = set_doc(public_api, "${VERBOSE_PARAMETER}",
-                         verbose_parameter_doc)
-    return public_api
-
-
-def set_planar_class_doc(public_api: Callable) -> None:
-    """Set doc for planar class."""
-    public_api = set_doc(public_api, "${PLANAR_CLASS_PARAMETERS}",
-                         planar_class_parameters_doc)
-    public_api = set_doc(public_api, "${PLANAR_CLASS_ATTRIBUTES}",
-                         planar_class_attributes_doc)
-    return public_api
-
-
-def set_profile_planar_class_doc(public_api: Callable) -> None:
-    """Set doc for profile planar class."""
-    public_api = set_doc(public_api, "${PLANAR_PROFILE_CLASS_PARAMETERS}",
-                         profile_planar_class_parameters_doc)
-    public_api = set_doc(public_api, "${PLANAR_PROFILE_CLASS_ATTRIBUTES}",
-                         profile_planar_class_attributes_doc)
-    return public_api
 
 
 def charge_neutral(filter):
@@ -176,32 +173,6 @@ def charge_neutral(filter):
             return wrapped
 
         original_class._prepare = charge_check(original_class._prepare)
-
-        return original_class
-
-    return inner
-
-
-def make_whole():
-    """Class Decorator to make molecules whole in each analysis step."""
-    def inner(original_class):
-        def make_whole(function):
-            @functools.wraps(function)
-            def wrapped(self):
-                if hasattr(self, 'make_whole') and self.make_whole:
-                    if hasattr(self, "atomgroup"):
-                        groups = [self.atomgroup]
-                    else:
-                        groups = self.atomgroups
-                    for group in groups:
-                        group.unwrap(compound=check_compound(group))
-                return function(self)
-
-            return wrapped
-
-        original_class = set_doc(original_class, "${MAKE_WHOLE_PARAMETER}",
-                                 make_whole_parameter_doc)
-        original_class._single_frame = make_whole(original_class._single_frame)
 
         return original_class
 

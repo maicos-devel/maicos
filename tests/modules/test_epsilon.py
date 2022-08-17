@@ -38,6 +38,7 @@ def dipoles(positions, orientations):
         else:
             dipole.atoms.rotateby(np.rad2deg(angle), direction)
         dipole.atoms.translate(position)
+        dipole.atoms.residues.molnums = [len(dipoles)]
         dipoles.append(dipole.atoms)
     u = mda.Merge(*dipoles)
     u.dimensions = [10, 10, 10, 90, 90, 90]
@@ -163,8 +164,7 @@ class TestEpsilonPlanar(object):
         dipole = dipoles(pos, [orientation] * n_dipoles)
 
         # very fine binning to get the correct value for the dipole
-        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001,
-                            make_whole=False)
+        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert np.allclose(eps.results.frame.M_par,
@@ -265,7 +265,7 @@ class TestEpsilonCylinder(object):
 
     def test_radius(self, ag):
         """Tests radius set."""
-        eps = EpsilonCylinder(ag, make_whole=False, radius=50)
+        eps = EpsilonCylinder(ag, unwrap=False, radius=50)
         eps.run(start=0, stop=1)
         assert eps.radius == 50
 
@@ -280,19 +280,19 @@ class TestEpsilonCylinder(object):
 
     def test_radius_box(self, ag):
         """Tests radius taken from box."""
-        eps = EpsilonCylinder(ag, make_whole=False)
+        eps = EpsilonCylinder(ag, unwrap=False)
         eps.run(start=0, stop=1)
         assert eps.radius == ag.universe.dimensions[:2].min() / 2
 
     def test_broken_molecules(self, ag):
         """Tests broken molecules."""
-        eps = EpsilonCylinder(ag, make_whole=False).run()
+        eps = EpsilonCylinder(ag, unwrap=False).run()
         assert_allclose(eps.results['eps_ax'].mean(), 1179.0, rtol=1e-1)
         assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 
     def test_repaired_molecules(self, ag):
         """Tests repaired molecules."""
-        eps = EpsilonCylinder(ag, make_whole=True).run()
+        eps = EpsilonCylinder(ag, unwrap=True).run()
         assert_allclose(eps.results['eps_ax'].mean(), 1179.6, rtol=1e-1)
         assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 

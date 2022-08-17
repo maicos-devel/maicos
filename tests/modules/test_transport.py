@@ -63,13 +63,18 @@ class TestVelocity(object):
         u = mda.Universe(WATER_TPR, WATER_TRR)
         return u.atoms
 
+    def test_wrong_vdim(self, ag):
+        """Test the wrong dimensions for velocity."""
+        with pytest.raises(ValueError, match="Velocity dimension can"):
+            Velocity(ag, dim=2, vdim=3)
+
     @pytest.mark.parametrize('dim', (0, 1, 2))
     @pytest.mark.parametrize('vdim', (0, 1, 2))
     @pytest.fixture()
     def test_vel_1(self, ag, dim, vdim, vel_array_1):
         """Test velocity module using WATER_TPR data."""
         vel = Velocity(ag, dim=dim, vdim=vdim).run()
-        assert_allclose(vel.results['profile_mean'].mean(),
+        assert_allclose(vel.results.profile_mean.mean(),
                         vel_array_1[dim][vdim])
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -86,7 +91,7 @@ class TestVelocity(object):
                        grouping="molecules").run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results['profile_mean'].mean(),
+        assert_allclose(vel.results.profile_mean.mean(),
                         vel_array_2[dim][vdim] / vol, rtol=1e-6)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -103,7 +108,7 @@ class TestVelocity(object):
                        grouping="atoms").run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results['profile_mean'].mean(),
+        assert_allclose(vel.results.profile_mean.mean(),
                         vel_array_3[dim][vdim] / vol)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -120,5 +125,5 @@ class TestVelocity(object):
                        grouping="atoms", flux=True).run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results['profile_mean'].mean(),
+        assert_allclose(vel.results.profile_mean,
                         flux_array_1[dim][vdim] / vol)

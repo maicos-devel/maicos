@@ -18,12 +18,7 @@ import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
-from ..decorators import (
-    charge_neutral,
-    make_whole,
-    set_planar_class_doc,
-    set_verbose_doc,
-    )
+from ..decorators import charge_neutral, render_docs
 from ..utils import FT, check_compound, iFT, symmetrize
 from .base import AnalysisBase, PlanarBase
 
@@ -54,9 +49,7 @@ def Bin(a, bins):
     return avg / count
 
 
-@set_verbose_doc
-@set_planar_class_doc
-@make_whole()
+@render_docs
 @charge_neutral(filter="error")
 class EpsilonPlanar(PlanarBase):
     """Calculate planar dielectric profiles.
@@ -65,9 +58,7 @@ class EpsilonPlanar(PlanarBase):
 
     Parameters
     ----------
-    atomgroups : list[AtomGroup]
-        List of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the dielectric profiles are calculated.
+    ${ATOMGROUPS_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     xy : bool
         Use 2D slab geometry.
@@ -75,14 +66,12 @@ class EpsilonPlanar(PlanarBase):
         Use vacuum boundary conditions instead of metallic (2D only!).
     sym : bool
         Symmetrize the profiles.
-    ${MAKE_WHOLE_PARAMETER}
     temperature : float
         temperature (K)
     output_prefix : str
         Prefix for output files.
     vcutwidth : float
         Spacing of virtual cuts (bins) along the parallel directions.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -111,15 +100,14 @@ class EpsilonPlanar(PlanarBase):
     def __init__(self,
                  atomgroups,
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=0.5,
-                 center=False,
-                 comgroup=None,
+                 refgroup=None,
                  xy=False,
                  sym=False,
                  vac=False,
-                 make_whole=True,
+                 unwrap=True,
                  temperature=300,
                  output_prefix="eps",
                  concfreq=0,
@@ -130,14 +118,14 @@ class EpsilonPlanar(PlanarBase):
                                             zmin=zmin,
                                             zmax=zmax,
                                             binwidth=binwidth,
-                                            center=center,
-                                            comgroup=comgroup,
+                                            refgroup=refgroup,
+                                            unwrap=unwrap,
                                             multi_group=True,
                                             **kwargs)
         self.xy = xy
         self.sym = sym
         self.vac = vac
-        self.make_whole = make_whole
+
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.concfreq = concfreq
@@ -145,7 +133,6 @@ class EpsilonPlanar(PlanarBase):
 
     def _prepare(self):
         super(EpsilonPlanar, self)._prepare()
-        self.xydims = np.roll(np.arange(3), -self.dim)[1:]
 
         self.results.frame.V = 0
 
@@ -169,7 +156,7 @@ class EpsilonPlanar(PlanarBase):
 
     def _single_frame(self):
         super(EpsilonPlanar, self)._single_frame()
-        A = np.prod(self._universe.dimensions[self.xydims])
+        A = np.prod(self._universe.dimensions[self.odims])
         dz = (self.zmax - self.zmin) / self.n_bins
         self.results.frame.V = (self.zmax - self.zmin) * A
         self.results.frame.V_bin = A * dz
@@ -180,7 +167,7 @@ class EpsilonPlanar(PlanarBase):
 
         self.results.frame.M_perp = self.results.frame.M[self.dim]
         self.results.frame.M_perp_2 = self.results.frame.M[self.dim]**2
-        self.results.frame.M_par = self.results.frame.M[self.xydims]
+        self.results.frame.M_par = self.results.frame.M[self.odims]
 
         # Use polarization density (for perpendicular component)
         # ======================================================
@@ -244,11 +231,11 @@ class EpsilonPlanar(PlanarBase):
 
             testpos = np.repeat(centers, repeats)
             # Average parallel directions
-            for j, direction in enumerate(self.xydims):
+            for j, direction in enumerate(self.odims):
                 # At this point we should not use the wrap, which causes
                 # unphysical dipoles at the borders
                 Lx = self._ts.dimensions[direction]
-                Ax = self._ts.dimensions[self.xydims[1 - j]] * dz
+                Ax = self._ts.dimensions[self.odims[1 - j]] * dz
                 vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
 
                 xpos = np.zeros(len(sel))
@@ -432,8 +419,7 @@ class EpsilonPlanar(PlanarBase):
                      outdata_par, columns=columns)
 
 
-@set_verbose_doc
-@make_whole()
+@render_docs
 @charge_neutral(filter="error")
 class EpsilonCylinder(AnalysisBase):
     """Calculate cylindrical dielectric profiles.
@@ -443,6 +429,8 @@ class EpsilonCylinder(AnalysisBase):
 
     Parameters
     ----------
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     atomgroup : AtomGroup
         :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the dielectric profiles are calculated
@@ -456,18 +444,12 @@ class EpsilonCylinder(AnalysisBase):
         Use a variable binwidth, where the volume is kept fixed.
     length : float
         Length of the cylinder (Å)
-    ${MAKE_WHOLE_PARAMETER}
     temperature : float
         temperature (K)
     single : bool
         "1D" line of watermolecules
     output_prefix : str
         Prefix for output_prefix files
-    concfreq : int
-        Default number of frames after which results are calculated and
-        files refreshed. If `0` results are only calculated at the end of
-        the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -492,11 +474,14 @@ class EpsilonCylinder(AnalysisBase):
                  length=None,
                  temperature=300,
                  single=False,
-                 make_whole=True,
+                 unwrap=True,
                  output_prefix="eps_cyl",
                  concfreq=0,
                  **kwargs):
-        super(EpsilonCylinder, self).__init__(atomgroups, **kwargs)
+        super(EpsilonCylinder, self).__init__(atomgroups,
+                                              unwrap=unwrap,
+                                              concfreq=concfreq,
+                                              **kwargs)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.geometry = geometry
@@ -505,8 +490,6 @@ class EpsilonCylinder(AnalysisBase):
         self.length = length
         self.temperature = temperature
         self.single = single
-        self.make_whole = make_whole
-        self.concfreq = concfreq
 
     def _prepare(self):
         if self.geometry is not None:
@@ -701,8 +684,7 @@ class EpsilonCylinder(AnalysisBase):
                      columns=columns)
 
 
-@set_verbose_doc
-@make_whole()
+@render_docs
 @charge_neutral(filter="error")
 class DielectricSpectrum(AnalysisBase):
     r"""Compute the linear dielectric spectrum.
@@ -721,9 +703,8 @@ class DielectricSpectrum(AnalysisBase):
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
-    ${MAKE_WHOLE_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     temperature : float
         Reference temperature.
     output_prefix : str
@@ -747,7 +728,6 @@ class DielectricSpectrum(AnalysisBase):
     nobin : bool
         Prevents the data from being binned altogether. This
         can result in very large plot files and errors.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -759,7 +739,7 @@ class DielectricSpectrum(AnalysisBase):
     # TODO: merge with molecular version?
     def __init__(self,
                  atomgroup,
-                 make_whole=True,
+                 unwrap=True,
                  temperature=300,
                  output_prefix="",
                  segs=20,
@@ -768,9 +748,10 @@ class DielectricSpectrum(AnalysisBase):
                  binafter=20,
                  nobin=False,
                  **kwargs):
-        super(DielectricSpectrum, self).__init__(atomgroup, **kwargs)
+        super(DielectricSpectrum, self).__init__(atomgroup,
+                                                 unwrap=unwrap,
+                                                 **kwargs)
         self.temperature = temperature
-        self.make_whole = make_whole
         self.output_prefix = output_prefix
         self.segs = segs
         self.df = df

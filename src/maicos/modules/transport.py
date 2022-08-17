@@ -12,7 +12,7 @@ The transport module of MAICoS allows for calculating mean velocity
 profiles from molecular simulation trajectory files.
 """
 
-from ..decorators import set_profile_planar_class_doc, set_verbose_doc
+from ..decorators import render_docs
 from .base import ProfilePlanarBase
 
 
@@ -36,8 +36,7 @@ def _velocity_weights(atomgroup, grouping, dim, vdim, flux):
     return vels
 
 
-@set_verbose_doc
-@set_profile_planar_class_doc
+@render_docs
 class Velocity(ProfilePlanarBase):
     """Analyse mean velocity.
 
@@ -52,38 +51,24 @@ class Velocity(ProfilePlanarBase):
     flux : bool
         Do not normalise the velocity to get the flux,
         i.e. the velocity multiplied by the number of compounds
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
     ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
-    results.z : np.ndarray
-        bins [nm]
-    results.v : np.ndarray
-        velocity profile [Å/ps]
-    results.ees : np.ndarray
-        velocity error estimate [Å/ps]
-    results.symz : np.ndarray
-        symmetrized bins [Å/ps]
-    results.symvel : np.ndarray
-        symmetrized velocity profile [Å/ps]
-    results.symees : np.ndarray
-        symmetrized velocity error estimate [Å/ps]
     """
 
     def __init__(self,
                  atomgroups,
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=1,
-                 center=False,
-                 comgroup=None,
+                 refgroup=None,
                  sym=False,
                  grouping="atoms",
-                 make_whole=True,
+                 unwrap=True,
                  binmethod="com",
-                 output="velocity.dat",
+                 output="velocity.da",
                  concfreq=0,
                  vdim=2,
                  flux=False,
@@ -101,11 +86,10 @@ class Velocity(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             binwidth=binwidth,
-            center=center,
-            comgroup=comgroup,
+            refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            make_whole=make_whole,
+            unwrap=unwrap,
             binmethod=binmethod,
             output=output,
             concfreq=concfreq,
