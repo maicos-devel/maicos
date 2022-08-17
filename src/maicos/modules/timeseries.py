@@ -15,19 +15,19 @@ details are given in the :ref:`ref_tutorial`.
 
 import numpy as np
 
-from ..decorators import set_verbose_doc
+from ..decorators import render_docs
 from ..utils import check_compound
 from .base import AnalysisBase
 
 
-@set_verbose_doc
+@render_docs
 class DipoleAngle(AnalysisBase):
     """Calculate angle timeseries of dipole moments with respect to an axis.
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETER}
     dim : int
         refernce vector for angle (x=0, y=1, z=2)
     output : str
@@ -36,7 +36,6 @@ class DipoleAngle(AnalysisBase):
         Default number of frames after which results are calculated
         and files refreshed. If `0` results are only calculated at
         the end of the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -56,10 +55,11 @@ class DipoleAngle(AnalysisBase):
                  output="dipangle.dat",
                  concfreq=0,
                  **kwargs):
-        super(DipoleAngle, self).__init__(atomgroup, **kwargs)
+        super(DipoleAngle, self).__init__(atomgroup,
+                                          concfreq=concfreq,
+                                          **kwargs)
         self.dim = dim
         self.output = output
-        self.concfreq = concfreq
 
     def _prepare(self):
         self.n_residues = self.atomgroup.residues.n_residues
@@ -115,7 +115,7 @@ class DipoleAngle(AnalysisBase):
                               "<cos(θ_i)cos(θ_j)>"])
 
 
-@set_verbose_doc
+@render_docs
 class KineticEnergy(AnalysisBase):
     """Calculate the timeseries of energies.
 
@@ -126,15 +126,14 @@ class KineticEnergy(AnalysisBase):
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETER}
     refpoint : str
         reference point for molecular center: center of
         mass (COM) or center of charge (COC)
         Note: The oxygen position only works for systems of pure water
     output : str
         Output filename
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------

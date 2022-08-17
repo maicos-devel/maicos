@@ -25,9 +25,9 @@ import numpy as np
 from MDAnalysis.exceptions import NoDataError
 from scipy import constants
 
-from ..decorators import set_profile_planar_class_doc, set_verbose_doc
+from ..decorators import render_docs
 from ..utils import atomgroup_header
-from .base import AnalysisBase, ProfilePlanarBase
+from .base import ProfileCylinderBase, ProfilePlanarBase
 
 
 logger = logging.getLogger(__name__)
@@ -114,25 +114,13 @@ def _temperature(ag, grouping, dim):
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 
 
-def _weights_legacy(ag, dens):
-    """Calculate the weights for the histogram in cylindrical systems."""
-    if dens == "temp":
-        return _temperature(ag, grouping="atoms", dim=None)
-    elif dens in ["mass", "number", "charge"]:
-        return _density_weights(ag, grouping="atoms", dim=None, dens=dens)
-    else:
-        raise ValueError(f"`{dens}` not supported. "
-                         "Use `mass`, `number`, `charge` or `temp`.")
-
-
-@set_verbose_doc
-@set_profile_planar_class_doc
+@render_docs
 class ChemicalPotentialPlanar(ProfilePlanarBase):
     """Compute the chemical potential in a cartesian geometry.
 
     Parameters
     ----------
-    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
     center : bool
         Calculate chemical potential only in the center of the simulation cell.
     temperature : float
@@ -144,11 +132,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
         By default average over box.
     muout : str
         Prefix for output filename for chemical potential
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
-    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     results.mu : float
         chemical potential (only if `mu=True`)
     results.dmu : float
@@ -158,13 +145,13 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
     def __init__(self,
                  atomgroups,
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=1,
-                 comgroup=None,
+                 refgroup=None,
                  sym=False,
                  grouping="atoms",
-                 make_whole=True,
+                 unwrap=True,
                  binmethod="com",
                  output="density.dat",
                  concfreq=0,
@@ -183,10 +170,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             binwidth=binwidth,
-            comgroup=comgroup,
+            refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            make_whole=make_whole,
+            unwrap=unwrap,
             binmethod=binmethod,
             output=output,
             concfreq=concfreq,
@@ -312,8 +299,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                      columns=columns)
 
 
-@set_verbose_doc
-@set_profile_planar_class_doc
+@render_docs
 class TemperaturePlanar(ProfilePlanarBase):
     """Compute temperature profile in a cartesian geometry.
 
@@ -321,25 +307,23 @@ class TemperaturePlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PLANAR_PROFILE_CLASS_PARAMETERS}
-    ${VERBOSE_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
 
     Attributes
     ----------
-    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
                  atomgroups,
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=1,
-                 center=False,
-                 comgroup=None,
+                 refgroup=None,
                  sym=False,
                  grouping="atoms",
-                 make_whole=True,
+                 unwrap=True,
                  binmethod="com",
                  output="temperature.dat",
                  concfreq=0,
@@ -353,11 +337,10 @@ class TemperaturePlanar(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             binwidth=binwidth,
-            center=center,
-            comgroup=comgroup,
+            refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            make_whole=make_whole,
+            unwrap=unwrap,
             binmethod=binmethod,
             output=output,
             concfreq=concfreq,
@@ -369,8 +352,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                                       "instead.'")
 
 
-@set_verbose_doc
-@set_profile_planar_class_doc
+@render_docs
 class DensityPlanar(ProfilePlanarBase):
     r"""Compute the partial density profile in a cartesian geometry.
 
@@ -385,34 +367,32 @@ class DensityPlanar(ProfilePlanarBase):
     are calculated.
     For these center calculations molecules will be unwrapped/made whole.
     Trajectories containing already whole molecules can be run with
-    `make_whole=False` to gain a speedup.
-    For grouping with respect to atoms the `make_whole` option is always
+    `unwrap=False` to gain a speedup.
+    For grouping with respect to atoms the `unwrap` option is always
     ignored.
 
     Parameters
     ----------
-    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
     dens : str {'mass', 'number', 'charge'}
         density type to be calculated
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
-    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
                  atomgroups,
                  dens="mass",
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=1,
-                 center=False,
-                 comgroup=None,
+                 refgroup=None,
                  sym=False,
                  grouping="atoms",
-                 make_whole=True,
+                 unwrap=True,
                  binmethod="com",
                  output="density.dat",
                  concfreq=0,
@@ -427,215 +407,77 @@ class DensityPlanar(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             binwidth=binwidth,
-            center=center,
-            comgroup=comgroup,
+            refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            make_whole=make_whole,
+            unwrap=unwrap,
             binmethod=binmethod,
             output=output,
             concfreq=concfreq,
             **kwargs)
 
 
-@set_verbose_doc
-class DensityCylinder(AnalysisBase):
-    """Compute partial densities across a cylinder.
+@render_docs
+class DensityCylinder(ProfileCylinderBase):
+    r"""Compute partial densities across a cylinder.
+
+    Calculation are carried out for mass
+    (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
+    charge (:math:`\rm e \cdot A^{-3}`) density profiles along the radial
+    axes.
+
+    For grouping with respect to molecules, residues etc. the corresponding
+    centers (i.e center of mass) using of periodic boundary conditions
+    are calculated.
+    For these center calculations molecules will be unwrapped/made whole.
+    Trajectories containing already whole molecules can be run with
+    `unwrap=False` to gain a speedup.
+    For grouping with respect to atoms the `unwrap` option is always
+    ignored.
 
     Parameters
     ----------
-    atomgroups : list[AtomGroup]
-        A list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the densities are calculated.
-    dens : str
-        Density: mass, number, charge, temp
-    dim : int
-        Dimension for binning (x=0, y=1, z=2)
-    center : str
-        Perform the binning relative to the center of this selection
-        string of teh first AtomGroup. If `None` center of box is used.
-    radius : float
-        Radius of the cylinder (Å). If None smallest box extension is taken.
-    length : float
-        Length of the cylinder (Å). If None length of box in the
-        binning dimension is taken.
-    binwidth : float
-        binwidth (nanometer)
-    output : str
-        Output filename
-    concfreq : int
-        Default number of frames after which results are calculated
-        and files refreshed. If `0` results are only calculated at
-        the end of the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    dens : str {'mass', 'number', 'charge'}
+        density type to be calculated
 
     Attributes
     ----------
-    results.r : np.ndarray
-        bins
-    results.dens_mean : np.ndarray
-        calculated densities
-    results.dens_mean_sq : np.ndarray
-        squared calculated density
-    results.dens_std : np.ndarray
-        density standard deviation
-    results.dens_err : np.ndarray
-        density error
+    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
                  atomgroups,
                  dens="mass",
                  dim=2,
-                 center=None,
-                 radius=None,
-                 length=None,
+                 zmin=None,
+                 zmax=None,
                  binwidth=1,
-                 output="density_cylinder.dat",
+                 rmin=0,
+                 rmax=None,
+                 refgroup=None,
+                 grouping="atoms",
+                 unwrap=True,
+                 binmethod="com",
+                 output="density.dat",
                  concfreq=0,
                  **kwargs):
-        super(DensityCylinder, self).__init__(atomgroups,
-                                              multi_group=True,
-                                              **kwargs)
-        self.dim = dim
-        self.binwidth = binwidth
-        self.center = center
-        self.radius = radius
-        self.length = length
-        self.dens = dens
-        self.output = output
-        self.concfreq = concfreq
 
-    def _prepare(self):
-        if self.dens not in ["mass", "number", "charge", "temp"]:
-            raise ValueError(f"Invalid choice for dens: '{self.dens}' "
-                             "(choose from 'mass', 'number', "
-                             "'charge', 'temp'")
-
-        if self.dens == 'temp':
-            profile_str = "temperature"
-        else:
-            profile_str = f"{self.dens} density"
-
-        logger.info(f"Computing {profile_str} profile "
-                    f"along {'XYZ'[self.dim]}-axes.")
-
-        self.odims = np.roll(np.arange(3), -self.dim)[1:]
-
-        if self.center is None:
-            logger.info("No center given --> Take from box dimensions.")
-            self.centersel = None
-            center = self.atomgroups[0].dimensions[:3] / 2
-        else:
-            self.centersel = self.atomgroups[0].select_atoms(self.center)
-            if len(self.centersel) == 0:
-                raise RuntimeError("No atoms found in center selection. "
-                                   "Please adjust selection!")
-            center = self.centersel.center_of_mass()
-
-        logger.info("Initial center at "
-                    f"{'XYZ'[self.odims[0]]} = "
-                    f"{center[self.odims[0]]:.3f} Å and "
-                    f"{'XYZ'[self.odims[1]]} = "
-                    f"{center[self.odims[1]]:.3f} Å.")
-
-        if self.radius is None:
-            self.radius = self.atomgroups[0].dimensions[self.odims].min() / 2
-            logger.info("No radius given --> Take smallest box "
-                        f"extension (r={self.radius:.2f} Å).")
-
-        if self.length is None:
-            self.length = self.atomgroups[0].dimensions[self.dim]
-            logger.info("No length given "
-                        f"--> Take length in {'XYZ'[self.dim]}.")
-
-        self.n_bins = int(np.ceil(self.radius / self.binwidth))
-
-        self.density_mean = np.zeros((self.n_bins, self.n_atomgroups))
-        self.density_mean_sq = np.zeros((self.n_bins, self.n_atomgroups))
-
-        self._dr = np.ones(self.n_bins) * self.radius / self.n_bins
-        self._r_bins = np.arange(self.n_bins) * self._dr + self._dr
-        self._delta_r_sq = self._r_bins ** 2 \
-            - np.insert(self._r_bins, 0, 0)[0:-1] ** 2  # r_o^2 - r_i^2
-
-        logger.info(f"Using {self.n_bins} bins.")
-
-    def _single_frame(self):
-        # calculater center of cylinder.
-        if self.center is None:
-            center = self.atomgroups[0].dimensions[:3] / 2
-        else:
-            center = self.centersel.center_of_mass()
-
-        for index, selection in enumerate(self.atomgroups):
-
-            # select cylinder of the given length and radius
-            cut = selection.atoms[np.where(
-                np.absolute(selection.atoms.positions[:, self.dim]
-                            - center[self.dim]) < self.length / 2)[0]]
-            cylinder = cut.atoms[np.where(
-                np.linalg.norm((cut.atoms.positions[:, self.odims]
-                                - center[self.odims]),
-                               axis=1) < self.radius)[0]]
-
-            radial_positions = np.linalg.norm(
-                (cylinder.atoms.positions[:, self.odims] - center[self.odims]),
-                axis=1)
-
-            weights = _weights_legacy(cylinder, self.dens)
-            density_ts, _ = np.histogram(radial_positions,
-                                         bins=self.n_bins,
-                                         range=(0, self.radius),
-                                         weights=weights)
-
-            if self.dens == 'temp':
-                bincount = np.histogram(radial_positions,
-                                        bins=self.n_bins,
-                                        range=(0, self.radius))[0]
-                self.density_mean[:, index] += density_ts / bincount
-                self.density_mean_sq[:, index] += (density_ts / bincount) ** 2
-            else:
-                self.density_mean[:, index] += density_ts \
-                    / (np.pi * self._delta_r_sq * self.length)
-                self.density_mean_sq[:, index] += (density_ts
-                                                   / (np.pi * self._delta_r_sq
-                                                      * self.length)) ** 2
-
-    def _conclude(self):
-        self.results.r = (np.copy(self._r_bins) - self._dr / 2)
-        self.results.dens_mean = self.density_mean / self._index
-        self.results.dens_mean_sq = self.density_mean_sq / self._index
-
-        self.results.dens_std = np.nan_to_num(
-            np.sqrt(self.results.dens_mean_sq
-                    - self.results.dens_mean ** 2))
-        self.results.dens_err = self.results.dens_std / np.sqrt(self._index)
-
-    def save(self):
-        """Save results of analysis to file."""
-        if self.dens == "mass":
-            units = "amu Å^(-3)"
-        elif self.dens == "number":
-            units = "Å^(-3)"
-        elif self.dens == "charge":
-            units = "e Å^(-3)"
-        elif self.dens == "temp":
-            units = "K"
-
-        if self.dens == 'temp':
-            profile_type = f"temperature [{units}]"
-        else:
-            profile_type = f"{self.dens} dens. [{units}]"
-        columns = ["positions [Å]"]
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"{profile_type} {i+1}")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"{profile_type} error {i+1}")
-
-        # save density profile
-        self.savetxt(self.output,
-                     np.hstack(
-                         ((self.results.r[:, np.newaxis]),
-                          self.results.dens_mean, self.results.dens_err)),
-                     columns=columns)
+        super(DensityCylinder, self).__init__(
+            function=_density_weights,
+            f_kwargs={"dens": dens},
+            normalization="volume",
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            binwidth=binwidth,
+            rmin=rmin,
+            rmax=rmax,
+            refgroup=refgroup,
+            grouping=grouping,
+            unwrap=unwrap,
+            binmethod=binmethod,
+            output=output,
+            concfreq=concfreq,
+            **kwargs)

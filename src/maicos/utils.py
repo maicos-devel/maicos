@@ -374,6 +374,10 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
     using the following formula:
         S_n = S_n-1 + (n-1) * (data_n - mean_n-1)^2 / (n-1)
 
+    Floating point imprecision can lead to slight negative variances
+    leading non defined standard deviations. Therefore a negetaive variance
+    is set to 0.
+
     Parameters
     ----------
     old_variance : float
@@ -404,6 +408,13 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
     """
     S_old = old_variance * (length - 1)
     S_new = S_old + (data - old_mean) * (data - new_mean)
+
+    if type(S_new) == np.ndarray:
+        S_new[S_new < 0] = 0
+    else:
+        if S_new < 0:
+            S_new = 0
+
     return S_new / length
 
 

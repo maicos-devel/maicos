@@ -21,7 +21,7 @@ import numpy as np
 from MDAnalysis.lib.distances import capped_distance
 
 from .. import tables
-from ..decorators import make_whole, set_planar_class_doc, set_verbose_doc
+from ..decorators import render_docs
 from ..lib import sfactor
 from ..utils import check_compound
 from .base import AnalysisBase, PlanarBase
@@ -66,7 +66,7 @@ def compute_form_factor(q, atom_type):
     return form_factor
 
 
-@set_verbose_doc
+@render_docs
 class Saxs(AnalysisBase):
     """Compute SAXS scattering intensities.
 
@@ -83,8 +83,8 @@ class Saxs(AnalysisBase):
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     noboindata : bool
         Do not bin the data. Only works reliable for NVT!
     startq : float
@@ -99,11 +99,6 @@ class Saxs(AnalysisBase):
         Maximal angle (°) between the q vectors and the z-axis.
     output : str
         Output filename
-    concfreq : int
-        Default number of frames after which results are calculated
-        and files refreshed. If `0` results are only calculated at
-        the end of the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -126,7 +121,9 @@ class Saxs(AnalysisBase):
                  output="sq.dat",
                  concfreq=0,
                  **kwargs):
-        super(Saxs, self).__init__(atomgroup, **kwargs)
+        super(Saxs, self).__init__(atomgroup,
+                                   concfreq=concfreq,
+                                   **kwargs)
         self.nobindata = nobin
         self.startq = startq
         self.endq = endq
@@ -134,7 +131,6 @@ class Saxs(AnalysisBase):
         self.mintheta = mintheta
         self.maxtheta = maxtheta
         self.output = output
-        self.concfreq = concfreq
 
     def _prepare(self):
 
@@ -257,9 +253,7 @@ class Saxs(AnalysisBase):
                          columns=["q (1/Å)", "S(q) (arb. units)"])
 
 
-@set_verbose_doc
-@set_planar_class_doc
-@make_whole()
+@render_docs
 class Diporder(PlanarBase):
     """Calculate dipolar order parameters.
 
@@ -269,8 +263,7 @@ class Diporder(PlanarBase):
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
+    ${ATOMGROUP_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     sym : bool
         symmetrize the profiles
@@ -283,7 +276,6 @@ class Diporder(PlanarBase):
         Default number of frames after which results are calculated
         and files refreshed. If `0` results are only calculated at the
         end of the analysis and not saved by default.
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -301,14 +293,13 @@ class Diporder(PlanarBase):
     def __init__(self,
                  atomgroup,
                  dim=2,
-                 zmin=0,
+                 zmin=None,
                  zmax=None,
                  binwidth=1,
-                 center=False,
-                 comgroup=None,
+                 refgroup=None,
                  sym=False,
                  binmethod='COM',
-                 make_whole=True,
+                 unwrap=True,
                  output="diporder.dat",
                  concfreq=0,
                  **kwargs):
@@ -317,13 +308,12 @@ class Diporder(PlanarBase):
                                        zmin=zmin,
                                        zmax=zmax,
                                        binwidth=binwidth,
-                                       center=center,
-                                       comgroup=comgroup,
+                                       refgroup=refgroup,
+                                       unwrap=unwrap,
+                                       confreq=concfreq,
                                        **kwargs)
         self.sym = sym
         self.binmethod = binmethod
-        self.make_whole = make_whole
-        self.concfreq = concfreq
         self.output = output
 
     def _prepare(self):
@@ -343,8 +333,6 @@ class Diporder(PlanarBase):
                 raise ValueError("Not all residues are identical. Please adjust"
                                  "selection.")
 
-        # Assume a threedimensional universe...
-        self.xydims = np.roll(np.arange(3), -self.dim)[1:]
         self.P0 = np.zeros(self.n_bins)
         self.cos_theta = np.zeros(self.n_bins)
         self.cos_2_theta = np.zeros(self.n_bins)
@@ -377,7 +365,7 @@ class Diporder(PlanarBase):
                                 bins=self.n_bins,
                                 range=(self.zmin, self.zmax))[0]
         self.bin_count += bincount
-        A = np.prod(self._ts.dimensions[self.xydims])
+        A = np.prod(self._ts.dimensions[self.odims])
 
         self.P0 += np.histogram(
             bin_positions[:, self.dim],
@@ -443,8 +431,7 @@ class Diporder(PlanarBase):
                      columns=header)
 
 
-@set_verbose_doc
-@set_planar_class_doc
+@render_docs
 class RDFPlanar(PlanarBase):
     r"""Compute slab wise planar two dimensional radial distribution functions.
 
@@ -485,9 +472,9 @@ class RDFPlanar(PlanarBase):
         Method for position binning; possible options are
         center of geometry (cog), center of mass (com) or
         center of charge (coc).
+    output : str
+        Output filename
     ${PLANAR_CLASS_PARAMETERS}
-    ${VERBOSE_PARAMETER}
-
 
     Attributes
     ----------
@@ -505,25 +492,25 @@ class RDFPlanar(PlanarBase):
                  dzheight=0.1,
                  range=(0.0, None),
                  binmethod="com",
-                 # Planar base arguments
-                 dim=2,
-                 binwidth=1,
-                 center=False,
-                 comgroup=None,
-                 zmin=0,
-                 zmax=None,
                  output="rdf.dat",
+                 # Planar base arguments
+                 refgroup=None,
+                 unwrap=False,
                  concfreq=0,
+                 dim=2,
+                 zmin=None,
+                 zmax=None,
+                 binwidth=1,
                  **kwargs):
 
         super(RDFPlanar, self).__init__(atomgroups=g1,
+                                        refgroup=refgroup,
+                                        unwrap=unwrap,
+                                        concfreq=concfreq,
                                         dim=dim,
                                         zmin=zmin,
                                         zmax=zmax,
                                         binwidth=binwidth,
-                                        center=center,
-                                        comgroup=comgroup,
-                                        concfreq=concfreq,
                                         **kwargs)
 
         self.g1 = g1
@@ -542,8 +529,7 @@ class RDFPlanar(PlanarBase):
         if self._verbose:
             logger.info('Compute radial distribution function.')
 
-        self.odims = np.roll(np.arange(3), -self.dim)[1:]
-        half_of_box_size = min(self._universe.dimensions[self.odims]) / 2
+        half_of_box_size = min(self.box_center)
         if self.range[1] is None:
             self.range = (self.range[0], half_of_box_size)
             logger.info("Setting maximum range of RDF to half the box size"

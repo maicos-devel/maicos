@@ -16,63 +16,21 @@ from maicos import decorators
 from maicos.modules.base import AnalysisBase
 
 
-@pytest.mark.parametrize(
-    "docstring_variable, substring_list",
-    [(decorators.verbose_parameter_doc, ["verbose : bool"]),
-     (decorators.planar_class_parameters_doc,
-      ["dim : int", "zmin : float", "zmax : float", "binwidth"]),
-     (decorators.profile_planar_class_parameters_doc,
-      ["atomgroups : list[AtomGroup]", "output : str", "concfreq : int"]),
-     (decorators.planar_class_attributes_doc, ["results.z : list"]),
-     (decorators.profile_planar_class_attributes_doc, [
-         "results.profile_mean : np.ndarray",
-         "results.profile_err : np.ndarray"]),
-     (decorators.make_whole_parameter_doc, ["make_whole : bool"])])
-def test_docstring(docstring_variable, substring_list):
-    """Test if docstring variable contains substrings."""
-    for s in substring_list:
-        assert s in docstring_variable
-
-
-@pytest.mark.parametrize("doc, new_doc", [("${TEST}", "test"), (None, None),
-                                          ("", ""), ("foo", "foo")])
-def test_set_doc(doc, new_doc):
+@pytest.mark.parametrize("doc, new_doc", [("${TEST}", "test"),
+                                          (None, None), ("", ""),
+                                          ("foo", "foo"),
+                                          ("${TEST} ${BLA}", "test blu")])
+def test_render_docs(doc, new_doc):
     """Test decorator for setting of phrase in documentation."""
 
     def func():
         pass
 
+    doc_dict = dict(TEST="test", BLA="blu")
+
     func.__doc__ = doc
-    func_decorated = decorators.set_doc(func, doc, new_doc)
+    func_decorated = decorators.render_docs(func, doc_dict=doc_dict)
     assert func_decorated.__doc__ == new_doc
-
-
-@pytest.mark.parametrize(
-    "new, old, decorator",
-    [(decorators.verbose_parameter_doc,
-     "${VERBOSE_PARAMETER}",
-      decorators.set_verbose_doc),
-     (decorators.planar_class_parameters_doc,
-     "${PLANAR_CLASS_PARAMETERS}",
-      decorators.set_planar_class_doc),
-     (decorators.planar_class_attributes_doc,
-     "${PLANAR_CLASS_ATTRIBUTES}",
-      decorators.set_planar_class_doc),
-     (decorators.profile_planar_class_parameters_doc,
-      "${PLANAR_PROFILE_CLASS_PARAMETERS}",
-      decorators.set_profile_planar_class_doc),
-     (decorators.profile_planar_class_attributes_doc,
-      "${PLANAR_PROFILE_CLASS_ATTRIBUTES}",
-      decorators.set_profile_planar_class_doc)])
-def test_explicit_doc(new, old, decorator):
-    """Test if old phrase is replace by the correct new phrase."""
-
-    def func():
-        pass
-
-    func.__doc__ = old
-    func_decorated = decorator(func)
-    assert new in func_decorated.__doc__
 
 
 def single_class(atomgroup, filter):
