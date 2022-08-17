@@ -15,58 +15,6 @@ in Cartesian or cylindrical coordinate systems. Units for the density
 are the same as GROMACS, i.e. mass, number or charge (see the `gmx density`_
 manual for details about the unit system).
 
-**Using the command line**
-
-You can extract a density profile from molecular dynamics
-trajectory files directly from the terminal. For this example, we use
-the ``airwater`` data file of MAICoS. First, go to the directory
-
-.. code-block:: bash
-
-    cd tests/data/airwater/
-
-then type:
-
-.. code-block:: bash
-
-    maicos DensityPlanar -s conf.gro -traj traj.trr
-
-Here ``conf.gro`` and ``traj.trr`` are GROMACS configuration and
-trajectory files, respectively. The density profile appears in
-a ``.dat`` file. You can visualise all the options of the module
-``DensityPlanar`` by typing:
-
-.. code-block:: bash
-
-    maicos DensityPlanar -h
-
-**Using the Python interpreter**
-
-In order to calculate the density using MAICoS in a Python environment,
-first import MAICoS and MDAnalysis:
-
-.. code-block:: python3
-
-    import MDAnalysis as mda
-    import maicos
-
-Then create a MDAnalysis universe:
-
-.. code-block:: python3
-
-    u = mda.Universe('conf.gro', 'traj.trr')
-    group_H2O = u.select_atoms('type O or type H')
-
-And run MAICoS' ``DensityPlanar`` module:
-
-.. code-block:: python3
-
-    dplan = maicos.DensityPlanar(group_H2O)
-    dplan.run()
-
-Results can be accessed from ``dplan.results``. More details are given
-in the :ref:`ref_tutorial`.
-
 .. _`gmx density`: https://manual.gromacs.org/documentation/current/onlinehelp/gmx-density.html  # noqa: E501
 """
 

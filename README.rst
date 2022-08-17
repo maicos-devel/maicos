@@ -13,12 +13,16 @@ structure factors, or transport properties from trajectories files,
 including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
+MAICoS is a tool for beginners of molecular simulations with no Python
+experience. For these users MAICoS provides a descriptive command line interface. 
+Also experienced users can use the Python API for their day to day analysis or 
+use the provided infrastructure to build their own analysis for interfacial 
+and confined systems.
+
 .. inclusion-readme-intro-end
 
 For details, tutorials, and examples, please have a look at
 our `documentation`_.
-
-.. inclusion-readme-start
 
 Basic example
 #############
@@ -59,6 +63,7 @@ typing in a terminal:
 
 Alternatively, if you don't have special privileges, install
 the package in your home directory by using the ``--user`` flag.
+
 
 List of analysis modules
 ########################
@@ -105,4 +110,4 @@ List of analysis modules
 .. _`MDAnalysis`: https://www.mdanalysis.org
 .. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
 
-.. inclusion-readme-end
+.. inclusion-marker-modules-end

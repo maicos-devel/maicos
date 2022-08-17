@@ -8,30 +8,66 @@ MAICoS
 .. include:: ../../README.rst
    :start-after: inclusion-readme-intro-start
    :end-before: inclusion-readme-intro-end
+   
+How to use this documentation
+#############################
 
+This documentation follows the `divio`_ system: it is divided into four parts:
+tutorials, how-to, modules, and code philosophy.
+
+List of analysis modules
+########################
+   
 .. include:: ../../README.rst
-   :start-after: inclusion-readme-start
-   :end-before: inclusion-readme-end
+   :start-after: inclusion-marker-modules-start
+   :end-before: inclusion-marker-modules-end
 
 .. toctree::
    :maxdepth: 4
-   :caption: MAICoS
+   :caption: Tutorials
    :hidden:
 
-   ./documentation_pages/installation
-   ./documentation_pages/usage
-   ./documentation_pages/tutorials
-   ./documentation_pages/gettinginvolved
-   ./documentation_pages/authors
-   ./documentation_pages/changelog
-   
+   ./tutorials/installation_usage
+   ./tutorials/tutorial_planar
+
+.. toctree::
+   :maxdepth: 4
+   :caption: How-to guide
+   :hidden:
+
+   ./howto_guides/dielectric_constant
+   ./howto_guides/Saxs
+   ./howto_guides/radial_distribution_function
+
 .. toctree::
    :maxdepth: 4
    :caption: Modules
    :hidden:
+
+   ./modules/density
+   ./modules/dielectric
+   ./modules/structure
+   ./modules/timeseries
+   ./modules/transport
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Code philosophy
+   :hidden:
    
-   ./documentation_pages/modules/density
-   ./documentation_pages/modules/dielectric
-   ./documentation_pages/modules/structure
-   ./documentation_pages/modules/timeseries
-   ./documentation_pages/modules/transport
+   ./code_philosophy/general_design
+   ./code_philosophy/dielectric
+   ./code_philosophy/structure
+   ./code_philosophy/2d_rdf
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Contributing
+   :hidden:
+
+   ./documentation_pages/gettinginvolved
+   ./documentation_pages/authors
+   ./documentation_pages/changelog
+
+.. _`divio`: https://documentation.divio.com/
+
