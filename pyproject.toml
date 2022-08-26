@@ -35,4 +35,3 @@ testpaths = "tests"
 [tool.check-manifest]
 # ignore files missing in VCS
 ignore = ["src/maicos/lib/_cutil.c"]
-    
