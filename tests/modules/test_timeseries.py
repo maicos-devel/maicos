@@ -7,16 +7,24 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-
 import os
+import sys
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from datafiles import NVE_WATER_TPR, NVE_WATER_TRR, WATER_TPR, WATER_TRR
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 
 from maicos import DipoleAngle, KineticEnergy
+
+
+sys.path.append("..")
+from data import (  # noqa: E402
+    NVE_WATER_TPR,
+    NVE_WATER_TRR,
+    WATER_TPR,
+    WATER_TRR,
+    )
 
 
 class TestDipoleAngle(object):

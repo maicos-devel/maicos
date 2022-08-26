@@ -1,9 +1,9 @@
+DensityPlanar
+#############
+
 .. _label_density_planar:
 
-Density planar
-##############
-
-.. automodule:: maicos.modules.density.DensityPlanar
+.. autoclass:: maicos.modules.density.DensityPlanar
     :members:
     :undoc-members:
     :show-inheritance:

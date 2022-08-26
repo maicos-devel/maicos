@@ -6,14 +6,49 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the decorators."""
+"""Tests for the utilities."""
+
+import sys
+from unittest.mock import patch
 
 import MDAnalysis as mda
+import numpy as np
 import pytest
-from modules.datafiles import WATER_GRO, WATER_TPR
+from MDAnalysisTests.core.util import UnWrapUniverse
 
-from maicos import decorators
-from maicos.modules.base import AnalysisBase
+import maicos.lib.util
+from maicos.core.base import AnalysisBase
+
+
+sys.path.append("..")
+from data import LAMMPS10WATER, WATER_GRO, WATER_TPR  # noqa: E402
+
+
+def test_check_compound():
+    """Tests check compound."""
+    u = UnWrapUniverse()
+    assert maicos.lib.util.check_compound(u.atoms) == "molecules"
+
+    u = UnWrapUniverse(have_molnums=False, have_bonds=True)
+    assert maicos.lib.util.check_compound(u.atoms) == "fragments"
+
+    u = UnWrapUniverse(have_molnums=False, have_bonds=False)
+    assert maicos.lib.util.check_compound(u.atoms) == "residues"
+
+
+def test_sort_atomsgroup_lammps():
+    """Tests sort atoms group LAMMPS."""
+    u = mda.Universe(LAMMPS10WATER)
+    atoms = maicos.lib.util.sort_atomgroup(u.atoms)
+
+    assert np.all(np.diff(atoms.fragindices) >= 0)
+
+
+def test_get_cli_input():
+    """Tests get cli input."""
+    testargs = ['maicos', 'foo', "foo bar"]
+    with patch.object(sys, 'argv', testargs):
+        assert maicos.lib.util.get_cli_input() == 'maicos foo "foo bar"'
 
 
 @pytest.mark.parametrize("doc, new_doc", [("${TEST}", "test"),
@@ -29,14 +64,14 @@ def test_render_docs(doc, new_doc):
     doc_dict = dict(TEST="test", BLA="blu")
 
     func.__doc__ = doc
-    func_decorated = decorators.render_docs(func, doc_dict=doc_dict)
+    func_decorated = maicos.lib.util.render_docs(func, doc_dict=doc_dict)
     assert func_decorated.__doc__ == new_doc
 
 
 def single_class(atomgroup, filter):
     """Single class."""
 
-    @decorators.charge_neutral(filter)
+    @maicos.lib.util.charge_neutral(filter)
     class SingleCharged(AnalysisBase):
 
         def __init__(self, atomgroup):
@@ -56,7 +91,7 @@ def single_class(atomgroup, filter):
 def multi_class(atomgroup, filter):
     """Multi class."""
 
-    @decorators.charge_neutral(filter)
+    @maicos.lib.util.charge_neutral(filter)
     class MultiCharged(AnalysisBase):
 
         def __init__(self, atomgroups):

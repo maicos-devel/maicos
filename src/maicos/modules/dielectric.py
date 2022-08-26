@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Tools for computing relative permittivity.
+r"""Tools for computing relative permittivities.
 
 The dielectric constant modules of MAICoS allow for computing dielectric
 profile and dielectric spectrum from molecular simulation trajectory files.
@@ -18,40 +18,17 @@ import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
-from ..decorators import charge_neutral, render_docs
-from ..utils import FT, check_compound, iFT, symmetrize
-from .base import AnalysisBase, PlanarBase
+from ..core import AnalysisBase, PlanarBase
+from ..lib.math import FT, iFT, symmetrize
+from ..lib.util import bin, charge_neutral, check_compound, render_docs
 
 
 logger = logging.getLogger(__name__)
 
 
-def Bin(a, bins):
-    """Average array values in bins for easier plotting.
-
-    Note: "bins" array should contain the INDEX (integer)
-    where that bin begins
-    """
-    if np.iscomplex(a).any():
-        avg = np.zeros(len(bins), dtype=complex)  # average of data
-    else:
-        avg = np.zeros(len(bins))
-
-    count = np.zeros(len(bins), dtype=int)
-    ic = -1
-
-    for i in range(0, len(a)):
-        if i in bins:
-            ic += 1  # index for new average
-        avg[ic] += a[i]
-        count[ic] += 1
-
-    return avg / count
-
-
 @render_docs
 @charge_neutral(filter="error")
-class EpsilonPlanar(PlanarBase):
+class DielectricPlanar(PlanarBase):
     """Calculate planar dielectric profiles.
 
     See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details.
@@ -76,23 +53,23 @@ class EpsilonPlanar(PlanarBase):
     Attributes
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
-    results.dens_mean : np.ndarray
+    results.dens_mean : numpy.ndarray
         eps_par: Parallel dielectric profile ε_∥
-    results.deps_par : np.ndarray
+    results.deps_par : numpy.ndarray
         Error of parallel dielectric profile
-    results.eps_par_self : np.ndarray
+    results.eps_par_self : numpy.ndarray
         Reduced self contribution of parallel dielectric profile (ε_∥_self - 1)
-    results.eps_par_coll : np.ndarray
+    results.eps_par_coll : numpy.ndarray
         Reduced collective contribution of parallel dielectric profile
         (ε_∥_coll - 1)
-    results.eps_perp : np.ndarray
+    results.eps_perp : numpy.ndarray
         Inverse perpendicular dielectric profile ε^{-1}_⟂
-    results.deps_perp : np.ndarray
+    results.deps_perp : numpy.ndarray
         Error of inverse perpendicular dielectric profile
-    results.eps_par_self : np.ndarray
+    results.eps_perp_self : numpy.ndarray
         Reduced self contribution of Inverse perpendicular dielectric profile
         (ε^{-1}_⟂_self - 1)
-    results.eps_perp_coll : np.ndarray
+    results.eps_perp_coll : numpy.ndarray
         Reduced collective contribution of Inverse perpendicular
         dielectric profile (ε^{-1}_⟂_coll - 1)
     """
@@ -113,15 +90,15 @@ class EpsilonPlanar(PlanarBase):
                  concfreq=0,
                  vcutwidth=0.1,
                  **kwargs):
-        super(EpsilonPlanar, self).__init__(atomgroups=atomgroups,
-                                            dim=dim,
-                                            zmin=zmin,
-                                            zmax=zmax,
-                                            binwidth=binwidth,
-                                            refgroup=refgroup,
-                                            unwrap=unwrap,
-                                            multi_group=True,
-                                            **kwargs)
+        super(DielectricPlanar, self).__init__(atomgroups=atomgroups,
+                                               dim=dim,
+                                               zmin=zmin,
+                                               zmax=zmax,
+                                               binwidth=binwidth,
+                                               refgroup=refgroup,
+                                               unwrap=unwrap,
+                                               multi_group=True,
+                                               **kwargs)
         self.xy = xy
         self.sym = sym
         self.vac = vac
@@ -132,7 +109,7 @@ class EpsilonPlanar(PlanarBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self):
-        super(EpsilonPlanar, self)._prepare()
+        super(DielectricPlanar, self)._prepare()
 
         self.results.frame.V = 0
 
@@ -155,7 +132,7 @@ class EpsilonPlanar(PlanarBase):
         self.results.frame.cM_perp = np.zeros((self.n_bins, n_ag))
 
     def _single_frame(self):
-        super(EpsilonPlanar, self)._single_frame()
+        super(DielectricPlanar, self)._single_frame()
         A = np.prod(self._universe.dimensions[self.odims])
         dz = (self.zmax - self.zmin) / self.n_bins
         self.results.frame.V = (self.zmax - self.zmin) * A
@@ -272,7 +249,7 @@ class EpsilonPlanar(PlanarBase):
         return self.results.frame.M_par[0]
 
     def _conclude(self):
-        super(EpsilonPlanar, self)._conclude()
+        super(DielectricPlanar, self)._conclude()
 
         pref = 1 / scipy.constants.epsilon_0
         pref /= scipy.constants.Boltzmann * self.temperature
@@ -421,7 +398,7 @@ class EpsilonPlanar(PlanarBase):
 
 @render_docs
 @charge_neutral(filter="error")
-class EpsilonCylinder(AnalysisBase):
+class DielectricCylinder(AnalysisBase):
     """Calculate cylindrical dielectric profiles.
 
     Components are calculated along the axial (z) and radial (along xy)
@@ -453,15 +430,15 @@ class EpsilonCylinder(AnalysisBase):
 
     Attributes
     ----------
-    results.r : np.ndarray
+    results.r : numpy.ndarray
         bins
-    results.eps_ax : np.ndarray
+    results.eps_ax : numpy.ndarray
         Parallel dielectric profile (ε_∥)
-    results.deps_ax : np.ndarray
+    results.deps_ax : numpy.ndarray
         Error of parallel dielectric profile
-    results.eps_rad : np.ndarray
+    results.eps_rad : numpy.ndarray
         Inverse perpendicular dielectric profile (ε^{-1}_⟂)
-    results.deps_rad : np.ndarray
+    results.deps_rad : numpy.ndarray
         Error of inverse perpendicular dielectric profile
     """
 
@@ -478,10 +455,10 @@ class EpsilonCylinder(AnalysisBase):
                  output_prefix="eps_cyl",
                  concfreq=0,
                  **kwargs):
-        super(EpsilonCylinder, self).__init__(atomgroups,
-                                              unwrap=unwrap,
-                                              concfreq=concfreq,
-                                              **kwargs)
+        super(DielectricCylinder, self).__init__(atomgroups,
+                                                 unwrap=unwrap,
+                                                 concfreq=concfreq,
+                                                 **kwargs)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.geometry = geometry
@@ -875,9 +852,9 @@ class DielectricSpectrum(AnalysisBase):
                 self.bins - self.binafter + 1).astype(int)
             bins = np.unique(np.append(np.arange(self.binafter), bins))[:-1]
 
-            self.results.nu_binned = Bin(self.results.nu, bins)
-            self.results.susc_binned = Bin(self.results.susc, bins)
-            self.results.dsusc_binned = Bin(self.results.dsusc, bins)
+            self.results.nu_binned = bin(self.results.nu, bins)
+            self.results.susc_binned = bin(self.results.susc, bins)
+            self.results.dsusc_binned = bin(self.results.dsusc, bins)
 
             logger.info(f'Binning data above datapoint '
                         f'{self.binafter} in log-spaced bins')

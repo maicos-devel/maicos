@@ -9,15 +9,13 @@
 """Tools for computing timeseries.
 
 The timeseries modules of MAICoS allow for calculating the timeseries angular
-dipole moments and energies from molecular simulation trajectory files. More
-details are given in the :ref:`ref_tutorial`.
+dipole moments and energies from molecular simulation trajectory files.
 """
 
 import numpy as np
 
-from ..decorators import render_docs
-from ..utils import check_compound
-from .base import AnalysisBase
+from ..core import AnalysisBase
+from ..lib.util import check_compound, render_docs
 
 
 @render_docs
@@ -27,7 +25,7 @@ class DipoleAngle(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     dim : int
         refernce vector for angle (x=0, y=1, z=2)
     output : str
@@ -39,13 +37,13 @@ class DipoleAngle(AnalysisBase):
 
     Attributes
     ----------
-    results.t : np.ndarray
+    results.t : numpy.ndarray
         time (ps)
-    resulst.cos_theta_i : np.ndarray
+    resulst.cos_theta_i : numpy.ndarray
         Average cos between dipole and axis
-    resulst.cos_theta_ii : np.ndarray
+    resulst.cos_theta_ii : numpy.ndarray
         Average cos^2 of the same between dipole and axis
-    resulst.cos_theta_ij : np.ndarray
+    resulst.cos_theta_ij : numpy.ndarray
         Product cos of dipole i and cos of dipole j (i!=j)
     """
 
@@ -127,7 +125,7 @@ class KineticEnergy(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     refpoint : str
         reference point for molecular center: center of
         mass (COM) or center of charge (COC)
@@ -137,11 +135,11 @@ class KineticEnergy(AnalysisBase):
 
     Attributes
     ----------
-    results.t : np.ndarray
+    results.t : numpy.ndarray
         time (ps)
-    results.trans : np.ndarray
+    results.trans : numpy.ndarray
         translational kinetic energy (kJ/mol)
-    results.rot : np.ndarray
+    results.rot : numpy.ndarray
         rotational kinetic energy (kJ/mol)
     """
 

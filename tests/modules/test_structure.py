@@ -8,12 +8,20 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 import os
+import sys
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
 from create_mda_universe import isolated_water_universe
-from datafiles import (
+from numpy.testing import assert_allclose, assert_equal
+
+from maicos import Diporder, RDFPlanar, Saxs
+from maicos.lib.util import check_compound
+
+
+sys.path.append("..")
+from data import (  # noqa: E402
     AIRWATER_TPR,
     AIRWATER_TRR,
     SPCE_GRO,
@@ -21,9 +29,6 @@ from datafiles import (
     WATER_TPR,
     WATER_TRR,
     )
-from numpy.testing import assert_allclose, assert_equal
-
-from maicos import Diporder, RDFPlanar, Saxs, utils
 
 
 class TestSaxs(object):
@@ -263,8 +268,8 @@ class TestRDFPlanar(object):
     def test_single_atom_com(self, get_universe):
         """Test whether the com of single atoms is correct."""
         rdfplanar = self.run_rdf_OO(get_universe)
-        assert_equal(rdfplanar.g1.center_of_mass(compound=utils.
-                                                 check_compound(rdfplanar.g1)),
+        assert_equal(rdfplanar.g1.center_of_mass(
+                     compound=check_compound(rdfplanar.g1)),
                      self._molecule_positions()[0:2])
 
     def test_n_g1_total_OO(self, get_universe):

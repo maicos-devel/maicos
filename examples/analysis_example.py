@@ -13,7 +13,7 @@ import logging
 
 import numpy as np
 
-from maicos.modules.base import AnalysisBase
+from maicos.core import AnalysisBase
 
 
 logger = logging.getLogger(__name__)

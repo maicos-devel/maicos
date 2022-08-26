@@ -13,7 +13,7 @@ How to use this documentation
 #############################
 
 This documentation follows the `divio`_ system: it is divided into four parts:
-tutorials, how-to, modules, and code philosophy.
+tutorials, how-to, module/api documentation, and code philosophy.
 
 List of analysis modules
 ########################
@@ -41,7 +41,7 @@ List of analysis modules
 
 .. toctree::
    :maxdepth: 4
-   :caption: Modules
+   :caption: Module Documentation
    :hidden:
 
    ./modules/density
@@ -49,6 +49,14 @@ List of analysis modules
    ./modules/structure
    ./modules/timeseries
    ./modules/transport
+
+.. toctree::
+   :maxdepth: 4
+   :caption: API Documentation
+   :hidden:
+
+   ./api/core
+   ./api/lib
 
 .. toctree::
    :maxdepth: 4

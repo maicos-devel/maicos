@@ -18,7 +18,7 @@ import subprocess
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from modules.datafiles import WATER_TPR, WATER_TRR
+from data import WATER_TPR, WATER_TRR
 from numpy.testing import assert_almost_equal
 from pkg_resources import resource_filename
 

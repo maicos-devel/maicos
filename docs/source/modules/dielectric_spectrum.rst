@@ -1,7 +1,7 @@
-Dielectric spectrum
-###################
+DielectricSpectrum
+##################
 
-.. automodule:: maicos.modules.epsilon.DielectricSpectrum
+.. autoclass:: maicos.modules.dielectric.DielectricSpectrum
     :members:
     :undoc-members:
     :show-inheritance:

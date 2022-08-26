@@ -6,32 +6,13 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Utilities."""
-
-import os
-import sys
-import warnings
+"""Helper functions for mathematical and physical operations."""
 
 import numpy as np
+from scipy import constants
 
-
-_share_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "share")
-
-
-def check_compound(AtomGroup):
-    """Check if compound 'molecules' exists.
-
-    If compound molecule does not exist, it
-    fallbacks to 'fragments' or 'residues'.
-    """
-    if hasattr(AtomGroup, "molnums"):
-        return "molecules"
-    elif hasattr(AtomGroup, "fragments"):
-        warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
-        return "fragments"
-    else:
-        warnings.warn("Cannot use 'molecules'. Falling back to 'residues'")
-        return "residues"
+from . import tables
+from ._cutil import compute_structure_factor  # noqa: F401
 
 
 # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
@@ -42,7 +23,7 @@ def FT(t, x, indvar=True):
     """Discrete fast fourier transform.
 
     Takes the time series and the function as arguments.
-    By default, returns the FT and the frequency:\
+    By default, returns the FT and the frequency:
     setting indvar=False means the function returns only the FT.
     """
     a, b = np.min(t), np.max(t)
@@ -84,7 +65,7 @@ def iFT(k, xf, indvar=True):
         return x2
 
 
-def Correlation(a, b=None, subtract_mean=False):
+def correlation(a, b=None, subtract_mean=False):
     """Calculate correlation or autocorrelation.
 
     Uses fast fourier transforms to give the correlation function
@@ -117,7 +98,7 @@ def Correlation(a, b=None, subtract_mean=False):
     return cor
 
 
-def ScalarProdCorr(a, b=None, subtract_mean=False):
+def scalar_prod_corr(a, b=None, subtract_mean=False):
     """Give the corr. function of the scalar product of two vector timeseries.
 
     Arguments should be given in the form a[t, i],
@@ -128,13 +109,232 @@ def ScalarProdCorr(a, b=None, subtract_mean=False):
 
     if b is None:
         for i in range(0, len(a[0, :])):
-            corr[:] += Correlation(a[:, i], None, subtract_mean)
+            corr[:] += correlation(a[:, i], None, subtract_mean)
 
     else:
         for i in range(0, len(a[0, :])):
-            corr[:] += Correlation(a[:, i], b[:, i], subtract_mean)
+            corr[:] += correlation(a[:, i], b[:, i], subtract_mean)
 
     return corr
+
+
+def correlation_time(x_n, method='Sokal', c=8, mintime=3):
+    """Compute the integrated correlation time of a timeseries.
+
+    Parameters
+    ----------
+    x_n : numpy.ndarray, float
+        timeseries
+    method : str
+        Method to choose integration cutoff Should be one of
+        'Sokal'
+        'Chodera'
+    c : float
+        cut-off factor for calculation of correlation time tau for Sokal method.
+        cut-off T for integration is determined to be T >= c * tau
+    mintime: int
+        minimum possible value for cut-off
+
+    Returns
+    -------
+    tau : float
+        integrated correlation time
+    """
+    corr = correlation(x_n, subtract_mean=True)
+
+    if method == 'Sokal':
+
+        cutoff = tau = mintime
+        for cutoff in range(mintime, len(x_n)):
+            tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
+                         * corr[1:cutoff] / corr[0])
+            if cutoff > tau * c:
+                break
+
+            if cutoff > len(x_n) / 3:
+                return -1
+
+    if method == 'Chodera':
+
+        cutoff = max(mintime, np.min(np.argwhere(corr < 0)))
+        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
+                     * corr[1:cutoff] / corr[0])
+
+    return tau
+
+
+def new_mean(old_mean, data, length):
+    r"""Compute the arithmetic mean of a series iteratively.
+
+    Compute the arithmetic mean of n samples based on an
+    existing mean of n-1 and the n-th value.
+
+    Given the mean of a data series
+
+    .. math::
+
+        \bar x_N = \frac{1}{N} \sum_{n=1}^N x_n
+
+    we seperate the last value
+
+    .. math::
+
+        \bar x_N = \frac{1}{N} \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
+
+    and multiply 1 = (N - 1)/(N - 1)
+
+    .. math::
+
+        \bar x_N = \frac{N-1}{N} \frac{1}{N-1} \\
+        \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
+
+    The first term can be identified as the mean of the first N - 1 values
+    and we arrive at
+    .. math::
+
+        \bar x_N = \frac{N-1}{N} \bar x_{N-1} + \frac{x_N}{N}
+
+
+    Parameters
+    ----------
+    old_mean : float
+        arithmetic mean of the first n - 1 samples.
+    data : float
+        n-th value of the series.
+    length : int
+        Length of the updated series, here called n.
+
+    Returns
+    -------
+    new_mean : float
+        Updated mean of the series of n values.
+
+    Examples
+    --------
+    The mean of a data set can easily be calculated from the data points.
+    However this requires one to keep all data points on hand until the
+    end of the calculation.
+    >>> np.mean([1,3,5,7])
+    4.0
+    Alternatively, one can update an existing mean, this requires only
+    knowledge of the total number of samples.
+    >>> maicos.utils.new_mean(np.mean([1, 3, 5]), 7, 4)
+    4.0
+    """
+    return ((length - 1) * old_mean + data) / length
+
+
+def new_variance(old_variance, old_mean, new_mean, data, length):
+    """Calculate the variance of a timeseries iteratively.
+
+    The variance of a timeseries can be calculated iteratively by
+    using the following formula
+
+    .. math::
+
+        S_n = S_n-1 + (n-1) * (data_n - mean_n-1)^2 / (n-1)
+
+    Floating point imprecision can lead to slight negative variances
+    leading non defined standard deviations. Therefore a negetaive variance
+    is set to 0.
+
+    Parameters
+    ----------
+    old_variance : float
+        The variance of the first n-1 samples.
+    old_mean : float
+        The mean of the first n-1 samples.
+    new_mean : folat
+        The mean of the full n samples.
+    data : float
+        The n-th value of the series.
+    length : int
+        Length of the updated series, here called n.
+
+    Returns
+    -------
+    new_variance : float
+        Updated variance of the series of n values.
+
+    Examples
+    --------
+    The data set [1,5,5,1] has a variance of 4.0
+    >>> np.var([1,5,5,1])
+    4.0
+    Knowing the total number of data points, this operation
+    can be performed iteratively.
+    >>> maicos.utils.new_variance(np.var([1,5,5]), 1, 4)
+    4.0
+    """
+    S_old = old_variance * (length - 1)
+    S_new = S_old + (data - old_mean) * (data - new_mean)
+
+    if type(S_new) == np.ndarray:
+        S_new[S_new < 0] = 0
+    else:
+        if S_new < 0:
+            S_new = 0
+
+    return S_new / length
+
+
+def cluster_com(ag):
+    """Calculate the center of mass of the atomgroup.
+
+    Parameters
+    ----------
+    ag : mda.AtomGroup
+        Group of atoms to calculate the center of mass for.
+
+    Returns
+    -------
+    com : numpy.ndarray
+        The center of mass.
+
+    Without proper treatment of periodic boundrary conditions most algorithms
+    will result in wrong center of mass calculations where molecules or clusters
+    of particles are broken over the boundrary.
+
+    Example ::
+
+       +-----------+
+       |           |
+       | 1   x   2 |
+       |           |
+       +-----------+
+
+    Following
+
+    Linge Bai & David Breen (2008)
+    Calculating Center of Mass in an Unbounded 2D Environment,
+    Journal of Graphics Tools, 13:4, 53-60,
+    DOI: 10.1080/2151237X.2008.10129266
+
+    the coordinates of the particles are projected on a circle and weighted by
+    their mass in this two dimensional space. The center of mass is obtained by
+    transforming this point back to the corresponding point in the real system.
+    This is done seperately for each dimension.
+
+    Reasons for doing this include the analysis of clusters in periodic
+    boundrary conditions and consistent center of mass calculation across
+    box boundraries. This procedure results in the right center of mass
+    as seen below ::
+
+       +-----------+
+       |           |
+       x 1       2 |
+       |           |
+       +-----------+
+    """
+    L = ag.universe.dimensions[:3]
+    theta = (ag.positions / L) * 2 * np.pi
+    xi = ((np.cos(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
+          / ag.masses.sum())
+    zeta = ((np.sin(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
+            / ag.masses.sum())
+    theta_com = np.arctan2(-zeta, -xi) + np.pi
+    com = theta_com / (2 * np.pi) * L
+    return com
 
 
 def symmetrize(m, axis=None, inplace=False):
@@ -226,251 +426,83 @@ def symmetrize(m, axis=None, inplace=False):
     return out
 
 
-def get_cli_input():
-    """Return a proper formatted string of the command line input."""
-    program_name = os.path.basename(sys.argv[0])
-    # Add additional quotes for connected arguments.
-    arguments = ['"{}"'.format(arg)
-                 if " " in arg else arg for arg in sys.argv[1:]]
-    return "{} {}".format(program_name, " ".join(arguments))
+def compute_form_factor(q, atom_type):
+    """Calculate the form factor for the given element for given q (1/Å).
 
-
-def atomgroup_header(AtomGroup):
-    """Return a string containing infos about the AtomGroup.
-
-    Infos include the total number of atoms, the including
-    residues and the number of residues. Useful for writing
-    output file headers.
+    Handles united atom types like CH4 etc ...
     """
-    if not hasattr(AtomGroup, 'types'):
-        warnings.warn("AtomGroup does not contain atom types. "
-                      "Not writing AtomGroup information to output.")
-        return f"{len(AtomGroup.atoms)} unkown particles"
-    unique, unique_counts = np.unique(AtomGroup.types,
-                                      return_counts=True)
-    return " & ".join(
-        "{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
+    element = tables.atomtypes[atom_type]
 
-
-def sort_atomgroup(atomgroup):
-    """Sort a atomgroup after its fragments.
-
-    Needed in e.g. LAMMPS, as molecules are not sorted,
-    but randomly distributed in atomgroup.atoms.
-
-    atomgroup: atomgroup to sort
-    """
-    com = check_compound(atomgroup)
-    if com == 'fragments':
-        return atomgroup[np.argsort(atomgroup.fragindices)]
-    elif com == 'residues':
-        return atomgroup[np.argsort(atomgroup.resids)]
-    elif com == 'molecules':
-        return atomgroup[np.argsort(atomgroup.molnums)]
+    if element == "CH1":
+        form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
+    elif element == "CH2":
+        form_factor = compute_form_factor(
+            q, "C") + 2 * compute_form_factor(q, "H")
+    elif element == "CH3":
+        form_factor = compute_form_factor(
+            q, "C") + 3 * compute_form_factor(q, "H")
+    elif element == "CH4":
+        form_factor = compute_form_factor(
+            q, "C") + 4 * compute_form_factor(q, "H")
+    elif element == "NH1":
+        form_factor = compute_form_factor(q, "N") + compute_form_factor(q, "H")
+    elif element == "NH2":
+        form_factor = compute_form_factor(
+            q, "N") + 2 * compute_form_factor(q, "H")
+    elif element == "NH3":
+        form_factor = compute_form_factor(
+            q, "N") + 3 * compute_form_factor(q, "H")
     else:
-        return atomgroup
+        form_factor = tables.CM_parameters[element].c
+        q2 = (q / (4 * np.pi))**2
+        for i in range(4):
+            form_factor += tables.CM_parameters[element].a[i] * \
+                np.exp(-tables.CM_parameters[element].b[i] * q2)
+
+    return form_factor
 
 
-def correlation_time(x_n, method='Sokal', c=8, mintime=3):
-    """Compute the integrated correlation time of a timeseries.
+def mu(rho, temperature, m):
+    """Calculate the chemical potential.
 
-    Parameters
-    ----------
-    x_n : np.ndarray, float
-        timeseries
-    method : str
-        Method to choose integration cutoff Should be one of
-        'Sokal'
-        'Chodera'
-    c : float
-        cut-off factor for calculation of correlation time tau for Sokal method.
-        cut-off T for integration is determined to be T >= c * tau
-    mintime: int
-        minimum possible value for cut-off
-
-    Returns
-    -------
-    tau : float
-        integrated correlation time
+    The chemical potential is calculated from the
+    density: mu = k_B T log(rho. / m)
     """
-    corr = Correlation(x_n, subtract_mean=True)
+    # kT in KJ/mol
+    kT = temperature * constants.Boltzmann \
+        * constants.Avogadro / constants.kilo
 
-    if method == 'Sokal':
+    results = []
 
-        cutoff = tau = mintime
-        for cutoff in range(mintime, len(x_n)):
-            tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
-                         * corr[1:cutoff] / corr[0])
-            if cutoff > tau * c:
-                break
+    for srho, mass in zip(np.array(rho).T, m):
+        # De Broglie (converted to nm)
+        db = np.sqrt(
+            constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
+                                * constants.Boltzmann * temperature)
+            ) / constants.angstrom
 
-            if cutoff > len(x_n) / 3:
-                return -1
-
-    if method == 'Chodera':
-
-        cutoff = max(mintime, np.min(np.argwhere(corr < 0)))
-        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
-                     * corr[1:cutoff] / corr[0])
-
-    return tau
-
-
-def new_mean(old_mean, data, length):
-    r"""Compute the arithmetic mean of a series iteratively.
-
-    Compute the arithmetic mean of n samples based on an
-    existing mean of n-1 and the n-th value.
-
-    Given the mean of a data series
-    .. math::
-        \bar x_N = \frac{1}{N} \sum_{n=1}^N x_n
-    we seperate the last value
-    .. math::
-        \bar x_N = \frac{1}{N} \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
-    .. math::
-    and multiply 1 = (N - 1)/(N - 1)
-        \bar x_N = \frac{N-1}{N} \frac{1}{N-1} \
-        \sum_{n=1}^{N-1} x_n + \frac{x_N}{N}
-    The first term can be identified as the mean of the first N - 1 values
-    and we arrive at
-    .. math::
-        \bar x_N = \frac{N-1}{N} \bar x_{N-1} + \frac{x_N}{N}
+        if np.all(srho > 0):
+            results.append(kT * np.log(srho * db ** 3))
+        elif np.any(srho == 0):
+            results.append(np.float64("-inf") * np.ones(srho.shape))
+        else:
+            results.append(np.float64("nan") * np.ones(srho.shape))
+    return np.squeeze(np.array(results).T)
 
 
-    Parameters
-    ----------
-    old_mean : float
-        arithmetic mean of the first n - 1 samples.
-    data : float
-        n-th value of the series.
-    length : int
-        Length of the updated series, here called n.
+def dmu(rho, drho, temperature):
+    """Calculate the error of the chemical potential.
 
-    Returns
-    -------
-    new_mean : float
-        Updated mean of the series of n values.
-
-    Examples
-    --------
-    The mean of a data set can easily be calculated from the data points.
-    However this requires one to keep all data points on hand until the
-    end of the calculation.
-    >>> np.mean([1,3,5,7])
-    4.0
-    Alternatively, one can update an existing mean, this requires only
-    knowledge of the total number of samples.
-    >>> maicos.utils.new_mean(np.mean([1, 3, 5]), 7, 4)
-    4.0
+    The error is calculated from the density using propagation of uncertainty.
     """
-    return ((length - 1) * old_mean + data) / length
+    kT = temperature * constants.Boltzmann \
+        * constants.Avogadro / constants.kilo
 
+    results = []
 
-def new_variance(old_variance, old_mean, new_mean, data, length):
-    """Calculate the variance of a timeseries iteratively.
-
-    The variance of a timeseries can be calculated iteratively by
-    using the following formula:
-        S_n = S_n-1 + (n-1) * (data_n - mean_n-1)^2 / (n-1)
-
-    Floating point imprecision can lead to slight negative variances
-    leading non defined standard deviations. Therefore a negetaive variance
-    is set to 0.
-
-    Parameters
-    ----------
-    old_variance : float
-        The variance of the first n-1 samples.
-    old_mean : float
-        The mean of the first n-1 samples.
-    new_mean : folat
-        The mean of the full n samples.
-    data : float
-        The n-th value of the series.
-    length : int
-        Length of the updated series, here called n.
-
-    Returns
-    -------
-    new_variance : float
-        Updated variance of the series of n values.
-
-    Examples
-    --------
-    The data set [1,5,5,1] has a variance of 4.0
-    >>> np.var([1,5,5,1])
-    4.0
-    Knowing the total number of data points, this operation
-    can be performed iteratively.
-    >>> maicos.utils.new_variance(np.var([1,5,5]), 1, 4)
-    4.0
-    """
-    S_old = old_variance * (length - 1)
-    S_new = S_old + (data - old_mean) * (data - new_mean)
-
-    if type(S_new) == np.ndarray:
-        S_new[S_new < 0] = 0
-    else:
-        if S_new < 0:
-            S_new = 0
-
-    return S_new / length
-
-
-def cluster_com(ag):
-    """Calculate the center of mass of the atomgroup.
-
-    Parameters
-    ----------
-    ag : mda.AtomGroup
-        Group of atoms to calculate the center of mass for.
-
-    Returns
-    -------
-    com : np.ndarray
-        The center of mass.
-
-    Without proper treatment of periodic boundrary conditions most algorithms
-    will result in wrong center of mass calculations where molecules or clusters
-    of particles are broken over the boundrary.
-
-    Example:
-    +-----------+
-    |           |
-    | 1   x   2 |
-    |           |
-    +-----------+
-
-    Following
-
-    Linge Bai & David Breen (2008)
-    Calculating Center of Mass in an Unbounded 2D Environment,
-    Journal of Graphics Tools, 13:4, 53-60,
-    DOI: 10.1080/2151237X.2008.10129266
-
-    the coordinates of the particles are projected on a circle and weighted by
-    their mass in this two dimensional space. The center of mass is obtained by
-    transforming this point back to the corresponding point in the real system.
-    This is done seperately for each dimension.
-
-    Reasons for doing this include the analysis of clusters in periodic
-    boundrary conditions and consistent center of mass calculation across
-    box boundraries. This procedure results in the right center of mass
-    as seen below.
-
-    +-----------+
-    |           |
-    x 1       2 |
-    |           |
-    +-----------+
-    """
-    L = ag.universe.dimensions[:3]
-    theta = (ag.positions / L) * 2 * np.pi
-    xi = ((np.cos(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
-          / ag.masses.sum())
-    zeta = ((np.sin(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
-            / ag.masses.sum())
-    theta_com = np.arctan2(-zeta, -xi) + np.pi
-    com = theta_com / (2 * np.pi) * L
-    return com
+    for srho, sdrho in zip(np.array(rho).T, np.array(drho).T):
+        if np.all(srho > 0):
+            results.append(kT * (sdrho / srho))
+        else:
+            results.append(np.float64("nan") * np.ones(srho.shape))
+    return np.squeeze(np.array(results).T)

@@ -23,95 +23,14 @@ import warnings
 
 import numpy as np
 from MDAnalysis.exceptions import NoDataError
-from scipy import constants
 
-from ..decorators import render_docs
-from ..utils import atomgroup_header
-from .base import ProfileCylinderBase, ProfilePlanarBase
+from ..core import ProfileCylinderBase, ProfilePlanarBase
+from ..lib.math import dmu, mu
+from ..lib.util import atomgroup_header, render_docs
+from ..lib.weights import density_weights, temperature_weights
 
 
 logger = logging.getLogger(__name__)
-
-
-def mu(rho, temperature, m):
-    """Calculate the chemical potential.
-
-    The chemical potential is calculated from the
-    density: mu = k_B T log(rho. / m)
-    """
-    # kT in KJ/mol
-    kT = temperature * constants.Boltzmann \
-        * constants.Avogadro / constants.kilo
-
-    results = []
-
-    for srho, mass in zip(np.array(rho).T, m):
-        # De Broglie (converted to nm)
-        db = np.sqrt(
-            constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
-                                * constants.Boltzmann * temperature)
-            ) / constants.angstrom
-
-        if np.all(srho > 0):
-            results.append(kT * np.log(srho * db ** 3))
-        elif np.any(srho == 0):
-            results.append(np.float64("-inf") * np.ones(srho.shape))
-        else:
-            results.append(np.float64("nan") * np.ones(srho.shape))
-    return np.squeeze(np.array(results).T)
-
-
-def dmu(rho, drho, temperature):
-    """Calculate the error of the chemical potential.
-
-    The error is calculated from the density using propagation of uncertainty.
-    """
-    kT = temperature * constants.Boltzmann \
-        * constants.Avogadro / constants.kilo
-
-    results = []
-
-    for srho, sdrho in zip(np.array(rho).T, np.array(drho).T):
-        if np.all(srho > 0):
-            results.append(kT * (sdrho / srho))
-        else:
-            results.append(np.float64("nan") * np.ones(srho.shape))
-    return np.squeeze(np.array(results).T)
-
-
-def _density_weights(atomgroup, grouping, dim, dens):
-    """Calculate the weights for the histogram.
-
-    Supported values are `mass`, `number` or `charge`.
-    """
-    if dens == "number":
-        # There exist no properrty like n_molecules
-        if grouping == "molecules":
-            numbers = len(np.unique(atomgroup.molnums))
-        else:
-            numbers = getattr(atomgroup, f"n_{grouping}")
-        return np.ones(numbers)
-    elif dens == "mass":
-        if grouping == "atoms":
-            masses = atomgroup.masses
-        else:
-            masses = atomgroup.total_mass(compound=grouping)
-        return masses
-    elif dens == "charge":
-        if grouping == "atoms":
-            return atomgroup.charges
-        else:
-            return atomgroup.total_charge(compound=grouping)
-    else:
-        raise ValueError(f"`{dens}` not supported. "
-                         "Use `mass`, `number` or `charge`.")
-
-
-def _temperature(ag, grouping, dim):
-    """Calculate contribution of each atom to the temperature."""
-    # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
-    prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-    return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 
 
 @render_docs
@@ -162,7 +81,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  muout="muout.dat",
                  **kwargs):
         super(ChemicalPotentialPlanar, self).__init__(
-            function=_density_weights,
+            function=density_weights,
             f_kwargs={"dens": "number"},
             normalization="volume",
             atomgroups=atomgroups,
@@ -330,7 +249,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  **kwargs):
 
         super(TemperaturePlanar, self).__init__(
-            function=_temperature,
+            function=temperature_weights,
             normalization="number",
             atomgroups=atomgroups,
             dim=dim,
@@ -399,7 +318,7 @@ class DensityPlanar(ProfilePlanarBase):
                  **kwargs):
 
         super(DensityPlanar, self).__init__(
-            function=_density_weights,
+            function=density_weights,
             f_kwargs={"dens": dens},
             normalization="volume",
             atomgroups=atomgroups,
@@ -464,7 +383,7 @@ class DensityCylinder(ProfileCylinderBase):
                  **kwargs):
 
         super(DensityCylinder, self).__init__(
-            function=_density_weights,
+            function=density_weights,
             f_kwargs={"dens": dens},
             normalization="volume",
             atomgroups=atomgroups,

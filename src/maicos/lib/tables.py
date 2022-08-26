@@ -6,13 +6,17 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tables."""
+"""
+The module contains static lookup tables for atom typing etc.
+
+The tables are dictionaries that are indexed by elements.
+"""
 
 import os
 
 import numpy as np
 
-from .utils import _share_path
+from .util import _share_path
 
 
 # Translation of atomnames to types/element

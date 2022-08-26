@@ -20,50 +20,13 @@ import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
 
-from .. import tables
-from ..decorators import render_docs
-from ..lib import sfactor
-from ..utils import check_compound
-from .base import AnalysisBase, PlanarBase
+from ..core import AnalysisBase, PlanarBase
+from ..lib import tables
+from ..lib.math import compute_form_factor, compute_structure_factor
+from ..lib.util import check_compound, render_docs
 
 
 logger = logging.getLogger(__name__)
-
-
-def compute_form_factor(q, atom_type):
-    """Calculate the form factor for the given element for given q (1/Å).
-
-    Handles united atom types like CH4 etc ...
-    """
-    element = tables.atomtypes[atom_type]
-
-    if element == "CH1":
-        form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
-    elif element == "CH2":
-        form_factor = compute_form_factor(
-            q, "C") + 2 * compute_form_factor(q, "H")
-    elif element == "CH3":
-        form_factor = compute_form_factor(
-            q, "C") + 3 * compute_form_factor(q, "H")
-    elif element == "CH4":
-        form_factor = compute_form_factor(
-            q, "C") + 4 * compute_form_factor(q, "H")
-    elif element == "NH1":
-        form_factor = compute_form_factor(q, "N") + compute_form_factor(q, "H")
-    elif element == "NH2":
-        form_factor = compute_form_factor(
-            q, "N") + 2 * compute_form_factor(q, "H")
-    elif element == "NH3":
-        form_factor = compute_form_factor(
-            q, "N") + 3 * compute_form_factor(q, "H")
-    else:
-        form_factor = tables.CM_parameters[element].c
-        q2 = (q / (4 * np.pi))**2
-        for i in range(4):
-            form_factor += tables.CM_parameters[element].a[i] * \
-                np.exp(-tables.CM_parameters[element].b[i] * q2)
-
-    return form_factor
 
 
 @render_docs
@@ -93,7 +56,7 @@ class Saxs(AnalysisBase):
         Ending q (1/Å)
     dq : float
         binwidth (1/Å)
-    mintheta float
+    mintheta : float
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
         Maximal angle (°) between the q vectors and the z-axis.
@@ -102,11 +65,11 @@ class Saxs(AnalysisBase):
 
     Attributes
     ----------
-    results.q : np.ndarray
+    results.q : numpy.ndarray
         length of binned q-vectors
-    results.q_indices : np.ndarray
+    results.q_indices : numpy.ndarray
         Miller indices of q-vector (only if noboindata==True)
-    results.scat_factor : np.ndarray
+    results.scat_factor : numpy.ndarray
         Scattering intensities
     """
 
@@ -186,7 +149,7 @@ class Saxs(AnalysisBase):
             # map coordinates onto cubic cell
             positions = t.atoms.positions - box * \
                 np.round(t.atoms.positions / box)
-            q_ts, S_ts = sfactor.compute_structure_factor(
+            q_ts, S_ts = compute_structure_factor(
                 np.double(positions), np.double(box), self.startq,
                 self.endq, self.mintheta, self.maxtheta)
 
@@ -269,7 +232,6 @@ class Diporder(PlanarBase):
         symmetrize the profiles
     binmethod : str
         binning method: center of mass (COM) or center of charge (COC)
-    ${MAKE_WHOLE_PARAMETER}
     output : str
         Output filename
     concfreq : int
@@ -280,13 +242,13 @@ class Diporder(PlanarBase):
     Attributes
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
-    results.P0 : np.ndarray
+    results.P0 : numpy.ndarray
         P_0⋅ρ(z)⋅cos(θ[z]) [e/Å²]
-    results.cos_theta : np.ndarray
+    results.cos_theta : numpy.ndarray
         cos(θ[z])
-    results.cos_2_theta : np.ndarray
+    results.cos_2_theta : numpy.ndarray
         cos²(Θ[z])
-    results.rho : np.ndarray
+    results.rho : numpy.ndarray
         ρ(z) [1/Å³]
     """
 
@@ -479,7 +441,7 @@ class RDFPlanar(PlanarBase):
     Attributes
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
-    results.bins: np.ndarray
+    results.bins: numpy.ndarray
         distances to which the RDF is calculated with shape (rdf_nbins) (Å)
     results.rdf: np.ndrray
         RDF with shape (rdf_nbins, n_bins) (1/Å^3)
