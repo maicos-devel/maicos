@@ -81,22 +81,19 @@ class TestDiporder(object):
 
         # x-direction
         res[0] = {}
-        res[0]["P0"] = 0
-        res[0]["cos_theta"] = 0
-        res[0]["cos_2_theta"] = 0.35
-        res[0]["rho"] = 0.015
+        res[0]["P0"] = 4 * [0]
+        res[0]["cos_theta"] = 4 * [0]
+        res[0]["cos_2_theta"] = 4 * [0.35]
 
         # y-direction must be the same as x
         res[1] = res[0]
 
         # z-direction
         res[2] = {}
-        res[2]["P0"] = 0
-        res[2]["cos_theta"] = [0.02, 0, 0, 0, 0, 0, 0.16, 0, 0, 0, 0, -0.18]
-        res[2]["cos_2_theta"] = [0.25, 0.33, 0.33, 0.33, 0.33, 0.26,
-                                 0.2, 0, 0, 0, 0, 0.19]
-        res[2]["rho"] = [0.021, 0.032, 0.033, 0.033, 0.033, 0.023,
-                         0, 0, 0, 0, 0, 0]
+        res[2]["P0"] = 12 * [0]
+        res[2]["cos_theta"] = 12 * [0]
+        res[2]["cos_2_theta"] = [0.25, 0.33, 0.33, 0.33, 0.33, 0.26, 0.09,
+                                 0, 0, 0, 0, 0.06]
 
         return res
 
@@ -106,78 +103,40 @@ class TestDiporder(object):
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
         return u.atoms
 
-    @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_Diporder_slab(self, ag, dim, result_dict):
-        """Test Diporder for slab system in z direction."""
-        dip = Diporder(ag, binwidth=5, dim=dim).run()
-        assert_allclose(dip.results['P0'], result_dict[dim]['P0'], atol=1e-2)
-        assert_allclose(dip.results['rho'],
-                        result_dict[dim]['rho'],
-                        rtol=1e-2,
-                        atol=1e-2)
-        assert_allclose(dip.results['cos_theta'],
-                        result_dict[dim]['cos_theta'],
-                        atol=1e-1, rtol=1e-1)
-        assert_allclose(dip.results['cos_2_theta'],
-                        result_dict[dim]['cos_2_theta'],
-                        atol=1e-2)
+    @pytest.mark.parametrize('order_parameter',
+                             ['P0', 'cos_theta', 'cos_2_theta'])
+    @pytest.mark.parametrize('dim', [0, 1, 2])
+    def test_Diporder_slab(self, ag, dim, order_parameter, result_dict):
+        """Test Diporder for slab system in x,y,z direction."""
+        dip = Diporder(ag,
+                       binwidth=5,
+                       dim=dim,
+                       order_parameter=order_parameter).run()
+        assert_allclose(dip.results.profile_mean.flatten(),
+                        result_dict[dim][order_parameter],
+                        atol=1e-1)
 
-    def test_Diporder_3_water_0(self):
+    @pytest.mark.parametrize('order_parameter, output',
+                             [('P0', 0), ('cos_theta', 1), ('cos_2_theta', 1)])
+    def test_Diporder_3_water_0(self, order_parameter, output):
         """Test Diporder for 3 water molecules with angle 0."""
         group_H2O_1 = isolated_water_universe(n_molecules=3, angle_deg=0)
-        dip = Diporder(group_H2O_1, binwidth=10).run()
+        dip = Diporder(group_H2O_1, binwidth=10,
+                       order_parameter=order_parameter).run()
 
-        assert_allclose(dip.results['P0'], 4.92e-4, rtol=1e-3)
-        assert_equal(dip.results['rho'], 1e-3)
-        assert_allclose(dip.results['cos_theta'], 1, rtol=1e-3)
-        assert_allclose(dip.results['cos_2_theta'], 1, rtol=1e-3)
+        assert_allclose(np.mean(dip.results.profile_mean.flatten()),
+                        output, atol=1e-3)
 
-    def test_Diporder_3_water_90(self):
-        """Test Diporder for 3 water molecules with angle 90 degrees."""
+    @pytest.mark.parametrize('order_parameter, output',
+                             [('P0', 0), ('cos_theta', 0), ('cos_2_theta', 0)])
+    def test_Diporder_3_water_90(self, order_parameter, output):
+        """Test Diporder for 3 water molecules with angle 90."""
         group_H2O_2 = isolated_water_universe(n_molecules=3, angle_deg=90)
-        dip = Diporder(group_H2O_2, binwidth=10).run()
-        assert_allclose(dip.results['P0'], 0, atol=1e-9)
-        assert_equal(dip.results['rho'], 1e-3)
-        assert_allclose(dip.results['cos_theta'], 0, atol=1e-5)
-        assert_allclose(dip.results['cos_2_theta'], 0, atol=1e-6)
+        dip = Diporder(group_H2O_2, binwidth=10,
+                       order_parameter=order_parameter).run()
 
-    def test_broken_molecules(self, ag):
-        """Test broken molecules."""
-        dip = Diporder(ag, unwrap=False).run()
-        assert_allclose(dip.results['P0'].mean(), 0.0006, rtol=1e-1)
-
-    def test_repaired_molecules(self, ag):
-        """Test repaired molecules."""
-        dip = Diporder(ag, unwrap=True).run()
-        assert_allclose(dip.results['P0'].mean(), 0, atol=1e-2)
-
-    def test_output(self, ag, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            dip = Diporder(ag, end=20).run()
-            dip.save()
-            res_dip = np.loadtxt(dip.output)
-            assert_allclose(dip.results["P0"], res_dip[:, 1], rtol=1e-2)
-
-    def test_one_frame(self, ag):
-        """Test analysis running for one frame.
-
-        Test if the division by the number of frames is correct.
-        """
-        dip = Diporder(ag, unwrap=False).run(stop=1)
-        assert not np.isnan(dip.results.P0).any()
-
-    def test_output_name(self, ag, tmpdir):
-        """Test output name."""
-        with tmpdir.as_cwd():
-            dip = Diporder(ag, output="foo.dat", end=20)
-            dip.run()
-            dip.save()
-            open("foo.dat")
-
-    def test_verbose(self, ag):
-        """Test verbose."""
-        Diporder(ag, verbose=True).run()
+        assert_allclose(np.mean(dip.results.profile_mean.flatten()),
+                        output, atol=1e-6)
 
 
 class TestRDFPlanar(object):

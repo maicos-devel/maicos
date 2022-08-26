@@ -20,10 +20,11 @@ import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
 
-from ..core import AnalysisBase, PlanarBase
+from ..core import AnalysisBase, PlanarBase, ProfilePlanarBase
 from ..lib import tables
 from ..lib.math import compute_form_factor, compute_structure_factor
 from ..lib.util import check_compound, render_docs
+from ..lib.weights import diporder_weights
 
 
 logger = logging.getLogger(__name__)
@@ -217,7 +218,7 @@ class Saxs(AnalysisBase):
 
 
 @render_docs
-class Diporder(PlanarBase):
+class Diporder(ProfilePlanarBase):
     """Calculate dipolar order parameters.
 
     Calculations include the projected dipole density
@@ -226,171 +227,54 @@ class Diporder(PlanarBase):
 
     Parameters
     ----------
-    ${ATOMGROUP_PARAMETER}
-    ${PLANAR_CLASS_PARAMETERS}
-    sym : bool
-        symmetrize the profiles
-    binmethod : str
-        binning method: center of mass (COM) or center of charge (COC)
-    output : str
-        Output filename
-    concfreq : int
-        Default number of frames after which results are calculated
-        and files refreshed. If `0` results are only calculated at the
-        end of the analysis and not saved by default.
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    order_parameter : str
+        `P0`, `cos_theta` or `cos_2_theta`
+    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
-    ${PLANAR_CLASS_ATTRIBUTES}
-    results.P0 : numpy.ndarray
-        P_0⋅ρ(z)⋅cos(θ[z]) [e/Å²]
-    results.cos_theta : numpy.ndarray
-        cos(θ[z])
-    results.cos_2_theta : numpy.ndarray
-        cos²(Θ[z])
-    results.rho : numpy.ndarray
-        ρ(z) [1/Å³]
+    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
-                 atomgroup,
+                 atomgroups,
                  dim=2,
                  zmin=None,
                  zmax=None,
                  binwidth=1,
                  refgroup=None,
                  sym=False,
-                 binmethod='COM',
+                 grouping="residues",
                  unwrap=True,
+                 binmethod="com",
                  output="diporder.dat",
                  concfreq=0,
+                 order_parameter="P0",
                  **kwargs):
-        super(Diporder, self).__init__(atomgroups=atomgroup,
-                                       dim=dim,
-                                       zmin=zmin,
-                                       zmax=zmax,
-                                       binwidth=binwidth,
-                                       refgroup=refgroup,
-                                       unwrap=unwrap,
-                                       confreq=concfreq,
-                                       **kwargs)
-        self.sym = sym
-        self.binmethod = binmethod
-        self.output = output
 
-    def _prepare(self):
-        """Set things up before the analysis loop begins."""
-        super(Diporder, self)._prepare()
-        self.binmethod = self.binmethod.upper()
-        if self.binmethod not in ["COM", "COC"]:
-            raise ValueError('Unknown binning method: {}'.format(
-                self.binmethod))
+        if order_parameter == "P0":
+            normalization = "volume"
+        else:
+            normalization = "number"
 
-        # Check if all residues are identical.
-        # Choose first residue as reference.
-        residue_names = [ag.names for ag in self.atomgroup.split("residue")]
-        for names in residue_names[1:]:
-            if len(residue_names[0]) != len(names) and np.all(
-                    residue_names[0] != names):
-                raise ValueError("Not all residues are identical. Please adjust"
-                                 "selection.")
-
-        self.P0 = np.zeros(self.n_bins)
-        self.cos_theta = np.zeros(self.n_bins)
-        self.cos_2_theta = np.zeros(self.n_bins)
-        self.rho = np.zeros(self.n_bins)
-        self.bin_count = np.zeros(self.n_bins)
-
-        # unit normal vector
-        self.unit = np.zeros(3)
-        self.unit[self.dim] += 1
-
-    def _single_frame(self):
-        super(Diporder, self)._single_frame()
-        dz_frame = self._ts.dimensions[self.dim] / self.n_bins
-
-        chargepos = self.atomgroup.positions \
-            * self.atomgroup.charges[:, np.newaxis]
-        dipoles = self.atomgroup.accumulate(
-            chargepos, compound=check_compound(self.atomgroup))
-
-        if self.binmethod == 'COM':
-            # Calculate the centers of the objects (i.e. Molecules)
-            bin_positions = self.atomgroup.center_of_mass(
-                compound=check_compound(self.atomgroup))
-        elif self.binmethod == 'COC':
-            bin_positions = self.atomgroup.center(
-                weights=np.abs(self.atomgroup.charges),
-                compound=check_compound(self.atomgroup))
-
-        bincount = np.histogram(bin_positions[:, self.dim],
-                                bins=self.n_bins,
-                                range=(self.zmin, self.zmax))[0]
-        self.bin_count += bincount
-        A = np.prod(self._ts.dimensions[self.odims])
-
-        self.P0 += np.histogram(
-            bin_positions[:, self.dim],
-            bins=self.n_bins,
-            range=(self.zmin, self.zmax),
-            weights=np.dot(dipoles, self.unit))[0] / (A * dz_frame)
-        self.cos_theta += np.histogram(
-            bin_positions[:, self.dim],
-            bins=self.n_bins,
-            range=(self.zmin, self.zmax),
-            weights=np.dot(
-                dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
-                self.unit))[0]
-        self.cos_2_theta += np.histogram(
-            bin_positions[:, self.dim],
-            bins=self.n_bins,
-            range=(self.zmin, self.zmax),
-            weights=np.dot(
-                dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
-                self.unit)**2)[0]
-        self.rho += bincount / (A * dz_frame)
-
-    def _conclude(self):
-        """Calculate the results.
-
-        Called at the end of the run() method to before the _conclude function.
-        Can also be called during a run to update the results during
-        processing.
-        """
-        super(Diporder, self)._conclude()
-        self.results.P0 = self.P0 / self._index
-        self.results.rho = self.rho / self._index
-
-        with np.errstate(divide='ignore', invalid='ignore'):
-            self.results.cos_theta = np.nan_to_num(
-                self.cos_theta / self.bin_count)
-            self.results.cos_2_theta = np.nan_to_num(
-                self.cos_2_theta / self.bin_count)
-
-        if self.sym:
-            for i in range(len(self.results.z) - 1):
-                self.results.z[i + 1] \
-                    = .5 * (self.results.z[i + 1]
-                            + self.results.z[i + 1][-1::-1])
-                self.results.diporder[i + 1] \
-                    = .5 * (self.results.diporder[i + 1]
-                            + self.results.diporder[i + 1][-1::-1])
-
-    def save(self):
-        """Save results to a file."""
-        header = ["z [Å]"]
-        header.append("P_0*rho(z)*cos(Theta[z]) [e/Å^2]")
-        header.append("cos(theta(z))")
-        header.append("cos^2(theta(z))")
-        header.append("rho(z) [1/Å^3]")
-
-        self.savetxt(self.output,
-                     np.vstack([
-                         self.results.z, self.results.P0,
-                         self.results.cos_theta, self.results.cos_2_theta,
-                         self.results.rho
-                         ]).T,
-                     columns=header)
+        super(Diporder, self).__init__(
+            function=diporder_weights,
+            f_kwargs={"order_parameter": order_parameter},
+            normalization=normalization,
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            binwidth=binwidth,
+            refgroup=refgroup,
+            sym=sym,
+            grouping=grouping,
+            unwrap=unwrap,
+            binmethod=binmethod,
+            output=output,
+            concfreq=concfreq,
+            **kwargs)
 
 
 @render_docs
