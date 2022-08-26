@@ -11,6 +11,8 @@
 import numpy as np
 from scipy import constants
 
+from .util import check_compound
+
 
 def density_weights(atomgroup, grouping, dim, dens):
     """Calculate the weights for the histogram.
@@ -45,6 +47,38 @@ def temperature_weights(ag, grouping, dim):
     # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
+
+
+def diporder_weights(atomgroup, grouping, dim, order_parameter):
+    """Calculate the weights for the diporder histogram.
+
+    Supported values for order_parameter are `P0`, `cos_theta`
+    or `cos_2_theta`.
+    """
+    if grouping == "atoms":
+        raise ValueError("Atoms do not have an orientation.")
+
+    chargepos = atomgroup.positions * atomgroup.charges[:, np.newaxis]
+    dipoles = atomgroup.accumulate(chargepos,
+                                   compound=check_compound(atomgroup))
+
+    # unit normal vector
+    unit = np.zeros(3)
+    unit[dim] += 1
+
+    if order_parameter == "P0":
+        weights = np.dot(dipoles, unit)
+    elif order_parameter in ["cos_theta", "cos_2_theta"]:
+        weights = np.dot(dipoles
+                         / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
+                         unit)
+        if order_parameter == "cos_2_theta":
+            weights *= weights
+    else:
+        raise ValueError(f"`{order_parameter}` not supported. "
+                         "Use `P0`, `cos_theta` or `cos_2_theta`.")
+
+    return weights
 
 
 def velocity_weights(atomgroup, grouping, dim, vdim, flux):
