@@ -1,0 +1,228 @@
+"""Tests for the base modules."""
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
+#
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
+#
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import os
+import sys
+
+import MDAnalysis as mda
+import numpy as np
+import pytest
+from MDAnalysis.analysis.base import Results
+from numpy.testing import assert_allclose
+
+from maicos.core import AnalysisBase
+
+
+sys.path.append("..")
+
+from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
+
+
+class Series(AnalysisBase):
+    """Class creating an empty file in the current directory.
+
+    A new file with a file name of the current analysis frame number
+    is created every time the `_conclude` method is called.
+    """
+
+    def _prepare(self):
+        self.series = np.random.rand(self.n_frames)
+
+    def _single_frame(self):
+        self.results.frame.observable = self.series[self._frame_index]
+
+
+class Frame_types(AnalysisBase):
+    """Class setting a frame Dict key to specific types.
+
+    The frame Dict should be able to consume the following types:
+    - int
+    - float
+    - np.ndarray
+    - list
+    - np.float
+    - np.int
+    """
+
+    def _single_frame(self):
+        self.results.frame.observable = self.data[self._frame_index]
+
+
+class Conclude(AnalysisBase):
+    """Class sampling random data to test the .
+
+    A new file with a file name of the current analysis frame number
+    is created every time the `_conclude` method is called.
+    """
+
+    def _prepare(self):
+        self.conclude_count = 0
+
+    def _single_frame(self):
+        pass
+
+    def _conclude(self):
+        self.conclude_count += 1
+
+    def save(self):
+        """Save a file named after the current number of frames."""
+        open(f'out_{self._index}', 'w').close()
+
+
+class Test_AnalysisBase(object):
+    """Tests for the Analysis base class."""
+
+    @pytest.fixture()
+    def ag(self):
+        """Import MDA universe."""
+        return mda.Universe(WATER_TPR, WATER_TRR, in_memory=True).atoms
+
+    @pytest.fixture()
+    def ag_single_frame(self):
+        """Import MDA universe of single frame."""
+        return mda.Universe(WATER_TPR, WATER_GRO, in_memory=True).atoms
+
+    @pytest.fixture()
+    def empty_ag(self):
+        """Define an empty atomgroup."""
+        u = mda.Universe.empty(0)
+        return u.atoms
+
+    def test_AnalysisBase(self, ag):
+        """Test AnalysisBase."""
+        a = AnalysisBase(ag, verbose=True, save_results=True)
+
+        assert a.atomgroup.n_atoms == ag.n_atoms
+        assert a._trajectory == ag.universe.trajectory
+        assert a._universe == ag.universe
+        assert a._verbose is True
+        assert isinstance(a.results, Results)
+        assert not hasattr(a, "atomgroups")
+
+    def test_multigroups(self, ag):
+        """Test multiple groups."""
+        a = AnalysisBase([ag[:10], ag[10:]], multi_group=True)
+
+        assert a.n_atomgroups == 2
+        assert a._universe == ag.universe
+
+    def test_different_universes(self, ag):
+        """Test different universes."""
+        with pytest.raises(ValueError, match="Atomgroups belong"):
+            AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
+
+    def test_frame_data(self, ag):
+        """Test the calculation of the frame, mean and vars results dicts."""
+        ana = Series(ag)
+        ana.run()
+
+        assert_allclose(ana.results.means.observable, np.mean(ana.series))
+        assert_allclose(ana.results.sems.observable,
+                        np.std(ana.series) / np.sqrt(ana.n_frames))
+
+    @pytest.mark.parametrize('concfreq, files',
+                             [(0, []),
+                              (40, ['out_40', 'out_80', 'out_101']),
+                              (100, ['out_100', 'out_101'])])
+    def test_conclude_multi_frame(self, ag, tmpdir, concfreq, files):
+        """Test the conclude and save methods for multi frame trajectories."""
+        with tmpdir.as_cwd():
+            conclude = Conclude(ag, concfreq=concfreq)
+            conclude.run()
+            # check that all expected files have been written
+            if concfreq != 0:
+                for file in files:
+                    assert os.path.exists(file)
+            else:
+                assert len(os.listdir(tmpdir)) == 0
+            # check that the _conclude method is running
+            # the expected number of times
+            if concfreq != 0:
+                conclude_count = np.ceil(conclude.n_frames / concfreq)
+            else:
+                conclude_count = 1
+            assert conclude.conclude_count == conclude_count
+            # check that no more files than the expected
+            # ones have been written
+            assert len(files) == len(os.listdir(tmpdir))
+
+    @pytest.mark.parametrize('concfreq, file', [(0, []),
+                                                (50, ['out_1'])])
+    def test_conclude_single_frame(self, ag_single_frame,
+                                   tmpdir, concfreq, file):
+        """Test the conclude and save methods for single frame trajectories."""
+        with tmpdir.as_cwd():
+            conclude = Conclude(ag_single_frame, concfreq=concfreq)
+            conclude.run()
+            if concfreq != 0:
+                assert os.path.exists(file[0])
+            # check that no extra files are written
+            if concfreq != 0:
+                assert len(os.listdir(tmpdir)) == 1
+            else:
+                assert len(os.listdir(tmpdir)) == 0
+            # check that no double execution of the _conclude method happens
+            assert conclude.conclude_count == 1
+
+    def test_refgroup_single(self, ag):
+        """Test refgroup."""
+        class_obj = Conclude(ag, refgroup=ag[:1])
+        class_obj.run(step=1)
+
+        assert_allclose(ag.atoms.positions[0],
+                        ag.universe.dimensions[:3] / 2,
+                        rtol=1e-01)
+
+    def test_refgroup_multi(self, ag):
+        """Test refgroup."""
+        class_obj = Conclude(ag, refgroup=ag[:3])
+        class_obj.run(step=1)
+
+        assert_allclose(ag.atoms[:3].center_of_mass(),
+                        ag.universe.dimensions[:3] / 2,
+                        rtol=1e-01)
+
+    def test_empty_refgroup(self, ag, empty_ag):
+        """Test behaviour for empty refgroup."""
+        with pytest.raises(ValueError,
+                           match='not contain any atoms.'):
+            class_obj = AnalysisBase(ag, refgroup=empty_ag)
+            class_obj._prepare()
+
+    def test_unwrap(self, ag):
+        """Unwrap test for logic only; Actual test in TestProfilePlanarBase."""
+        class_obj = Conclude(ag, unwrap=True)
+        class_obj.run(stop=1)
+
+    def test_unwrap_multi_one(self, ag):
+        """Unwrap test for multi_group."""
+        Conclude(ag, unwrap=True, multi_group=True).run(stop=1)
+
+    def test_unwrap_multi(self, ag):
+        """Unwrap test for multi_group."""
+        Conclude((ag[:10], ag[10:]), unwrap=True, multi_group=True).run(stop=1)
+
+    @pytest.mark.parametrize('data, result', [([1, 2], 1.5),
+                                              ([float(1), float(2)], 1.5),
+                                              ([[1], [2]], 1.5)])
+    def test_frame_dict_types(self, ag, data, result):
+        """Check supported types for the frame Dict."""
+        class_obj = Frame_types(ag)
+        class_obj.data = data
+        class_obj.run(stop=2)
+        assert class_obj.results.means.observable == result
+
+    @pytest.mark.parametrize('data,', [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
+    def test_frame_dict_wrong_types(self, ag, data):
+        """Check that unsupported types for the frame Dict throw an error."""
+        class_obj = Frame_types(ag)
+        class_obj.data = data
+        error_msg = 'Obervable observable has uncompatible type.'
+        with pytest.raises(TypeError, match=error_msg):
+            class_obj.run(stop=2)

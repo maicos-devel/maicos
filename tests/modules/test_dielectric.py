@@ -7,14 +7,24 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import sys
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from datafiles import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import DielectricSpectrum, EpsilonCylinder, EpsilonPlanar
+from maicos import DielectricCylinder, DielectricPlanar, DielectricSpectrum
+
+
+sys.path.append("..")
+from data import (  # noqa: E402
+    DIPOLE_GRO,
+    DIPOLE_ITP,
+    WATER_GRO,
+    WATER_TPR,
+    WATER_TRR,
+    )
 
 
 def dipoles(positions, orientations):
@@ -45,15 +55,15 @@ def dipoles(positions, orientations):
     return u.atoms
 
 
-class TestEpsilonPlanar(object):
-    """Tests for the EpsilonPlanar class."""
+class TestDielectricPlanar(object):
+    """Tests for the DielectricPlanar class."""
 
     """
 
-    Number of times EpsilonPlanar broke: ||||
+    Number of times DielectricPlanar broke: ||||
 
     If you are reading this, most likely you are investigating a bug in the
-    EpsilonPlanar class. To calculate the local electric permittivity in a
+    DielectricPlanar class. To calculate the local electric permittivity in a
     system, the module needs two quantities: the total dipole moment and the
     local dipole moment density.
 
@@ -113,7 +123,7 @@ class TestEpsilonPlanar(object):
 
         dipole = dipoles([[5, 5, 5]], [orientation])
         # very fine binning to get the correct value for the dipole
-        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert np.allclose(eps.results.frame.M_par, M_par, rtol=0.1)
@@ -164,7 +174,7 @@ class TestEpsilonPlanar(object):
         dipole = dipoles(pos, [orientation] * n_dipoles)
 
         # very fine binning to get the correct value for the dipole
-        eps = EpsilonPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert np.allclose(eps.results.frame.M_par,
@@ -186,7 +196,7 @@ class TestEpsilonPlanar(object):
 
     def test_epsilon(self, ag):
         """Test that epsilon is constructed correctly from covariances."""
-        eps = EpsilonPlanar(ag, xy=True).run()
+        eps = DielectricPlanar(ag, xy=True).run()
 
         cov_perp = eps.results.means.mM_perp \
             - eps.results.means.m_perp * eps.results.means.M_perp
@@ -203,7 +213,7 @@ class TestEpsilonPlanar(object):
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():
-            eps = EpsilonPlanar(ag_single_frame)
+            eps = DielectricPlanar(ag_single_frame)
             eps.run()
             eps.save()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
@@ -214,7 +224,7 @@ class TestEpsilonPlanar(object):
     def test_output_name(self, ag_single_frame, tmpdir):
         """Test output name."""
         with tmpdir.as_cwd():
-            eps = EpsilonPlanar(ag_single_frame, output_prefix="foo")
+            eps = DielectricPlanar(ag_single_frame, output_prefix="foo")
             eps.run()
             eps.save()
             open("foo_perp.dat")
@@ -222,19 +232,19 @@ class TestEpsilonPlanar(object):
 
     def test_xy_vac(self, ag):
         """Tests for conditions xy & vac when True."""
-        eps1 = EpsilonPlanar(ag, xy=True)
+        eps1 = DielectricPlanar(ag, xy=True)
         eps1.run()
         k1 = np.mean(eps1.results.eps_perp - 1)
-        eps2 = EpsilonPlanar(ag, xy=True, vac=True)
+        eps2 = DielectricPlanar(ag, xy=True, vac=True)
         eps2.run()
         k2 = np.mean(eps2.results.eps_perp - 1)
         assert_allclose((k1 / k2), 1.5, rtol=1e-1)
 
     def test_sym(self, ag_single_frame):
         """Test for symmetric case."""
-        eps_sym = EpsilonPlanar(
+        eps_sym = DielectricPlanar(
             [ag_single_frame, ag_single_frame[:-30]], sym=True).run()
-        eps = EpsilonPlanar(
+        eps = DielectricPlanar(
             [ag_single_frame, ag_single_frame[:-30]], sym=False).run()
 
         # Check that the z column is not changed
@@ -248,8 +258,8 @@ class TestEpsilonPlanar(object):
             assert_equal(A, eps_sym.results[d])
 
 
-class TestEpsilonCylinder(object):
-    """Tests for the EpsilonCylinder class."""
+class TestDielectricCylinder(object):
+    """Tests for the DielectricCylinder class."""
 
     @pytest.fixture()
     def ag(self):
@@ -265,7 +275,7 @@ class TestEpsilonCylinder(object):
 
     def test_radius(self, ag):
         """Tests radius set."""
-        eps = EpsilonCylinder(ag, unwrap=False, radius=50)
+        eps = DielectricCylinder(ag, unwrap=False, radius=50)
         eps.run(start=0, stop=1)
         assert eps.radius == 50
 
@@ -274,32 +284,32 @@ class TestEpsilonCylinder(object):
 
         Test if the division by the number of frames is correct.
         """
-        eps = EpsilonCylinder(ag).run(stop=1)
+        eps = DielectricCylinder(ag).run(stop=1)
         assert not np.isnan(eps.results.eps_rad).any()
         assert not np.isnan(eps.results.eps_ax).any()
 
     def test_radius_box(self, ag):
         """Tests radius taken from box."""
-        eps = EpsilonCylinder(ag, unwrap=False)
+        eps = DielectricCylinder(ag, unwrap=False)
         eps.run(start=0, stop=1)
         assert eps.radius == ag.universe.dimensions[:2].min() / 2
 
     def test_broken_molecules(self, ag):
         """Tests broken molecules."""
-        eps = EpsilonCylinder(ag, unwrap=False).run()
+        eps = DielectricCylinder(ag, unwrap=False).run()
         assert_allclose(eps.results['eps_ax'].mean(), 1179.0, rtol=1e-1)
         assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 
     def test_repaired_molecules(self, ag):
         """Tests repaired molecules."""
-        eps = EpsilonCylinder(ag, unwrap=True).run()
+        eps = DielectricCylinder(ag, unwrap=True).run()
         assert_allclose(eps.results['eps_ax'].mean(), 1179.6, rtol=1e-1)
         assert_allclose(eps.results['eps_rad'].mean(), -10, rtol=1e-1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""
         with tmpdir.as_cwd():
-            eps = EpsilonCylinder(ag_single_frame)
+            eps = DielectricCylinder(ag_single_frame)
             eps.run()
             eps.save()
             res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
@@ -310,7 +320,7 @@ class TestEpsilonCylinder(object):
     def test_output_name(self, ag_single_frame, tmpdir):
         """Tests output name."""
         with tmpdir.as_cwd():
-            eps = EpsilonCylinder(ag_single_frame, output_prefix="foo")
+            eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
             eps.run()
             eps.save()
             open("foo_ax.dat")
@@ -318,23 +328,23 @@ class TestEpsilonCylinder(object):
 
     def test_verbose(self, ag_single_frame):
         """Tests verbose."""
-        EpsilonCylinder(ag_single_frame, verbose=True).run()
+        DielectricCylinder(ag_single_frame, verbose=True).run()
 
     def test_length(self, ag):
         """Test refactoring length."""
-        eps = EpsilonCylinder(ag, length=100)
+        eps = DielectricCylinder(ag, length=100)
         eps.run()
         assert_equal(eps.length, 100)
 
     def test_variable_binwidth(self, ag):
         """Test variable binwidth."""
-        eps = EpsilonCylinder(ag, variable_dr=True)
+        eps = DielectricCylinder(ag, variable_dr=True)
         eps.run()
         assert_allclose(np.std(eps.dr), 0.44, rtol=1e-1)
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""
-        eps = EpsilonCylinder(ag, single=True)
+        eps = DielectricCylinder(ag, single=True)
         eps.run()
         assert_allclose(np.mean(eps.results.eps_ax), 1282, rtol=1e-1)
 

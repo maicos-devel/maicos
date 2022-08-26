@@ -1,7 +1,7 @@
-Saxs
-####
+Base class
+##########
 
-.. autoclass:: maicos.modules.structure.Saxs
+.. automodule:: maicos.core.base
     :members:
     :undoc-members:
     :show-inheritance:

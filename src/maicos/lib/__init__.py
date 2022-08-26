@@ -6,12 +6,10 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module init file."""
+"""Library modules init file."""
 
 __all__ = [
-    'density',
-    'dielectric',
-    'structure',
-    'timeseries',
-    'transport',
+    'util',
+    'math',
+    'weights',
     ]

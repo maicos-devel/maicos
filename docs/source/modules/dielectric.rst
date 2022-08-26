@@ -1,14 +1,14 @@
-===========================
-Dielectric constant modules
-===========================
+==================
+Dielectric modules
+==================
 
-.. automodule:: maicos.modules.epsilon
+.. automodule:: maicos.modules.dielectric
 
 .. toctree::
    :titlesonly:
    :maxdepth: 4
    :caption: Dielectric modules
-   
-   epsilon_planar
-   epsilon_cylinder
+
+   dielectric_planar
+   dielectric_cylinder
    dielectric_spectrum

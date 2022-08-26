@@ -7,15 +7,19 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import sys
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
 from create_mda_universe import isolated_water_universe
-from datafiles import WATER_TPR, WATER_TRR
 from numpy.testing import assert_allclose
 
 from maicos import Velocity
+
+
+sys.path.append("..")
+from data import WATER_TPR, WATER_TRR  # noqa: E402
 
 
 class TestVelocity(object):

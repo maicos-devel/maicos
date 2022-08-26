@@ -6,19 +6,116 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the utilities."""
-
+"""Test for lib."""
 import sys
-from unittest.mock import patch
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from MDAnalysisTests.core.util import UnWrapUniverse
-from modules.datafiles import LAMMPS10WATER, SPCE_GRO, SPCE_ITP
 from numpy.testing import assert_almost_equal, assert_equal
 
-import maicos.utils
+import maicos.lib.math
+
+
+sys.path.append("..")
+from data import SPCE_GRO, SPCE_ITP, WATER_GRO, WATER_TPR  # noqa: E402
+
+
+class Test_sfactor(object):
+    """Tests for the sfactor."""
+
+    @pytest.fixture()
+    def ag(self):
+        """Import MDA universe."""
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
+
+    @pytest.fixture()
+    def qS(self):
+        """Define q and S."""
+        q = np.array([
+            0.25, 0.25, 0.25, 0.36, 0.36, 0.36, 0.44, 0.51, 0.51, 0.51, 0.56,
+            0.56, 0.56, 0.56, 0.56, 0.56, 0.62, 0.62, 0.62, 0.71, 0.71, 0.71,
+            0.76, 0.76, 0.76, 0.76, 0.76, 0.76, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8,
+            0.84, 0.84, 0.84, 0.88, 0.91, 0.91, 0.91, 0.91, 0.91, 0.91, 0.95,
+            0.95, 0.95, 0.95, 0.95, 0.95
+            ])
+
+        S = np.array([
+            1.86430e+02, 6.91000e+00, 8.35300e+02, 5.06760e+02, 1.92540e+02,
+            1.57790e+02, 9.96500e+01, 5.87470e+02, 7.88630e+02, 5.18170e+02,
+            4.58650e+02, 1.69000e+00, 3.99910e+02, 6.10340e+02, 1.21359e+03,
+            4.11800e+01, 9.31980e+02, 6.29120e+02, 9.88500e+01, 3.15220e+02,
+            1.00840e+02, 1.19420e+02, 2.13180e+02, 4.61770e+02, 3.99640e+02,
+            8.03880e+02, 1.74830e+02, 3.20900e+01, 1.99190e+02, 4.24690e+02,
+            1.73552e+03, 1.37732e+03, 1.25050e+02, 2.61750e+02, 4.29610e+02,
+            2.09000e+01, 2.71450e+02, 4.22340e+02, 1.07590e+02, 3.79520e+02,
+            6.69000e+00, 5.35330e+02, 1.09210e+02, 6.69970e+02, 1.25354e+03,
+            3.94200e+02, 1.96100e+02, 1.39890e+02, 8.79600e+01, 4.17020e+02
+            ])
+
+        return q, S
+
+    @pytest.mark.parametrize('startq', (0, 0.05))
+    @pytest.mark.parametrize('endq', (0.075, 0.1))
+    def test_sfactor(self, ag, qS, startq, endq):
+        """Test sfactor."""
+        q, S = maicos.lib.math.compute_structure_factor(
+            np.double(ag.positions),
+            np.double(ag.universe.dimensions)[:3],
+            startq,
+            endq,
+            0,  # mintheta
+            np.pi)  # maxtheta
+
+        q = q.flatten()
+        S = S.flatten()
+        nonzeros = np.where(S != 0)[0]
+
+        q = q[nonzeros]
+        S = S[nonzeros]
+
+        sorted_ind = np.argsort(q)
+        q = q[sorted_ind]
+        S = S[sorted_ind]
+
+        # Get indices to slice qS array
+        sel_indices = np.logical_and(startq < qS[0], qS[0] < endq)
+
+        assert_almost_equal(q, qS[0][sel_indices], decimal=2)
+
+        # Only check S for full q width
+        if startq == 0 and endq == 1:
+            assert_almost_equal(S, qS[1], decimal=2)
+
+    def test_sfactor_angle(self, ag):
+        """Test sfactor angle."""
+        q, S = maicos.lib.math.compute_structure_factor(
+            np.double(ag.positions),
+            np.double(ag.universe.dimensions)[:3],
+            0,  # startq
+            0.5,  # endq
+            np.pi / 4,  # mintheta
+            np.pi / 2)  # maxtheta
+
+        q = q.flatten()
+        S = S.flatten()
+        nonzeros = np.where(S != 0)[0]
+
+        q = q[nonzeros]
+        S = S[nonzeros]
+
+        sorted_ind = np.argsort(q)
+        q = q[sorted_ind]
+        S = S[sorted_ind]
+
+        assert_almost_equal(q,
+                            np.array([0.25, 0.25, 0.36, 0.36, 0.36, 0.44]),
+                            decimal=2)
+        assert_almost_equal(S,
+                            np.array(
+                                [6.91, 835.3, 192.54, 157.79, 506.76, 99.65]),
+                            decimal=2)
 
 
 def generate_correlated_data(T, repeat, seed=0):
@@ -55,7 +152,7 @@ def test_FT():
     """Tests for the Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
-    t, sin_FT = maicos.utils.FT(x, sin)
+    t, sin_FT = maicos.lib.math.FT(x, sin)
     assert_almost_equal(abs(t[np.argmax(sin_FT)]), 5, decimal=2)
 
 
@@ -63,27 +160,27 @@ def test_iFT():
     """Tests for the inverse Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
-    t, sin_FT = maicos.utils.FT(x, sin)
-    x_new, sin_new = maicos.utils.iFT(t, sin_FT)
+    t, sin_FT = maicos.lib.math.FT(x, sin)
+    x_new, sin_new = maicos.lib.math.iFT(t, sin_FT)
     assert_almost_equal(sin, sin_new.real, decimal=1)
 
 
 def test_symmetrize_even():
     """Tests symmetrization for even array."""
-    A_sym = maicos.utils.symmetrize(np.arange(10).astype(float))
+    A_sym = maicos.lib.math.symmetrize(np.arange(10).astype(float))
     assert np.all(A_sym == 4.5)
 
 
 def test_symmetrize_odd():
     """Tests symmetrization for odd array."""
-    A_sym = maicos.utils.symmetrize(np.arange(11).astype(float))
+    A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float))
     assert np.all(A_sym == 5)
 
 
 def test_higher_dimensions_length_1():
     """Tests arrays with higher dimensions of length 1."""
     A = np.arange(11).astype(float)[:, np.newaxis]
-    A_sym = maicos.utils.symmetrize(A)
+    A_sym = maicos.lib.math.symmetrize(A)
     A_sym_ref = 5 * np.ones((11, 1))
     assert_equal(A_sym, A_sym_ref)
 
@@ -91,14 +188,14 @@ def test_higher_dimensions_length_1():
 def test_higher_dimensions():
     """Tests array with higher dimensions."""
     A = np.arange(20).astype(float).reshape(2, 10).T
-    A_sym = maicos.utils.symmetrize(A)
+    A_sym = maicos.lib.math.symmetrize(A)
     assert_equal(A_sym, 9.5)
 
 
 def test_higher_dimensions_axis():
     """Tests array with higher dimensions with respect to given axis."""
     A = np.arange(20).astype(float).reshape(2, 10).T
-    A_sym = maicos.utils.symmetrize(A, axis=0)
+    A_sym = maicos.lib.math.symmetrize(A, axis=0)
     A_sym_ref = np.vstack((4.5 * np.ones(10), 14.5 * np.ones(10))).T
     assert_equal(A_sym, A_sym_ref)
 
@@ -106,35 +203,8 @@ def test_higher_dimensions_axis():
 def test_symmetrize_inplace():
     """Tests inplace symmetrization."""
     arr = np.arange(11).astype(float)
-    maicos.utils.symmetrize(arr, inplace=True)
+    maicos.lib.math.symmetrize(arr, inplace=True)
     assert np.all(arr == 5)
-
-
-def test_check_compound():
-    """Tests check compound."""
-    u = UnWrapUniverse()
-    assert maicos.utils.check_compound(u.atoms) == "molecules"
-
-    u = UnWrapUniverse(have_molnums=False, have_bonds=True)
-    assert maicos.utils.check_compound(u.atoms) == "fragments"
-
-    u = UnWrapUniverse(have_molnums=False, have_bonds=False)
-    assert maicos.utils.check_compound(u.atoms) == "residues"
-
-
-def test_sort_atomsgroup_lammps():
-    """Tests sort atoms group LAMMPS."""
-    u = mda.Universe(LAMMPS10WATER)
-    atoms = maicos.utils.sort_atomgroup(u.atoms)
-
-    assert np.all(np.diff(atoms.fragindices) >= 0)
-
-
-def test_get_cli_input():
-    """Tests get cli input."""
-    testargs = ['maicos', 'foo', "foo bar"]
-    with patch.object(sys, 'argv', testargs):
-        assert maicos.utils.get_cli_input() == 'maicos foo "foo bar"'
 
 
 @pytest.mark.parametrize(
@@ -153,7 +223,8 @@ def test_get_cli_input():
     )
 def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
-    utils_run = maicos.utils.ScalarProdCorr(vector1, vector2, subtract_mean)
+    utils_run = maicos.lib.math.scalar_prod_corr(
+        vector1, vector2, subtract_mean)
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
 
 
@@ -164,12 +235,11 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
         (np.linspace(0, 20, 50), np.linspace(0, 20, 50)
          * np.linspace(0, 20, 50), False, 1294.73),
         (np.linspace(0, 20, 50), None, True, -21.76),
-
         ),
     )
 def test_corr(vector1, vector2, subtract_mean, result):
     """Tests for correlation."""
-    utils_run = maicos.utils.Correlation(vector1, vector2, subtract_mean)
+    utils_run = maicos.lib.math.correlation(vector1, vector2, subtract_mean)
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
 
 
@@ -183,9 +253,9 @@ def test_corr(vector1, vector2, subtract_mean, result):
         ),
     )
 def test_corr2(vector1, vector2, subtract_mean, result):
-    """Tests for Correlation function."""
-    utils_run = np.mean(maicos.utils.Correlation(vector1, vector2,
-                                                 subtract_mean)[:6])
+    """Tests for correlation function."""
+    utils_run = np.mean(maicos.lib.math.correlation(vector1, vector2,
+                                                    subtract_mean)[:6])
     assert_almost_equal(utils_run, result, decimal=2)
 
 
@@ -204,7 +274,7 @@ def test_corr2(vector1, vector2, subtract_mean, result):
     )
 def test_correlation_time(vector, method, c, mintime, result):
     """Tests for correlation_time."""
-    utils_run = maicos.utils.correlation_time(vector, method, c, mintime)
+    utils_run = maicos.lib.math.correlation_time(vector, method, c, mintime)
     assert_almost_equal(np.mean(utils_run), result, decimal=1)
 
 
@@ -215,7 +285,7 @@ def test_new_mean():
     i = 1
     for value in series[1:]:
         i += 1
-        mean = maicos.utils.new_mean(mean, value, i)
+        mean = maicos.lib.math.new_mean(mean, value, i)
     assert_almost_equal(mean, np.mean(series), decimal=6)
 
 
@@ -228,8 +298,8 @@ def test_new_variance():
     for value in series[1:]:
         i += 1
         old_mean = mean
-        mean = maicos.utils.new_mean(mean, value, i)
-        var = maicos.utils.new_variance(var, old_mean, mean, value, i)
+        mean = maicos.lib.math.new_mean(mean, value, i)
+        var = maicos.lib.math.new_variance(var, old_mean, mean, value, i)
     assert_almost_equal(var, np.std(series)**2, decimal=6)
 
 
@@ -255,7 +325,7 @@ def test_cluster_com(dim):
         water_shifted = water.copy()
         water_shifted.atoms.translate(e_z * z)
         water_shifted.atoms.wrap()
-        com = maicos.utils.cluster_com(water_shifted.atoms)[dim]
+        com = maicos.lib.math.cluster_com(water_shifted.atoms)[dim]
         assert_almost_equal(minimum_image_distance(com, z, dimensions[dim]),
                             0, decimal=5)
 

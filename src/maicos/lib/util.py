@@ -6,14 +6,103 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Decorators adding functionalities to MAICoS classes."""
+"""Small helper and utilities functions that don't fit anywhere else."""
+
 import functools
+import os
+import sys
 import warnings
 from typing import Callable
 
 import numpy as np
 
-from .utils import check_compound
+
+_share_path = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                            "..", "share"))
+
+
+def check_compound(AtomGroup):
+    """Check if compound 'molecules' exists.
+
+    If compound molecule does not exist, it
+    fallbacks to 'fragments' or 'residues'.
+    """
+    if hasattr(AtomGroup, "molnums"):
+        return "molecules"
+    elif hasattr(AtomGroup, "fragments"):
+        warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
+        return "fragments"
+    else:
+        warnings.warn("Cannot use 'molecules'. Falling back to 'residues'")
+        return "residues"
+
+
+def get_cli_input():
+    """Return a proper formatted string of the command line input."""
+    program_name = os.path.basename(sys.argv[0])
+    # Add additional quotes for connected arguments.
+    arguments = ['"{}"'.format(arg)
+                 if " " in arg else arg for arg in sys.argv[1:]]
+    return "{} {}".format(program_name, " ".join(arguments))
+
+
+def atomgroup_header(AtomGroup):
+    """Return a string containing infos about the AtomGroup.
+
+    Infos include the total number of atoms, the including
+    residues and the number of residues. Useful for writing
+    output file headers.
+    """
+    if not hasattr(AtomGroup, 'types'):
+        warnings.warn("AtomGroup does not contain atom types. "
+                      "Not writing AtomGroup information to output.")
+        return f"{len(AtomGroup.atoms)} unkown particles"
+    unique, unique_counts = np.unique(AtomGroup.types,
+                                      return_counts=True)
+    return " & ".join(
+        "{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
+
+
+def sort_atomgroup(atomgroup):
+    """Sort a atomgroup after its fragments.
+
+    Needed in e.g. LAMMPS, as molecules are not sorted,
+    but randomly distributed in atomgroup.atoms.
+
+    atomgroup: atomgroup to sort
+    """
+    com = check_compound(atomgroup)
+    if com == 'fragments':
+        return atomgroup[np.argsort(atomgroup.fragindices)]
+    elif com == 'residues':
+        return atomgroup[np.argsort(atomgroup.resids)]
+    elif com == 'molecules':
+        return atomgroup[np.argsort(atomgroup.molnums)]
+    else:
+        return atomgroup
+
+
+def bin(a, bins):
+    """Average array values in bins for easier plotting.
+
+    Note: "bins" array should contain the INDEX (integer)
+    where that bin begins
+    """
+    if np.iscomplex(a).any():
+        avg = np.zeros(len(bins), dtype=complex)  # average of data
+    else:
+        avg = np.zeros(len(bins))
+
+    count = np.zeros(len(bins), dtype=int)
+    ic = -1
+
+    for i in range(0, len(a)):
+        if i in bins:
+            ic += 1  # index for new average
+        avg[ic] += a[i]
+        count[ic] += 1
+
+    return avg / count
 
 
 doc_dict = dict(
@@ -74,9 +163,9 @@ doc_dict = dict(
         Bin position ranging from `zmin` to `zmax`.""",
     CYLINDER_CLASS_ATTRIBUTES="""results.r : list
         Bin position ranging from `rmin` to `rmax`.""",
-    PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : np.ndarray
+    PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : numpy.ndarray
         calculated profile
-    results.profile_err : np.ndarray
+    results.profile_err : numpy.ndarray
         profile's error"""
     )
 
@@ -118,6 +207,7 @@ def render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
         The callable (function, class) where the phrase old should be replaced.
     doc_dict : str
         The dictionary containing phrase which will be replaced
+
     Returns
     -------
     Callable

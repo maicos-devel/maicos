@@ -11,6 +11,8 @@
 # To link modules with autodoc
 import os
 import sys
+
+
 sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
@@ -20,7 +22,7 @@ author = 'See the file AUTHORS for the full list of names.'
 
 # The short X.Y version
 # NOTE: keep in sync with VERSION in setup.py
-# NOTE: keep in sync with __version__ in maicos.__init__.py
+# NOTE: keep in sync with __version__ in maicos.version.py
 version = '0.6'
 # The full version, including alpha/beta/rc tags
 release = version + "-dev"
@@ -34,7 +36,7 @@ extensions = [
     'sphinx.ext.viewcode', # tries to find the source files where the objects are contained
     'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
     'sphinx.ext.mathjax', # Render math via JavaScript
-    # 'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
+    'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
     'nbsphinx', #  provides a source parser for *.ipynb files
 ]
 

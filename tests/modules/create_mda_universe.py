@@ -7,10 +7,14 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import sys
 
 import MDAnalysis as mda
 import numpy as np
-from datafiles import SPCE_GRO, SPCE_ITP
+
+
+sys.path.append("..")
+from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
 def isolated_water_universe(n_molecules=1, angle_deg=0,

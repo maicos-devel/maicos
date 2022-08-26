@@ -31,3 +31,8 @@ known_first_party = "maicos"
 addopts = "-p pytest_cov"
 python_files = ["test_*.py", "*_test.py", "tests.py"]
 testpaths = "tests"
+
+[tool.check-manifest]
+# ignore files missing in VCS
+ignore = ["src/maicos/lib/_cutil.c"]
+    

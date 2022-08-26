@@ -10,6 +10,8 @@ Density modules
    :titlesonly:
    :maxdepth: 4
    :caption: Density modules
-   
+
    density_planar
    density_cylinder
+   chemical_potential_planar
+   temperature_planar

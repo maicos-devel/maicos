@@ -25,7 +25,7 @@ from Cython.Build import cythonize
 from setuptools import Extension, setup
 
 
-# NOTE: keep in sync with __version__ in maicos.__init__.py
+# NOTE: keep in sync with __version__ in maicos.version.py
 # NOTE: keep in sync with version in docs/source/conf.py
 VERSION = "0.6-dev"
 is_release = 'dev' not in VERSION
@@ -108,8 +108,8 @@ if __name__ == "__main__":
     source_suffix = '.pyx' if use_cython else '.c'
 
     pre_exts = [
-        Extension("maicos.lib.sfactor",
-                  ["src/maicos/lib/sfactor" + source_suffix],
+        Extension("maicos.lib._cutil",
+                  ["src/maicos/lib/_cutil" + source_suffix],
                   include_dirs=[np.get_include()],
                   extra_compile_args=[
                       '-std=c99', '-ffast-math', '-O3', '-funroll-loops'

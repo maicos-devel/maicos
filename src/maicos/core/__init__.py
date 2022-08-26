@@ -6,12 +6,16 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module init file."""
+"""Core modules init file."""
 
 __all__ = [
-    'density',
-    'dielectric',
-    'structure',
-    'timeseries',
-    'transport',
+    'AnalysisBase',
+    'CylinderBase',
+    'ProfileCylinderBase',
+    'PlanarBase',
+    'ProfilePlanarBase',
     ]
+
+from .base import AnalysisBase
+from .cylinder import CylinderBase, ProfileCylinderBase
+from .planar import PlanarBase, ProfilePlanarBase

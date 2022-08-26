@@ -21,7 +21,27 @@ from libc cimport math
 cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensions,
                                      double start_q, double end_q, double mintheta,
                                      double maxtheta):
-    """Calculates S(|q|) for all possible q values. Returns the q values as well as the scattering factor."""
+    r"""Calculates :math:`S(\vert q \vert)` for all possible :math:`q` values.
+    
+    Returns the :math:`q` values as well as the scattering factor.
+
+    Use via `from maicos.lib.math import compute_structure_factor`
+
+    Parameters
+    ----------
+    positions : numpy.ndarray
+        position array
+    boxdimensions : numpy.ndarray
+        dimensions of the cell
+    startq : float
+        Starting q (1/Å)
+    endq : float
+        Ending q (1/Å)
+    mintheta : float
+        Minimal angle (°) between the q vectors and the z-axis.
+    maxtheta : float
+        Maximal angle (°) between the q vectors and the z-axis.
+    """
 
     assert(boxdimensions.shape[0]==3)
     assert(positions.shape[1]==3)

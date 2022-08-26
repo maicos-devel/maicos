@@ -12,28 +12,9 @@ The transport module of MAICoS allows for calculating mean velocity
 profiles from molecular simulation trajectory files.
 """
 
-from ..decorators import render_docs
-from .base import ProfilePlanarBase
-
-
-def _velocity_weights(atomgroup, grouping, dim, vdim, flux):
-    """Calculate the weights for the velocity histogram."""
-    atom_vels = atomgroup.velocities[:, vdim]
-
-    if grouping == "atoms":
-        vels = atom_vels
-    else:
-        mass_vels = atomgroup.atoms.accumulate(
-            atom_vels * atomgroup.atoms.masses, compound=grouping)
-        group_mass = atomgroup.atoms.accumulate(
-            atomgroup.atoms.masses, compound=grouping)
-        vels = mass_vels / group_mass
-
-    # either normalised by the number of compound (to get the velocity)
-    # or do not normalise to get the flux (velocity x number of compound)
-    if not flux:
-        vels /= len(vels)
-    return vels
+from ..core import ProfilePlanarBase
+from ..lib.util import render_docs
+from ..lib.weights import velocity_weights
 
 
 @render_docs
@@ -45,7 +26,7 @@ class Velocity(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PLANAR_PROFILE_CLASS_PARAMETERS}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
     vdim : int {0, 1, 2}
         Dimension for velocity binning (x=0, y=1, z=2)
     flux : bool
@@ -54,7 +35,7 @@ class Velocity(ProfilePlanarBase):
 
     Attributes
     ----------
-    ${PLANAR_PROFILE_CLASS_ATTRIBUTES}
+    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     """
 
     def __init__(self,
@@ -78,7 +59,7 @@ class Velocity(ProfilePlanarBase):
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
 
         super(Velocity, self).__init__(
-            function=_velocity_weights,
+            function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
             normalization="volume",
             atomgroups=atomgroups,

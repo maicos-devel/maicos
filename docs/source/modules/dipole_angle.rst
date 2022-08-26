@@ -1,7 +1,7 @@
-Dipole angle
-############
+DipoleAngle
+###########
 
-.. automodule:: maicos.modules.timeseries.DipoleAngle
+.. autoclass:: maicos.modules.timeseries.DipoleAngle
     :members:
     :undoc-members:
     :show-inheritance:

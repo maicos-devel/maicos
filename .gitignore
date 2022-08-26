@@ -19,7 +19,7 @@ __pycache__
 *.lock
 
 # Cython generated files
-sfactor.c
+_cutil.c
 
 # Unit test / coverage reports
 htmlcov/
