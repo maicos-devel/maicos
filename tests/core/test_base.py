@@ -96,12 +96,11 @@ class Test_AnalysisBase(object):
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
-        a = AnalysisBase(ag, verbose=True, save_results=True)
+        a = AnalysisBase(ag)
 
         assert a.atomgroup.n_atoms == ag.n_atoms
         assert a._trajectory == ag.universe.trajectory
         assert a._universe == ag.universe
-        assert a._verbose is True
         assert isinstance(a.results, Results)
         assert not hasattr(a, "atomgroups")
 

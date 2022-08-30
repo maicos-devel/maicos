@@ -51,11 +51,9 @@ class DipoleAngle(AnalysisBase):
                  atomgroup,
                  dim=2,
                  output="dipangle.dat",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
         super(DipoleAngle, self).__init__(atomgroup,
-                                          concfreq=concfreq,
-                                          **kwargs)
+                                          concfreq=concfreq)
         self.dim = dim
         self.output = output
 
@@ -143,8 +141,8 @@ class KineticEnergy(AnalysisBase):
         rotational kinetic energy (kJ/mol)
     """
 
-    def __init__(self, atomgroup, output="ke.dat", refpoint="COM", **kwargs):
-        super(KineticEnergy, self).__init__(atomgroup, **kwargs)
+    def __init__(self, atomgroup, output="ke.dat", refpoint="COM"):
+        super(KineticEnergy, self).__init__(atomgroup)
         self.output = output
         self.refpoint = refpoint
 

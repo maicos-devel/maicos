@@ -326,10 +326,6 @@ class TestDielectricCylinder(object):
             open("foo_ax.dat")
             open("foo_rad.dat")
 
-    def test_verbose(self, ag_single_frame):
-        """Tests verbose."""
-        DielectricCylinder(ag_single_frame, verbose=True).run()
-
     def test_length(self, ag):
         """Test refactoring length."""
         eps = DielectricCylinder(ag, length=100)

@@ -78,8 +78,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  temperature=300,
                  mass=None,
                  zpos=None,
-                 muout="muout.dat",
-                 **kwargs):
+                 muout="muout.dat"):
         super(ChemicalPotentialPlanar, self).__init__(
             function=density_weights,
             f_kwargs={"dens": "number"},
@@ -95,8 +94,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)
 
         self.center = center
         self.temperature = temperature
@@ -245,8 +243,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  unwrap=True,
                  binmethod="com",
                  output="temperature.dat",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
 
         super(TemperaturePlanar, self).__init__(
             function=temperature_weights,
@@ -262,8 +259,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)
 
         if grouping != "atoms":
             raise NotImplementedError(f"Temperature profiles of '{grouping}'"
@@ -314,8 +310,7 @@ class DensityPlanar(ProfilePlanarBase):
                  unwrap=True,
                  binmethod="com",
                  output="density.dat",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
 
         super(DensityPlanar, self).__init__(
             function=density_weights,
@@ -332,8 +327,7 @@ class DensityPlanar(ProfilePlanarBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)
 
 
 @render_docs
@@ -379,8 +373,7 @@ class DensityCylinder(ProfileCylinderBase):
                  unwrap=True,
                  binmethod="com",
                  output="density.dat",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
 
         super(DensityCylinder, self).__init__(
             function=density_weights,
@@ -398,5 +391,4 @@ class DensityCylinder(ProfileCylinderBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)

@@ -94,9 +94,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                  multi_group=False,
                  refgroup=None,
                  unwrap=False,
-                 concfreq=0,
-                 verbose=False,
-                 **kwargs):
+                 concfreq=0):
         if multi_group:
             if type(atomgroups) not in (list, tuple):
                 atomgroups = [atomgroups]
@@ -123,9 +121,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
             raise ValueError("Refgroup does not contain any atoms.")
 
-        super(AnalysisBase, self).__init__(trajectory=self._trajectory,
-                                           verbose=verbose,
-                                           **kwargs)
+        super(AnalysisBase, self).__init__(trajectory=self._trajectory)
 
     @property
     def box_center(self):

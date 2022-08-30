@@ -60,8 +60,7 @@ class TestAnalysisExample(object):
     def test_output(self, ag, tmpdir):
         """Test outputs."""
         with tmpdir.as_cwd():
-            example = AnalysisExample(ag, save=True)
-            example.run()
+            example = AnalysisExample(ag).run()
             example.save()
             res_volume = np.loadtxt(example.output)
             assert_almost_equal(example.results["volume"],

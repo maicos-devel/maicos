@@ -55,7 +55,7 @@ class TestSaxs(object):
     def test_theta(self, ag, tmpdir):
         """Test min & max theta conditions."""
         with tmpdir.as_cwd():
-            saxs = Saxs(ag, mintheta=-10, maxtheta=190, verbose=True)
+            saxs = Saxs(ag, mintheta=-10, maxtheta=190)
             saxs.run()
             saxs.save()
             assert_allclose(saxs.mintheta, 0)

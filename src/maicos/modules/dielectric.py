@@ -88,8 +88,7 @@ class DielectricPlanar(PlanarBase):
                  temperature=300,
                  output_prefix="eps",
                  concfreq=0,
-                 vcutwidth=0.1,
-                 **kwargs):
+                 vcutwidth=0.1):
         super(DielectricPlanar, self).__init__(atomgroups=atomgroups,
                                                dim=dim,
                                                zmin=zmin,
@@ -97,8 +96,7 @@ class DielectricPlanar(PlanarBase):
                                                binwidth=binwidth,
                                                refgroup=refgroup,
                                                unwrap=unwrap,
-                                               multi_group=True,
-                                               **kwargs)
+                                               multi_group=True)
         self.xy = xy
         self.sym = sym
         self.vac = vac
@@ -453,12 +451,10 @@ class DielectricCylinder(AnalysisBase):
                  single=False,
                  unwrap=True,
                  output_prefix="eps_cyl",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
         super(DielectricCylinder, self).__init__(atomgroups,
                                                  unwrap=unwrap,
-                                                 concfreq=concfreq,
-                                                 **kwargs)
+                                                 concfreq=concfreq)
         self.output_prefix = output_prefix
         self.binwidth = binwidth
         self.geometry = geometry
@@ -723,11 +719,9 @@ class DielectricSpectrum(AnalysisBase):
                  df=None,
                  bins=200,
                  binafter=20,
-                 nobin=False,
-                 **kwargs):
+                 nobin=False):
         super(DielectricSpectrum, self).__init__(atomgroup,
-                                                 unwrap=unwrap,
-                                                 **kwargs)
+                                                 unwrap=unwrap)
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.segs = segs
