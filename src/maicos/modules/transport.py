@@ -52,8 +52,7 @@ class Velocity(ProfilePlanarBase):
                  output="velocity.da",
                  concfreq=0,
                  vdim=2,
-                 flux=False,
-                 **kwargs):
+                 flux=False):
 
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
@@ -73,5 +72,4 @@ class Velocity(ProfilePlanarBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)

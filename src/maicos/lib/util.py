@@ -125,9 +125,8 @@ doc_dict = dict(
         model) are not supported. In this case, provide unwrapped trajectory
         file directly, and use the command line flag -no-unwrap.
     concfreq : int
-        Call the conclcude function and write the output files every n frames
-    verbose : bool
-        Turn on more logging and debugging""",
+        Call the conclcude function and write the output files every
+        n frames""",
     PLANAR_CLASS_PARAMETERS="""dim : int, default: 2
         Dimension for binning (x=0, y=1, z=2)
     zmin : float, default: None

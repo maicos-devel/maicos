@@ -142,7 +142,7 @@ class TestCylinderBase(object):
 
     def test_n_bins(self, ag, caplog):
         """Test n bins."""
-        cylinder_class_obj = CylinderClass(ag, pos_arg=42, verbose=True)
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42)
         caplog.set_level(logging.INFO)
         cylinder_class_obj._prepare()
 
@@ -449,7 +449,6 @@ class TestProfileCylinderBase:
                  rmax=None,
                  binwidth=0.1,
                  refgroup=None,
-                 sym=False,
                  grouping="atoms",
                  unwrap=False,
                  binmethod="com",

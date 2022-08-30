@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2021 Authors and contributors
+# Copyright (c) 2022 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -40,9 +40,8 @@ class AnalysisExample(AnalysisBase):
     def __init__(self,
                  atomgroup,
                  temperature=300,
-                 output="outfile.dat",
-                 **kwargs):
-        super().__init__(atomgroup, **kwargs)
+                 output="outfile.dat"):
+        super().__init__(atomgroup)
 
         self.temperature = temperature
         self.output = output

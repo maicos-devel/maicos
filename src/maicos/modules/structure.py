@@ -83,11 +83,9 @@ class Saxs(AnalysisBase):
                  mintheta=0,
                  maxtheta=180,
                  output="sq.dat",
-                 concfreq=0,
-                 **kwargs):
+                 concfreq=0):
         super(Saxs, self).__init__(atomgroup,
-                                   concfreq=concfreq,
-                                   **kwargs)
+                                   concfreq=concfreq)
         self.nobindata = nobin
         self.startq = startq
         self.endq = endq
@@ -230,7 +228,6 @@ class Diporder(ProfilePlanarBase):
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
     order_parameter : str
         `P0`, `cos_theta` or `cos_2_theta`
-    ${VERBOSE_PARAMETER}
 
     Attributes
     ----------
@@ -250,8 +247,7 @@ class Diporder(ProfilePlanarBase):
                  binmethod="com",
                  output="diporder.dat",
                  concfreq=0,
-                 order_parameter="P0",
-                 **kwargs):
+                 order_parameter="P0"):
 
         if order_parameter == "P0":
             normalization = "volume"
@@ -273,8 +269,7 @@ class Diporder(ProfilePlanarBase):
             unwrap=unwrap,
             binmethod=binmethod,
             output=output,
-            concfreq=concfreq,
-            **kwargs)
+            concfreq=concfreq)
 
 
 @render_docs
@@ -346,8 +341,7 @@ class RDFPlanar(PlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
-                 **kwargs):
+                 binwidth=1):
 
         super(RDFPlanar, self).__init__(atomgroups=g1,
                                         refgroup=refgroup,
@@ -356,8 +350,7 @@ class RDFPlanar(PlanarBase):
                                         dim=dim,
                                         zmin=zmin,
                                         zmax=zmax,
-                                        binwidth=binwidth,
-                                        **kwargs)
+                                        binwidth=binwidth)
 
         self.g1 = g1
         if g2 is None:
@@ -372,8 +365,7 @@ class RDFPlanar(PlanarBase):
 
     def _prepare(self):
         super(RDFPlanar, self)._prepare()
-        if self._verbose:
-            logger.info('Compute radial distribution function.')
+        logger.info('Compute radial distribution function.')
 
         half_of_box_size = min(self.box_center)
         if self.range[1] is None:
