@@ -74,7 +74,7 @@ class CylinderBase(PlanarBase):
         self._compute_lab_frame_cylinder()
 
         if self.rmin < 0:
-            raise ValueError("Only values for rmin largere 0 are allowed.")
+            raise ValueError("Only values for rmin larger 0 are allowed.")
 
         if self._rmax is not None and self._rmax <= self.rmin:
             raise ValueError("`rmax` can not be smaller or equal than `rmin`!")
