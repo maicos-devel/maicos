@@ -140,10 +140,10 @@ doc_dict = dict(
     binwidth : float
         binwidth""",
     CYLINDER_CLASS_PARAMETERS="""rmin : float
-        Minimal r-coordinate relative to the comgroup center of mass for
+        Minimal r-coordinate relative to the refgroup center of mass for
         evaluation (Å).
     rmax : float
-        Maximal z-coordinate relative to the comgroup center of mass for
+        Maximal z-coordinate relative to the refgroup center of mass for
         evaluation (Å). If None the box extension is taken.""",
     SYM_PARAMETER="""sym : bool
         symmetrize the profile. Only works in combinations with `refgroup`.""",
