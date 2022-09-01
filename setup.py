@@ -21,7 +21,6 @@ from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
 
 import numpy as np
-from Cython.Build import cythonize
 from setuptools import Extension, setup
 
 
@@ -29,6 +28,9 @@ from setuptools import Extension, setup
 # NOTE: keep in sync with version in docs/source/conf.py
 VERSION = "0.6-dev"
 is_release = 'dev' not in VERSION
+
+if not is_release:
+    from Cython.Build import cythonize
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
