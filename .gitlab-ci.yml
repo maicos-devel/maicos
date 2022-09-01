@@ -126,6 +126,6 @@ deploy:
   script:
     - pip install -r developer/requirements_deploy.txt
     - python3 setup.py sdist
-    - twine upload --verbose dist/*
+    - twine upload --verbose dist/*.tar.gz
   only:
     - tags

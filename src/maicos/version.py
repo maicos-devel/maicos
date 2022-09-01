@@ -10,4 +10,4 @@
 
 # NOTE: keep in sync with VERSION in setup.py
 # NOTE: keep in sync with version in docs/source/conf.py
-__version__ = "0.6-dev"
+__version__ = "0.6"

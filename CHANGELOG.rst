@@ -11,7 +11,7 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.6 (XXXX/XX/XX)
+v0.6 (2022/09/01)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger,
 Alexander Schlaich, Maximilian Becker, Kira Fischer
