@@ -29,9 +29,6 @@ from setuptools import Extension, setup
 VERSION = "0.6-dev"
 is_release = 'dev' not in VERSION
 
-if not is_release:
-    from Cython.Build import cythonize
-
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
     """
@@ -121,6 +118,7 @@ if __name__ == "__main__":
         ]
 
     if use_cython:
+        from Cython.Build import cythonize
         extensions = cythonize(pre_exts, force=True)
     else:
         extensions = pre_exts
