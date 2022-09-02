@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Weighting functions."""
+"""Weight functions used for spatial binned analysis modules."""
 
 import numpy as np
 from scipy import constants
@@ -14,10 +14,22 @@ from scipy import constants
 from .util import check_compound
 
 
-def density_weights(atomgroup, grouping, dim, dens):
-    """Calculate the weights for the histogram.
+def density_weights(atomgroup, grouping, dens):
+    """Weights for density calculations.
 
-    Supported values are `mass`, `number` or `charge`.
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for weight calculation
+    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    dens : str, {'mass', 'number', 'charge'}
+        type of density weight
+
+    Returns
+    -------
+    numpy.ndarray
+        1D array of calculated weights. The length depends on the grouping.
     """
     if dens == "number":
         # There exist no properrty like n_molecules
@@ -42,18 +54,54 @@ def density_weights(atomgroup, grouping, dim, dens):
                          "Use `mass`, `number` or `charge`.")
 
 
-def temperature_weights(ag, grouping, dim):
-    """Calculate contribution of each atom to the temperature."""
+def temperature_weights(ag, grouping):
+    """Weights for temperature calculations.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for weight calculation
+    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+
+    Returns
+    -------
+    numpy.ndarray
+        1D array of calculated weights. The length depends on the grouping.
+
+    Raises
+    ------
+    NotImplementedError
+        Currently only works for `grouping='atoms'`
+    """
+    if grouping != "atoms":
+        raise NotImplementedError(f"Temperature calculations of '{grouping}'"
+                                  "is not supported. Use 'atoms' "
+                                  "instead.'")
+
     # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 
 
 def diporder_weights(atomgroup, grouping, dim, order_parameter):
-    """Calculate the weights for the diporder histogram.
+    """Weights for diporder calculations.
 
-    Supported values for order_parameter are `P0`, `cos_theta`
-    or `cos_2_theta`.
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for weight calculation
+    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    dim : {0, 1, 2}
+        direction of the projection
+    order_parameter : str, {'P0', 'cos_theta', 'cos_2_theta'}
+        type of weight to be calculated
+
+    Returns
+    -------
+    numpy.ndarray
+        1D array of calculated weights. The length depends on the grouping.
     """
     if grouping == "atoms":
         raise ValueError("Atoms do not have an orientation.")
@@ -75,14 +123,35 @@ def diporder_weights(atomgroup, grouping, dim, order_parameter):
         if order_parameter == "cos_2_theta":
             weights *= weights
     else:
-        raise ValueError(f"`{order_parameter}` not supported. "
-                         "Use `P0`, `cos_theta` or `cos_2_theta`.")
+        raise ValueError(f"'{order_parameter}' not supported. "
+                         "Use 'P0', 'cos_theta' or 'cos_2_theta'.")
 
     return weights
 
 
-def velocity_weights(atomgroup, grouping, dim, vdim, flux):
-    """Calculate the weights for the velocity histogram."""
+def velocity_weights(atomgroup, grouping, vdim, flux):
+    """Weights for velocity calculations.
+
+    The function either normalises by the number of compounds
+    (to get the velocity) or does not normalise to get the flux
+    (flux = velocity x number of compounds).
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for weight calculation
+    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    vdim : int, {0, 1, 2}
+        direction of the velocity taken for the weights
+    flux : bool
+        convert velocities into a flux
+
+    Returns
+    -------
+    numpy.ndarray
+        1D array of calculated weights. The length depends on the grouping.
+    """
     atom_vels = atomgroup.velocities[:, vdim]
 
     if grouping == "atoms":
@@ -94,8 +163,6 @@ def velocity_weights(atomgroup, grouping, dim, vdim, flux):
             atomgroup.atoms.masses, compound=grouping)
         vels = mass_vels / group_mass
 
-    # either normalised by the number of compound (to get the velocity)
-    # or do not normalise to get the flux (velocity x number of compound)
     if not flux:
         vels /= len(vels)
     return vels

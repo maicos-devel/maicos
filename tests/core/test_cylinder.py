@@ -432,9 +432,9 @@ class TestProfileCylinderBase:
 
         return universe
 
-    def weights(self, ag, grouping, dim, scale=1):
+    def weights(self, ag, grouping, scale=1):
         """Scalable weights for profile calculations."""
-        return scale * density_weights(ag, grouping, dim, dens="number")
+        return scale * density_weights(ag, grouping, dens="number")
 
     @pytest.fixture()
     def params(self, u):

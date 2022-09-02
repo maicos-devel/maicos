@@ -244,7 +244,7 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
         The variance of the first n-1 samples.
     old_mean : float
         The mean of the first n-1 samples.
-    new_mean : folat
+    new_mean : float
         The mean of the full n samples.
     data : float
         The n-th value of the series.
@@ -283,13 +283,14 @@ def cluster_com(ag):
 
     Parameters
     ----------
-    ag : mda.AtomGroup
+    ag : MDAnalysis.core.groups.AtomGroup
         Group of atoms to calculate the center of mass for.
 
     Returns
     -------
     com : numpy.ndarray
         The center of mass.
+
 
     Without proper treatment of periodic boundrary conditions most algorithms
     will result in wrong center of mass calculations where molecules or clusters
