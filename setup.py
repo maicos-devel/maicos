@@ -26,7 +26,7 @@ from setuptools import Extension, setup
 
 # NOTE: keep in sync with __version__ in maicos.version.py
 # NOTE: keep in sync with version in docs/source/conf.py
-VERSION = "0.6-dev"
+VERSION = "0.7-dev"
 is_release = 'dev' not in VERSION
 
 

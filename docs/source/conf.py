@@ -23,7 +23,7 @@ author = 'See the file AUTHORS for the full list of names.'
 # The short X.Y version
 # NOTE: keep in sync with VERSION in setup.py
 # NOTE: keep in sync with __version__ in maicos.version.py
-version = '0.6'
+version = '0.7'
 # The full version, including alpha/beta/rc tags
 release = version + "-dev"
 
