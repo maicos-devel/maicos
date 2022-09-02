@@ -479,7 +479,10 @@ class TestProfileCylinderBase:
         desired = np.zeros(profile.n_bins)
         desired[:5] = profile_vals
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        if normalization == "number":
+            desired[5:] = np.nan
+
+        assert_allclose(actual, desired, rtol=1e-2)
 
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
@@ -503,9 +506,9 @@ class TestProfileCylinderBase:
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("binmethod, desired",
-                             [("cog", [0, 1]),
-                              ("com", [1, 0]),
-                              ("coc", [0, 1])])
+                             [("cog", [np.nan, 1]),
+                              ("com", [1, np.nan]),
+                              ("coc", [np.nan, 1])])
     def test_binmethod(self, u_dimers, binmethod, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
@@ -567,10 +570,10 @@ class TestProfileCylinderBase:
         profile = ProfileCylinderBase(**params).run()
 
         actual = profile.results.profile_mean.flatten()
-        desired = np.zeros(profile.n_bins)
-        desired[:5] = scale / 2  # Only half of the z dimensions if filled.
+        desired = np.nan * np.ones(profile.n_bins)
+        desired[:5] = scale
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        assert_allclose(actual, desired, rtol=1e-2)
 
     def test_multigroup(self, u, params):
         """Test analysis for a list of atomgroups."""
@@ -578,10 +581,10 @@ class TestProfileCylinderBase:
         profile = ProfileCylinderBase(**params).run()
 
         actual = profile.results.profile_mean
-        desired = np.zeros([profile.n_bins, 2])
-        desired[:10, :] = 1
+        desired = np.nan * np.ones([profile.n_bins, 2])
+        desired[:5, :] = 1
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        assert_allclose(actual, desired, rtol=1e-2)
 
     def test_output_name(self, params):
         """Test output name of save method."""

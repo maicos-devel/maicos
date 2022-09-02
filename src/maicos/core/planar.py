@@ -212,8 +212,10 @@ class ProfilePlanarBase(PlanarBase):
                     f"{'XYZ'[self.dim]}-axes.")
 
         # Arrays for accumulation
-        self.results.frame.profile = np.zeros((self.n_bins,
-                                               self.n_atomgroups))
+        self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
+
+        if self.normalization == 'number':
+            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
 
     def _single_frame(self):
         super(ProfilePlanarBase, self)._single_frame()
@@ -233,23 +235,26 @@ class ProfilePlanarBase(PlanarBase):
             positions = positions[:, self.dim]
             weights = self.function(selection)
 
-            profile_ts, _ = np.histogram(positions,
-                                         bins=self.n_bins,
-                                         range=(self.zmin, self.zmax),
-                                         weights=weights)
+            profile, _ = np.histogram(positions,
+                                      bins=self.n_bins,
+                                      range=(self.zmin, self.zmax),
+                                      weights=weights)
 
             if self.normalization == 'number':
                 bincount, _ = np.histogram(positions,
                                            bins=self.n_bins,
                                            range=(self.zmin, self.zmax))
+
+                self.tot_bincount[:, index] += bincount
+
                 # If a bin does not contain any particles we divide by 0.
                 with np.errstate(invalid='ignore'):
-                    profile_ts /= bincount
-                profile_ts = np.nan_to_num(profile_ts)
+                    profile /= bincount
+                profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile_ts /= self._ts.volume / self.n_bins
+                profile /= self._ts.volume / self.n_bins
 
-            self.results.frame.profile[:, index] = profile_ts
+            self.results.frame.profile[:, index] = profile
 
     def _conclude(self):
         super(ProfilePlanarBase, self)._conclude()
@@ -260,6 +265,14 @@ class ProfilePlanarBase(PlanarBase):
         if self.sym:
             symmetrize(self.results.profile_mean, inplace=True)
             symmetrize(self.results.profile_err, inplace=True)
+
+            if self.normalization == 'number':
+                symmetrize(self.tot_bincount, inplace=True)
+
+        if self.normalization == 'number':
+            no_occurences_idx = self.tot_bincount == 0
+            self.results.profile_mean[no_occurences_idx] = np.nan
+            self.results.profile_err[no_occurences_idx] = np.nan
 
     def save(self):
         """Save results of analysis to file."""

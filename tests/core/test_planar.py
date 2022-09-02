@@ -415,7 +415,10 @@ class TestProfilePlanarBase:
         desired = np.zeros(profile.n_bins)
         desired[:10] = profile_vals
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        if normalization == "number":
+            desired[10:] = np.nan
+
+        assert_allclose(actual, desired, rtol=1e-2)
 
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
@@ -426,7 +429,7 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile_mean.flatten()
-        desired = [0, 0, 0, 0, 0.4, 1, 1, 1, 1, 1]
+        desired = [np.nan, np.nan, np.nan, 1e-04, 0.4, 1, 1, 1, 1, 1]
         desired += desired[::-1]
 
         assert_allclose(actual, desired, atol=1e-2)
@@ -445,14 +448,14 @@ class TestProfilePlanarBase:
         if grouping == "atoms":
             desired = [1, 1, 1]
         else:
-            desired = [1, 0, 1]
+            desired = [1, np.nan, 1]
 
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("binmethod, desired",
-                             [("cog", [1, 1, 0]),
-                              ("com", [1, 0, 1]),
-                              ("coc", [1, 1, 0])])
+                             [("cog", [1, 1, np.nan]),
+                              ("com", [1, np.nan, 1]),
+                              ("coc", [1, 1, np.nan])])
     def test_binmethod(self, u_dimers, binmethod, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
@@ -520,10 +523,10 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile_mean.flatten()
-        desired = np.zeros(profile.n_bins)
+        desired = np.nan * np.ones(profile.n_bins)
         desired[:10] = scale
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        assert_allclose(actual, desired)
 
     def test_multigroup(self, u, params):
         """Test analysis for a list of atomgroups."""
@@ -531,10 +534,10 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile_mean
-        desired = np.zeros([profile.n_bins, 2])
+        desired = np.nan * np.ones([profile.n_bins, 2])
         desired[:10, :] = 1
 
-        assert_allclose(actual, desired, atol=2, rtol=1e-2)
+        assert_allclose(actual, desired)
 
     def test_output_name(self, params, tmpdir):
         """Test output name of save method."""

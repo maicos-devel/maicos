@@ -233,6 +233,9 @@ class ProfileCylinderBase(CylinderBase):
         # Arrays for accumulation
         self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
 
+        if self.normalization == 'number':
+            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
+
     def _single_frame(self):
         super(ProfileCylinderBase, self)._single_frame()
 
@@ -251,15 +254,15 @@ class ProfileCylinderBase(CylinderBase):
             positions = self.transform_positions(positions)
             weights = self.function(selection)
 
-            profile_ts, _, _ = np.histogram2d(positions[:, 0],
-                                              positions[:, 2],
-                                              bins=(self.n_bins, 1),
-                                              range=((self.rmin, self.rmax),
-                                                     (self.zmin, self.zmax)),
-                                              weights=weights)
+            profile, _, _ = np.histogram2d(positions[:, 0],
+                                           positions[:, 2],
+                                           bins=(self.n_bins, 1),
+                                           range=((self.rmin, self.rmax),
+                                                  (self.zmin, self.zmax)),
+                                           weights=weights)
 
             # Reshapee into 1D array
-            profile_ts = profile_ts[:, 0]
+            profile = profile[:, 0]
 
             if self.normalization == 'number':
                 # Use the 2D histogram function to perform the selection in
@@ -269,23 +272,30 @@ class ProfileCylinderBase(CylinderBase):
                                                 bins=(self.n_bins, 1),
                                                 range=((self.rmin, self.rmax),
                                                        (self.zmin, self.zmax)))
-                # Reshapee into 1D array
+                # Reshape into 1D array
                 bincount = bincount[:, 0]
+
+                self.tot_bincount[:, index] += bincount
 
                 # If a bin does not contain any particles we divide by 0.
                 with np.errstate(invalid='ignore'):
-                    profile_ts /= bincount
-                profile_ts = np.nan_to_num(profile_ts)
+                    profile /= bincount
+                profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile_ts /= self.results.frame.binarea * self.results.frame.L
+                profile /= self.results.frame.binarea * self.results.frame.L
 
-            self.results.frame.profile[:, index] = profile_ts
+            self.results.frame.profile[:, index] = profile
 
     def _conclude(self):
         super(ProfileCylinderBase, self)._conclude()
 
         self.results.profile_mean = self.results.means.profile
         self.results.profile_err = self.results.sems.profile
+
+        if self.normalization == 'number':
+            no_occurences_idx = self.tot_bincount == 0
+            self.results.profile_mean[no_occurences_idx] = np.nan
+            self.results.profile_err[no_occurences_idx] = np.nan
 
     def save(self):
         """Save results of analysis to file."""
