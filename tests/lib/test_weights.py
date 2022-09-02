@@ -24,7 +24,7 @@ from data import WATER_TPR, WATER_TRR  # noqa: E402
 def test_density_weights_mass():
     """Test mass weights."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", 0, "mass")
+    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", "mass")
     # Convert back to atomic units
     assert_allclose(weights, u.atoms.masses)
 
@@ -34,14 +34,14 @@ def test_density_weights_mass():
 def test_density_weights_mass_grouping(compound):
     """Test mass weights with grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, 0, "mass")
+    weights = maicos.lib.weights.density_weights(u.atoms, compound, "mass")
     assert_allclose(weights, u.atoms.total_mass(compound=compound))
 
 
 def test_density_weights_charge():
     """Test charge weights."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", 0, "charge")
+    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", "charge")
     assert_equal(weights, u.atoms.charges)
 
 
@@ -50,7 +50,7 @@ def test_density_weights_charge():
 def test_density_weights_charge_grouping(compound):
     """Test charge weights with grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, 0, "charge")
+    weights = maicos.lib.weights.density_weights(u.atoms, compound, "charge")
     assert_equal(weights, u.atoms.total_charge(compound=compound))
 
 
@@ -58,7 +58,7 @@ def test_density_weights_charge_grouping(compound):
 def test_density_weights_number(compound):
     """Test number weights for grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, 0, "number")
+    weights = maicos.lib.weights.density_weights(u.atoms, compound, "number")
     assert_equal(weights, np.ones(getattr(u.atoms, f"n_{compound}")))
 
 
@@ -66,7 +66,7 @@ def test_density_weights_number_molecules():
     """Test number weights for grouping with respect to molecules."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
     weights = maicos.lib.weights.density_weights(
-        u.atoms, "molecules", 0, "number")
+        u.atoms, "molecules", "number")
     assert_equal(weights, np.ones(len(np.unique(u.atoms.molnums))))
 
 
@@ -74,4 +74,15 @@ def test_density_weights_error():
     """Test error raise for non existing weight."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
     with pytest.raises(ValueError, match="not supported"):
-        maicos.lib.weights.density_weights(u.atoms, "atoms", 0, "foo")
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "foo")
+
+
+@pytest.mark.parametrize("grouping", ('residues',
+                                      'segments',
+                                      'molecules',
+                                      'fragments'))
+def test_tempetaure_weights_grouping(grouping):
+    """Test when grouping != atoms."""
+    u = mda.Universe(WATER_TPR, WATER_TRR)
+    with pytest.raises(NotImplementedError):
+        maicos.lib.weights.temperature_weights(u.atoms, grouping)

@@ -256,7 +256,7 @@ class Diporder(ProfilePlanarBase):
 
         super(Diporder, self).__init__(
             function=diporder_weights,
-            f_kwargs={"order_parameter": order_parameter},
+            f_kwargs={"dim": dim, "order_parameter": order_parameter},
             normalization=normalization,
             atomgroups=atomgroups,
             dim=dim,

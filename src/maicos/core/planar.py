@@ -136,9 +136,9 @@ class ProfilePlanarBase(PlanarBase):
     ----------
     function : callable
         The function calculating the array for the analysis.
-        It must take an `Atomgroup` as first argument,
+        It must take an `Atomgroup` as first argument and a
         grouping ('atoms', 'residues', 'segments', 'molecules', 'fragments')
-        as second and a dimension (0, 1, 2) as third. Additional parameters can
+        as second. Additional parameters can
         be given as `f_kwargs`. The function must return a numpy.ndarry with
         the same length as the number of group members.
     normalization : str {'None', 'number', 'volume'}
@@ -175,8 +175,7 @@ class ProfilePlanarBase(PlanarBase):
         if f_kwargs is None:
             f_kwargs = {}
 
-        self.function = lambda ag, grouping, dim: function(
-            ag, grouping, dim, **f_kwargs)
+        self.function = lambda ag: function(ag, grouping, **f_kwargs)
         self.normalization = normalization.lower()
         self.sym = sym
         self.grouping = grouping.lower()
@@ -232,7 +231,7 @@ class ProfilePlanarBase(PlanarBase):
                     positions = selection.atoms.center_of_charge(**kwargs)
 
             positions = positions[:, self.dim]
-            weights = self.function(selection, self.grouping, self.dim)
+            weights = self.function(selection)
 
             profile_ts, _ = np.histogram(positions,
                                          bins=self.n_bins,

@@ -261,11 +261,6 @@ class TemperaturePlanar(ProfilePlanarBase):
             output=output,
             concfreq=concfreq)
 
-        if grouping != "atoms":
-            raise NotImplementedError(f"Temperature profiles of '{grouping}'"
-                                      "are not supported. Use 'atoms' "
-                                      "instead.'")
-
 
 @render_docs
 class DensityPlanar(ProfilePlanarBase):

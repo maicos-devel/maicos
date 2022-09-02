@@ -13,7 +13,7 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from MDAnalysisTests.datafiles import TPR, TRR
-from numpy.testing import assert_allclose, assert_equal, assert_raises
+from numpy.testing import assert_allclose, assert_equal
 
 from maicos.modules import density
 
@@ -105,12 +105,6 @@ class TestTemperaturProfile(ReferenceAtomGroups):
         """Test mean temperature."""
         dens = density.TemperaturePlanar(ag, dim=dim).run()
         assert_allclose(dens.results.profile_mean.mean(), 291.6, rtol=1e1)
-
-    def test_grouping(self, ag):
-        """Test when grouping != atoms."""
-        with assert_raises(NotImplementedError):
-            temp = density.TemperaturePlanar(ag, grouping="molecule")
-            temp.run()
 
 
 class TestChemicalPotentialPlanar(ReferenceAtomGroups):
