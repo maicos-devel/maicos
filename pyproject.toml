@@ -2,7 +2,7 @@
 # These are the assumed default build requirements from pip:
 # https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = [
-    "Cython>=0.28",
+    "cython>=0.28",
     # lowest NumPy we can use for a given Python,
     # except for more exotic platform (Mac Arm flavors)
     # aarch64, AIX, s390x all support < 1.20 so we can safely pin to this
