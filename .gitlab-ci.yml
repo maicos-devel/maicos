@@ -1,15 +1,12 @@
 default:
   before_script:
-    - apt-get update -q -y
-    - apt-get -y install pandoc
-    - python3 -m pip install -U tox
+    - python -m pip install -U tox
     - export USE_CYTHON=True
 
 stages:
   - lint
   - build
   - tests
-  - pages
   - deploy
 
 ###########################
@@ -63,7 +60,10 @@ build:docs:
   image: python:3.10
   stage: build
   needs: []
-  script: tox -e docs
+  script:
+    - apt-get update -q -y
+    - apt-get -y install pandoc
+    - tox -e docs
   artifacts:
     paths:
       - dist/docs
@@ -97,14 +97,14 @@ tests:3.10:
   extends: .tests
 
 ###########################
-######### PAGES ###########
+######## DEPLOY ###########
 ###########################
 
-# The name must be `pages`! 
+# The name must be `pages`!
 # Otherwise webpage on gitlab.io will not be updated!
 pages:
   image: python:3.10
-  stage: pages
+  stage: deploy
   script:
     - cp -r dist/docs public
   only:
@@ -113,19 +113,14 @@ pages:
     paths:
       - public
 
-###########################
-######## DEPLOY ###########
-###########################
-
-deploy:
+pypi:
   image: python:3.10
   stage: deploy
   variables:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
-    - pip install -r developer/requirements_deploy.txt
-    - python3 setup.py sdist
-    - twine upload --verbose dist/*.tar.gz
+    - pip install twine
+    - twine upload --verbose dist/*.tar.gz dist/*.whl
   only:
     - tags
