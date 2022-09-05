@@ -91,9 +91,9 @@ class TestDiporder(object):
         # z-direction
         res[2] = {}
         res[2]["P0"] = 12 * [0]
-        res[2]["cos_theta"] = 12 * [0]
-        res[2]["cos_2_theta"] = [0.25, 0.33, 0.33, 0.33, 0.33, 0.26, 0.09,
-                                 0, 0, 0, 0, 0.06]
+        res[2]["cos_theta"] = 2 * [np.nan] + 8 * [0] + 2 * [np.nan]
+        res[2]["cos_2_theta"] = [np.nan, np.nan, 0.06, 0.25, 0.33, 0.33,
+                                 0.33, 0.33, 0.26, 0.09, np.nan, np.nan]
 
         return res
 
@@ -111,6 +111,7 @@ class TestDiporder(object):
         dip = Diporder(ag,
                        binwidth=5,
                        dim=dim,
+                       refgroup=ag,
                        order_parameter=order_parameter).run()
         assert_allclose(dip.results.profile_mean.flatten(),
                         result_dict[dim][order_parameter],
