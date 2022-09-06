@@ -7,6 +7,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Test for lib."""
+import os
 import sys
 
 import MDAnalysis as mda
@@ -17,7 +18,7 @@ from numpy.testing import assert_almost_equal, assert_equal
 import maicos.lib.math
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import SPCE_GRO, SPCE_ITP, WATER_GRO, WATER_TPR  # noqa: E402
 
 

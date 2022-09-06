@@ -19,7 +19,7 @@ from numpy.testing import assert_allclose
 from maicos.core import AnalysisBase
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 

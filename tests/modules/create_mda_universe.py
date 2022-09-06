@@ -7,13 +7,14 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+import os
 import sys
 
 import MDAnalysis as mda
 import numpy as np
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 

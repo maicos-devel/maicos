@@ -20,7 +20,7 @@ from maicos import Diporder, RDFPlanar, Saxs
 from maicos.lib.util import check_compound
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import (  # noqa: E402
     AIRWATER_TPR,
     AIRWATER_TRR,

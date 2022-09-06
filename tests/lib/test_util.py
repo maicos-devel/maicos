@@ -7,7 +7,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
-
+import os
 import sys
 from unittest.mock import patch
 
@@ -20,7 +20,7 @@ import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import LAMMPS10WATER, WATER_GRO, WATER_TPR  # noqa: E402
 
 
