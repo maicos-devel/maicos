@@ -24,7 +24,7 @@ from maicos.core import CylinderBase, ProfileCylinderBase
 from maicos.lib.weights import density_weights
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 

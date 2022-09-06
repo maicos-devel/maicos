@@ -18,7 +18,7 @@ from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 from maicos import DipoleAngle, KineticEnergy
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import (  # noqa: E402
     NVE_WATER_TPR,
     NVE_WATER_TRR,

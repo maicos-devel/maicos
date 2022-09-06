@@ -7,6 +7,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
+import os
 import sys
 
 import MDAnalysis as mda
@@ -17,7 +18,7 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos.lib.weights
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import WATER_TPR, WATER_TRR  # noqa: E402
 
 
