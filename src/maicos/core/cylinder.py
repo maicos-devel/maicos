@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class CylinderBase(PlanarBase):
-    """Class to provide options and attributes for analysis in cylinder system.
+    r"""Analysis class providing options and attributes for cylinder system.
 
     Provide the results attribute `r`.
 
@@ -44,7 +44,8 @@ class CylinderBase(PlanarBase):
         average length along the radial dimension
     results.binarea : numpy.ndarray
         area of the concentrtic radial bins. Calculated via
-        :math:`r_{i+1}^2 - r_i^2)` where `i` is the index of the bin.
+        :math:`\pi \left( r_{i+1}^2 - r_i^2 \right)` where `i`
+        is the index of the bin.
     """
 
     def __init__(self,
@@ -74,10 +75,12 @@ class CylinderBase(PlanarBase):
         self._compute_lab_frame_cylinder()
 
         if self.rmin < 0:
-            raise ValueError("Only values for rmin larger 0 are allowed.")
+            raise ValueError("Only values for `rmin` larger or equal 0 are "
+                             "allowed.")
 
         if self._rmax is not None and self._rmax <= self.rmin:
-            raise ValueError("`rmax` can not be smaller or equal than `rmin`!")
+            raise ValueError("`rmax` can not be smaller than or equal "
+                             "to `rmin`!")
 
         try:
             if self._binwidth > 0:
@@ -109,9 +112,6 @@ class CylinderBase(PlanarBase):
         """
         trans_positions = np.zeros(positions.shape)
 
-        # z component
-        trans_positions[:, 2] = np.copy(positions[:, self.dim])
-
         # shift origin to box center
         pos_xyz_center = positions - self.box_center
 
@@ -120,7 +120,11 @@ class CylinderBase(PlanarBase):
                                                axis=1)
 
         # phi component
-        trans_positions[:, 1] = np.arctan2(*pos_xyz_center[:, self.odims].T)
+        np.arctan2(*pos_xyz_center[:, self.odims].T,
+                   out=trans_positions[:, 1])
+
+        # z component
+        trans_positions[:, 2] = np.copy(positions[:, self.dim])
 
         return trans_positions
 
@@ -155,7 +159,7 @@ class CylinderBase(PlanarBase):
 
 @render_docs
 class ProfileCylinderBase(CylinderBase):
-    """Base class for computing profiles in a cartesian geometry.
+    """Base class for computing radial profiles in a cylinder geometry.
 
     Parameters
     ----------
@@ -261,7 +265,7 @@ class ProfileCylinderBase(CylinderBase):
                                                   (self.zmin, self.zmax)),
                                            weights=weights)
 
-            # Reshapee into 1D array
+            # Reshape into 1D array
             profile = profile[:, 0]
 
             if self.normalization == 'number':

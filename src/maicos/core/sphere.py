@@ -6,97 +6,86 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Base class for planar analysis."""
+"""Base class for spherical analysis."""
 
 import logging
 
 import numpy as np
 
-from ..lib.math import symmetrize
 from ..lib.util import render_docs
-from .base import AnalysisBase
+from .planar import AnalysisBase
 
 
 logger = logging.getLogger(__name__)
 
 
 @render_docs
-class PlanarBase(AnalysisBase):
-    """Analysis class providing options and attributes for planar system.
+class SphereBase(AnalysisBase):
+    r"""Analysis class providing options and attributes for spherical system.
+
+    Provide the results attribute `r`.
 
     Parameters
     ----------
     atomgroups : Atomgroup or list[Atomgroup]
         Atomgroups taken for the Analysis
-    ${PLANAR_CLASS_PARAMETERS}
+    ${SPHERE_CLASS_PARAMETERS}
     kwargs : dict
         Parameters parsed to `AnalysisBase`.
 
     Attributes
     ----------
-    ${PLANAR_CLASS_ATTRIBUTES}
-    zmin : float
-         Minimal coordinate for evaluation (Å) with in the lab frame, where
-         0 corresponds to the origin of the cell.
-    zmax : float
-         Maximal coordinate for evaluation (Å) with in the lab frame, where
-         0 corresponds to the origin of the cell.
+    ${SPHERE_CLASS_ATTRIBUTES}
+    pos_sph : numpy.ndarray
+        positions in spherical coordinats (r, phi, theta)
     binwidth : float
         The actual binwidth taking the length of the changing box into account.
-    results.L : float
-        average length along the chosen dimension
+    results.R : float
+        average length along the radial dimension
+    results.binvolume : numpy.ndarray
+        area of the concentrtic radial bins. Calculated via
+        :math:`\left 4\pi/3(r_{i+1}^3 - r_i^3 \right)` where `i`
+        is the index of the bin.
     """
 
     def __init__(self,
                  atomgroups,
-                 dim,
-                 zmin,
-                 zmax,
+                 rmin,
+                 rmax,
                  binwidth,
                  **kwargs):
-        super(PlanarBase, self).__init__(atomgroups=atomgroups, **kwargs)
+        super(SphereBase, self).__init__(atomgroups, **kwargs)
 
-        if dim not in [0, 1, 2]:
-            raise ValueError("Dimension can only be x=0, y=1 or z=2.")
-        else:
-            self.dim = dim
-
-        # These values are requested by the user,
-        # but the actual ones are calculated during runtime in the lab frame
-        self._zmax = zmax
-        self._zmin = zmin
+        self.rmin = rmin
+        self._rmax = rmax
         self._binwidth = binwidth
 
-    @property
-    def odims(self):
-        """Other dimensions perpendicular to dim i.e. (0,2) if dim = 1."""
-        return np.roll(np.arange(3), -self.dim)[1:]
-
-    def _compute_lab_frame_planar(self):
-        """Compute lab limits `zmin` and `zmax`."""
-        if self._zmin is None:
-            self.zmin = 0
+    def _compute_lab_frame_sphere(self):
+        """Compute lab limit `rmax`."""
+        if self._rmax is None:
+            self.rmax = self._universe.dimensions[:3].min() / 2
         else:
-            self.zmin = self.box_center[self.dim] + self._zmin
+            self.rmax = self._rmax
 
-        if self._zmax is None:
-            self.zmax = self._universe.dimensions[self.dim]
-        else:
-            self.zmax = self.box_center[self.dim] + self._zmax
+        # Transform into spherical coordinates
+        self.pos_sph = self.transform_positions(self._universe.atoms.positions)
 
     def _prepare(self):
-        """Prepare the planar analysis."""
-        self._compute_lab_frame_planar()
+        """Prepare the spherical analysis."""
+        self._compute_lab_frame_sphere()
 
-        # TODO: There are much more wrong combinations of zmin and zmax...
-        if self._zmax is not None and self._zmin is not None \
-           and self._zmax <= self._zmin:
-            raise ValueError("`zmax` can not be smaller or equal than `zmin`!")
+        if self.rmin < 0:
+            raise ValueError("Only values for `rmin` larger or equal 0 are "
+                             "allowed.")
+
+        if self._rmax is not None and self._rmax <= self.rmin:
+            raise ValueError("`rmax` can not be smaller than or equal "
+                             "to `rmin`!")
 
         try:
             if self._binwidth > 0:
-                L = self.zmax - self.zmin
-                self.n_bins = int(np.ceil(L / self._binwidth))
+                R = self.rmax - self.rmin
+                self.n_bins = int(np.ceil(R / self._binwidth))
             else:
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
@@ -104,33 +93,67 @@ class PlanarBase(AnalysisBase):
 
         logger.info(f"Using {self.n_bins} bins")
 
+    def transform_positions(self, positions):
+        """Transform positions into spherical coordinates.
+
+        The origin of th coordinate system is at
+        :attr:`AnalysisBase.box_center`.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            Cartesian coordinates (x,y,z)
+
+        Returns
+        -------
+        trans_positions : numpy.ndarray
+            Positions in spherical coordinates (r, phi, theta)
+        """
+        trans_positions = np.zeros(positions.shape)
+
+        # shift origin to box center
+        pos_xyz_center = positions - self.box_center
+
+        # r component
+        trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
+
+        # phi component
+        np.arctan2(pos_xyz_center[:, 1],
+                   pos_xyz_center[:, 0],
+                   out=trans_positions[:, 1])
+
+        # theta component
+        np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0],
+                  out=trans_positions[:, 2])
+
+        return trans_positions
+
     def _single_frame(self):
-        """Single frame for the planar analysis."""
-        self._compute_lab_frame_planar()
-        self.results.frame.L = self.zmax - self.zmin
+        """Single frame for the sphercial analysis."""
+        self._compute_lab_frame_sphere()
+        self.results.frame.R = self.rmax - self.rmin
+
+        r = np.linspace(self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
+        self.results.frame.binvolume = 4 * np.pi * np.diff(r**3) / 3
 
     def _conclude(self):
-        """Results calculations for the planar analysis."""
-        self.L = self.results.means.L
+        """Results calculations for the sphercial analysis."""
+        self.R = self.results.means.R
+        self.binvolume = self.results.means.binvolume
 
-        if self._zmin is None:
-            zmin = -self.L / 2
+        if self._rmax is None:
+            rmax = self.R
         else:
-            zmin = self._zmin
+            rmax = self._rmax
 
-        if self._zmax is None:
-            zmax = self.L / 2
-        else:
-            zmax = self._zmax
-
-        self.binwidth = self.L / self.n_bins
-        self.results.z = np.linspace(zmin, zmax, self.n_bins) \
+        self.binwidth = self.rmax / self.n_bins
+        self.results.r = np.linspace(self.rmin, rmax, self.n_bins) \
             + self.binwidth / 2
 
 
 @render_docs
-class ProfilePlanarBase(PlanarBase):
-    """Base class for computing profiles in a cartesian geometry.
+class ProfileSphereBase(SphereBase):
+    """Base class for computing radial profiles in a spherical geometry.
 
     Parameters
     ----------
@@ -146,13 +169,13 @@ class ProfilePlanarBase(PlanarBase):
         If `None` no normalization is performed. If `number` the histogram
         is divided by the number of occurences in each bin. If `volume` the
         profile is divided by the volume of each bin.
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${PROFILE_SPHERE_CLASS_PARAMETERS}
     f_kwargs : dict
         Additional parameters for `function`
 
     Attributes
     ----------
-    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
     profile_cum : numpy.ndarray
         cumulative profile
     profile_cum_sq : numpy.ndarray
@@ -163,13 +186,12 @@ class ProfilePlanarBase(PlanarBase):
                  function,
                  normalization,
                  atomgroups,
-                 sym,
                  grouping,
                  binmethod,
                  output,
                  f_kwargs=None,
                  **kwargs):
-        super(ProfilePlanarBase, self).__init__(atomgroups=atomgroups,
+        super(ProfileSphereBase, self).__init__(atomgroups=atomgroups,
                                                 multi_group=True,
                                                 **kwargs)
         if f_kwargs is None:
@@ -177,21 +199,16 @@ class ProfilePlanarBase(PlanarBase):
 
         self.function = lambda ag: function(ag, grouping, **f_kwargs)
         self.normalization = normalization.lower()
-        self.sym = sym
         self.grouping = grouping.lower()
         self.binmethod = binmethod.lower()
         self.output = output
 
     def _prepare(self):
-        super(ProfilePlanarBase, self)._prepare()
+        super(ProfileSphereBase, self)._prepare()
 
         if self.normalization not in ["none", "volume", "number"]:
             raise ValueError(f"`{self.normalization}` not supported. "
                              "Use `None`, `volume` or `number`.")
-
-        if self.sym and self.refgroup is None:
-            raise ValueError("For symmetrization the `refgroup` argument is "
-                             "required.")
 
         if self.grouping not in ["atoms", "segments", "residues", "molecules",
                                  "fragments"]:
@@ -208,9 +225,6 @@ class ProfilePlanarBase(PlanarBase):
             raise ValueError(f"{self.binmethod} is an unknown binning "
                              "method. Use `cog`, `com` or `coc`.")
 
-        logger.info(f"Computing {self.grouping} profile along "
-                    f"{'XYZ'[self.dim]}-axes.")
-
         # Arrays for accumulation
         self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
 
@@ -218,7 +232,7 @@ class ProfilePlanarBase(PlanarBase):
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
 
     def _single_frame(self):
-        super(ProfilePlanarBase, self)._single_frame()
+        super(ProfileSphereBase, self)._single_frame()
 
         for index, selection in enumerate(self.atomgroups):
             if self.grouping == 'atoms':
@@ -232,18 +246,20 @@ class ProfilePlanarBase(PlanarBase):
                 elif self.binmethod == "coc":
                     positions = selection.atoms.center_of_charge(**kwargs)
 
-            positions = positions[:, self.dim]
+            positions = self.transform_positions(positions)[:, 0]
             weights = self.function(selection)
 
             profile, _ = np.histogram(positions,
                                       bins=self.n_bins,
-                                      range=(self.zmin, self.zmax),
+                                      range=(self.rmin, self.rmax),
                                       weights=weights)
 
             if self.normalization == 'number':
+                # Use the 2D histogram function to perform the selection in
+                # the z dimension.
                 bincount, _ = np.histogram(positions,
                                            bins=self.n_bins,
-                                           range=(self.zmin, self.zmax))
+                                           range=(self.rmin, self.rmax))
 
                 self.tot_bincount[:, index] += bincount
 
@@ -252,22 +268,15 @@ class ProfilePlanarBase(PlanarBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self._ts.volume / self.n_bins
+                profile /= self.results.frame.binvolume
 
             self.results.frame.profile[:, index] = profile
 
     def _conclude(self):
-        super(ProfilePlanarBase, self)._conclude()
+        super(ProfileSphereBase, self)._conclude()
 
         self.results.profile_mean = self.results.means.profile
         self.results.profile_err = self.results.sems.profile
-
-        if self.sym:
-            symmetrize(self.results.profile_mean, inplace=True)
-            symmetrize(self.results.profile_err, inplace=True)
-
-            if self.normalization == 'number':
-                symmetrize(self.tot_bincount, inplace=True)
 
         if self.normalization == 'number':
             no_occurences_idx = self.tot_bincount == 0
@@ -276,7 +285,7 @@ class ProfilePlanarBase(PlanarBase):
 
     def save(self):
         """Save results of analysis to file."""
-        columns = ["positions [Å]"]
+        columns = ["radial positions [Å]"]
 
         for i, _ in enumerate(self.atomgroups):
             columns.append(f'({i + 1}) profile')
@@ -284,7 +293,7 @@ class ProfilePlanarBase(PlanarBase):
             columns.append(f'({i + 1}) error')
 
         self.savetxt(self.output, np.hstack(
-                     (self.results.z[:, np.newaxis],
+                     (self.results.r[:, np.newaxis],
                       self.results.profile_mean,
                       self.results.profile_err)),
                      columns=columns)

@@ -12,3 +12,4 @@ Core Classes
    base
    planar
    cylinder
+   sphere

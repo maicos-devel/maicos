@@ -136,10 +136,10 @@ doc_dict = dict(
     zmax : float, default: None
         Maximal coordinate for evaluation (Å) with respect to the refgroup.
         If `None` all coordinates
-        up to the cell boundary are taken into account.
-    binwidth : float
+        up to the cell boundary are taken into account.""",
+    BINWIDTH_PARAMETER="""binwidth : float
         binwidth""",
-    CYLINDER_CLASS_PARAMETERS="""rmin : float
+    RADIAL_CLASS_PARAMETERS="""rmin : float
         Minimal r-coordinate relative to the refgroup center of mass for
         evaluation (Å).
     rmax : float
@@ -160,7 +160,7 @@ doc_dict = dict(
         Output filename""",
     PLANAR_CLASS_ATTRIBUTES="""results.z : list
         Bin position ranging from `zmin` to `zmax`.""",
-    CYLINDER_CLASS_ATTRIBUTES="""results.r : list
+    RADIAL_CLASS_ATTRIBUTES="""results.r : list
         Bin position ranging from `rmin` to `rmax`.""",
     PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : numpy.ndarray
         calculated profile
@@ -171,11 +171,16 @@ doc_dict = dict(
 # Inherit docstrings
 doc_dict["PLANAR_CLASS_PARAMETERS"] = \
     doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["PLANAR_CLASS_PARAMETERS"]
+    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["BINWIDTH_PARAMETER"]
 
 doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
     doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["CYLINDER_CLASS_PARAMETERS"]
+    doc_dict["RADIAL_CLASS_PARAMETERS"]
+
+doc_dict["SPHERE_CLASS_PARAMETERS"] = \
+    doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["BINWIDTH_PARAMETER"]
 
 doc_dict["PROFILE_PLANAR_CLASS_PARAMETERS"] = \
     doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
@@ -188,12 +193,24 @@ doc_dict["PROFILE_CYLINDER_CLASS_PARAMETERS"] = \
     doc_dict["CYLINDER_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["PROFILE_CLASS_PARAMETERS"]
 
+doc_dict["PROFILE_SPHERE_CLASS_PARAMETERS"] = \
+    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_PARAMETERS"]
+
+doc_dict["CYLINDER_CLASS_ATTRIBUTES"] = doc_dict["RADIAL_CLASS_ATTRIBUTES"]
+doc_dict["SPHERE_CLASS_ATTRIBUTES"] = doc_dict["RADIAL_CLASS_ATTRIBUTES"]
+
 doc_dict["PROFILE_PLANAR_CLASS_ATTRIBUTES"] = \
     doc_dict["PLANAR_CLASS_ATTRIBUTES"] + "\n    " + \
     doc_dict["PROFILE_CLASS_ATTRIBUTES"]
 
 doc_dict["PROFILE_CYLINDER_CLASS_ATTRIBUTES"] = \
-    doc_dict["CYLINDER_CLASS_ATTRIBUTES"] + "\n    " + \
+    doc_dict["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
+    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+
+doc_dict["PROFILE_SPHERE_CLASS_ATTRIBUTES"] = \
+    doc_dict["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
     doc_dict["PROFILE_CLASS_ATTRIBUTES"]
 
 
