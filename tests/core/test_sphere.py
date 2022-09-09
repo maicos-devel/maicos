@@ -107,11 +107,11 @@ class TestSphereBase(object):
         sphere_class_obj._frame_index = 0
 
         sphere_class_obj._prepare()
-        sphere_class_obj.results.means = Results()
-        sphere_class_obj.results.means.R = ag.universe.dimensions.min()
-        sphere_class_obj.results.means.binvolume = 0
+        sphere_class_obj.means = Results()
+        sphere_class_obj.means.R = ag.universe.dimensions.min()
+        sphere_class_obj.means.binvolume = 0
 
-        sphere_class_obj.results.means.R /= 2
+        sphere_class_obj.means.R /= 2
         sphere_class_obj._index = 1
         sphere_class_obj._conclude()
 
@@ -288,7 +288,7 @@ class TestSphereBase(object):
                      cls.transform_positions(u.atoms.positions))
 
         # Test if _single_frame updates the positions.
-        cls.results.frame = Results()
+        cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()

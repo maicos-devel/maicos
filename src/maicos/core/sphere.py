@@ -131,15 +131,15 @@ class SphereBase(AnalysisBase):
     def _single_frame(self):
         """Single frame for the sphercial analysis."""
         self._compute_lab_frame_sphere()
-        self.results.frame.R = self.rmax - self.rmin
+        self._obs.R = self.rmax - self.rmin
 
         r = np.linspace(self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
-        self.results.frame.binvolume = 4 * np.pi * np.diff(r**3) / 3
+        self._obs.binvolume = 4 * np.pi * np.diff(r**3) / 3
 
     def _conclude(self):
         """Results calculations for the sphercial analysis."""
-        self.R = self.results.means.R
-        self.binvolume = self.results.means.binvolume
+        self.R = self.means.R
+        self.binvolume = self.means.binvolume
 
         if self._rmax is None:
             rmax = self.R
@@ -226,7 +226,7 @@ class ProfileSphereBase(SphereBase):
                              "method. Use `cog`, `com` or `coc`.")
 
         # Arrays for accumulation
-        self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
 
         if self.normalization == 'number':
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
@@ -268,15 +268,15 @@ class ProfileSphereBase(SphereBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self.results.frame.binvolume
+                profile /= self._obs.binvolume
 
-            self.results.frame.profile[:, index] = profile
+            self._obs.profile[:, index] = profile
 
     def _conclude(self):
         super(ProfileSphereBase, self)._conclude()
 
-        self.results.profile_mean = self.results.means.profile
-        self.results.profile_err = self.results.sems.profile
+        self.results.profile_mean = self.means.profile
+        self.results.profile_err = self.sems.profile
 
         if self.normalization == 'number':
             no_occurences_idx = self.tot_bincount == 0

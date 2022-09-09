@@ -107,11 +107,11 @@ class PlanarBase(AnalysisBase):
     def _single_frame(self):
         """Single frame for the planar analysis."""
         self._compute_lab_frame_planar()
-        self.results.frame.L = self.zmax - self.zmin
+        self._obs.L = self.zmax - self.zmin
 
     def _conclude(self):
         """Results calculations for the planar analysis."""
-        self.L = self.results.means.L
+        self.L = self.means.L
 
         if self._zmin is None:
             zmin = -self.L / 2
@@ -212,7 +212,7 @@ class ProfilePlanarBase(PlanarBase):
                     f"{'XYZ'[self.dim]}-axes.")
 
         # Arrays for accumulation
-        self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
 
         if self.normalization == 'number':
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
@@ -254,13 +254,13 @@ class ProfilePlanarBase(PlanarBase):
             elif self.normalization == "volume":
                 profile /= self._ts.volume / self.n_bins
 
-            self.results.frame.profile[:, index] = profile
+            self._obs.profile[:, index] = profile
 
     def _conclude(self):
         super(ProfilePlanarBase, self)._conclude()
 
-        self.results.profile_mean = self.results.means.profile
-        self.results.profile_err = self.results.sems.profile
+        self.results.profile_mean = self.means.profile
+        self.results.profile_err = self.sems.profile
 
         if self.sym:
             symmetrize(self.results.profile_mean, inplace=True)

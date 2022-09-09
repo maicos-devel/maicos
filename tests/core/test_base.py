@@ -35,7 +35,7 @@ class Series(AnalysisBase):
         self.series = np.random.rand(self.n_frames)
 
     def _single_frame(self):
-        self.results.frame.observable = self.series[self._frame_index]
+        self._obs.observable = self.series[self._frame_index]
 
 
 class Frame_types(AnalysisBase):
@@ -51,7 +51,7 @@ class Frame_types(AnalysisBase):
     """
 
     def _single_frame(self):
-        self.results.frame.observable = self.data[self._frame_index]
+        self._obs.observable = self.data[self._frame_index]
 
 
 class Conclude(AnalysisBase):
@@ -121,8 +121,8 @@ class Test_AnalysisBase(object):
         ana = Series(ag)
         ana.run()
 
-        assert_allclose(ana.results.means.observable, np.mean(ana.series))
-        assert_allclose(ana.results.sems.observable,
+        assert_allclose(ana.means.observable, np.mean(ana.series))
+        assert_allclose(ana.sems.observable,
                         np.std(ana.series) / np.sqrt(ana.n_frames))
 
     @pytest.mark.parametrize('concfreq, files',
@@ -215,7 +215,7 @@ class Test_AnalysisBase(object):
         class_obj = Frame_types(ag)
         class_obj.data = data
         class_obj.run(stop=2)
-        assert class_obj.results.means.observable == result
+        assert class_obj.means.observable == result
 
     @pytest.mark.parametrize('data,', [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
     def test_frame_dict_wrong_types(self, ag, data):

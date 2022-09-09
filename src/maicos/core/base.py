@@ -79,14 +79,14 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     results : :class:`Results`
         results of calculation are stored after call
         to :meth:`AnalysisBase.run`
-    results.frame : :class:`Results`
+    _obs : :class:`Results`
         Observables of the current frame
-    results.mean : :class:`Results`
+    means : :class:`Results`
         Means of the observables.
-        Keys are the same as :attr:`results.frame`.
-    results.vars : :class:`Results`
-        Variances of the observables.
-        Keys are the same as :attr:`results.frame`
+        Keys are the same as :attr:`_obs`.
+    sems : :class:`Results`
+        Standard errors of the mean of the observables.
+        Keys are the same as :attr:`_obs`
     """
 
     def __init__(self,
@@ -150,7 +150,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self._setup_frames(self._trajectory, start, stop, step)
         logger.info("Starting preparation")
 
-        self.results.frame = Results()
+        self._obs = Results()
         compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
 
         self._prepare()
@@ -186,33 +186,33 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             timeseries[i] = self._single_frame()
 
             try:
-                for key in self.results.frame.keys():
-                    if type(self.results.frame[key]) is list:
-                        self.results.frame[key] = \
-                            np.array(self.results.frame[key])
-                    old_mean = self.results.means[key]
-                    old_var = self.results.sems[key]**2 * (self._index - 1)
-                    self.results.means[key] = \
-                        new_mean(self.results.means[key],
-                                 self.results.frame[key], self._index)
-                    self.results.sems[key] = \
+                for key in self._obs.keys():
+                    if type(self._obs[key]) is list:
+                        self._obs[key] = \
+                            np.array(self._obs[key])
+                    old_mean = self.means[key]
+                    old_var = self.sems[key]**2 * (self._index - 1)
+                    self.means[key] = \
+                        new_mean(self.means[key],
+                                 self._obs[key], self._index)
+                    self.sems[key] = \
                         np.sqrt(new_variance(old_var, old_mean,
-                                             self.results.means[key],
-                                             self.results.frame[key],
+                                             self.means[key],
+                                             self._obs[key],
                                              self._index) / self._index)
             except AttributeError:
                 logger.info("Preparing error estimation.")
-                # the results.means and results.sems are not yet defined.
+                # the means and sems are not yet defined.
                 # We initialize the means with the data from the first frame
                 # and set the sems to zero (with the correct shape).
-                self.results.means = self.results.frame.copy()
-                self.results.sems = Results()
-                for key in self.results.frame.keys():
-                    if type(self.results.frame[key]) not in compatible_types:
+                self.means = self._obs.copy()
+                self.sems = Results()
+                for key in self._obs.keys():
+                    if type(self._obs[key]) not in compatible_types:
                         raise TypeError(
                             f"Obervable {key} has uncompatible type.")
-                    self.results.sems[key] = \
-                        np.zeros(np.shape(self.results.frame[key]))
+                    self.sems[key] = \
+                        np.zeros(np.shape(self._obs[key]))
 
             if self.concfreq and self._index % self.concfreq == 0 \
                and self._frame_index > 0:
