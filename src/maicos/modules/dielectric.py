@@ -109,40 +109,40 @@ class DielectricPlanar(PlanarBase):
     def _prepare(self):
         super(DielectricPlanar, self)._prepare()
 
-        self.results.frame.V = 0
+        self._obs.V = 0
 
-        self.results.frame.M_par = np.zeros(2)
-        self.results.frame.M_perp = 0
-        self.results.frame.M_perp_2 = 0
+        self._obs.M_par = np.zeros(2)
+        self._obs.M_perp = 0
+        self._obs.M_perp_2 = 0
 
         n_ag = self.n_atomgroups
 
-        self.results.frame.m_par = np.zeros((self.n_bins, 2, n_ag))
-        self.results.frame.mM_par = np.zeros((self.n_bins, n_ag))
-        self.results.frame.mm_par = np.zeros((self.n_bins, n_ag))
-        self.results.frame.cmM_par = np.zeros((self.n_bins, n_ag))
-        self.results.frame.cM_par = np.zeros((self.n_bins, 2, n_ag))
+        self._obs.m_par = np.zeros((self.n_bins, 2, n_ag))
+        self._obs.mM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_par = np.zeros((self.n_bins, 2, n_ag))
 
-        self.results.frame.m_perp = np.zeros((self.n_bins, n_ag))
-        self.results.frame.mM_perp = np.zeros((self.n_bins, n_ag))
-        self.results.frame.mm_perp = np.zeros((self.n_bins, n_ag))
-        self.results.frame.cmM_perp = np.zeros((self.n_bins, n_ag))
-        self.results.frame.cM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.m_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
 
     def _single_frame(self):
         super(DielectricPlanar, self)._single_frame()
         A = np.prod(self._universe.dimensions[self.odims])
         dz = (self.zmax - self.zmin) / self.n_bins
-        self.results.frame.V = (self.zmax - self.zmin) * A
-        self.results.frame.V_bin = A * dz
+        self._obs.V = (self.zmax - self.zmin) * A
+        self._obs.V_bin = A * dz
 
         # precalculate total polarization of the box
-        self.results.frame.M = np.dot(self._universe.atoms.charges,
-                                      self._universe.atoms.positions)
+        self._obs.M = np.dot(self._universe.atoms.charges,
+                             self._universe.atoms.positions)
 
-        self.results.frame.M_perp = self.results.frame.M[self.dim]
-        self.results.frame.M_perp_2 = self.results.frame.M[self.dim]**2
-        self.results.frame.M_par = self.results.frame.M[self.odims]
+        self._obs.M_perp = self._obs.M[self.dim]
+        self._obs.M_perp_2 = self._obs.M[self.dim]**2
+        self._obs.M_par = self._obs.M[self.odims]
 
         # Use polarization density (for perpendicular component)
         # ======================================================
@@ -156,21 +156,21 @@ class DielectricPlanar(PlanarBase):
                                 range=[self.zmin, self.zmax],
                                 weights=sel.atoms.charges)[0]
 
-            self.results.frame.m_perp[:, i] = -np.cumsum(curQ / A)
-            self.results.frame.mM_perp[:, i] = \
-                self.results.frame.m_perp[:, i] * self.results.frame.M_perp
-            self.results.frame.mm_perp[:, i] = \
-                self.results.frame.m_perp[:, i]**2 * self.results.frame.V_bin
-            self.results.frame.cmM_perp[:, i] = \
-                self.results.frame.m_perp[:, i] \
-                * (self.results.frame.M_perp
-                   - self.results.frame.m_perp[:, i]
-                   * self.results.frame.V_bin)
+            self._obs.m_perp[:, i] = -np.cumsum(curQ / A)
+            self._obs.mM_perp[:, i] = \
+                self._obs.m_perp[:, i] * self._obs.M_perp
+            self._obs.mm_perp[:, i] = \
+                self._obs.m_perp[:, i]**2 * self._obs.V_bin
+            self._obs.cmM_perp[:, i] = \
+                self._obs.m_perp[:, i] \
+                * (self._obs.M_perp
+                   - self._obs.m_perp[:, i]
+                   * self._obs.V_bin)
 
-            self.results.frame.cM_perp[:, i] = \
-                self.results.frame.M_perp \
-                - self.results.frame.m_perp[:, i] \
-                * self.results.frame.V_bin
+            self._obs.cM_perp[:, i] = \
+                self._obs.M_perp \
+                - self._obs.m_perp[:, i] \
+                * self._obs.V_bin
 
             # Use virtual cutting method (for parallel component)
             # ===================================================
@@ -224,27 +224,27 @@ class DielectricPlanar(PlanarBase):
 
                 # integral over x, so uniself._ts of area
                 curqx = -np.cumsum(curQx / Ax, axis=1).mean(axis=1)
-                self.results.frame.m_par[:, j, i] = curqx
-            self.results.frame.mM_par[:, i] = \
-                np.dot(self.results.frame.m_par[:, :, i],
-                       self.results.frame.M_par)
-            self.results.frame.mm_par[:, i] = (
-                self.results.frame.m_par[:, :, i]
-                * self.results.frame.m_par[:, :, i]
+                self._obs.m_par[:, j, i] = curqx
+            self._obs.mM_par[:, i] = \
+                np.dot(self._obs.m_par[:, :, i],
+                       self._obs.M_par)
+            self._obs.mm_par[:, i] = (
+                self._obs.m_par[:, :, i]
+                * self._obs.m_par[:, :, i]
                 ).sum(axis=1) \
-                * self.results.frame.V_bin
-            self.results.frame.cmM_par[:, i] = \
-                (self.results.frame.m_par[:, :, i]
-                 * (self.results.frame.M_par
-                    - self.results.frame.m_par[:, :, i]
-                    * self.results.frame.V_bin)
+                * self._obs.V_bin
+            self._obs.cmM_par[:, i] = \
+                (self._obs.m_par[:, :, i]
+                 * (self._obs.M_par
+                    - self._obs.m_par[:, :, i]
+                    * self._obs.V_bin)
                  ).sum(axis=1)
-            self.results.frame.cM_par[:, :, i] = \
-                self.results.frame.M_par \
-                - self.results.frame.m_par[:, :, i] \
-                * self.results.frame.V_bin
+            self._obs.cM_par[:, :, i] = \
+                self._obs.M_par \
+                - self._obs.m_par[:, :, i] \
+                * self._obs.V_bin
 
-        return self.results.frame.M_par[0]
+        return self._obs.M_par[0]
 
     def _conclude(self):
         super(DielectricPlanar, self)._conclude()
@@ -256,28 +256,28 @@ class DielectricPlanar(PlanarBase):
             (scipy.constants.elementary_charge)**2
 
         self.results.pref = pref
-        self.results.V = self.results.means.V
+        self.results.V = self.means.V
 
         # Perpendicular component
         # =======================
-        cov_perp = self.results.means.mM_perp \
-            - self.results.means.m_perp \
-            * self.results.means.M_perp
+        cov_perp = self.means.mM_perp \
+            - self.means.m_perp \
+            * self.means.M_perp
 
         # Using propagation of uncertainties
         dcov_perp = np.sqrt(
-            self.results.sems.mM_perp**2
-            + (self.results.means.M_perp * self.results.sems.m_perp)**2
-            + (self.results.means.m_perp * self.results.sems.M_perp)**2
+            self.sems.mM_perp**2
+            + (self.means.M_perp * self.sems.m_perp)**2
+            + (self.means.m_perp * self.sems.M_perp)**2
             )
 
-        var_perp = self.results.means.M_perp_2 - self.results.means.M_perp**2
+        var_perp = self.means.M_perp_2 - self.means.M_perp**2
 
-        cov_perp_self = self.results.means.mm_perp \
-            - (self.results.means.m_perp**2
-               * self.results.means.V / self.n_bins)
-        cov_perp_coll = self.results.means.cmM_perp \
-            - self.results.means.m_perp * self.results.means.cM_perp
+        cov_perp_self = self.means.mm_perp \
+            - (self.means.m_perp**2
+               * self.means.V / self.n_bins)
+        cov_perp_coll = self.means.cmM_perp \
+            - self.means.m_perp * self.means.cM_perp
 
         if self.xy:
             self.results.eps_perp = -pref * cov_perp
@@ -292,15 +292,15 @@ class DielectricPlanar(PlanarBase):
 
         else:
             self.results.eps_perp = \
-                - cov_perp / (pref**-1 + var_perp / self.results.means.V)
+                - cov_perp / (pref**-1 + var_perp / self.means.V)
             self.results.deps_perp = pref * dcov_perp
 
             self.results.eps_perp_self = \
                 (- pref * cov_perp_self) \
-                / (1 + pref / self.results.means.V * var_perp)
+                / (1 + pref / self.means.V * var_perp)
             self.results.eps_perp_coll = \
                 (- pref * cov_perp_coll) \
-                / (1 + pref / self.results.means.V * var_perp)
+                / (1 + pref / self.means.V * var_perp)
 
         self.results.eps_perp += 1
 
@@ -312,27 +312,27 @@ class DielectricPlanar(PlanarBase):
         cov_par_coll = np.zeros((self.n_bins, self.n_atomgroups))
 
         for i in range(self.n_atomgroups):
-            cov_par[:, i] = 0.5 * (self.results.means.mM_par[:, i]
-                                   - np.dot(self.results.means.m_par[:, :, i],
-                                            self.results.means.M_par))
+            cov_par[:, i] = 0.5 * (self.means.mM_par[:, i]
+                                   - np.dot(self.means.m_par[:, :, i],
+                                            self.means.M_par))
 
             # Using propagation of uncertainties
             dcov_par[:, i] = 0.5 * np.sqrt(
-                self.results.sems.mM_par[:, i]**2
-                + np.dot(self.results.sems.m_par[:, :, i]**2,
-                         self.results.means.M_par**2)
-                + np.dot(self.results.means.m_par[:, :, i]**2,
-                         self.results.sems.M_par**2)
+                self.sems.mM_par[:, i]**2
+                + np.dot(self.sems.m_par[:, :, i]**2,
+                         self.means.M_par**2)
+                + np.dot(self.means.m_par[:, :, i]**2,
+                         self.sems.M_par**2)
                 )
 
             cov_par_self[:, i] = 0.5 * (
-                self.results.means.mm_par[:, i]
-                - np.dot(self.results.means.m_par[:, :, i],
-                         self.results.means.m_par[:, :, i].sum(axis=0)))
+                self.means.mm_par[:, i]
+                - np.dot(self.means.m_par[:, :, i],
+                         self.means.m_par[:, :, i].sum(axis=0)))
             cov_par_coll[:, i] = \
-                0.5 * (self.results.means.cmM_par[:, i]
-                       - (self.results.means.m_par[:, :, i]
-                       * self.results.means.cM_par[:, :, i]).sum(axis=1))
+                0.5 * (self.means.cmM_par[:, i]
+                       - (self.means.m_par[:, :, i]
+                       * self.means.cM_par[:, :, i]).sum(axis=1))
 
         self.results.eps_par = pref * cov_par
         self.results.deps_par = pref * dcov_par

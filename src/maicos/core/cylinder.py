@@ -132,10 +132,10 @@ class CylinderBase(PlanarBase):
         """Single frame for the cylinder analysis."""
         super(CylinderBase, self)._single_frame()
         self._compute_lab_frame_cylinder()
-        self.results.frame.R = self.rmax - self.rmin
+        self._obs.R = self.rmax - self.rmin
 
         r = np.linspace(self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
-        self.results.frame.binarea = np.pi * np.diff(r**2)
+        self._obs.binarea = np.pi * np.diff(r**2)
 
     def _conclude(self):
         """Results calculations for the cylinder analysis."""
@@ -144,8 +144,8 @@ class CylinderBase(PlanarBase):
         # Remove not used z attribute from PlanarBase
         del self.results.z
 
-        self.R = self.results.means.R
-        self.binarea = self.results.means.binarea
+        self.R = self.means.R
+        self.binarea = self.means.binarea
 
         if self._rmax is None:
             rmax = self.R
@@ -235,7 +235,7 @@ class ProfileCylinderBase(CylinderBase):
                     f"{'XYZ'[self.dim]}-axes.")
 
         # Arrays for accumulation
-        self.results.frame.profile = np.zeros((self.n_bins, self.n_atomgroups))
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
 
         if self.normalization == 'number':
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
@@ -286,15 +286,15 @@ class ProfileCylinderBase(CylinderBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self.results.frame.binarea * self.results.frame.L
+                profile /= self._obs.binarea * self._obs.L
 
-            self.results.frame.profile[:, index] = profile
+            self._obs.profile[:, index] = profile
 
     def _conclude(self):
         super(ProfileCylinderBase, self)._conclude()
 
-        self.results.profile_mean = self.results.means.profile
-        self.results.profile_err = self.results.sems.profile
+        self.results.profile_mean = self.means.profile
+        self.results.profile_err = self.sems.profile
 
         if self.normalization == 'number':
             no_occurences_idx = self.tot_bincount == 0

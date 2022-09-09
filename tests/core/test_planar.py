@@ -160,8 +160,8 @@ class TestPlanarBase(object):
         planar_class_obj._frame_index = 0
 
         planar_class_obj._prepare()
-        planar_class_obj.results.means = Results()
-        planar_class_obj.results.means.L = ag.universe.dimensions[dim]
+        planar_class_obj.means = Results()
+        planar_class_obj.means.L = ag.universe.dimensions[dim]
         planar_class_obj._index = 1
         planar_class_obj._conclude()
 

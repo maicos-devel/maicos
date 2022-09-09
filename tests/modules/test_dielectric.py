@@ -127,17 +127,17 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert np.allclose(eps.results.frame.M_par, M_par, rtol=0.1)
-        assert np.allclose(eps.results.frame.M_perp, M_perp, rtol=0.1)
+        assert np.allclose(eps._obs.M_par, M_par, rtol=0.1)
+        assert np.allclose(eps._obs.M_perp, M_perp, rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         assert np.allclose(
-            np.sum(eps.results.frame.m_par[:, :, 0], axis=0)
-            * eps.results.frame.V_bin,
+            np.sum(eps._obs.m_par[:, :, 0], axis=0)
+            * eps._obs.V_bin,
             M_par, rtol=0.1)
         assert np.allclose(
-            np.sum(eps.results.frame.m_perp[:, 0], axis=0)
-            * eps.results.frame.V_bin,
+            np.sum(eps._obs.m_perp[:, 0], axis=0)
+            * eps._obs.V_bin,
             M_perp, rtol=0.1)
 
     @pytest.mark.parametrize('orientation, M_par, M_perp', (
@@ -178,20 +178,20 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert np.allclose(eps.results.frame.M_par,
+        assert np.allclose(eps._obs.M_par,
                            np.multiply(M_par, n_dipoles),
                            rtol=0.1)
-        assert np.allclose(eps.results.frame.M_perp,
+        assert np.allclose(eps._obs.M_perp,
                            np.multiply(M_perp, n_dipoles),
                            rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
-        assert np.allclose(np.sum(eps.results.frame.m_par[:, :, 0], axis=0)
-                           * eps.results.frame.V_bin,
+        assert np.allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0)
+                           * eps._obs.V_bin,
                            np.multiply(M_par, n_dipoles),
                            rtol=0.1)
-        assert np.allclose(np.sum(eps.results.frame.m_perp[:, 0], axis=0)
-                           * eps.results.frame.V_bin,
+        assert np.allclose(np.sum(eps._obs.m_perp[:, 0], axis=0)
+                           * eps._obs.V_bin,
                            np.multiply(M_perp, n_dipoles),
                            rtol=0.1)
 
@@ -199,14 +199,14 @@ class TestDielectricPlanar(object):
         """Test that epsilon is constructed correctly from covariances."""
         eps = DielectricPlanar(ag, xy=True).run()
 
-        cov_perp = eps.results.means.mM_perp \
-            - eps.results.means.m_perp * eps.results.means.M_perp
+        cov_perp = eps.means.mM_perp \
+            - eps.means.m_perp * eps.means.M_perp
         assert_equal(eps.results.eps_perp,
                      1 - eps.results.pref * cov_perp)
 
-        cov_par = 0.5 * (eps.results.means.mM_par[:, 0]
-                         - np.dot(eps.results.means.m_par[:, :, 0],
-                                  eps.results.means.M_par))
+        cov_par = 0.5 * (eps.means.mM_par[:, 0]
+                         - np.dot(eps.means.m_par[:, :, 0],
+                                  eps.means.M_par))
 
         assert_equal(eps.results.eps_par[:, 0],
                      1 + eps.results.pref * cov_par)

@@ -116,12 +116,12 @@ class TestCylinderBase(object):
 
         cylinder_class_obj._prepare()
         odims = cylinder_class_obj.odims
-        cylinder_class_obj.results.means = Results()
-        cylinder_class_obj.results.means.R = ag.universe.dimensions[odims].min()
-        cylinder_class_obj.results.means.L = ag.universe.dimensions[dim]
-        cylinder_class_obj.results.means.binarea = 0
+        cylinder_class_obj.means = Results()
+        cylinder_class_obj.means.R = ag.universe.dimensions[odims].min()
+        cylinder_class_obj.means.L = ag.universe.dimensions[dim]
+        cylinder_class_obj.means.binarea = 0
 
-        cylinder_class_obj.results.means.R /= 2
+        cylinder_class_obj.means.R /= 2
         cylinder_class_obj._index = 1
         cylinder_class_obj._conclude()
 
@@ -310,7 +310,7 @@ class TestCylinderBase(object):
                      cls.transform_positions(u.atoms.positions))
 
         # Test if _single_frame updates the positions.
-        cls.results.frame = Results()
+        cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()
