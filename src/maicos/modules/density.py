@@ -270,7 +270,7 @@ class DensityPlanar(ProfilePlanarBase):
     (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
     charge (:math:`\rm e \cdot A^{-3}`) density profiles along a certain
     cartesian axes [x,y,z] of the simulation cell. Supported cells can be of
-    arbitary shapes and as well fluctuate over time.
+    arbitrary shapes and as well fluctuate over time.
 
     For grouping with respect to molecules, residues etc. the corresponding
     centers (i.e center of mass) using of periodic boundary conditions

@@ -9,7 +9,7 @@
 """Tool for computing transport properties.
 
 The transport module of MAICoS allows for calculating mean velocity
-profiles from molecular simulation trajectory files.
+and  flux profiles from molecular simulation trajectory files.
 """
 
 from ..core import ProfilePlanarBase
@@ -18,20 +18,25 @@ from ..lib.weights import velocity_weights
 
 
 @render_docs
-class Velocity(ProfilePlanarBase):
-    """Analyse mean velocity.
+class VelocityPlanar(ProfilePlanarBase):
+    """Compute the velocity profile in a cartesian geometry.
 
     Reads in coordinates and velocities from a trajectory and calculates a
-    velocity profile along a given axis.
+    velocity or a flux profile along a given axis.
+
+    When MAICoS is used from the command line, the result
+    is written in a file named output="velocity.dat" by default.
 
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    vdim : int {0, 1, 2}
-        Dimension for velocity binning (x=0, y=1, z=2)
+    vdim : int, {0, 1, 2}
+        Dimension for velocity binning (x=0, y=1, z=2).
     flux : bool
-        Do not normalise the velocity to get the flux,
-        i.e. the velocity multiplied by the number of compounds
+        Calculate the flux instead of the velocity.
+
+        Flux is calculated by multiplying the velocity by the
+        number of compounds.
 
     Attributes
     ----------
@@ -49,7 +54,7 @@ class Velocity(ProfilePlanarBase):
                  grouping="atoms",
                  unwrap=True,
                  binmethod="com",
-                 output="velocity.da",
+                 output="velocity.dat",
                  concfreq=0,
                  vdim=2,
                  flux=False):
@@ -57,7 +62,7 @@ class Velocity(ProfilePlanarBase):
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
 
-        super(Velocity, self).__init__(
+        super(VelocityPlanar, self).__init__(
             function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
             normalization="volume",

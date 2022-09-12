@@ -27,7 +27,7 @@ class DipoleAngle(AnalysisBase):
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     dim : int
-        refernce vector for angle (x=0, y=1, z=2)
+        Reference vector for angle (x=0, y=1, z=2).
     output : str
        Prefix for output filenames
     concfreq : int

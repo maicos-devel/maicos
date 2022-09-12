@@ -1,6 +1,6 @@
-=========
-Transport
-=========
+=================
+Transport modules
+=================
 
 .. automodule:: maicos.modules.transport
 
@@ -9,4 +9,4 @@ Transport
    :maxdepth: 4
    :caption: Transport modules
 
-   velocity
+   velocity_planar
