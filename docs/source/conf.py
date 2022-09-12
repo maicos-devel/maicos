@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
     'sphinx.ext.mathjax', # Render math via JavaScript
     'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
-    'nbsphinx', #  provides a source parser for *.ipynb files
+    'nbsphinx', # provides a source parser for *.ipynb files
 ]
 
 # Execute the notebooks

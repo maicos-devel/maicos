@@ -16,7 +16,7 @@ import pytest
 from create_mda_universe import isolated_water_universe
 from numpy.testing import assert_allclose
 
-from maicos import Velocity
+from maicos import VelocityPlanar
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -71,14 +71,14 @@ class TestVelocity(object):
     def test_wrong_vdim(self, ag):
         """Test the wrong dimensions for velocity."""
         with pytest.raises(ValueError, match="Velocity dimension can"):
-            Velocity(ag, dim=2, vdim=3)
+            VelocityPlanar(ag, dim=2, vdim=3)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     @pytest.mark.parametrize('vdim', (0, 1, 2))
     @pytest.fixture()
     def test_vel_1(self, ag, dim, vdim, vel_array_1):
         """Test velocity module using WATER_TPR data."""
-        vel = Velocity(ag, dim=dim, vdim=vdim).run()
+        vel = VelocityPlanar(ag, dim=dim, vdim=vdim).run()
         assert_allclose(vel.results.profile_mean.mean(),
                         vel_array_1[dim][vdim])
 
@@ -92,8 +92,8 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
-                       grouping="molecules").run()
+        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+                             grouping="molecules").run()
 
         # Divide by volume for normalization as in module.
         assert_allclose(vel.results.profile_mean.mean(),
@@ -109,8 +109,8 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
-                       grouping="atoms").run()
+        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+                             grouping="atoms").run()
 
         # Divide by volume for normalization as in module.
         assert_allclose(vel.results.profile_mean.mean(),
@@ -126,8 +126,8 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = Velocity(ag_v, vdim=vdim, binwidth=10,
-                       grouping="atoms", flux=True).run()
+        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+                             grouping="atoms", flux=True).run()
 
         # Divide by volume for normalization as in module.
         assert_allclose(vel.results.profile_mean,

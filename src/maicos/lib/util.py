@@ -110,62 +110,88 @@ doc_dict = dict(
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the calculations are performed.""",
     ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the calculations are calculated.""",
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for whiches
+        the calculations are performed.""",
     BASE_CLASS_PARAMETERS="""refgroup : AtomGroup
-        Perform the calculation relative to the center of mass of the
-        provided AtomGroup. If `None` the calculations are performed relative
-        to the center of the fluctuating box.
-    unwrap : bool
-        Make molecules that are broken due to the periodic boundary conditions
-        whole again. If the input already contains whole molecules this can
-        be disabled to gain speedup.
+        Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the
+        calculation.
 
-        Note: Currently molecules containing virtual sites (e.g. TIP4P water
-        model) are not supported. In this case, provide unwrapped trajectory
-        file directly, and use the command line flag -no-unwrap.
-    concfreq : int
-        Call the conclcude function and write the output files every
-        n frames""",
-    PLANAR_CLASS_PARAMETERS="""dim : int, default: 2
-        Dimension for binning (x=0, y=1, z=2)
-    zmin : float, default: None
-        Minimal coordinate for evaluation (Å) with respect to the refgroup.
-        If `None` all coordinates
-        up to the cell boundary are taken into account.
-    zmax : float, default: None
-        Maximal coordinate for evaluation (Å) with respect to the refgroup.
-        If `None` all coordinates
-        up to the cell boundary are taken into account.""",
+        If refgroup is provided, the calculation is
+        performed relative to the center of mass of the AtomGroup.
+
+        If refgroup is `None` the calculations
+        are performed relative to the center of the box. If the box
+        size is fluctuating with time, the instantaneous center
+        of the box is used.
+    unwrap : bool
+        When `unwrap = True`, molecules that are broken due to the
+        periodic boundary conditions are made whole.
+
+        If the input contains molecules that are already whole,
+        speed up the calculation by disabling unwrap. To do so,
+        use the flag `-no-unwrap` when using MAICoS from the
+        command line, or use `unwrap = False` when using MAICoS from
+        the Python interpreter.
+
+        Note: Molecules containing virtual sites (e.g. TIP4P water
+        models) are not currently supported. In this case, provide
+        unwrapped trajectory files directly, and disable unwrap.
+        Trajectory can be unwrapped for example using the
+        trjconv function of GROMACS.
+    concfreq : int,
+        When concfreq (for conclude frequency) is larger than 0,
+        the conclude function is called and the output files are
+        written every number=concfreq frames""",
+    PLANAR_CLASS_PARAMETERS="""dim : int,
+        Dimension for binning (x=0, y=1, z=2).
+    zmin : float,
+        Minimal coordinate for evaluation (in Å) with respect to the
+        center of mass of the refgroup.
+
+        If zmin=None, all coordinates down to the lower cell boundary
+        are taken into account.
+    zmax : float,
+        Maximal coordinate for evaluation (in Å) with respect to the
+        center of mass of the refgroup.
+
+        If `zmax = None`, all coordinates up to the upper cell boundary
+        are taken into account.""",
     BINWIDTH_PARAMETER="""binwidth : float
-        binwidth""",
-    RADIAL_CLASS_PARAMETERS="""rmin : float
-        Minimal r-coordinate relative to the refgroup center of mass for
-        evaluation (Å).
-    rmax : float
-        Maximal z-coordinate relative to the refgroup center of mass for
-        evaluation (Å). If None the box extension is taken.""",
-    SYM_PARAMETER="""sym : bool
-        symmetrize the profile. Only works in combinations with `refgroup`.""",
-    PROFILE_CLASS_PARAMETERS="""grouping : str {'atoms', 'residues', 'segments', 'molecules', 'fragments'}"""    # noqa
+        Width of the bins (in Å).""",
+    RADIAL_CLASS_PARAMETERS="""rmin : float,
+        Minimal r-coordinate relative to the center of mass of the
+        refgroup for evaluation (in Å).
+    rmax : float,
+        Maximal r-coordinate relative to the center of mass of the
+        refgroup for evaluation (in Å).
+
+        If rmax=None, the box extension is taken.""",
+    SYM_PARAMETER="""sym : bool,
+        Symmetrize the profile. Only works in combinations with `refgroup`.""",
+    PROFILE_CLASS_PARAMETERS="""grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}"""  # noqa
     """
-          Profile will be computed either on the atom positions (in
-          the case of 'atoms') or on the center of mass of the specified
-          grouping unit ('residues', 'segments', or 'fragments').
-    binmethod : str
-        Method for position binning; possible options are
-        center of geometry (cog), center of mass (com) or
-        center of charge (coc).
+          Atom grouping for the calculations of profiles.
+
+          The possible grouping options are the atom positions (in
+          the case where grouping='atoms') or the center of mass of
+          the specified grouping unit (in the case where
+          grouping='residues', 'segments', 'molecules' or 'fragments').
+    binmethod : str, {'cog', 'com', 'coc'}"""
+    """
+        Method for the position binning.
+
+        The possible options are center of geometry (`'cog'`),
+        center of mass (`'com'`), and center of charge (`'coc'`).
     output : str
-        Output filename""",
+        Output filename.""",
     PLANAR_CLASS_ATTRIBUTES="""results.z : list
-        Bin position ranging from `zmin` to `zmax`.""",
+        Bin positions (in Å) ranging from `zmin` to `zmax`.""",
     RADIAL_CLASS_ATTRIBUTES="""results.r : list
-        Bin position ranging from `rmin` to `rmax`.""",
+        Bin positions (in Å) ranging from `rmin` to `rmax`.""",
     PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : numpy.ndarray
-        calculated profile
+        Calculated profile's averaged value.
     results.profile_err : numpy.ndarray
-        profile's error"""
+        Calculated profile's error."""
     )
 
 # Inherit docstrings
