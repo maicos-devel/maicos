@@ -187,6 +187,12 @@ class TestCylinderBase(object):
         assert cylinder_class_obj.rmax == 6
         assert cylinder_class_obj.n_bins == 6 / binwidth
 
+    def test_rmax_default(self, ag):
+        """Test rmax default value."""
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42)
+        cylinder_class_obj._prepare()
+        assert cylinder_class_obj.rmax == ag.universe.dimensions[:2].min() / 2
+
     def test_rmax_odims(self, ag):
         """Test rmax dim."""
         cylinder_class_obj = CylinderClass(ag, zmax=None, pos_arg=42)
@@ -408,21 +414,25 @@ class TestProfileCylinderBase:
 
     @pytest.fixture()
     def u_dimers(self):
-        """Generate a universe containing two dimers with a dipole moment."""
+        """Generate a universe containing two dimers with a dipole moment.
+
+        The first atom of each dimer is in the center of the cylinder the
+        second is further out on the x axis.
+        """
         universe = mda.Universe.empty(n_atoms=4,
                                       n_residues=2,
                                       n_segments=2,
                                       atom_resindex=[0, 0, 1, 1],
                                       residue_segindex=[0, 1])
 
-        universe.add_TopologyAttr("masses", [1, 0, 0, 1])
+        universe.add_TopologyAttr("masses", [1, 0, 1, 0])
         universe.add_TopologyAttr("charges", [1, -1, -1, 1])
         universe.add_TopologyAttr("bonds", ((0, 1), (2, 3)))
         universe.add_TopologyAttr("resids", [0, 1])
         universe.add_TopologyAttr("molnums", [0, 1])
 
-        positions = np.array([[2, 0, 0], [0, 2, 0],
-                              [2, 0, 0], [0, 2, 0]])
+        positions = np.array([[2, 2, 0], [5, 2, 0],
+                              [2, 2, 0], [1, 2, 0]])
 
         universe.trajectory = get_reader_for(positions)(positions,
                                                         order='fac',
@@ -500,36 +510,35 @@ class TestProfileCylinderBase:
         actual = profile.results.profile_mean.flatten()
 
         if grouping == "atoms":
-            desired = [0, 4]
+            desired = [2, 1]
         else:
-            desired = [0, 2]
+            desired = [2, 0]
 
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("binmethod, desired",
-                             [("cog", [np.nan, 1]),
-                              ("com", [1, np.nan]),
-                              ("coc", [np.nan, 1])])
+                             [("cog", [1, 1]),
+                              ("com", [2, 0]),
+                              ("coc", [1, 1])])
     def test_binmethod(self, u_dimers, binmethod, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
-                      dim=1,
                       binwidth=1,
                       binmethod=binmethod,
+                      normalization="none",
                       grouping="molecules")
         profile = ProfileCylinderBase(**params).run()
         actual = profile.results.profile_mean.flatten()
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("unwrap, desired",
-                             [(False, [1, 0]), (True, [1, 0])])
+                             [(False, [1, 1]), (True, [2, 0])])
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(atomgroups=u_dimers.atoms,
-                      dim=0,
                       binwidth=1,
                       unwrap=unwrap,
-                      binmethod='com',
+                      binmethod='cog',
                       normalization="none",
                       grouping="molecules")
 
