@@ -177,6 +177,12 @@ class TestSphereBase(object):
         assert sphere_class_obj.rmax == 6
         assert sphere_class_obj.n_bins == 6 / binwidth
 
+    def test_rmax_default(self, ag):
+        """Test rmax default value."""
+        sphere_class_obj = SphereClass(ag, pos_arg=42)
+        sphere_class_obj._prepare()
+        assert sphere_class_obj.rmax == ag.universe.dimensions[:3].min() / 2
+
     def test_rmin_rmax(self, ag):
         """Test rmin rmax."""
         binwidth = 2
