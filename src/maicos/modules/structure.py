@@ -136,10 +136,10 @@ class Saxs(AnalysisBase):
                     self._universe.dimensions))
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
-            self.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
+            self._obs.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
         else:
             self.n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
-            self.struct_factor = np.zeros([self.n_bins, len(self.groups)])
+            self._obs.struct_factor = np.zeros([self.n_bins, len(self.groups)])
 
     def _single_frame(self):
         # Convert everything to cartesian coordinates.
@@ -155,7 +155,7 @@ class Saxs(AnalysisBase):
             S_ts *= compute_form_factor(q_ts, self.atom_types[i])**2
 
             if self.nobindata:
-                self.S_array[:, :, :, i] += S_ts
+                self._obs.S_array[:, :, :, i] = S_ts
             else:
                 q_ts = q_ts.flatten()
                 S_ts = S_ts.flatten()
@@ -172,11 +172,11 @@ class Saxs(AnalysisBase):
                     struct_ts /= np.histogram(q_ts,
                                               bins=self.n_bins,
                                               range=(self.startq, self.endq))[0]
-                self.struct_factor[:, i] += np.nan_to_num(struct_ts)
+                self._obs.struct_factor[:, i] = np.nan_to_num(struct_ts)
 
     def _conclude(self):
         if self.nobindata:
-            self.results.scat_factor = self.S_array.sum(axis=3)
+            self.results.scat_factor = self.means.S_array.sum(axis=3)
             self.results.q_indices = np.array(
                 list(np.ndindex(tuple(self.maxn))))
             self.results.q = np.linalg.norm(self.results.q_indices
@@ -184,13 +184,13 @@ class Saxs(AnalysisBase):
                                             axis=1)
         else:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
-            nonzeros = np.where(self.struct_factor[:, 0] != 0)[0]
-            scat_factor = self.struct_factor[nonzeros]
+            nonzeros = np.where(self.means.struct_factor[:, 0] != 0)[0]
+            scat_factor = self.means.struct_factor[nonzeros]
 
             self.results.q = q[nonzeros]
             self.results.scat_factor = scat_factor.sum(axis=1)
 
-        self.results.scat_factor /= (self._index * self.atomgroup.n_atoms)
+        self.results.scat_factor /= (self.atomgroup.n_atoms)
 
     def save(self):
         """Save the current profiles to a file."""
@@ -392,11 +392,11 @@ class RDFPlanar(PlanarBase):
         logger.info(f"Using {self.rdf_nbins} rdf bins.")
 
         # Empty histogram self.count to store the RDF.
-        self.count = np.zeros((self.n_bins, self.rdf_nbins))
+        self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
         self.edges = np.histogram([-1], bins=self.rdf_nbins,
                                   range=self.range)[1]
-        self.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
-        self.n_g1_total = np.zeros((self.n_bins, 1))
+        self.results.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
+        self._obs.n_g1 = np.zeros((self.n_bins, 1))
 
         # Set the max range to filter the search radius.
         self._maxrange = self.range[1]
@@ -438,7 +438,7 @@ class RDFPlanar(PlanarBase):
 
             n_g1 = len(g1_in_zbin_positions)
             n_g2 = len(g2_in_zbin_positions)
-            self.n_g1_total[z_bin] += n_g1
+            self._obs.n_g1[z_bin] = n_g1
 
             # Extract z coordinate.
             z_g1 = np.copy(g1_in_zbin_positions)
@@ -470,9 +470,10 @@ class RDFPlanar(PlanarBase):
             relevant_xy_distances = xy_distances[mask_in_dz
                                                  * mask_different_atoms]
             # Histogram the pairwise distances.
-            self.count[z_bin] += np.histogram(relevant_xy_distances,
-                                              bins=self.rdf_nbins,
-                                              range=self.range)[0]
+            self._obs.count[z_bin] = np.histogram(
+                relevant_xy_distances,
+                bins=self.rdf_nbins,
+                range=self.range)[0]
 
     def _conclude(self):
         super(RDFPlanar, self)._conclude()
@@ -481,8 +482,9 @@ class RDFPlanar(PlanarBase):
         ring_volumes = (np.pi * (self.edges[1:]**2 - self.edges[:-1]**2)
                         * self.dzheight)
         ring_volumes = np.expand_dims(ring_volumes, axis=0)
-        self.results.bins = self.bins
-        self.results.rdf = self.count / self.n_g1_total / ring_volumes / 2
+        self.results.bins = self.results.bins
+        self.results.rdf = (self.means.count / self.means.n_g1
+                            / ring_volumes / 2)
         self.results.rdf = np.nan_to_num(self.results.rdf.T, nan=0)
 
     def save(self):

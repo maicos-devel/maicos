@@ -201,12 +201,12 @@ class TestRDFPlanar(object):
     def test_count(self, get_universe):
         """Test whether the RDF molecule counts in ring are correct."""
         rdfplanar = self.run_rdf(get_universe)
-        assert_equal(rdfplanar.count[0], [0, 128, 32])
+        assert_equal(rdfplanar.means.count[0], [0, 128, 32])
 
     def test_n_g1_total(self, get_universe):
         """Test the number of g1 atoms."""
         rdfplanar = self.run_rdf(get_universe)
-        assert_equal(rdfplanar.n_g1_total, 16)
+        assert_equal(rdfplanar.means.n_g1, 16)
 
     def test_rdf(self, get_universe):
         """Test the water water RDF."""
@@ -235,12 +235,12 @@ class TestRDFPlanar(object):
     def test_n_g1_total_OO(self, get_universe):
         """Test the number of g1 atoms for OO RDF."""
         rdfplanar = self.run_rdf_OO(get_universe)
-        assert_equal(rdfplanar.n_g1_total, 2)
+        assert_equal(rdfplanar.means.n_g1, 2)
 
     def test_count_OO(self, get_universe):
         """Test whether the RDF atom count is correct."""
         rdfplanar = self.run_rdf_OO(get_universe)
-        assert_equal(rdfplanar.count, [[0, 16, 4]])
+        assert_equal(rdfplanar.means.count, [[0, 16, 4]])
 
     def test_rdf_OO(self, get_universe):
         """Test the OO RDF."""
@@ -272,7 +272,7 @@ class TestRDFPlanar(object):
         """Test binmethods."""
         rdfplanar = self.run_rdf_with_binmethod(
             get_universe, binmethod=binmethod)
-        assert_allclose(rdfplanar.count[0], [0, 0, count])
+        assert_allclose(rdfplanar.means.count[0], [0, 0, count])
 
     def test_wrong_binmethod(self, get_universe):
         """Test grouping for a non existing binmethod."""
