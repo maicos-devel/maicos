@@ -66,7 +66,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  refgroup=None,
                  sym=False,
                  grouping="atoms",
@@ -87,7 +87,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
-            binwidth=binwidth,
+            bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
@@ -168,7 +168,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 
         if self.zpos is not None:
             this = (np.rint(
-                (self.zpos + self.binwidth / 2) / self.binwidth)
+                (self.zpos + self.means.bin_width / 2) / self.means.bin_width)
                 % self.n_bins).astype(int)
             if self.center:
                 this += np.rint(self.n_bins / 2).astype(int)
@@ -236,7 +236,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  refgroup=None,
                  sym=False,
                  grouping="atoms",
@@ -252,7 +252,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
-            binwidth=binwidth,
+            bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
@@ -298,7 +298,7 @@ class DensityPlanar(ProfilePlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  refgroup=None,
                  sym=False,
                  grouping="atoms",
@@ -315,7 +315,7 @@ class DensityPlanar(ProfilePlanarBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
-            binwidth=binwidth,
+            bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
@@ -360,7 +360,7 @@ class DensityCylinder(ProfileCylinderBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  rmin=0,
                  rmax=None,
                  refgroup=None,
@@ -378,7 +378,7 @@ class DensityCylinder(ProfileCylinderBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
-            binwidth=binwidth,
+            bin_width=bin_width,
             rmin=rmin,
             rmax=rmax,
             refgroup=refgroup,

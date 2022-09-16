@@ -79,7 +79,7 @@ class DielectricPlanar(PlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=0.5,
+                 bin_width=0.5,
                  refgroup=None,
                  xy=False,
                  sym=False,
@@ -93,7 +93,7 @@ class DielectricPlanar(PlanarBase):
                                                dim=dim,
                                                zmin=zmin,
                                                zmax=zmax,
-                                               binwidth=binwidth,
+                                               bin_width=bin_width,
                                                refgroup=refgroup,
                                                unwrap=unwrap,
                                                multi_group=True)
@@ -108,8 +108,6 @@ class DielectricPlanar(PlanarBase):
 
     def _prepare(self):
         super(DielectricPlanar, self)._prepare()
-
-        self._obs.V = 0
 
         self._obs.M_par = np.zeros(2)
         self._obs.M_perp = 0
@@ -131,10 +129,6 @@ class DielectricPlanar(PlanarBase):
 
     def _single_frame(self):
         super(DielectricPlanar, self)._single_frame()
-        A = np.prod(self._universe.dimensions[self.odims])
-        dz = (self.zmax - self.zmin) / self.n_bins
-        self._obs.V = (self.zmax - self.zmin) * A
-        self._obs.V_bin = A * dz
 
         # precalculate total polarization of the box
         self._obs.M = np.dot(self._universe.atoms.charges,
@@ -156,21 +150,17 @@ class DielectricPlanar(PlanarBase):
                                 range=[self.zmin, self.zmax],
                                 weights=sel.atoms.charges)[0]
 
-            self._obs.m_perp[:, i] = -np.cumsum(curQ / A)
+            self._obs.m_perp[:, i] = -np.cumsum(curQ / self._obs.bin_area)
             self._obs.mM_perp[:, i] = \
                 self._obs.m_perp[:, i] * self._obs.M_perp
             self._obs.mm_perp[:, i] = \
-                self._obs.m_perp[:, i]**2 * self._obs.V_bin
-            self._obs.cmM_perp[:, i] = \
-                self._obs.m_perp[:, i] \
+                self._obs.m_perp[:, i]**2 * self._obs.bin_volume
+            self._obs.cmM_perp[:, i] = self._obs.m_perp[:, i] \
                 * (self._obs.M_perp
-                   - self._obs.m_perp[:, i]
-                   * self._obs.V_bin)
+                    - self._obs.m_perp[:, i] * self._obs.bin_volume)
 
-            self._obs.cM_perp[:, i] = \
-                self._obs.M_perp \
-                - self._obs.m_perp[:, i] \
-                * self._obs.V_bin
+            self._obs.cM_perp[:, i] = self._obs.M_perp - \
+                self._obs.m_perp[:, i] * self._obs.bin_volume
 
             # Use virtual cutting method (for parallel component)
             # ===================================================
@@ -210,7 +200,8 @@ class DielectricPlanar(PlanarBase):
                 # At this point we should not use the wrap, which causes
                 # unphysical dipoles at the borders
                 Lx = self._ts.dimensions[direction]
-                Ax = self._ts.dimensions[self.odims[1 - j]] * dz
+                Ax = self._ts.dimensions[self.odims[1 - j]] \
+                    * self._obs.bin_width
                 vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
 
                 xpos = np.zeros(len(sel))
@@ -225,6 +216,13 @@ class DielectricPlanar(PlanarBase):
                 # integral over x, so uniself._ts of area
                 curqx = -np.cumsum(curQx / Ax, axis=1).mean(axis=1)
                 self._obs.m_par[:, j, i] = curqx
+
+            # Can not use array for operations below,
+            # without extensive reshaping of each array...
+            # Therefore, take first element only since the volume of each bin
+            # is the same in planar geometry.
+            bin_volume = self._obs.bin_volume[0]
+
             self._obs.mM_par[:, i] = \
                 np.dot(self._obs.m_par[:, :, i],
                        self._obs.M_par)
@@ -232,17 +230,17 @@ class DielectricPlanar(PlanarBase):
                 self._obs.m_par[:, :, i]
                 * self._obs.m_par[:, :, i]
                 ).sum(axis=1) \
-                * self._obs.V_bin
+                * bin_volume
             self._obs.cmM_par[:, i] = \
                 (self._obs.m_par[:, :, i]
                  * (self._obs.M_par
                     - self._obs.m_par[:, :, i]
-                    * self._obs.V_bin)
+                    * bin_volume)
                  ).sum(axis=1)
             self._obs.cM_par[:, :, i] = \
                 self._obs.M_par \
                 - self._obs.m_par[:, :, i] \
-                * self._obs.V_bin
+                * bin_volume
 
         return self._obs.M_par[0]
 
@@ -256,7 +254,7 @@ class DielectricPlanar(PlanarBase):
             (scipy.constants.elementary_charge)**2
 
         self.results.pref = pref
-        self.results.V = self.means.V
+        self.results.V = self.means.bin_volume.sum()
 
         # Perpendicular component
         # =======================
@@ -274,8 +272,7 @@ class DielectricPlanar(PlanarBase):
         var_perp = self.means.M_perp_2 - self.means.M_perp**2
 
         cov_perp_self = self.means.mm_perp \
-            - (self.means.m_perp**2
-               * self.means.V / self.n_bins)
+            - (self.means.m_perp**2 * self.means.bin_volume[0])
         cov_perp_coll = self.means.cmM_perp \
             - self.means.m_perp * self.means.cM_perp
 
@@ -292,15 +289,15 @@ class DielectricPlanar(PlanarBase):
 
         else:
             self.results.eps_perp = \
-                - cov_perp / (pref**-1 + var_perp / self.means.V)
+                - cov_perp / (pref**-1 + var_perp / self.results.V)
             self.results.deps_perp = pref * dcov_perp
 
             self.results.eps_perp_self = \
                 (- pref * cov_perp_self) \
-                / (1 + pref / self.means.V * var_perp)
+                / (1 + pref / self.results.V * var_perp)
             self.results.eps_perp_coll = \
                 (- pref * cov_perp_coll) \
-                / (1 + pref / self.means.V * var_perp)
+                / (1 + pref / self.results.V * var_perp)
 
         self.results.eps_perp += 1
 
@@ -355,7 +352,7 @@ class DielectricPlanar(PlanarBase):
     def save(self):
         """Save results."""
         outdata_perp = np.hstack([
-            self.results.z[:, np.newaxis],
+            self.results.bin_pos[:, np.newaxis],
             self.results.eps_perp.sum(axis=1)[:, np.newaxis],
             np.linalg.norm(self.results.deps_perp, axis=1)[:, np.newaxis],
             self.results.eps_perp,
@@ -366,7 +363,7 @@ class DielectricPlanar(PlanarBase):
             self.results.eps_perp_coll
             ])
         outdata_par = np.hstack([
-            self.results.z[:, np.newaxis],
+            self.results.bin_pos[:, np.newaxis],
             self.results.eps_par.sum(axis=1)[:, np.newaxis],
             np.linalg.norm(self.results.deps_par, axis=1)[:, np.newaxis],
             self.results.eps_par,
@@ -413,10 +410,10 @@ class DielectricCylinder(AnalysisBase):
         A structure file without water from which com is calculated.
     radius : float
         Radius of the cylinder (Å)
-    binwidth : float
-        Bindiwdth the binwidth (Å)
+    bin_width : float
+        Bindiwdth the bin_width (Å)
     variable_dr : bool
-        Use a variable binwidth, where the volume is kept fixed.
+        Use a variable bin_width, where the volume is kept fixed.
     length : float
         Length of the cylinder (Å)
     temperature : float
@@ -442,7 +439,7 @@ class DielectricCylinder(AnalysisBase):
 
     def __init__(self,
                  atomgroups,
-                 binwidth=0.5,
+                 bin_width=0.5,
                  geometry=None,
                  radius=None,
                  variable_dr=False,
@@ -456,7 +453,7 @@ class DielectricCylinder(AnalysisBase):
                                                  unwrap=unwrap,
                                                  concfreq=concfreq)
         self.output_prefix = output_prefix
-        self.binwidth = binwidth
+        self.bin_width = bin_width
         self.geometry = geometry
         self.radius = radius
         self.variable_dr = variable_dr
@@ -480,7 +477,7 @@ class DielectricCylinder(AnalysisBase):
         if self.length is None:
             self.length = self._universe.dimensions[2]
 
-        self.n_bins = int(np.ceil(self.radius / self.binwidth))
+        self.n_bins = int(np.ceil(self.radius / self.bin_width))
 
         if self.variable_dr:
             # variable dr

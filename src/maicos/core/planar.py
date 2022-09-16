@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class PlanarBase(AnalysisBase):
-    """Analysis class providing options and attributes for planar system.
+    r"""Analysis class providing options and attributes for planar system.
 
     Parameters
     ----------
@@ -41,10 +41,22 @@ class PlanarBase(AnalysisBase):
     zmax : float
          Maximal coordinate for evaluation (Å) with in the lab frame, where
          0 corresponds to the origin of the cell.
-    binwidth : float
-        The actual binwidth taking the length of the changing box into account.
-    results.L : float
-        average length along the chosen dimension
+    _obs.L : float
+        Average length (in Å) along the chosen dimension in the current frame.
+    _obs.bin_pos : numpy.ndarray, (n_bins)
+        Central bin positions (in Å) of each bin (in Å) in the current frame.
+    _obs.bin_width : float
+         Bin width (in Å) in the current frame
+    _obs.bin_edges : numpy.ndarray, (n_bins + 1)
+        Edges of the bins (in Å) in the current frame.
+    _obs.bin_area : numpy.ndarray, (n_bins)
+        Area of the rectangle of each bin in the current frame.
+        Calculated via :math:`L_x \cdot L_y / N_\mathrm{bins}` where
+        :math:`L_x` and :math:`L_y` are the box lengths perpendicular to
+        the dimension of evaluations given by `dim`. :math:`N_\mathrm{bins}` is
+        the number of bins.
+    results.bin_volume : numpy.ndarray, (n_bins)
+        Volume of an cuboid of each bin (in Å^3) in the current frame.
     """
 
     def __init__(self,
@@ -52,7 +64,7 @@ class PlanarBase(AnalysisBase):
                  dim,
                  zmin,
                  zmax,
-                 binwidth,
+                 bin_width,
                  **kwargs):
         super(PlanarBase, self).__init__(atomgroups=atomgroups, **kwargs)
 
@@ -65,7 +77,7 @@ class PlanarBase(AnalysisBase):
         # but the actual ones are calculated during runtime in the lab frame
         self._zmax = zmax
         self._zmin = zmin
-        self._binwidth = binwidth
+        self._bin_width = bin_width
 
     @property
     def odims(self):
@@ -94,9 +106,9 @@ class PlanarBase(AnalysisBase):
             raise ValueError("`zmax` can not be smaller or equal than `zmin`!")
 
         try:
-            if self._binwidth > 0:
+            if self._bin_width > 0:
                 L = self.zmax - self.zmin
-                self.n_bins = int(np.ceil(L / self._binwidth))
+                self.n_bins = int(np.ceil(L / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
@@ -109,23 +121,24 @@ class PlanarBase(AnalysisBase):
         self._compute_lab_frame_planar()
         self._obs.L = self.zmax - self.zmin
 
+        self._obs.bin_edges = np.linspace(
+            self.zmin, self.zmax, self.n_bins + 1)
+
+        self._obs.bin_width = self._obs.L / self.n_bins
+        self._obs.bin_pos = self._obs.bin_edges[1:] - self._obs.bin_width / 2
+        # We define `bin_area` and `bin_volume` as array of length `n_bins`
+        # even though each element has the same value. With this the
+        # array shape is consistent with the cylindrical and spherical classes,
+        # where `bin_area` and `bin_volume` is different in each bin.
+        self._obs.bin_area = np.ones(self.n_bins) \
+            * np.prod(self._universe.dimensions[self.odims])
+        self._obs.bin_volume = self._obs.bin_area * self._obs.bin_width
+
     def _conclude(self):
         """Results calculations for the planar analysis."""
-        self.L = self.means.L
-
-        if self._zmin is None:
-            zmin = -self.L / 2
-        else:
-            zmin = self._zmin
-
-        if self._zmax is None:
-            zmax = self.L / 2
-        else:
-            zmax = self._zmax
-
-        self.binwidth = self.L / self.n_bins
-        self.results.z = np.linspace(zmin, zmax, self.n_bins) \
-            + self.binwidth / 2
+        # Convert coordinates back from lab frame to refgroup frame.
+        self.results.bin_pos = self.means.bin_pos \
+            - self.means.box_center[self.dim]
 
 
 @render_docs
@@ -252,7 +265,7 @@ class ProfilePlanarBase(PlanarBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self._ts.volume / self.n_bins
+                profile /= self._obs.bin_volume
 
             self._obs.profile[:, index] = profile
 
@@ -284,7 +297,7 @@ class ProfilePlanarBase(PlanarBase):
             columns.append(f'({i + 1}) error')
 
         self.savetxt(self.output, np.hstack(
-                     (self.results.z[:, np.newaxis],
+                     (self.results.bin_pos[:, np.newaxis],
                       self.results.profile_mean,
                       self.results.profile_err)),
                      columns=columns)

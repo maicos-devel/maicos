@@ -101,7 +101,7 @@ List of analysis modules
      - angle timeseries of dipole moments with respect to an axis
    * - KineticEnergy
      - energy timeseries.
-   * - Velocity
+   * - VelocityPlanar
      - mean velocity profile in a cartesian geometry
 
 .. _`Python3`: https://www.python.org

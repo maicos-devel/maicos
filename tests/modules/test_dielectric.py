@@ -124,20 +124,21 @@ class TestDielectricPlanar(object):
 
         dipole = dipoles([[5, 5, 5]], [orientation])
         # very fine binning to get the correct value for the dipole
-        eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole, bin_width=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert np.allclose(eps._obs.M_par, M_par, rtol=0.1)
         assert np.allclose(eps._obs.M_perp, M_perp, rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
+        bin_volume = eps.means.bin_volume[0]
         assert np.allclose(
             np.sum(eps._obs.m_par[:, :, 0], axis=0)
-            * eps._obs.V_bin,
+            * bin_volume,
             M_par, rtol=0.1)
         assert np.allclose(
             np.sum(eps._obs.m_perp[:, 0], axis=0)
-            * eps._obs.V_bin,
+            * bin_volume,
             M_perp, rtol=0.1)
 
     @pytest.mark.parametrize('orientation, M_par, M_perp', (
@@ -175,7 +176,7 @@ class TestDielectricPlanar(object):
         dipole = dipoles(pos, [orientation] * n_dipoles)
 
         # very fine binning to get the correct value for the dipole
-        eps = DielectricPlanar(dipole, binwidth=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole, bin_width=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert np.allclose(eps._obs.M_par,
@@ -186,12 +187,13 @@ class TestDielectricPlanar(object):
                            rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
+        bin_volume = eps.means.bin_volume[0]
         assert np.allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0)
-                           * eps._obs.V_bin,
+                           * bin_volume,
                            np.multiply(M_par, n_dipoles),
                            rtol=0.1)
         assert np.allclose(np.sum(eps._obs.m_perp[:, 0], axis=0)
-                           * eps._obs.V_bin,
+                           * bin_volume,
                            np.multiply(M_perp, n_dipoles),
                            rtol=0.1)
 
@@ -249,7 +251,7 @@ class TestDielectricPlanar(object):
             [ag_single_frame, ag_single_frame[:-30]], sym=False).run()
 
         # Check that the z column is not changed
-        assert_equal(eps.results.z, eps_sym.results.z)
+        assert_equal(eps.results.bin_pos, eps_sym.results.bin_pos)
 
         # Check that the all eps components are symmetric
         for d in ["eps_perp", "deps_perp", "eps_perp_self", "eps_perp_coll",
@@ -333,8 +335,8 @@ class TestDielectricCylinder(object):
         eps.run()
         assert_equal(eps.length, 100)
 
-    def test_variable_binwidth(self, ag):
-        """Test variable binwidth."""
+    def test_variable_bin_width(self, ag):
+        """Test variable bin_width."""
         eps = DielectricCylinder(ag, variable_dr=True)
         eps.run()
         assert_allclose(np.std(eps.dr), 0.44, rtol=1e-1)
