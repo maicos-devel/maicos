@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class Saxs(AnalysisBase):
     """Compute SAXS scattering intensities.
 
-    The q vectors are binned by their length using a binwidth given by -dq.
+    The q vectors are binned by their length using a bin_width given by -dq.
     Using the -nobin option the raw intensity for each q_{i,j,k} vector
     is saved using. Note that this only works reliable using constant
     box vectors! The possible scattering vectors q can be restricted by a
@@ -56,7 +56,7 @@ class Saxs(AnalysisBase):
     endq : float
         Ending q (1/Å)
     dq : float
-        binwidth (1/Å)
+        bin_width (1/Å)
     mintheta : float
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
@@ -239,7 +239,7 @@ class Diporder(ProfilePlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  refgroup=None,
                  sym=False,
                  grouping="residues",
@@ -262,7 +262,7 @@ class Diporder(ProfilePlanarBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
-            binwidth=binwidth,
+            bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
@@ -303,7 +303,7 @@ class RDFPlanar(PlanarBase):
         First AtomGroup
     g2 : AtomGroup
         Second AtomGroup
-    rdf_binwidth : int
+    rdf_bin_width : int
         Binwidth of bins in the histogram of the RDF (Å)
     dzheight : float
         dz height of a RDF slab (Å)
@@ -329,7 +329,7 @@ class RDFPlanar(PlanarBase):
     def __init__(self,
                  g1,
                  g2=None,
-                 rdf_binwidth=0.3,
+                 rdf_bin_width=0.3,
                  dzheight=0.1,
                  range=(0.0, None),
                  binmethod="com",
@@ -341,7 +341,7 @@ class RDFPlanar(PlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1):
+                 bin_width=1):
 
         super(RDFPlanar, self).__init__(atomgroups=g1,
                                         refgroup=refgroup,
@@ -350,7 +350,7 @@ class RDFPlanar(PlanarBase):
                                         dim=dim,
                                         zmin=zmin,
                                         zmax=zmax,
-                                        binwidth=binwidth)
+                                        bin_width=bin_width)
 
         self.g1 = g1
         if g2 is None:
@@ -358,7 +358,7 @@ class RDFPlanar(PlanarBase):
         else:
             self.g2 = g2
         self.range = range
-        self.rdf_binwidth = rdf_binwidth
+        self.rdf_bin_width = rdf_bin_width
         self.dzheight = dzheight
         self.output = output
         self.binmethod = binmethod.lower()
@@ -377,13 +377,13 @@ class RDFPlanar(PlanarBase):
                              f"Set to smaller than {half_of_box_size} Å.")
 
         try:
-            if self.rdf_binwidth > 0:
+            if self.rdf_bin_width > 0:
                 self.rdf_nbins = int(np.ceil((self.range[1] - self.range[0])
-                                     / self.rdf_binwidth))
+                                     / self.rdf_bin_width))
             else:
-                raise ValueError("RDF binwidth must be a positive number.")
+                raise ValueError("RDF bin_width must be a positive number.")
         except TypeError:
-            raise ValueError("RDF binwidth must be a number.")
+            raise ValueError("RDF bin_width must be a number.")
 
         if self.binmethod not in ["cog", "com", "coc"]:
             raise ValueError(f"{self.binmethod} is an unknown binning "
@@ -403,7 +403,7 @@ class RDFPlanar(PlanarBase):
 
     def _single_frame(self):
         super(RDFPlanar, self)._single_frame()
-        binwidth = (self.zmax - self.zmin) / self.n_bins
+        bin_width = (self.zmax - self.zmin) / self.n_bins
 
         if self.binmethod == 'com':
             g1_bin_positions = self.g1.center_of_mass(
@@ -424,8 +424,8 @@ class RDFPlanar(PlanarBase):
         # Calculate planar rdf per bin by averaging over all atoms in one bin.
         for z_bin in range(0, self.n_bins):
             # Set zmin and zmax of the bin.
-            z_min = self.zmin + binwidth * z_bin
-            z_max = self.zmin + binwidth * (z_bin + 1)
+            z_min = self.zmin + bin_width * z_bin
+            z_max = self.zmin + bin_width * (z_bin + 1)
 
             # Get all atoms in a bin.
             g1_in_zbin_positions = g1_bin_positions[np.logical_and(
@@ -490,7 +490,7 @@ class RDFPlanar(PlanarBase):
     def save(self):
         """Save results."""
         columns = ["r [Å]"]
-        for z in self.results.z:
+        for z in self.results.bin_pos:
             columns.append(f"rdf at {z:.2f} Å [Å^-3]")
 
         self.savetxt(self.output,

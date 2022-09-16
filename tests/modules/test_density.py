@@ -14,7 +14,7 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from MDAnalysisTests.datafiles import TPR, TRR
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import assert_allclose
 
 from maicos.modules import density
 
@@ -190,13 +190,13 @@ class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the density.DensityPlanar class."""
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [0.8129, 0.0122]),
+                             (('mass', [0.389, 0.0015]),
                               ('number', [0.1785, 0.0014]),
                               ('charge', [-1.5E-3, 0])))
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = density.DensityPlanar(multiple_ags, dens=dens_type).run()
-        assert_allclose(dens.results.profile_mean[40], mean,
+        assert_allclose(dens.results.profile_mean.mean(axis=0), mean,
                         rtol=1e-1, atol=1e-1)
 
     @pytest.mark.parametrize('dens_type, mean',
@@ -216,17 +216,6 @@ class TestDensityPlanar(ReferenceAtomGroups):
         """
         dens = density.DensityPlanar(ag).run(stop=1)
         assert not np.isnan(dens.results.profile_mean).any()
-
-    @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_binwidth(self, ag_single_frame, dim):
-        """Test bin width."""
-        dens = density.DensityPlanar(ag_single_frame, binwidth=1,
-                                     dim=dim).run()
-        n_bins = np.ceil(ag_single_frame.universe.dimensions[dim]) / 1
-        assert_allclose(dens.results["z"][1] - dens.results["z"][0],
-                        1,
-                        rtol=1e-1)
-        assert_equal(len(dens.results["z"]), n_bins)
 
     def test_comshift(self, mica_water):
         """Test comshift."""

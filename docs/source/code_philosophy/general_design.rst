@@ -94,7 +94,7 @@ spatial boundaries as well as the spatial resolution of the analysis.
 
 A design concept of MAICoS for spatial analysis is that the user 
 always provides the spatial resolution 
-via the `binwidth` parameter rather than a number of bins. With this the same analysis 
+via the `bin_width` parameter rather than a number of bins. With this the same analysis 
 code is easily transferable to different simulation size without additional 
 considerations about the spatial resolution.
 

@@ -76,15 +76,17 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         index of the frame currently analysed
     _index : int
         Number of frames already analysed (same as _frame_index + 1)
-    results : :class:`Results`
+    results : MDAnalysis.analysis.base.Results
         results of calculation are stored after call
         to :meth:`AnalysisBase.run`
-    _obs : :class:`Results`
+    _obs : MDAnalysis.analysis.base.Results
         Observables of the current frame
-    means : :class:`Results`
+    _obs.box_center : numpy.ndarray
+        Center of the simulation cell of the current frame
+    means : MDAnalysis.analysis.base.Results
         Means of the observables.
         Keys are the same as :attr:`_obs`.
-    sems : :class:`Results`
+    sems : MDAnalysis.analysis.base.Results
         Standard errors of the mean of the observables.
         Keys are the same as :attr:`_obs`
     """
@@ -168,6 +170,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self._ts = ts
             self.frames[i] = ts.frame
             self.times[i] = ts.time
+            self._obs.box_center = self.box_center
 
             if self.refgroup is not None:
                 com_refgroup = cluster_com(self.refgroup)

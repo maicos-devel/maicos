@@ -15,7 +15,6 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from MDAnalysis.analysis.base import Results
 from MDAnalysis.core._get_readers import get_reader_for
 from numpy.testing import assert_allclose, assert_equal
 
@@ -39,14 +38,14 @@ class PlanarClass(PlanarBase):
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  refgroup=None,
                  **kwargs):
         super(PlanarClass, self).__init__(atomgroups=atomgroups,
                                           dim=dim,
                                           zmin=zmin,
                                           zmax=zmax,
-                                          binwidth=binwidth,
+                                          bin_width=bin_width,
                                           refgroup=refgroup,
                                           multi_group=True,
                                           **kwargs)
@@ -141,44 +140,65 @@ class TestPlanarBase(object):
 
         assert getattr(p_obj, lim) == p_obj.box_center[dim] + pos
 
-    @pytest.mark.parametrize('binwidth', (0, -0.5, 'x'))
-    def test_wrong_binwidth(self, ag, binwidth):
-        """Test binwidth."""
+    @pytest.mark.parametrize('bin_width', (0, -0.5, 'x'))
+    def test_wrong_bin_width(self, ag, bin_width):
+        """Test bin_width."""
         with pytest.raises(ValueError,
                            match=r'Binwidth must be a.* number.'):
-            planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
+            planar_class_obj = PlanarClass(ag, pos_arg=42, bin_width=bin_width)
             planar_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth', (1, 7.75, 125))
+    @pytest.mark.parametrize('bin_width', (1, 7.75, 125))
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_binwidth(self, ag, dim, binwidth):
-        """Test binwidth."""
+    def test_bin_width(self, ag, dim, bin_width):
+        """Test bin_width."""
         planar_class_obj = PlanarClass(ag,
                                        pos_arg=42,
                                        dim=dim,
-                                       binwidth=binwidth)
-        planar_class_obj._frame_index = 0
-
-        planar_class_obj._prepare()
-        planar_class_obj.means = Results()
-        planar_class_obj.means.L = ag.universe.dimensions[dim]
-        planar_class_obj._index = 1
-        planar_class_obj._conclude()
+                                       bin_width=bin_width).run()
 
         assert planar_class_obj.n_bins == \
-            int(np.ceil(planar_class_obj.L / binwidth))
-        assert planar_class_obj.binwidth \
-            == planar_class_obj.L / planar_class_obj.n_bins
+            int(np.ceil(planar_class_obj.means.L / bin_width))
+        assert_allclose(planar_class_obj.means.bin_width,
+                        planar_class_obj.means.L / planar_class_obj.n_bins)
 
-    def bindwidth_neg(self, ag):
-        """Raise error for negative binwidth."""
+    @pytest.mark.parametrize("dim", (0, 1, 2))
+    def test_bin_edges(self, ag, dim):
+        """Test edges of the bins."""
+        planar_class_obj = PlanarClass(ag,
+                                       pos_arg=42,
+                                       dim=dim).run(stop=1)
+
+        bin_edges = np.linspace(0,
+                                ag.universe.dimensions[dim],
+                                planar_class_obj.n_bins + 1,
+                                endpoint=True)
+
+        assert_allclose(planar_class_obj.means.bin_edges, bin_edges)
+
+    def test_bin_area(self, ag):
+        """Test area and volume of the bins."""
+        planar_class_obj = PlanarClass(ag,
+                                       bin_width=0.5,
+                                       zmin=0,
+                                       zmax=3,
+                                       pos_arg=42).run(stop=1)
+
+        bin_area = np.ones(6) * np.prod(ag.universe.dimensions[:2])
+        assert_allclose(planar_class_obj.means.bin_area, bin_area)
+
+        bin_volume = bin_area * 0.5
+        assert_allclose(planar_class_obj.means.bin_volume, bin_volume)
+
+    def bin_width_neg(self, ag):
+        """Raise error for negative bin_width."""
         with pytest.raises(ValueError, match="positive number"):
-            PlanarClass(ag, pos_arg=42, binwidth=-1)._preepare()
+            PlanarClass(ag, pos_arg=42, bin_width=-1)._preepare()
 
-    def bindwidth_nan(self, ag):
-        """Raise error for binwidth not a number."""
+    def bin_width_nan(self, ag):
+        """Raise error for bin_width not a number."""
         with pytest.raises(ValueError, match="must be a number"):
-            PlanarClass(ag, pos_arg=42, binwidth="foo")._preepare()
+            PlanarClass(ag, pos_arg=42, bin_width="foo")._preepare()
 
     def test_n_bins(self, planar_class_obj, caplog):
         """Test n bins."""
@@ -191,34 +211,34 @@ class TestPlanarBase(object):
 
     def test_zmin_default(self, ag):
         """Test default zmin."""
-        binwidth = 2
-        planar_class_obj = PlanarClass(ag, pos_arg=42, binwidth=binwidth)
+        bin_width = 2
+        planar_class_obj = PlanarClass(ag, pos_arg=42, bin_width=bin_width)
         planar_class_obj._prepare()
 
         assert planar_class_obj.zmin == 0
-        assert planar_class_obj.n_bins == 60 / binwidth
+        assert planar_class_obj.n_bins == 60 / bin_width
 
     def test_zmin(self, ag):
         """Test zmin."""
-        binwidth = 2
+        bin_width = 2
         planar_class_obj = PlanarClass(ag, pos_arg=42,
-                                       zmin=-20, binwidth=binwidth)
+                                       zmin=-20, bin_width=bin_width)
         planar_class_obj._prepare()
 
         assert planar_class_obj.zmin == 30 - 20
-        assert planar_class_obj.n_bins == (60 - 10) / binwidth
+        assert planar_class_obj.n_bins == (60 - 10) / bin_width
 
     def test_zmax(self, ag):
         """Test zmax."""
-        binwidth = 2
+        bin_width = 2
         planar_class_obj = PlanarClass(ag,
                                        zmax=20,
                                        pos_arg=42,
-                                       binwidth=binwidth)
+                                       bin_width=bin_width)
         planar_class_obj._prepare()
 
         assert planar_class_obj.zmax == 30 + 20
-        assert planar_class_obj.n_bins == (30 + 20) / binwidth
+        assert planar_class_obj.n_bins == (30 + 20) / bin_width
 
     def test_zmax_dim(self, ag):
         """Test zmax dim."""
@@ -234,19 +254,19 @@ class TestPlanarBase(object):
         planar_class_obj._trajectory = ag.universe.trajectory
         planar_class_obj.run()
 
-        assert planar_class_obj.L == ag.universe.dimensions[2]
+        assert planar_class_obj.means.L == ag.universe.dimensions[2]
 
     def test_zmin_zmax(self, ag):
         """Test zmin zmax."""
-        binwidth = 2
+        bin_width = 2
         planar_class_obj = PlanarClass(ag,
                                        zmin=-20,
                                        zmax=20,
                                        pos_arg=42,
-                                       binwidth=binwidth)
+                                       bin_width=bin_width)
         planar_class_obj._prepare()
 
-        assert planar_class_obj.n_bins == (50 - 10) / binwidth
+        assert planar_class_obj.n_bins == (50 - 10) / bin_width
 
     def test_zmin_zmax_error(self, ag):
         """Test zmax dim."""
@@ -255,19 +275,39 @@ class TestPlanarBase(object):
             planar_class_obj._prepare()
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    @pytest.mark.parametrize('binwidth_in', (1, 7.75))
-    def test_results_z(self, ag, dim, binwidth_in):
-        """Test results z."""
+    @pytest.mark.parametrize('bin_width_in', (1, 7.75))
+    def test_bin_pos(self, ag, dim, bin_width_in):
+        """Test bin positions."""
         planar_class_obj = PlanarClass(ag, dim=dim,
-                                       binwidth=binwidth_in, pos_arg=42)
+                                       bin_width=bin_width_in, pos_arg=42)
         planar_class_obj.run(stop=5)
-        zmax = ag.universe.dimensions[dim]
-        n_bins = int(np.ceil(zmax / binwidth_in))
-        binwidth = zmax / n_bins
-        assert planar_class_obj.binwidth == binwidth
-        assert_allclose(planar_class_obj.results["z"],
-                        np.linspace(-zmax / 2, zmax / 2, n_bins) + binwidth / 2
-                        )
+
+        bin_pos = np.linspace(-ag.universe.dimensions[dim] / 2,
+                              ag.universe.dimensions[dim] / 2,
+                              planar_class_obj.n_bins,
+                              endpoint=False)
+        bin_pos += planar_class_obj.means.bin_width / 2
+
+        # Small numbers != 0 are problematic for `assert_allclose`...
+        bin_pos[np.abs(bin_pos) < 1e-15] = 0
+
+        assert_allclose(planar_class_obj.results.bin_pos, bin_pos)
+
+    @pytest.mark.parametrize('zmin', (-1, 0, 1))
+    @pytest.mark.parametrize('zmax', (2, 3, 4))
+    def test_results_bin_pos_zmin_zmax(self, ag, zmin, zmax):
+        """Test the bin positions for non default zmin and zmax."""
+        planar_class_obj = PlanarClass(ag, zmin=zmin, zmax=zmax, pos_arg=42)
+        planar_class_obj.run(stop=1)
+
+        bin_pos = np.linspace(
+            zmin, zmax, planar_class_obj.n_bins, endpoint=False)
+        bin_pos += planar_class_obj.means.bin_width / 2
+
+        # Small numbers != 0 are problematic for `assert_allclose`...
+        bin_pos[np.abs(bin_pos) < 1e-15] = 0
+
+        assert_allclose(planar_class_obj.results.bin_pos, bin_pos)
 
 
 class TestPlanarBaseChilds:
@@ -293,18 +333,16 @@ class TestPlanarBaseChilds:
         params = dict(dim=2,
                       zmin=None,
                       zmax=None,
-                      binwidth=1,
+                      bin_width=1,
                       refgroup=None)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = PlanarBase(ag_single_frame, **params).run()
 
-        assert_equal(ana_obj.results.z, pb_obj.results.z)
+        assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
-        assert_equal(ana_obj.binwidth, pb_obj.binwidth)
 
         assert ana_obj.zmin == pb_obj.zmin
         assert ana_obj.zmax == pb_obj.zmax
-        assert ana_obj.L == pb_obj.L
 
 
 class TestProfilePlanarBase:
@@ -386,7 +424,7 @@ class TestProfilePlanarBase:
                  dim=2,
                  zmin=None,
                  zmax=None,
-                 binwidth=0.1,
+                 bin_width=0.1,
                  refgroup=None,
                  sym=False,
                  grouping="atoms",
@@ -440,7 +478,7 @@ class TestProfilePlanarBase:
         """Test profile grouping."""
         params.update(atomgroups=u_dimers.atoms,
                       dim=1,
-                      binwidth=1,
+                      bin_width=1,
                       grouping=grouping)
         profile = ProfilePlanarBase(**params).run()
         actual = profile.results.profile_mean.flatten()
@@ -460,7 +498,7 @@ class TestProfilePlanarBase:
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
                       dim=1,
-                      binwidth=1,
+                      bin_width=1,
                       binmethod=binmethod,
                       grouping="molecules")
         profile = ProfilePlanarBase(**params).run()
@@ -473,7 +511,7 @@ class TestProfilePlanarBase:
         """Test making molecules whole."""
         params.update(atomgroups=u_dimers.atoms,
                       dim=0,
-                      binwidth=1,
+                      bin_width=1,
                       unwrap=unwrap,
                       binmethod='com',
                       normalization="none",
@@ -554,7 +592,7 @@ class TestProfilePlanarBase:
             profile.save()
             res_dens = np.loadtxt(profile.output)
 
-        assert_allclose(profile.results.z,
+        assert_allclose(profile.results.bin_pos,
                         res_dens[:, 0],
                         rtol=2)
 

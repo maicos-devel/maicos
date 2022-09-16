@@ -156,7 +156,7 @@ doc_dict = dict(
 
         If `zmax = None`, all coordinates up to the upper cell boundary
         are taken into account.""",
-    BINWIDTH_PARAMETER="""binwidth : float
+    BIN_WIDTH_PARAMETER="""bin_width : float
         Width of the bins (in Å).""",
     RADIAL_CLASS_PARAMETERS="""rmin : float,
         Minimal r-coordinate relative to the center of mass of the
@@ -184,7 +184,7 @@ doc_dict = dict(
         center of mass (`'com'`), and center of charge (`'coc'`).
     output : str
         Output filename.""",
-    PLANAR_CLASS_ATTRIBUTES="""results.z : list
+    PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : list
         Bin positions (in Å) ranging from `zmin` to `zmax`.""",
     RADIAL_CLASS_ATTRIBUTES="""results.r : list
         Bin positions (in Å) ranging from `rmin` to `rmax`.""",
@@ -198,7 +198,7 @@ doc_dict = dict(
 doc_dict["PLANAR_CLASS_PARAMETERS"] = \
     doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["BINWIDTH_PARAMETER"]
+    doc_dict["BIN_WIDTH_PARAMETER"]
 
 doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
     doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
@@ -206,7 +206,7 @@ doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
 
 doc_dict["SPHERE_CLASS_PARAMETERS"] = \
     doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["BINWIDTH_PARAMETER"]
+    doc_dict["BIN_WIDTH_PARAMETER"]
 
 doc_dict["PROFILE_PLANAR_CLASS_PARAMETERS"] = \
     doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \

@@ -41,7 +41,7 @@ class CylinderClass(CylinderBase):
                  zmax=None,
                  rmin=0,
                  rmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  **kwargs):
         super(CylinderClass, self).__init__(atomgroups=atomgroups,
                                             dim=dim,
@@ -49,7 +49,7 @@ class CylinderClass(CylinderBase):
                                             zmax=zmax,
                                             rmin=rmin,
                                             rmax=rmax,
-                                            binwidth=binwidth,
+                                            bin_width=bin_width,
                                             multi_group=True,
                                             **kwargs)
         self.pos_arg = pos_arg
@@ -95,50 +95,38 @@ class TestCylinderBase(object):
             cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmax=1, rmin=2)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth', (0, -0.5, 'x'))
-    def test_wrong_binwidth(self, ag, binwidth):
-        """Test binwidth error."""
+    @pytest.mark.parametrize('bin_width', (0, -0.5, 'x'))
+    def test_wrong_bin_width(self, ag, bin_width):
+        """Test bin_width error."""
         with pytest.raises(ValueError,
                            match=r'Binwidth must be a.* number.'):
             cylinder_class_obj = CylinderClass(ag, pos_arg=42,
-                                               binwidth=binwidth)
+                                               bin_width=bin_width)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth', (1, 7.75, 125))
+    @pytest.mark.parametrize('bin_width', (1, 7.75, 125))
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    def test_binwidth(self, ag, dim, binwidth):
-        """Test binwidth."""
+    def test_bin_width(self, ag, dim, bin_width):
+        """Test bin_width."""
         cylinder_class_obj = CylinderClass(ag,
                                            pos_arg=42,
                                            dim=dim,
-                                           binwidth=binwidth)
-        cylinder_class_obj._frame_index = 0
-
-        cylinder_class_obj._prepare()
-        odims = cylinder_class_obj.odims
-        cylinder_class_obj.means = Results()
-        cylinder_class_obj.means.R = ag.universe.dimensions[odims].min()
-        cylinder_class_obj.means.L = ag.universe.dimensions[dim]
-        cylinder_class_obj.means.binarea = 0
-
-        cylinder_class_obj.means.R /= 2
-        cylinder_class_obj._index = 1
-        cylinder_class_obj._conclude()
+                                           bin_width=bin_width).run()
 
         assert cylinder_class_obj.n_bins == \
-            int(np.ceil(cylinder_class_obj.R / binwidth))
-        assert cylinder_class_obj.binwidth \
-            == cylinder_class_obj.R / cylinder_class_obj.n_bins
+            int(np.ceil(cylinder_class_obj.means.R / bin_width))
+        assert cylinder_class_obj.means.bin_width \
+            == cylinder_class_obj.means.R / cylinder_class_obj.n_bins
 
     def bindwidth_neg(self, ag):
-        """Raise error for negative binwidth."""
+        """Raise error for negative bin_width."""
         with pytest.raises(ValueError, match="positive number"):
-            CylinderClass(ag, pos_arg=42, binwidth=-1)._preepare()
+            CylinderClass(ag, pos_arg=42, bin_width=-1)._preepare()
 
     def bindwidth_nan(self, ag):
-        """Raise error for binwidth not a number."""
+        """Raise error for bin_width not a number."""
         with pytest.raises(ValueError, match="must be a number"):
-            CylinderClass(ag, pos_arg=42, binwidth="foo")._preepare()
+            CylinderClass(ag, pos_arg=42, bin_width="foo")._preepare()
 
     def test_n_bins(self, ag, caplog):
         """Test n bins."""
@@ -151,24 +139,24 @@ class TestCylinderBase(object):
 
     def test_rmin_default(self, ag):
         """Test default rmin."""
-        binwidth = 2
-        cylinder_class_obj = CylinderClass(ag, pos_arg=42, binwidth=binwidth)
+        bin_width = 2
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42, bin_width=bin_width)
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.rmin == 0
-        assert cylinder_class_obj.n_bins == 10 / binwidth
+        assert cylinder_class_obj.n_bins == 10 / bin_width
 
     def test_rmin(self, ag):
         """Test rmin."""
-        binwidth = 2
+        bin_width = 2
         cylinder_class_obj = CylinderClass(ag,
                                            pos_arg=42,
                                            rmin=2,
-                                           binwidth=binwidth)
+                                           bin_width=bin_width)
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.rmin == 2
-        assert cylinder_class_obj.n_bins == (10 - 2) / binwidth
+        assert cylinder_class_obj.n_bins == (10 - 2) / bin_width
 
     def rmin_too_small(self, ag):
         """Test error raise for too small rmin."""
@@ -177,15 +165,15 @@ class TestCylinderBase(object):
 
     def test_rmax(self, ag):
         """Test rmax."""
-        binwidth = 2
+        bin_width = 2
         cylinder_class_obj = CylinderClass(ag,
                                            rmax=6,
                                            pos_arg=42,
-                                           binwidth=binwidth)
+                                           bin_width=bin_width)
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.rmax == 6
-        assert cylinder_class_obj.n_bins == 6 / binwidth
+        assert cylinder_class_obj.n_bins == 6 / bin_width
 
     def test_rmax_default(self, ag):
         """Test rmax default value."""
@@ -202,15 +190,15 @@ class TestCylinderBase(object):
 
     def test_rmin_rmax(self, ag):
         """Test rmin rmax."""
-        binwidth = 2
+        bin_width = 2
         cylinder_class_obj = CylinderClass(ag,
                                            rmin=10,
                                            rmax=20,
                                            pos_arg=42,
-                                           binwidth=binwidth)
+                                           bin_width=bin_width)
         cylinder_class_obj._prepare()
 
-        assert cylinder_class_obj.n_bins == (20 - 10) / binwidth
+        assert cylinder_class_obj.n_bins == (20 - 10) / bin_width
 
     def test_rmin_rmax_error(self, ag):
         """Test rmax dim."""
@@ -219,34 +207,39 @@ class TestCylinderBase(object):
             cylinder_class_obj._prepare()
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
-    @pytest.mark.parametrize('binwidth_in', (0.1, .775))
-    def test_results_r(self, ag, dim, binwidth_in):
-        """Test results r."""
+    @pytest.mark.parametrize('bin_width_in', (0.1, .775))
+    def test_bin_pos(self, ag, dim, bin_width_in):
+        """Test bin positions."""
         cylinder_class_obj = CylinderClass(ag, dim=dim,
-                                           binwidth=binwidth_in, pos_arg=42)
+                                           bin_width=bin_width_in, pos_arg=42)
         cylinder_class_obj.run(stop=5)
         rmax = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
-        n_bins = int(np.ceil(rmax / binwidth_in))
-        binwidth = rmax / n_bins
-        assert cylinder_class_obj.binwidth == binwidth
-        assert_allclose(cylinder_class_obj.results.r,
-                        np.linspace(0, rmax, n_bins) + binwidth / 2)
 
-    def test_binerea(self, ag):
-        """Test correct area of ach bin."""
-        rmax = 3
-        binwidth = 1
+        bin_pos = np.linspace(
+            0, rmax, cylinder_class_obj.n_bins, endpoint=False)
+        bin_pos += cylinder_class_obj.means.bin_width / 2
 
-        cylinder_class_obj = CylinderClass(ag,
-                                           binwidth=binwidth,
-                                           rmax=rmax,
-                                           pos_arg=42)
+        assert_allclose(cylinder_class_obj.results.bin_pos, bin_pos)
+
+    def test_bin_edges(self, ag):
+        """Test edges of the bins."""
+        cylinder_class_obj = CylinderClass(ag, bin_width=1, rmax=3, pos_arg=42)
         cylinder_class_obj.run(stop=5)
-        binarea = np.pi * np.array([1**2 - 0**2,
-                                    2**2 - 1**2,
-                                    3**2 - 2**2])
+        bin_edges = [0, 1, 2, 3]
+        assert_allclose(cylinder_class_obj.means.bin_edges, bin_edges)
 
-        assert_equal(cylinder_class_obj.binarea, binarea)
+    def test_bin_area_and_volume(self, ag):
+        """Test correct area and volume of each bin."""
+        cylinder_class_obj = CylinderClass(ag, bin_width=1, rmax=3, pos_arg=42)
+        cylinder_class_obj.run(stop=5)
+        bin_area = np.pi * np.array([1**2 - 0**2,
+                                     2**2 - 1**2,
+                                     3**2 - 2**2])
+
+        assert_equal(cylinder_class_obj.means.bin_area, bin_area)
+
+        bin_volume = bin_area * ag.universe.dimensions[2]
+        assert_equal(cylinder_class_obj.means.bin_volume, bin_volume)
 
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_R(self, ag, dim):
@@ -255,7 +248,7 @@ class TestCylinderBase(object):
         cylinder_class_obj.run(stop=5)
 
         R = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
-        assert cylinder_class_obj.R == R
+        assert cylinder_class_obj.means.R == R
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     def test_compute_lab_frame_cylinder_default(self, ag, dim):
@@ -347,22 +340,18 @@ class TestCylinderBaseChilds:
                       zmax=None,
                       rmin=0,
                       rmax=None,
-                      binwidth=1)
+                      bin_width=1)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = CylinderBase(ag_single_frame, **params).run()
 
-        assert_equal(ana_obj.results.r, pb_obj.results.r)
+        assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
-        assert_equal(ana_obj.binwidth, pb_obj.binwidth)
-        assert_equal(ana_obj.binarea, pb_obj.binarea)
 
         assert ana_obj.zmin == pb_obj.zmin
         assert ana_obj.zmax == pb_obj.zmax
-        assert ana_obj.L == pb_obj.L
 
         assert ana_obj.rmin == pb_obj.rmin
         assert ana_obj.rmax == pb_obj.rmax
-        assert ana_obj.R == pb_obj.R
 
 
 class TestProfileCylinderBase:
@@ -458,7 +447,7 @@ class TestProfileCylinderBase:
                  zmax=None,
                  rmin=0,
                  rmax=None,
-                 binwidth=0.1,
+                 bin_width=0.1,
                  refgroup=None,
                  grouping="atoms",
                  unwrap=False,
@@ -503,7 +492,7 @@ class TestProfileCylinderBase:
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       normalization="None",
                       grouping=grouping)
         profile = ProfileCylinderBase(**params).run()
@@ -523,7 +512,7 @@ class TestProfileCylinderBase:
     def test_binmethod(self, u_dimers, binmethod, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       binmethod=binmethod,
                       normalization="none",
                       grouping="molecules")
@@ -536,7 +525,7 @@ class TestProfileCylinderBase:
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       unwrap=unwrap,
                       binmethod='cog',
                       normalization="none",
@@ -610,7 +599,7 @@ class TestProfileCylinderBase:
             profile.save()
             res_dens = np.loadtxt(profile.output)
 
-        assert_allclose(profile.results.r,
+        assert_allclose(profile.results.bin_pos,
                         res_dens[:, 0],
                         rtol=2)
 

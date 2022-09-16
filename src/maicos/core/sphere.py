@@ -38,13 +38,21 @@ class SphereBase(AnalysisBase):
     ${SPHERE_CLASS_ATTRIBUTES}
     pos_sph : numpy.ndarray
         positions in spherical coordinats (r, phi, theta)
-    binwidth : float
-        The actual binwidth taking the length of the changing box into account.
-    results.R : float
-        average length along the radial dimension
-    results.binvolume : numpy.ndarray
-        area of the concentrtic radial bins. Calculated via
-        :math:`\left 4\pi/3(r_{i+1}^3 - r_i^3 \right)` where `i`
+    _obs.R : float
+        Average length (in Å) along the radial dimension in the current frame.
+    _obs.bin_pos : numpy.ndarray, (n_bins)
+        Central bin position of each bin (in Å) in the current frame.
+    _obs.bin_width : float
+         Bin width (in Å) in the current frame
+    _obs.bin_edges : numpy.ndarray, (n_bins + 1)
+        Edges of the bins (in Å) in the current frame.
+    _obs.bin_area : numpy.ndarray, (n_bins)
+        Surface area (in Å^2) of the sphere of each bin with radius `bin_pos`
+        in the current frame. Calculated via :math:`4 \pi r_i^2 ` where `i`
+        is the index of the bin.
+    results.bin_volume : numpy.ndarray, (n_bins)
+        volume of a spherical shell of each bins (in Å^3) of the current frame.
+        Calculated via :math:`\left 4\pi/3(r_{i+1}^3 - r_i^3 \right)` where `i`
         is the index of the bin.
     """
 
@@ -52,13 +60,13 @@ class SphereBase(AnalysisBase):
                  atomgroups,
                  rmin,
                  rmax,
-                 binwidth,
+                 bin_width,
                  **kwargs):
         super(SphereBase, self).__init__(atomgroups, **kwargs)
 
         self.rmin = rmin
         self._rmax = rmax
-        self._binwidth = binwidth
+        self._bin_width = bin_width
 
     def _compute_lab_frame_sphere(self):
         """Compute lab limit `rmax`."""
@@ -83,9 +91,9 @@ class SphereBase(AnalysisBase):
                              "to `rmin`!")
 
         try:
-            if self._binwidth > 0:
+            if self._bin_width > 0:
                 R = self.rmax - self.rmin
-                self.n_bins = int(np.ceil(R / self._binwidth))
+                self.n_bins = int(np.ceil(R / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
@@ -133,22 +141,18 @@ class SphereBase(AnalysisBase):
         self._compute_lab_frame_sphere()
         self._obs.R = self.rmax - self.rmin
 
-        r = np.linspace(self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
-        self._obs.binvolume = 4 * np.pi * np.diff(r**3) / 3
+        self._obs.bin_edges = np.linspace(
+            self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
+
+        self._obs.bin_width = self._obs.R / self.n_bins
+        self._obs.bin_pos = self._obs.bin_edges[1:] - self._obs.bin_width / 2
+        self._obs.bin_area = 4 * np.pi * self._obs.bin_pos**2
+        self._obs.bin_volume = 4 * np.pi * np.diff(self._obs.bin_edges**3) / 3
 
     def _conclude(self):
         """Results calculations for the sphercial analysis."""
-        self.R = self.means.R
-        self.binvolume = self.means.binvolume
-
-        if self._rmax is None:
-            rmax = self.R
-        else:
-            rmax = self._rmax
-
-        self.binwidth = self.rmax / self.n_bins
-        self.results.r = np.linspace(self.rmin, rmax, self.n_bins) \
-            + self.binwidth / 2
+        super(SphereBase, self)._conclude()
+        self.results.bin_pos = self.means.bin_pos
 
 
 @render_docs
@@ -268,7 +272,7 @@ class ProfileSphereBase(SphereBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self._obs.binvolume
+                profile /= self._obs.bin_volume
 
             self._obs.profile[:, index] = profile
 
@@ -293,7 +297,7 @@ class ProfileSphereBase(SphereBase):
             columns.append(f'({i + 1}) error')
 
         self.savetxt(self.output, np.hstack(
-                     (self.results.r[:, np.newaxis],
+                     (self.results.bin_pos[:, np.newaxis],
                       self.results.profile_mean,
                       self.results.profile_err)),
                      columns=columns)

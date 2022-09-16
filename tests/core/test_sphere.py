@@ -24,7 +24,7 @@ from maicos.core import ProfileSphereBase, SphereBase
 from maicos.lib.weights import density_weights
 
 
-sys.path.append("..")
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 
@@ -38,12 +38,12 @@ class SphereClass(SphereBase):
                  opt_arg="foo",
                  rmin=0,
                  rmax=None,
-                 binwidth=1,
+                 bin_width=1,
                  **kwargs):
         super(SphereClass, self).__init__(atomgroups=atomgroups,
                                           rmin=rmin,
                                           rmax=rmax,
-                                          binwidth=binwidth,
+                                          bin_width=bin_width,
                                           multi_group=True,
                                           **kwargs)
         self.pos_arg = pos_arg
@@ -89,46 +89,36 @@ class TestSphereBase(object):
             sphere_class_obj = SphereClass(ag, pos_arg=42, rmax=1, rmin=2)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth', (0, -0.5, 'x'))
-    def test_wrong_binwidth(self, ag, binwidth):
-        """Test binwidth error."""
+    @pytest.mark.parametrize('bin_width', (0, -0.5, 'x'))
+    def test_wrong_bin_width(self, ag, bin_width):
+        """Test bin_width error."""
         with pytest.raises(ValueError,
                            match=r'Binwidth must be a.* number.'):
             sphere_class_obj = SphereClass(ag, pos_arg=42,
-                                           binwidth=binwidth)
+                                           bin_width=bin_width)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth', (1, 7.75, 125))
-    def test_binwidth(self, ag, binwidth):
-        """Test binwidth."""
+    @pytest.mark.parametrize('bin_width', (1, 7.75, 125))
+    def test_bin_width(self, ag, bin_width):
+        """Test bin_width."""
         sphere_class_obj = SphereClass(ag,
                                        pos_arg=42,
-                                       binwidth=binwidth)
-        sphere_class_obj._frame_index = 0
-
-        sphere_class_obj._prepare()
-        sphere_class_obj.means = Results()
-        sphere_class_obj.means.R = ag.universe.dimensions.min()
-        sphere_class_obj.means.binvolume = 0
-
-        sphere_class_obj.means.R /= 2
-        sphere_class_obj._index = 1
-        sphere_class_obj._conclude()
+                                       bin_width=bin_width).run()
 
         assert sphere_class_obj.n_bins == \
-            int(np.ceil(sphere_class_obj.R / binwidth))
-        assert sphere_class_obj.binwidth \
-            == sphere_class_obj.R / sphere_class_obj.n_bins
+            int(np.ceil(sphere_class_obj.means.R / bin_width))
+        assert sphere_class_obj.means.bin_width \
+            == sphere_class_obj.means.R / sphere_class_obj.n_bins
 
     def bindwidth_neg(self, ag):
-        """Raise error for negative binwidth."""
+        """Raise error for negative bin_width."""
         with pytest.raises(ValueError, match="positive number"):
-            SphereClass(ag, pos_arg=42, binwidth=-1)._preepare()
+            SphereClass(ag, pos_arg=42, bin_width=-1)._preepare()
 
     def bindwidth_nan(self, ag):
-        """Raise error for binwidth not a number."""
+        """Raise error for bin_width not a number."""
         with pytest.raises(ValueError, match="must be a number"):
-            SphereClass(ag, pos_arg=42, binwidth="foo")._preepare()
+            SphereClass(ag, pos_arg=42, bin_width="foo")._preepare()
 
     def test_n_bins(self, ag, caplog):
         """Test n bins."""
@@ -141,24 +131,24 @@ class TestSphereBase(object):
 
     def test_rmin_default(self, ag):
         """Test default rmin."""
-        binwidth = 2
-        sphere_class_obj = SphereClass(ag, pos_arg=42, binwidth=binwidth)
+        bin_width = 2
+        sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width)
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.rmin == 0
-        assert sphere_class_obj.n_bins == 10 / binwidth
+        assert sphere_class_obj.n_bins == 10 / bin_width
 
     def test_rmin(self, ag):
         """Test rmin."""
-        binwidth = 2
+        bin_width = 2
         sphere_class_obj = SphereClass(ag,
                                        pos_arg=42,
                                        rmin=2,
-                                       binwidth=binwidth)
+                                       bin_width=bin_width)
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.rmin == 2
-        assert sphere_class_obj.n_bins == (10 - 2) / binwidth
+        assert sphere_class_obj.n_bins == (10 - 2) / bin_width
 
     def rmin_too_small(self, ag):
         """Test error raise for too small rmin."""
@@ -167,15 +157,15 @@ class TestSphereBase(object):
 
     def test_rmax(self, ag):
         """Test rmax."""
-        binwidth = 2
+        bin_width = 2
         sphere_class_obj = SphereClass(ag,
                                        rmax=6,
                                        pos_arg=42,
-                                       binwidth=binwidth)
+                                       bin_width=bin_width)
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.rmax == 6
-        assert sphere_class_obj.n_bins == 6 / binwidth
+        assert sphere_class_obj.n_bins == 6 / bin_width
 
     def test_rmax_default(self, ag):
         """Test rmax default value."""
@@ -185,15 +175,15 @@ class TestSphereBase(object):
 
     def test_rmin_rmax(self, ag):
         """Test rmin rmax."""
-        binwidth = 2
+        bin_width = 2
         sphere_class_obj = SphereClass(ag,
                                        rmin=10,
                                        rmax=20,
                                        pos_arg=42,
-                                       binwidth=binwidth)
+                                       bin_width=bin_width)
         sphere_class_obj._prepare()
 
-        assert sphere_class_obj.n_bins == (20 - 10) / binwidth
+        assert sphere_class_obj.n_bins == (20 - 10) / bin_width
 
     def test_rmin_rmax_error(self, ag):
         """Test rmax."""
@@ -201,33 +191,44 @@ class TestSphereBase(object):
         with pytest.raises(ValueError, match="can not be smaller than"):
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('binwidth_in', (0.1, .775))
-    def test_results_r(self, ag, binwidth_in):
-        """Test results r."""
-        sphere_class_obj = SphereClass(ag, binwidth=binwidth_in, pos_arg=42)
+    @pytest.mark.parametrize('bin_width_in', (0.1, .775))
+    def test_results_bin_pos(self, ag, bin_width_in):
+        """Test bin positions."""
+        sphere_class_obj = SphereClass(ag, bin_width=bin_width_in, pos_arg=42)
         sphere_class_obj.run(stop=5)
+
         rmax = ag.universe.dimensions.min() / 2
-        n_bins = int(np.ceil(rmax / binwidth_in))
-        binwidth = rmax / n_bins
-        assert sphere_class_obj.binwidth == binwidth
-        assert_allclose(sphere_class_obj.results.r,
-                        np.linspace(0, rmax, n_bins) + binwidth / 2)
 
-    def test_binvolume(self, ag):
+        bin_pos = np.linspace(
+            0, rmax, sphere_class_obj.n_bins, endpoint=False)
+        bin_pos += sphere_class_obj.means.bin_width / 2
+
+        assert_allclose(sphere_class_obj.results.bin_pos, bin_pos)
+
+    def test_bin_volume(self, ag):
         """Test correct volume of ach bin."""
-        rmax = 3
-        binwidth = 1
-
-        sphere_class_obj = SphereClass(ag,
-                                       binwidth=binwidth,
-                                       rmax=rmax,
-                                       pos_arg=42)
+        sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
         sphere_class_obj.run(stop=5)
-        binvolume = 4 * np.pi * np.array([1**3 - 0**3,
-                                         2**3 - 1**3,
-                                         3**3 - 2**3]) / 3
+        bin_volume = 4 * np.pi * np.array([1**3 - 0**3,
+                                           2**3 - 1**3,
+                                           3**3 - 2**3]) / 3
 
-        assert_allclose(sphere_class_obj.binvolume, binvolume)
+        assert_allclose(sphere_class_obj.means.bin_volume, bin_volume)
+
+    def test_bin_edges(self, ag):
+        """Test edges of the bins."""
+        sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
+        sphere_class_obj.run(stop=5)
+        bin_edges = [0, 1, 2, 3]
+        assert_allclose(sphere_class_obj.means.bin_edges, bin_edges)
+
+    def test_bin_area(self, ag):
+        """Test area of the bins."""
+        sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
+        sphere_class_obj.run(stop=5)
+        bin_area = 4 * np.pi * np.array([0.5**2, 1.5**2, 2.5**2])
+
+        assert_allclose(sphere_class_obj.means.bin_area, bin_area)
 
     def test_R(self, ag):
         """Test radius of the sphere."""
@@ -235,7 +236,7 @@ class TestSphereBase(object):
         sphere_class_obj.run(stop=5)
 
         R = ag.universe.dimensions.min() / 2
-        assert sphere_class_obj.R == R
+        assert sphere_class_obj.means.R == R
 
     def test_compute_lab_frame_sphere_default(self, ag):
         """Test lab frame values with default values."""
@@ -322,18 +323,15 @@ class TestSphereBaseChilds:
         """Test check attr change."""
         params = dict(rmin=0,
                       rmax=None,
-                      binwidth=1)
+                      bin_width=1)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = SphereBase(ag_single_frame, **params).run()
 
         assert_equal(ana_obj.results.r, pb_obj.results.r)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
-        assert_equal(ana_obj.binwidth, pb_obj.binwidth)
-        assert_equal(ana_obj.binvolume, pb_obj.binvolume)
 
         assert ana_obj.rmin == pb_obj.rmin
         assert ana_obj.rmax == pb_obj.rmax
-        assert ana_obj.R == pb_obj.R
 
 
 class TestProfileSphereBase:
@@ -425,7 +423,7 @@ class TestProfileSphereBase:
                  normalization="number",
                  rmin=0,
                  rmax=None,
-                 binwidth=0.1,
+                 bin_width=0.1,
                  refgroup=None,
                  grouping="atoms",
                  unwrap=False,
@@ -466,7 +464,7 @@ class TestProfileSphereBase:
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       rmax=2,
                       normalization="None",
                       grouping=grouping)
@@ -487,7 +485,7 @@ class TestProfileSphereBase:
     def test_binmethod(self, u_dimers, binmethod, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       rmax=2,
                       binmethod=binmethod,
                       grouping="molecules")
@@ -500,7 +498,7 @@ class TestProfileSphereBase:
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(atomgroups=u_dimers.atoms,
-                      binwidth=1,
+                      bin_width=1,
                       rmax=2,
                       unwrap=unwrap,
                       binmethod='com',
@@ -577,7 +575,7 @@ class TestProfileSphereBase:
             profile.save()
             res_dens = np.loadtxt(profile.output)
 
-        assert_allclose(profile.results.r,
+        assert_allclose(profile.results.bin_pos,
                         res_dens[:, 0],
                         rtol=2)
 

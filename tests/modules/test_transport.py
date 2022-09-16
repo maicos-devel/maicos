@@ -92,7 +92,7 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+        vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
                              grouping="molecules").run()
 
         # Divide by volume for normalization as in module.
@@ -109,7 +109,7 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+        vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
                              grouping="atoms").run()
 
         # Divide by volume for normalization as in module.
@@ -126,7 +126,7 @@ class TestVelocity(object):
         ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
-        vel = VelocityPlanar(ag_v, vdim=vdim, binwidth=10,
+        vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
                              grouping="atoms", flux=True).run()
 
         # Divide by volume for normalization as in module.

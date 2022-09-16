@@ -38,13 +38,21 @@ class CylinderBase(PlanarBase):
     ${CYLINDER_CLASS_ATTRIBUTES}
     pos_cyl : numpy.ndarray
         positions in cylinder coordinats (r, phi, z)
-    binwidth : float
-        The actual binwidth taking the length of the changing box into account.
-    results.R : float
-        average length along the radial dimension
-    results.binarea : numpy.ndarray
-        area of the concentrtic radial bins. Calculated via
-        :math:`\pi \left( r_{i+1}^2 - r_i^2 \right)` where `i`
+    _obs.R : float
+        Average length (in Å) along the radial dimension in the current frame.
+    _obs.bin_pos : numpy.ndarray, (n_bins)
+        Central bin position of each bin (in Å) in the current frame.
+    _obs.bin_width : float
+         Bin width (in Å) in the current frame
+    _obs.bin_edges : numpy.ndarray, (n_bins + 1)
+        Edges of the bins (in Å) in the current frame.
+    _obs.bin_area : numpy.ndarray, (n_bins)
+        Area of the annulus pf the each bin in the current frame.
+        Calculated via :math:`\pi \left( r_{i+1}^2 - r_i^2 \right)` where `i`
+        is the index of the bin.
+    _obs.bin_volume : numpy.ndarray, (n_bins)
+        Volume of an hollow cylinder of each bin (in Å^3) in the current frame.
+        Calculated via :math:`\pi L \left( r_{i+1}^2 - r_i^2 \right)` where `i`
         is the index of the bin.
     """
 
@@ -83,9 +91,9 @@ class CylinderBase(PlanarBase):
                              "to `rmin`!")
 
         try:
-            if self._binwidth > 0:
+            if self._bin_width > 0:
                 R = self.rmax - self.rmin
-                self.n_bins = int(np.ceil(R / self._binwidth))
+                self.n_bins = int(np.ceil(R / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
@@ -134,27 +142,18 @@ class CylinderBase(PlanarBase):
         self._compute_lab_frame_cylinder()
         self._obs.R = self.rmax - self.rmin
 
-        r = np.linspace(self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
-        self._obs.binarea = np.pi * np.diff(r**2)
+        self._obs.bin_edges = np.linspace(
+            self.rmin, self.rmax, self.n_bins + 1, endpoint=True)
+
+        self._obs.bin_width = self._obs.R / self.n_bins
+        self._obs.bin_pos = self._obs.bin_edges[1:] - self._obs.bin_width / 2
+        self._obs.bin_area = np.pi * np.diff(self._obs.bin_edges**2)
+        self._obs.bin_volume = self._obs.bin_area * self._obs.L
 
     def _conclude(self):
         """Results calculations for the cylinder analysis."""
         super(CylinderBase, self)._conclude()
-
-        # Remove not used z attribute from PlanarBase
-        del self.results.z
-
-        self.R = self.means.R
-        self.binarea = self.means.binarea
-
-        if self._rmax is None:
-            rmax = self.R
-        else:
-            rmax = self._rmax
-
-        self.binwidth = self.rmax / self.n_bins
-        self.results.r = np.linspace(self.rmin, rmax, self.n_bins) \
-            + self.binwidth / 2
+        self.results.bin_pos = self.means.bin_pos
 
 
 @render_docs
@@ -286,7 +285,7 @@ class ProfileCylinderBase(CylinderBase):
                     profile /= bincount
                 profile = np.nan_to_num(profile)
             elif self.normalization == "volume":
-                profile /= self._obs.binarea * self._obs.L
+                profile /= self._obs.bin_volume
 
             self._obs.profile[:, index] = profile
 
@@ -311,7 +310,7 @@ class ProfileCylinderBase(CylinderBase):
             columns.append(f'({i + 1}) error')
 
         self.savetxt(self.output, np.hstack(
-                     (self.results.r[:, np.newaxis],
+                     (self.results.bin_pos[:, np.newaxis],
                       self.results.profile_mean,
                       self.results.profile_err)),
                      columns=columns)

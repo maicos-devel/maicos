@@ -109,7 +109,7 @@ class TestDiporder(object):
     def test_Diporder_slab(self, ag, dim, order_parameter, result_dict):
         """Test Diporder for slab system in x,y,z direction."""
         dip = Diporder(ag,
-                       binwidth=5,
+                       bin_width=5,
                        dim=dim,
                        refgroup=ag,
                        order_parameter=order_parameter).run()
@@ -122,7 +122,7 @@ class TestDiporder(object):
     def test_Diporder_3_water_0(self, order_parameter, output):
         """Test Diporder for 3 water molecules with angle 0."""
         group_H2O_1 = isolated_water_universe(n_molecules=3, angle_deg=0)
-        dip = Diporder(group_H2O_1, binwidth=10,
+        dip = Diporder(group_H2O_1, bin_width=10,
                        order_parameter=order_parameter).run()
 
         assert_allclose(np.mean(dip.results.profile_mean.flatten()),
@@ -133,7 +133,7 @@ class TestDiporder(object):
     def test_Diporder_3_water_90(self, order_parameter, output):
         """Test Diporder for 3 water molecules with angle 90."""
         group_H2O_2 = isolated_water_universe(n_molecules=3, angle_deg=90)
-        dip = Diporder(group_H2O_2, binwidth=10,
+        dip = Diporder(group_H2O_2, bin_width=10,
                        order_parameter=order_parameter).run()
 
         assert_allclose(np.mean(dip.results.profile_mean.flatten()),
@@ -170,8 +170,8 @@ class TestRDFPlanar(object):
     def run_rdf(self, get_universe, **kwargs):
         """Calculate the water water RDF of evenly spaced water."""
         grp_water = get_universe.select_atoms("resname SOL")
-        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_binwidth=1,
-                              range=(7, 10), dzheight=6, binwidth=20, **kwargs)
+        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_bin_width=1,
+                              range=(7, 10), dzheight=6, bin_width=20, **kwargs)
         rdfplanar.run()
         return rdfplanar
 
@@ -181,8 +181,8 @@ class TestRDFPlanar(object):
         Additionally, set 'g1' and 'g2' to be different atomgroups.
         """
         grpO = get_universe.select_atoms("name OW")
-        rdfplanar = RDFPlanar(grpO[0:2], grpO, rdf_binwidth=1, range=(7, 10),
-                              dzheight=6, binwidth=25)
+        rdfplanar = RDFPlanar(grpO[0:2], grpO, rdf_bin_width=1, range=(7, 10),
+                              dzheight=6, bin_width=25)
         rdfplanar.run()
         return rdfplanar
 
@@ -258,9 +258,9 @@ class TestRDFPlanar(object):
         """
         grp_water = get_universe.select_atoms("resname SOL")
         z_dist_OH = 0.95 * np.sin(38 / 180 * np.pi)  # due to water geometry
-        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_binwidth=1,
+        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_bin_width=1,
                               range=(7, 10), dzheight=2,
-                              zmax=10 + z_dist_OH / 4, binwidth=20,
+                              zmax=10 + z_dist_OH / 4, bin_width=20,
                               binmethod=binmethod)
         rdfplanar.run()
         return rdfplanar
