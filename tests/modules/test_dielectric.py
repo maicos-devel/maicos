@@ -213,6 +213,22 @@ class TestDielectricPlanar(object):
         assert_equal(eps.results.eps_par[:, 0],
                      1 + eps.results.pref * cov_par)
 
+    def test_unsorted_ags(self, ag):
+        """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""
+        # Randomly shuffle the atomgroup
+        rng = np.random.default_rng()
+        permute = rng.permutation(len(ag))
+        ag2 = ag[permute]
+
+        eps1 = DielectricPlanar(ag, xy=True)
+        eps1.run()
+        k1 = eps1.results.eps_par
+
+        eps2 = DielectricPlanar(ag2, xy=True, vac=True)
+        eps2.run()
+        k2 = eps2.results.eps_par
+        assert np.allclose(k1, k2, rtol=1e-1)
+
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():

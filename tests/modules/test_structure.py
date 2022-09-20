@@ -17,7 +17,7 @@ from create_mda_universe import isolated_water_universe
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import Diporder, RDFPlanar, Saxs
-from maicos.lib.util import check_compound
+from maicos.lib.util import get_compound
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -229,7 +229,7 @@ class TestRDFPlanar(object):
         """Test whether the com of single atoms is correct."""
         rdfplanar = self.run_rdf_OO(get_universe)
         assert_equal(rdfplanar.g1.center_of_mass(
-                     compound=check_compound(rdfplanar.g1)),
+                     compound=get_compound(rdfplanar.g1)),
                      self._molecule_positions()[0:2])
 
     def test_n_g1_total_OO(self, get_universe):

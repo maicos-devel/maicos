@@ -21,10 +21,9 @@ from MDAnalysis.lib.log import ProgressBar
 from ..lib.math import cluster_com, correlation_time, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
-    check_compound,
     get_cli_input,
+    get_compound,
     render_docs,
-    sort_atomgroup,
     )
 from ..version import __version__
 
@@ -113,7 +112,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
             # Sort the atomgroups,
             # such that molecules are listed one after the other
-            self.atomgroups = list(map(sort_atomgroup, atomgroups))
+            self.atomgroups = atomgroups
 
             for i, ag in enumerate(self.atomgroups):
                 if ag.n_atoms == 0:
@@ -124,7 +123,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self._universe = atomgroups[0].universe
             self._allow_multiple_atomgroups = True
         else:
-            self.atomgroup = sort_atomgroup(atomgroups)
+            self.atomgroup = atomgroups
 
             if self.atomgroup.n_atoms == 0:
                 raise ValueError("The provided `atomgroup` does not contain "
@@ -203,7 +202,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 else:
                     groups = self.atomgroups
                 for group in groups:
-                    group.unwrap(compound=check_compound(group))
+                    group.unwrap(compound=get_compound(group))
 
             timeseries[i] = self._single_frame()
 

@@ -11,7 +11,7 @@
 import numpy as np
 from scipy import constants
 
-from .util import check_compound
+from .util import get_compound
 
 
 def density_weights(atomgroup, grouping, dens):
@@ -108,7 +108,7 @@ def diporder_weights(atomgroup, grouping, dim, order_parameter):
 
     chargepos = atomgroup.positions * atomgroup.charges[:, np.newaxis]
     dipoles = atomgroup.accumulate(chargepos,
-                                   compound=check_compound(atomgroup))
+                                   compound=get_compound(atomgroup))
 
     # unit normal vector
     unit = np.zeros(3)
