@@ -104,6 +104,21 @@ class Test_AnalysisBase(object):
         assert isinstance(a.results, Results)
         assert not hasattr(a, "atomgroups")
 
+    def test_empty_atomgroup(self, ag):
+        """Test behaviour for empty atomgroup."""
+        with pytest.raises(ValueError,
+                           match='not contain any atoms.'):
+            class_obj = AnalysisBase(ag.select_atoms("name foo"))
+            class_obj._prepare()
+
+    def test_empty_atomgroups(self, ag):
+        """Test behaviour for empty atomgroups."""
+        with pytest.raises(ValueError,
+                           match='not contain any atoms.'):
+            class_obj = AnalysisBase([ag, ag.select_atoms("name foo")],
+                                     multi_group=True)
+            class_obj._prepare()
+
     def test_multigroups(self, ag):
         """Test multiple groups."""
         a = AnalysisBase([ag[:10], ag[10:]], multi_group=True)
@@ -179,7 +194,7 @@ class Test_AnalysisBase(object):
                         rtol=1e-01)
 
     def test_refgroup_multi(self, ag):
-        """Test refgroup."""
+        """Test refgroup for multiple frames."""
         class_obj = Conclude(ag, refgroup=ag[:3])
         class_obj.run(step=1)
 
