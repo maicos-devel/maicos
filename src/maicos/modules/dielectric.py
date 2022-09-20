@@ -20,7 +20,7 @@ import scipy.constants
 
 from ..core import AnalysisBase, PlanarBase
 from ..lib.math import FT, iFT, symmetrize
-from ..lib.util import bin, charge_neutral, check_compound, render_docs
+from ..lib.util import bin, charge_neutral, get_compound, render_docs
 
 
 logger = logging.getLogger(__name__)
@@ -127,6 +127,18 @@ class DielectricPlanar(PlanarBase):
         self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
         self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
 
+        self.comp = []
+        self.inverse_ix = []
+        self.counts = []
+
+        for sel in self.atomgroups:
+            comp, ix = get_compound(sel.atoms, return_index=True)
+            _, inverse_ix, counts = np.unique(ix, return_counts=True,
+                                              return_inverse=True)
+            self.comp.append(comp)
+            self.inverse_ix.append(inverse_ix)
+            self.counts.append(counts)
+
     def _single_frame(self):
         super(DielectricPlanar, self)._single_frame()
 
@@ -168,33 +180,12 @@ class DielectricPlanar(PlanarBase):
             # that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only
             # want to cut in x/y direction)
-            comp = check_compound(sel.atoms)
-            if comp == "molecules":
-                repeats = np.unique(sel.atoms.molnums,
-                                    return_counts=True)[1]
-            elif comp == "fragments":
-                repeats = np.unique(sel.atoms.fragindices,
-                                    return_counts=True)[1]
-            else:
-                repeats = np.unique(sel.atoms.resids,
-                                    return_counts=True)[1]
 
-            if np.all(repeats == repeats[0]):
-                # selection contains identical components and we can
-                # supercharge the calculation. (mda.atomgroup.center
-                # with the compound option is slow!)
-                chargepos = (
-                    np.abs(sel.charges)
-                    * sel.atoms.positions[:, 2]
-                    ).reshape(len(repeats), repeats[0])
+            center = sel.center(weights=np.abs(sel.charges),
+                                compound=self.comp[i])[:, self.dim]
 
-                centers = np.sum(chargepos, axis=1) \
-                    / np.sum(np.abs(sel.charges)[:repeats[0]])
-            else:
-                centers = sel.center(weights=np.abs(sel.charges),
-                                     compound=check_compound(sel))[:, self.dim]
+            testpos = np.repeat(center, self.counts[i])[self.inverse_ix[i]]
 
-            testpos = np.repeat(centers, repeats)
             # Average parallel directions
             for j, direction in enumerate(self.odims):
                 # At this point we should not use the wrap, which causes
@@ -554,11 +545,11 @@ class DielectricCylinder(AnalysisBase):
         chargepos = positions_cyl * np.abs(
             self.atomgroup.charges[:, np.newaxis])
         centers = self.atomgroup.accumulate(
-            chargepos, compound=check_compound(self.atomgroup))
+            chargepos, compound=get_compound(self.atomgroup))
         centers /= self.atomgroup.accumulate(
             np.abs(self.atomgroup.charges),
-            compound=check_compound(self.atomgroup))[:, np.newaxis]
-        comp = check_compound(self.atomgroup)
+            compound=get_compound(self.atomgroup))[:, np.newaxis]
+        comp = get_compound(self.atomgroup)
         if comp == "molecules":
             repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
         elif comp == "fragments":

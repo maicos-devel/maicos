@@ -12,36 +12,35 @@ import sys
 from unittest.mock import patch
 
 import MDAnalysis as mda
-import numpy as np
 import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
+from numpy.testing import assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from data import LAMMPS10WATER, WATER_GRO, WATER_TPR  # noqa: E402
+from data import WATER_GRO, WATER_TPR  # noqa: E402
 
 
-def test_check_compound():
+@pytest.mark.parametrize('u, compound, index', (
+    (UnWrapUniverse(),
+     "molecules",
+     "molnums"),
+    (UnWrapUniverse(have_molnums=False, have_bonds=True),
+     "fragments",
+     "fragindices",),
+    (UnWrapUniverse(have_molnums=False, have_bonds=False),
+     "residues",
+     "resindices"),))
+def test_get_compound(u, compound, index):
     """Tests check compound."""
-    u = UnWrapUniverse()
-    assert maicos.lib.util.check_compound(u.atoms) == "molecules"
-
-    u = UnWrapUniverse(have_molnums=False, have_bonds=True)
-    assert maicos.lib.util.check_compound(u.atoms) == "fragments"
-
-    u = UnWrapUniverse(have_molnums=False, have_bonds=False)
-    assert maicos.lib.util.check_compound(u.atoms) == "residues"
-
-
-def test_sort_atomsgroup_lammps():
-    """Tests sort atoms group LAMMPS."""
-    u = mda.Universe(LAMMPS10WATER)
-    atoms = maicos.lib.util.sort_atomgroup(u.atoms)
-
-    assert np.all(np.diff(atoms.fragindices) >= 0)
+    comp = maicos.lib.util.get_compound(u.atoms)
+    assert compound == comp
+    comp, ix = maicos.lib.util.get_compound(u.atoms, return_index=True)
+    assert compound == comp
+    assert_equal(ix, getattr(u.atoms, index))
 
 
 def test_get_cli_input():

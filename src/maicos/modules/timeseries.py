@@ -15,7 +15,7 @@ dipole moments and energies from molecular simulation trajectory files.
 import numpy as np
 
 from ..core import AnalysisBase
-from ..lib.util import check_compound, render_docs
+from ..lib.util import get_compound, render_docs
 
 
 @render_docs
@@ -75,7 +75,7 @@ class DipoleAngle(AnalysisBase):
         chargepos = self.atomgroup.positions * \
             self.atomgroup.charges[:, np.newaxis]
         dipoles = self.atomgroup.accumulate(
-            chargepos, compound=check_compound(self.atomgroup))
+            chargepos, compound=get_compound(self.atomgroup))
 
         cos_theta = np.dot(dipoles, self.unit) / \
             np.linalg.norm(dipoles, axis=1)
@@ -155,10 +155,10 @@ class KineticEnergy(AnalysisBase):
 
         self.masses = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.masses,
-            compound=check_compound(self.atomgroup))
+            compound=get_compound(self.atomgroup))
         self.abscharges = self.atomgroup.atoms.accumulate(np.abs(
             self.atomgroup.atoms.charges),
-            compound=check_compound(self.atomgroup))
+            compound=get_compound(self.atomgroup))
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -174,14 +174,14 @@ class KineticEnergy(AnalysisBase):
             massvel = self.atomgroup.velocities * \
                 self.atomgroup.masses[:, np.newaxis]
             v = self.atomgroup.accumulate(
-                massvel, compound=check_compound(self.atomgroup))
+                massvel, compound=get_compound(self.atomgroup))
             v /= self.masses[:, np.newaxis]
 
         elif self.refpoint == "COC":
             abschargevel = self.atomgroup.velocities * \
                 np.abs(self.atomgroup.charges)[:, np.newaxis]
             v = self.atomgroup.accumulate(
-                abschargevel, compound=check_compound(self.atomgroup))
+                abschargevel, compound=get_compound(self.atomgroup))
             v /= self.abscharges[:, np.newaxis]
 
         self.E_center[self._frame_index] = np.dot(self.masses,

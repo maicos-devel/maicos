@@ -21,20 +21,51 @@ _share_path = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                             "..", "share"))
 
 
-def check_compound(AtomGroup):
-    """Check if compound 'molecules' exists.
+def get_compound(atomgroup, return_index=False):
+    """Returns the highest order topology attribute.
 
-    If compound molecule does not exist, it
-    fallbacks to 'fragments' or 'residues'.
+    The order is "molecules", "fragments", "residues". If the topology contains
+    none of those attributes, an AttributeError is raised. Optionally, the
+    indices of the attribute as given by `molnums`, `fragindices` or
+    `resindices` respectivly are also returned.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for weight calculation
+    return_index : bool, optional
+        If True, also return the indices the corresponding topology attribute.
+
+    Returns
+    -------
+    compound: string
+        Name of the topology attribute.
+    index: ndarray, optional
+        The indices of the topology attribute.
+
+    Raises
+    ------
+    AttributeError
+        `atomgroup` is missing any connection information"
     """
-    if hasattr(AtomGroup, "molnums"):
-        return "molecules"
-    elif hasattr(AtomGroup, "fragments"):
+    if hasattr(atomgroup, "molnums"):
+        compound = "molecules"
+        indices = atomgroup.atoms.molnums
+    elif hasattr(atomgroup, "fragments"):
         warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
-        return "fragments"
+        compound = "fragments"
+        indices = atomgroup.atoms.fragindices
+    elif hasattr(atomgroup, "residues"):
+        warnings.warn("Cannot use 'fragments'. Falling back to 'residues'")
+        compound = "residues"
+        indices = atomgroup.atoms.resindices
     else:
-        warnings.warn("Cannot use 'molecules'. Falling back to 'residues'")
-        return "residues"
+        raise AttributeError(
+            "Missing any connection information in `atomgroup`.")
+    if return_index:
+        return compound, indices
+    else:
+        return compound
 
 
 def get_cli_input():
@@ -61,25 +92,6 @@ def atomgroup_header(AtomGroup):
                                       return_counts=True)
     return " & ".join(
         "{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
-
-
-def sort_atomgroup(atomgroup):
-    """Sort a atomgroup after its fragments.
-
-    Needed in e.g. LAMMPS, as molecules are not sorted,
-    but randomly distributed in atomgroup.atoms.
-
-    atomgroup: atomgroup to sort
-    """
-    com = check_compound(atomgroup)
-    if com == 'fragments':
-        return atomgroup[np.argsort(atomgroup.fragindices)]
-    elif com == 'residues':
-        return atomgroup[np.argsort(atomgroup.resids)]
-    elif com == 'molecules':
-        return atomgroup[np.argsort(atomgroup.molnums)]
-    else:
-        return atomgroup
 
 
 def bin(a, bins):
@@ -286,7 +298,7 @@ def charge_neutral(filter):
                     groups = self.atomgroups
                 for group in groups:
                     if not np.allclose(
-                            group.total_charge(compound=check_compound(group)),
+                            group.total_charge(compound=get_compound(group)),
                             0, atol=1E-4):
                         with warnings.catch_warnings():
                             warnings.simplefilter(filter)

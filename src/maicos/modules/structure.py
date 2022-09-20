@@ -23,7 +23,7 @@ from MDAnalysis.lib.distances import capped_distance
 from ..core import AnalysisBase, PlanarBase, ProfilePlanarBase
 from ..lib import tables
 from ..lib.math import compute_form_factor, compute_structure_factor
-from ..lib.util import check_compound, render_docs
+from ..lib.util import get_compound, render_docs
 from ..lib.weights import diporder_weights
 
 
@@ -407,19 +407,19 @@ class RDFPlanar(PlanarBase):
 
         if self.binmethod == 'com':
             g1_bin_positions = self.g1.center_of_mass(
-                compound=check_compound(self.g1))
+                compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_mass(
-                compound=check_compound(self.g2))
+                compound=get_compound(self.g2))
         elif self.binmethod == 'coc':
             g1_bin_positions = self.g1.center_of_charge(
-                compound=check_compound(self.g1))
+                compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_charge(
-                compound=check_compound(self.g2))
+                compound=get_compound(self.g2))
         elif self.binmethod == 'cog':
             g1_bin_positions = self.g1.center_of_geometry(
-                compound=check_compound(self.g1))
+                compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_geometry(
-                compound=check_compound(self.g2))
+                compound=get_compound(self.g2))
 
         # Calculate planar rdf per bin by averaging over all atoms in one bin.
         for z_bin in range(0, self.n_bins):
