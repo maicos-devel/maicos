@@ -89,6 +89,13 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     sems : MDAnalysis.analysis.base.Results
         Standard errors of the mean of the observables.
         Keys are the same as :attr:`_obs`
+
+    Raises
+    ------
+    ValueError
+        If any of the provided AtomGroups (`atomgroups` or `refgroup`) does
+        not contain any atoms.
+
     """
 
     def __init__(self,
@@ -107,11 +114,22 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             # Sort the atomgroups,
             # such that molecules are listed one after the other
             self.atomgroups = list(map(sort_atomgroup, atomgroups))
+
+            for i, ag in enumerate(self.atomgroups):
+                if ag.n_atoms == 0:
+                    raise ValueError(f"The {i+1}. provided `atomgroup`"
+                                     "does not contain any atoms.")
+
             self.n_atomgroups = len(self.atomgroups)
             self._universe = atomgroups[0].universe
             self._allow_multiple_atomgroups = True
         else:
             self.atomgroup = sort_atomgroup(atomgroups)
+
+            if self.atomgroup.n_atoms == 0:
+                raise ValueError("The provided `atomgroup` does not contain "
+                                 "any atoms.")
+
             self._universe = atomgroups.universe
             self._allow_multiple_atomgroups = False
 
@@ -121,7 +139,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self.concfreq = concfreq
 
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
-            raise ValueError("Refgroup does not contain any atoms.")
+            raise ValueError("The provided `refgroup` does not contain "
+                             "any atoms.")
 
         super(AnalysisBase, self).__init__(trajectory=self._trajectory)
 
