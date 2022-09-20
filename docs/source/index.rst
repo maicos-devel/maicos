@@ -29,6 +29,7 @@ List of analysis modules
 
    ./tutorials/installation_usage
    ./tutorials/tutorial_planar
+   ./tutorials/tutorial_non-spatial
 
 .. toctree::
    :maxdepth: 4
