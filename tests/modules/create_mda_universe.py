@@ -18,28 +18,34 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
-def isolated_water_universe(n_molecules=1, angle_deg=0,
+def line_of_water_molecules(n_molecules=1, angle_deg=0,
                             axis_rotation=(0, 1, 0), myvel=(0, 0, 0)):
-    """Create a MDAnalysis universe with regularly spaced molecules."""
+    """
+    Create a MDAnalysis universe with regularly spaced molecules.
+
+    The molecules are placed along a line, have an orientation
+    controlled by `angle_deg` and `axis_rotation`. All the molecules
+    have the same velocities `myvel`.
+    """
     # import molecule topology
     fluid = []
     for _n in range(n_molecules):
         fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
+
+    # define evenly spaced positions along a line
+    positions = []
+    for _n in range(n_molecules):
+        positions.append((0, 0, 10 * (1 * _n)))
 
     # set the orientation of the molecules
     rotations = []
     for _n in range(n_molecules):
         rotations.append([angle_deg, axis_rotation])
 
-    # define evenly spaced positions for the molecules
-    translations = []
-    for _n in range(n_molecules):
-        translations.append((0, 0, 10 * (1 * _n)))
-
     # multiply molecules and apply translation and rotations
-    for molecule, rotation, translation in zip(fluid, rotations, translations):
+    for molecule, rotation, position in zip(fluid, rotations, positions):
         molecule.atoms.rotateby(rotation[0], rotation[1])
-        molecule.atoms.translate(translation)
+        molecule.atoms.translate(position)
 
     # merges the molecules into a universe
     u = mda.Merge(*[molecule.atoms for molecule in fluid])
@@ -48,6 +54,54 @@ def isolated_water_universe(n_molecules=1, angle_deg=0,
     _dimensions = fluid[0].dimensions
     _dimensions[2] *= n_molecules
     u.dimensions = _dimensions
+
+    # set residue ids
+    u.residues.molnums = list(range(1, n_molecules + 1))
+
+    # give velocities to the molecules
+    u.trajectory.ts.has_velocities = True
+    u.atoms.velocities += np.array(myvel)
+    return u.select_atoms("name OW HW1 HW2")
+
+
+def circle_of_water_molecules(n_molecules=10, angle_deg=0,
+                              axis_rotation=(0, 1, 0), myvel=(0, 0, 0),
+                              radius=5):
+    """
+    Create a MDAnalysis universe with regularly spaced molecules.
+
+    Molecules are placed on a circle of radius `radius`.
+    The box dimensions are set to 20x20x20, and the z coordinate is 10.
+    The radius must be smaller than 10.
+    """
+    # import molecule topology
+    fluid = []
+    for _n in range(n_molecules):
+        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
+
+    # define evenly spaced positions along a circle
+    positions = []
+    for _n in range(0, n_molecules):
+        x = np.cos(2 * np.pi / n_molecules * _n) * radius
+        y = np.sin(2 * np.pi / n_molecules * _n) * radius
+        z = 10
+        positions.append((x, y, z))
+
+    # set the orientation of the molecules
+    rotations = []
+    for _n in range(n_molecules):
+        rotations.append([angle_deg, axis_rotation])
+
+    # multiply molecules and apply translation and rotations
+    for molecule, rotation, position in zip(fluid, rotations, positions):
+        molecule.atoms.rotateby(rotation[0], rotation[1])
+        molecule.atoms.translate(position)
+
+    # merges the molecules into a universe
+    u = mda.Merge(*[molecule.atoms for molecule in fluid])
+
+    # set the universe's dimension
+    u.dimensions = (20, 20, 20, 90, 90, 90)
 
     # set residue ids
     u.residues.molnums = list(range(1, n_molecules + 1))

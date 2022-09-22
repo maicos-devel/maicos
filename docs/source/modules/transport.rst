@@ -10,3 +10,4 @@ Transport modules
    :caption: Transport modules
 
    velocity_planar
+   velocity_cylinder

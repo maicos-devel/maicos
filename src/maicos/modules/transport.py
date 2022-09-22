@@ -12,7 +12,7 @@ The transport module of MAICoS allows for calculating mean velocity
 and  flux profiles from molecular simulation trajectory files.
 """
 
-from ..core import ProfilePlanarBase
+from ..core import ProfileCylinderBase, ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import velocity_weights
 
@@ -73,6 +73,65 @@ class VelocityPlanar(ProfilePlanarBase):
             bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
+            grouping=grouping,
+            unwrap=unwrap,
+            binmethod=binmethod,
+            output=output,
+            concfreq=concfreq)
+
+
+@render_docs
+class VelocityCylinder(ProfileCylinderBase):
+    r"""Compute the cartesian velocity profile across a cylinder.
+
+    Parameters
+    ----------
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    vdim : int {0, 1, 2},
+        Dimension for velocity binning (x=0, y=1, z=2).
+    flux : bool,
+        Calculate the flux instead of the velocity.
+
+        Flux is calculated by multiplying the velocity by the
+        number of compounds.
+
+    Attributes
+    ----------
+    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 dim=2,
+                 zmin=None,
+                 zmax=None,
+                 bin_width=1,
+                 rmin=0,
+                 rmax=None,
+                 refgroup=None,
+                 grouping="atoms",
+                 unwrap=True,
+                 binmethod="com",
+                 output="velocity.dat",
+                 concfreq=0,
+                 vdim=2,
+                 flux=False):
+
+        if vdim not in [0, 1, 2]:
+            raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
+
+        super(VelocityCylinder, self).__init__(
+            function=velocity_weights,
+            f_kwargs={"vdim": vdim, "flux": flux},
+            normalization="volume",
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            bin_width=bin_width,
+            rmin=rmin,
+            rmax=rmax,
+            refgroup=refgroup,
             grouping=grouping,
             unwrap=unwrap,
             binmethod=binmethod,

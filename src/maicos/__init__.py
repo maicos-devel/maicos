@@ -20,6 +20,7 @@ __all__ = [
     'DipoleAngle',
     'KineticEnergy',
     'VelocityPlanar',
+    'VelocityCylinder',
     'RDFPlanar',
     ]
 
@@ -40,7 +41,7 @@ from .modules.dielectric import (
     )
 from .modules.structure import Diporder, RDFPlanar, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy
-from .modules.transport import VelocityPlanar
+from .modules.transport import VelocityCylinder, VelocityPlanar
 from .version import __version__
 
 

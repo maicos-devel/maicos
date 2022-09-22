@@ -13,7 +13,7 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import isolated_water_universe
+from create_mda_universe import line_of_water_molecules
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import Diporder, RDFPlanar, Saxs
@@ -121,7 +121,7 @@ class TestDiporder(object):
                              [('P0', 0), ('cos_theta', 1), ('cos_2_theta', 1)])
     def test_Diporder_3_water_0(self, order_parameter, output):
         """Test Diporder for 3 water molecules with angle 0."""
-        group_H2O_1 = isolated_water_universe(n_molecules=3, angle_deg=0)
+        group_H2O_1 = line_of_water_molecules(n_molecules=3, angle_deg=0)
         dip = Diporder(group_H2O_1, bin_width=10,
                        order_parameter=order_parameter).run()
 
@@ -132,7 +132,7 @@ class TestDiporder(object):
                              [('P0', 0), ('cos_theta', 0), ('cos_2_theta', 0)])
     def test_Diporder_3_water_90(self, order_parameter, output):
         """Test Diporder for 3 water molecules with angle 90."""
-        group_H2O_2 = isolated_water_universe(n_molecules=3, angle_deg=90)
+        group_H2O_2 = line_of_water_molecules(n_molecules=3, angle_deg=90)
         dip = Diporder(group_H2O_2, bin_width=10,
                        order_parameter=order_parameter).run()
 
