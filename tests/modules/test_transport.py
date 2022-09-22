@@ -13,18 +13,21 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import isolated_water_universe
+from create_mda_universe import (
+    circle_of_water_molecules,
+    line_of_water_molecules,
+    )
 from numpy.testing import assert_allclose
 
-from maicos import VelocityPlanar
+from maicos import VelocityCylinder, VelocityPlanar
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import WATER_TPR, WATER_TRR  # noqa: E402
 
 
-class TestVelocity(object):
-    """Tests for the velocity class."""
+class TestVelocityPlanar(object):
+    """Tests for the velocity planar class."""
 
     @pytest.fixture()
     def vel_array_1(self):
@@ -89,7 +92,7 @@ class TestVelocity(object):
         myvel = np.zeros(3)
         myvel[dim] += 1
 
-        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
         vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
@@ -106,7 +109,7 @@ class TestVelocity(object):
         myvel = np.zeros(3)
         myvel[dim] += 1
 
-        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
         vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
@@ -123,7 +126,7 @@ class TestVelocity(object):
         myvel = np.zeros(3)
         myvel[dim] += 1
 
-        ag_v = isolated_water_universe(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
         vol = np.prod(ag_v.dimensions[:3])
 
         vel = VelocityPlanar(ag_v, vdim=vdim, bin_width=10,
@@ -132,3 +135,40 @@ class TestVelocity(object):
         # Divide by volume for normalization as in module.
         assert_allclose(vel.results.profile_mean,
                         flux_array_1[dim][vdim] / vol)
+
+
+class TestVelocityCylinder(object):
+    """Tests for the velocity cylinder class."""
+
+    @pytest.fixture()
+    def vel_array_4(self):
+        """Set velocity array."""
+        # average velocity of 1 in the third bin
+        v_array_1 = np.zeros(5)
+        v_array_1[2] += 1
+        return v_array_1
+
+    @pytest.fixture()
+    def bin_volume_1(self):
+        """Set the volume of the bin."""
+        # estimate the volume
+        _rmax = 10
+        _rmin = 0
+        _zmax = 20
+        _zmin = 0
+        _n_bins = 5
+        _bin_edges = np.linspace(_rmin, _rmax, _n_bins + 1, endpoint=True)
+        _bin_area = np.pi * np.diff(_bin_edges ** 2)
+        _L = _zmax - _zmin
+        return _bin_area * _L
+
+    def test_vel_cylinder(self, vel_array_4, bin_volume_1):
+        """Test velocity module with 10 waters molecules in circle."""
+        ag_v = circle_of_water_molecules(myvel=np.array([0, 0, 1]))
+
+        vel = VelocityCylinder(ag_v, vdim=2, bin_width=2,
+                               grouping="molecules",
+                               refgroup=ag_v).run()
+
+        assert_allclose(vel.results.profile_mean.T[0],
+                        vel_array_4 / bin_volume_1)
