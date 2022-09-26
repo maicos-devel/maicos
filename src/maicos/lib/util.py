@@ -196,9 +196,9 @@ doc_dict = dict(
         center of mass (`'com'`), and center of charge (`'coc'`).
     output : str
         Output filename.""",
-    PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : list
+    PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
         Bin positions (in Å) ranging from `zmin` to `zmax`.""",
-    RADIAL_CLASS_ATTRIBUTES="""results.r : list
+    RADIAL_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
         Bin positions (in Å) ranging from `rmin` to `rmax`.""",
     PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : numpy.ndarray
         Calculated profile's averaged value.
