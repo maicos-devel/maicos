@@ -78,7 +78,6 @@ from MDAnalysis.exceptions import NoDataError
 from scipy import constants
 
 from ..decorators import set_profile_planar_class_doc, set_verbose_doc
-from ..utils import atomgroup_header
 from .base import AnalysisBase, ProfilePlanarBase
 
 
@@ -313,7 +312,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 
     def _conclude(self):
         super(ChemicalPotentialPlanar, self)._conclude()
-
+        if self.center:
+            self.zpos = 0
         if self.zpos is not None:
             this = (np.rint(
                 (self.zpos + self.binwidth / 2) / self.binwidth)
@@ -339,26 +339,19 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 
     def save(self):
         """Save results of analysis to file."""
-        super(ChemicalPotentialPlanar, self).save()
-
         if self.zpos is not None:
-            columns = "Chemical potential calculated at "
-            columns += f"z = {self.zpos} Å."
+            self.OUTPUT = \
+                f"Chemical potential calculated at z = {self.zpos} Å."
         else:
-            columns = "Chemical potential averaged over the whole system."
-        columns += "\nstatistics over "
-        columns += "{self._index * self._trajectory.dt:.1f} ps\n"
-        try:
-            for group in self.atomgroups:
-                columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
-            for group in self.atomgroups:
-                columns += atomgroup_header(group) + " μ error [kJ/mol]" \
-                    + "\t"
-        except AttributeError:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn("AtomGroup does not contain resnames."
-                              " Not writing residues information to output.")
+            self.OUTPUT = \
+                "Chemical potential averaged over the whole system."
+        """Save results of analysis to file."""
+        columns = []
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) µ_id [kJ/mol]')
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) Δµ_id [kJ/mol]')
+
         self.savetxt(self.muout,
                      np.hstack((self.results.mu, self.results.dmu))[None],
                      columns=columns)
