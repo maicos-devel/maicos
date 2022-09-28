@@ -66,7 +66,7 @@ List of analysis modules
    
    ./code_philosophy/general_design
    ./code_philosophy/dielectric
-   ./code_philosophy/structure
+   ./code_philosophy/saxs
    ./code_philosophy/2d_rdf
 
 .. toctree::
