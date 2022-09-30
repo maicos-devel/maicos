@@ -1,3 +1,5 @@
+.. _structure_modules:
+
 =================
 Structure modules
 =================

@@ -1,3 +1,5 @@
+.. _weighting_functions:
+
 Weighting functions
 ###################
 

@@ -1,3 +1,5 @@
+.. _planar_classes:
+
 Planar classes
 ##############
 

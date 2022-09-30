@@ -1,3 +1,5 @@
+.. _mathematical_helper_functions:
+
 Mathematical helper functions
 #############################
 

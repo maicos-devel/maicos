@@ -1,3 +1,5 @@
+.. _dielectric_modules:
+
 ==================
 Dielectric modules
 ==================

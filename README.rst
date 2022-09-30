@@ -19,6 +19,11 @@ Also experienced users can use the Python API for their day to day analysis or
 use the provided infrastructure to build their own analysis for interfacial 
 and confined systems.
 
+Keep up to date with MAICoS news by following us on `Twitter`_. 
+
+If you are using an older version of MAICoS, you can access the corresponding
+documentation on `ReadTheDocs`_.
+
 .. inclusion-readme-intro-end
 
 For details, tutorials, and examples, please have a look at
@@ -103,7 +108,12 @@ List of analysis modules
      - energy timeseries.
    * - VelocityPlanar
      - mean velocity profile in a cartesian geometry
+   * - VelocityCylinder
+     - mean velocity profile in a cylindrical geometry
 
+
+.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
+.. _`Twitter`: https://twitter.com/maicos_analysis
 .. _`Python3`: https://www.python.org
 .. _`Cython` : https://cython.org/
 .. _`GROMACS` : https://www.gromacs.org/

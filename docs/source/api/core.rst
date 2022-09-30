@@ -1,5 +1,7 @@
+.. _core_classes:
+
 ============
-Core Classes
+Core classes
 ============
 
 .. automodule:: maicos.core

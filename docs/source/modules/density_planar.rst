@@ -1,3 +1,5 @@
+.. _DensityPlanar:
+
 DensityPlanar
 #############
 

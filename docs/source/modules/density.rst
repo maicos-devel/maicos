@@ -1,4 +1,4 @@
-.. _label_density:
+.. _density_modules:
 
 ===============
 Density modules

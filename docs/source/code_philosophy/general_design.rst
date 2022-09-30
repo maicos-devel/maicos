@@ -8,25 +8,30 @@ Foundation
 
 .. Show a flow chart here
 
-All MAICoS analysis modules build on top of several stacked base classes which 
-for positional analysis are 
-split into the geometries: planar, cylinder and sphere. Each sub class 
-inherits attributes and provides geometry specific methods and attributes. 
+MAICoS analysis modules are build on top of stacked :ref:`core_classes`. 
+For positional analysis, these are additionally split into the geometries:
+
+* :ref:`planar_classes`,
+* :ref:`cylinder_classes`,
+* and :ref:`sphere_classes`.
+
+Each sub class 
+inherits attributes and provides geometry-specific methods and attributes. 
 The flow chart is shown in the figure above.
 The foundation for all these classes is
-`AnalysisBase`, inherited and extended from 
-`MDAnalysis.analysis.AnalysisBase`. `AnalysisBase` provides is caring 
-about the general aspects of each analysis which will 
-discussed in details below
+:class:`maicos.core.base.AnalysisBase`, inherited and extended from 
+:class:`MDAnalysis.analysis.base.AnalysisBase`.
+:class:`maicos.core.base.AnalysisBase` takes case of the 
+general aspects of each analysis, which will discussed in details below
 
 1. **Atom Selection**
-   Since MAICoS builds on top of the MDAnalysis Universe and atom selection 
-   system the analysis all analysis modules are able to work only on subsets 
+   MAICoS builds on top of the MDAnalysis Universe and atom selection 
+   system, therefore all analysis modules work only on subsets 
    of the whole simulation. This allows investigating different species components  
-   individually for example splitting solvent and solute contribution to an 
+   individually, for example splitting solvent and solute contribution to an 
    observable. Moreover, many MAICoS analysis modules 
    are able to process several atom selections from 
-   one simulation within one analysis run by providing a `list` os atom selections.
+   one simulation within one analysis run by providing a :class:`list` of atom selections.
    This reduces I/O loads and operations 
    and gains a speed up for the analysis. 
 
@@ -42,72 +47,81 @@ discussed in details below
    is translated to the origin and all coordinates are wrapped into the 
    primary unit cell. Additionally, it is possible to unwrap molecules afterwords
    since especially dielectric analysis require whole molecules. With this 
-   centering it easily possible to investigate systems that translate over time 
-   like soft interfaces or moving molecules. 
+   centering, the investigation of systems that translate over time is made possible,
+   such as for example soft interfaces or moving molecules. 
    However, users are not forced to give a `refgroup`. If no such 
-   reference structure is given MAICoS takes the frame specific center 
+   reference structure is given, MAICoS takes the frame specific center 
    of the simulation cell as the origin.
 
    User provided ranges for spatial analysis are always with respect to the 
-   `refgroup` and not in abolsute box coordinates. 
+   `refgroup` and not in absolute box coordinates. 
    For example a 1-dimensional planar analysis ranging from `-2 (Å)` to `0` 
    considers atoms on the left half space of the `refgroup`.
 
 3. **Trajectory iteration**
-   Each module only has to implement an initialization, prepare, single frame and a conclude 
-   method. The `AnalysisBase` will based on these provided methods perform the analysis. 
-   Of course it is possible to provide an initial and final frame as well as a step size. 
-   The analysis of individual frames is also possible.
+   Each module implements an initialization, a prepare,  a single frame and a conclude 
+   method. The `AnalysisBase` will perform an analysis that is based on these provided methods. 
+   It is possible to provide an initial and final frame as well as a step size, and 
+   the analysis of individual frames is also possible.
 
 4. **Time averaging of observables**
-   For observables that has to be time averaged `AnalysiBase` provides a Frame dictionary.
+   For observables that have to be time-averaged,
+   :class:`maicos.core.base.AnalysisBase` provides a Frame dictionary.
    Each key has to be updated within the `single_frame` method and the mean and 
    the variance of each observables will be provided within a `mean` and a `var` 
    dictionary. Each key name within these two dictionaries is the same as within the 
    frame dictionary.
 
 5. **On-the-fly output**
-   Due to the provided dictionaries and the discussed in the section before MAICoS is
-   able to update analysis results during the analysis. This can be in particular useful 
-   for long analysis providing a way to check the correctness of analysis parameters 
-   during the run.
+   MAICoS is able to update analysis results during the analysis. This can be in
+   particular useful for long analysis providing a way to check the correctness 
+   of analysis parameters during the run.
 
 6. **Correlation time estimation**
    For the calculation of the mean and the standard deviation MAICoS assumes 
    uncorrelated data. Since users may not know the correlation time within their 
-   simulation MAICoS will estimate correlation times and warns users if their 
-   averages are obtained from correlated data. For dielectric analysis MAICoS 
+   simulation, MAICoS estimates correlation times and warns users if their 
+   averages are obtained from correlated data. For dielectric analysis, MAICoS 
    uses the total dipole moment perpendicular in the direction of the analysis. 
-   For other spatial dependant analysis the correlation time is estimated 
+   For other spatial-dependant analysis, the correlation time is estimated 
    from the central bin of the refgroup; in the center of the simulation cell.
 
 --------------------------
 Spatial Dependent Analysis
 --------------------------
 
-A spatial dependent analysis is crucial for interfacial and systems in 
-confinement. Based on the `AnalysisBase` MAICoS provides intermediate 
-base classes 
-for the three main geometries: PlanarBase, CylinderBase and SphereBase.
-These modules will take of the coordinate transformations as well as the 
-spatial boundaries as well as the spatial resolution of the analysis. 
+A spatial dependent analysis is crucial for interfacial and confined systems.
+Based on the `AnalysisBase`, MAICoS provides intermediate :ref:`core_classes` 
+for the three main geometries: 
+
+* :class:`maicos.core.planar.PlanarBase`,
+* :class:`maicos.core.cylinder.CylinderBase`,
+* and :class:`maicos.core.sphere.SphereBase`.
+
+These modules take care of the coordinate transformations, of the
+spatial boundaries, and of the spatial resolution of the analysis. 
 
 A design concept of MAICoS for spatial analysis is that the user 
 always provides the spatial resolution 
-via the `bin_width` parameter rather than a number of bins. With this the same analysis 
+via the `bin_width` parameter rather than a number of bins. Therefore, the same analysis 
 code is easily transferable to different simulation size without additional 
 considerations about the spatial resolution.
 
-Based on the three geometric base classes three corresponding 
-high level classes ProfilePlanarBase, ProfileCylinderBase and ProfileSphereBase
-are provided. For developing a Analysis class based on theses three only a 
-single function calculating the atomic weights has to be provided. 
-atomic weights could be masses resulting in mass density profiles as done 
-in `DensityPlanar`, atomic or molecular velocities as for `VelocityPlanar` or 
-even dipolar orientations as used by the `Diporder` class. 
-The profile 
-base classes will based on the weighting function provide spatial 
-at user requested spatial resolution averaged over variable part of the trajectory.
+Based on the three geometric base classes, three corresponding 
+high level classes are provided:
+
+* :class:`maicos.core.planar.ProfilePlanarBase`,
+* :class:`maicos.core.cylinder.ProfileCylinderBase`,
+* and :class:`maicos.core.sphere.ProfileSphereBase`. 
+
+When developing a new analysis class based on one of theses three
+classes, only a single `weight` function has to be provided. All current 
+:ref:`weighting_functions` are documented.
+For instance, the atomic weight could be the masses,
+thus resulting in mass density profiles as done 
+in :ref:`DensityPlanar`, atomic or molecular velocities as for
+:ref:`VelocityPlanar`, or the dipolar orientations as used by the
+:ref:`Diporder` class. 
 
 More details on each base class is given in the API Documentation and for
 detailed information on the physical principles of each module consider 

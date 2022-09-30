@@ -27,13 +27,13 @@ List of analysis modules
    :caption: Tutorials
    :hidden:
 
-   ./tutorials/installation_usage
-   ./tutorials/tutorial_planar
-   ./tutorials/tutorial_non-spatial
+   ./tutorials/installation
+   ./tutorials/usage_python
+   ./tutorials/usage_bash
 
 .. toctree::
    :maxdepth: 4
-   :caption: How-to guide
+   :caption: How-to guides
    :hidden:
 
    ./howto_guides/dielectric_constant

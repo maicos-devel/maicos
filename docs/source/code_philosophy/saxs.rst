@@ -60,7 +60,7 @@ Simulations
 
 In simulations the structure factor 
 :math:`S(\boldsymbol{q})` can be extracted directly from the positions of 
-the particles. MAICoS' :ref:`module_saxs` module calculates these factors.
+the particles. MAICoS' :ref:`Saxs` module calculates these factors.
 The calculated 
 scattering intensities can be directly compared to the experimental one without
 any further processing. We now derive the essential equations. 

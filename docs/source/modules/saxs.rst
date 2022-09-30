@@ -1,4 +1,4 @@
-.. _module_saxs:
+.. _Saxs:
 
 Saxs
 ####
