@@ -1,3 +1,5 @@
+.. _timeseries_modules:
+
 ==================
 Timeseries modules
 ==================

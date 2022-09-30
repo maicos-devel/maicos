@@ -1,3 +1,5 @@
+.. _Diporder:
+
 Diporder
 ########
 

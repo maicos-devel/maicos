@@ -1,3 +1,5 @@
+.. _cylinder_classes:
+
 Cylinder classes
 ################
 
