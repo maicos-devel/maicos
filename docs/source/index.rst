@@ -27,56 +27,55 @@ List of analysis modules
    :caption: Tutorials
    :hidden:
 
-   ./tutorials/installation
-   ./tutorials/usage_python
-   ./tutorials/usage_bash
+   tutorials/installation
+   tutorials/usage_python
+   tutorials/usage_bash
 
 .. toctree::
    :maxdepth: 4
    :caption: How-to guides
    :hidden:
 
-   ./howto_guides/dielectric_constant
-   ./howto_guides/Saxs
-   ./howto_guides/radial_distribution_function
+   howto_guides/dielectric_constant
+   howto_guides/Saxs
+   howto_guides/radial_distribution_function
 
 .. toctree::
    :maxdepth: 4
    :caption: Module Documentation
    :hidden:
 
-   ./modules/density
-   ./modules/dielectric
-   ./modules/structure
-   ./modules/timeseries
-   ./modules/transport
+   modules/density
+   modules/dielectric
+   modules/structure
+   modules/timeseries
+   modules/transport
 
 .. toctree::
    :maxdepth: 4
    :caption: API Documentation
    :hidden:
 
-   ./api/core
-   ./api/lib
+   api/core
+   api/lib
 
 .. toctree::
    :maxdepth: 4
    :caption: Code philosophy
    :hidden:
    
-   ./code_philosophy/general_design
-   ./code_philosophy/dielectric
-   ./code_philosophy/saxs
-   ./code_philosophy/2d_rdf
+   code_philosophy/general_design
+   code_philosophy/dielectric
+   code_philosophy/saxs
+   code_philosophy/2d_rdf
 
 .. toctree::
    :maxdepth: 4
    :caption: Contributing
    :hidden:
 
-   ./documentation_pages/gettinginvolved
-   ./documentation_pages/authors
-   ./documentation_pages/changelog
+   documentation_pages/gettinginvolved
+   documentation_pages/authors
+   documentation_pages/changelog
 
 .. _`divio`: https://documentation.divio.com/
-
