@@ -42,13 +42,10 @@ Getting involved
 
 Contribution via merge requests are always welcome. Source code is
 available from `GitLab`_. Before submitting a merge request, please
-open an issue to discuss your changes. Use the main feature branch
-`develop` for submitting your requests. The master branch contains
-all commits of the latest release. More information on the branching
-model we used is given in this `nice post blog`_.
+open an issue to discuss your changes. Use only the `main` branch 
+for submitting your requests.
 
 .. _`gitlab` : https://gitlab.com/maicos-devel/maicos/
-.. _`nice post blog` : https://nvie.com/posts/a-successful-git-branching-model/
 
 Testing
 -------
