@@ -175,6 +175,10 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         self._prepare()
 
+        # Log bin information if a spatial analysis is run.
+        if hasattr(self, "n_bins"):
+            logger.info(f"Using {self.n_bins} bins.")
+
         module_has_save = callable(getattr(self.__class__, 'save', None))
 
         timeseries = np.zeros(self.n_frames)

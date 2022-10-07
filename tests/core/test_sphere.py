@@ -124,10 +124,10 @@ class TestSphereBase(object):
         """Test n bins."""
         sphere_class_obj = SphereClass(ag, pos_arg=42)
         caplog.set_level(logging.INFO)
-        sphere_class_obj._prepare()
+        sphere_class_obj.run()
 
         assert sphere_class_obj.n_bins == 10
-        assert "Using 10 bins" in [rec.message for rec in caplog.records]
+        assert "Using 10 bins." in [rec.message for rec in caplog.records]
 
     def test_rmin_default(self, ag):
         """Test default rmin."""
