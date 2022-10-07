@@ -204,10 +204,10 @@ class TestPlanarBase(object):
         """Test n bins."""
         planar_class_obj._verbose = True
         caplog.set_level(logging.INFO)
-        planar_class_obj._prepare()
+        planar_class_obj.run()
 
         assert planar_class_obj.n_bins == 60
-        assert "Using 60 bins" in [rec.message for rec in caplog.records]
+        assert "Using 60 bins." in [rec.message for rec in caplog.records]
 
     def test_zmin_default(self, ag):
         """Test default zmin."""

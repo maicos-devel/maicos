@@ -99,8 +99,6 @@ class CylinderBase(PlanarBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-        logger.info(f"Using {self.n_bins} bins")
-
     def transform_positions(self, positions):
         """Transform positions into cylinder coordinates.
 

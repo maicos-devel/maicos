@@ -114,8 +114,6 @@ class PlanarBase(AnalysisBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-        logger.info(f"Using {self.n_bins} bins")
-
     def _single_frame(self):
         """Single frame for the planar analysis."""
         self._compute_lab_frame_planar()

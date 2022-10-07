@@ -7,6 +7,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
 import os
 import sys
 
@@ -240,3 +241,19 @@ class Test_AnalysisBase(object):
         error_msg = 'Obervable observable has uncompatible type.'
         with pytest.raises(TypeError, match=error_msg):
             class_obj.run(stop=2)
+
+    def test_n_bins(self, ag, caplog):
+        """Test `n_bins` logger info."""
+        ana_obj = AnalysisBase(ag)
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        ana_obj.n_bins = 10
+
+        caplog.set_level(logging.INFO)
+        ana_obj.run(stop=1)
+
+        assert "Using 10 bins." in [rec.message for rec in caplog.records]
