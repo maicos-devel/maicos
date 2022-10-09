@@ -14,11 +14,10 @@ profile and dielectric spectrum from molecular simulation trajectory files.
 
 import logging
 
-import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
-from ..core import AnalysisBase, PlanarBase
+from ..core import AnalysisBase, CylinderBase, PlanarBase
 from ..lib.math import FT, iFT, symmetrize
 from ..lib.util import bin, charge_neutral, get_compound, render_docs
 
@@ -129,15 +128,12 @@ class DielectricPlanar(PlanarBase):
 
         self.comp = []
         self.inverse_ix = []
-        self.counts = []
 
         for sel in self.atomgroups:
             comp, ix = get_compound(sel.atoms, return_index=True)
-            _, inverse_ix, counts = np.unique(ix, return_counts=True,
-                                              return_inverse=True)
+            _, inverse_ix = np.unique(ix, return_inverse=True)
             self.comp.append(comp)
             self.inverse_ix.append(inverse_ix)
-            self.counts.append(counts)
 
     def _single_frame(self):
         super(DielectricPlanar, self)._single_frame()
@@ -180,11 +176,9 @@ class DielectricPlanar(PlanarBase):
             # that we avoid monopoles in z-direction
             # (compare Eq. 33 in Bonthuis 2012; we only
             # want to cut in x/y direction)
-
-            center = sel.center(weights=np.abs(sel.charges),
-                                compound=self.comp[i])[:, self.dim]
-
-            testpos = np.repeat(center, self.counts[i])[self.inverse_ix[i]]
+            testpos = \
+                sel.center(weights=np.abs(sel.charges),
+                           compound=self.comp[i])[self.inverse_ix[i], self.dim]
 
             # Average parallel directions
             for j, direction in enumerate(self.odims):
@@ -194,19 +188,17 @@ class DielectricPlanar(PlanarBase):
                 Ax = self._ts.dimensions[self.odims[1 - j]] \
                     * self._obs.bin_width
                 vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
-
-                xpos = np.zeros(len(sel))
-                np.clip(sel.atoms.positions[:, direction], 0, Lx, xpos)
+                xpos = np.clip(sel.atoms.positions[:, direction], 0, Lx)
 
                 curQx = np.histogram2d(
-                    testpos, xpos,
-                    bins=[self.n_bins, vbinsx],
-                    range=[[self.zmin, self.zmax], [0, Lx]],
+                    xpos, testpos,
+                    bins=[vbinsx, self.n_bins],
+                    range=[[0, Lx], [self.zmin, self.zmax]],
                     weights=sel.atoms.charges)[0]
 
                 # integral over x, so uniself._ts of area
-                curqx = -np.cumsum(curQx / Ax, axis=1).mean(axis=1)
-                self._obs.m_par[:, j, i] = curqx
+                self._obs.m_par[:, j, i] = \
+                    -np.cumsum(curQx / Ax, axis=0).mean(axis=0)
 
             # Can not use array for operations below,
             # without extensive reshaping of each array...
@@ -384,7 +376,7 @@ class DielectricPlanar(PlanarBase):
 
 @render_docs
 @charge_neutral(filter="error")
-class DielectricCylinder(AnalysisBase):
+class DielectricCylinder(CylinderBase):
     """Calculate cylindrical dielectric profiles.
 
     Components are calculated along the axial (z) and radial (along xy)
@@ -393,7 +385,7 @@ class DielectricCylinder(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
+    ${CYLINDER_CLASS_PARAMETERS}
     atomgroup : AtomGroup
         :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the dielectric profiles are calculated
@@ -410,14 +402,16 @@ class DielectricCylinder(AnalysisBase):
     temperature : float
         temperature (K)
     single : bool
-        "1D" line of watermolecules
+        For a single chain of molecules the average of M is zero. This flag sets
+        <M> = 0.
+    temperature : float
+        temperature (K)
     output_prefix : str
         Prefix for output_prefix files
 
     Attributes
     ----------
-    results.r : numpy.ndarray
-        bins
+    ${CYLINDER_CLASS_ATTRIBUTES}
     results.eps_ax : numpy.ndarray
         Parallel dielectric profile (ε_∥)
     results.deps_ax : numpy.ndarray
@@ -429,217 +423,137 @@ class DielectricCylinder(AnalysisBase):
     """
 
     def __init__(self,
-                 atomgroups,
-                 bin_width=0.5,
-                 geometry=None,
-                 radius=None,
-                 variable_dr=False,
-                 length=None,
+                 atomgroup,
+                 bin_width=0.1,
                  temperature=300,
                  single=False,
-                 unwrap=True,
                  output_prefix="eps_cyl",
-                 concfreq=0):
-        super(DielectricCylinder, self).__init__(atomgroups,
-                                                 unwrap=unwrap,
-                                                 concfreq=concfreq)
+                 refgroup=None,
+                 concfreq=0,
+                 dim=2,
+                 rmin=0,
+                 rmax=None,
+                 zmin=None,
+                 zmax=None,
+                 vcutwidth=0.1,
+                 unwrap=True):
+        super(DielectricCylinder, self).__init__(atomgroup,
+                                                 concfreq=concfreq,
+                                                 refgroup=refgroup,
+                                                 rmin=rmin,
+                                                 rmax=rmax,
+                                                 zmin=zmin,
+                                                 zmax=zmax,
+                                                 dim=dim,
+                                                 bin_width=bin_width,
+                                                 unwrap=unwrap)
         self.output_prefix = output_prefix
-        self.bin_width = bin_width
-        self.geometry = geometry
-        self.radius = radius
-        self.variable_dr = variable_dr
-        self.length = length
         self.temperature = temperature
         self.single = single
+        self.vcutwidth = vcutwidth
 
     def _prepare(self):
-        if self.geometry is not None:
-            self.com = self.system.atoms.center_of_mass(
-                mda.Universe(self.geometry))
-        else:
-            logger.info("No geometry set. "
-                        "Calculate center of geometry from box dimensions.")
-            self.com = self._universe.dimensions[:3] / 2
-
-        if self.radius is None:
-            logger.info("No radius set. Take smallest box extension.")
-            self.radius = self._universe.dimensions[:2].min() / 2
-
-        if self.length is None:
-            self.length = self._universe.dimensions[2]
-
-        self.n_bins = int(np.ceil(self.radius / self.bin_width))
-
-        if self.variable_dr:
-            # variable dr
-            sol = np.ones(self.n_bins) * self.radius**2 / self.n_bins
-            mat = np.diag(np.ones(self.n_bins)) + np.diag(
-                np.ones(self.n_bins - 1) * -1, k=-1)
-
-            self.r_bins = np.sqrt(np.linalg.solve(mat, sol))
-            self.dr = self.r_bins - np.insert(self.r_bins, 0, 0)[0:-1]
-        else:
-            # Constant dr
-            self.dr = np.ones(self.n_bins) * self.radius / self.n_bins
-            self.r_bins = np.arange(self.n_bins) * self.dr + self.dr
-
-        self.delta_r_sq = self.r_bins**2 - np.insert(self.r_bins, 0,
-                                                     0)[0:-1]**2  # r_o^2-r_i^2
-        self.r = np.copy(self.r_bins) - self.dr / 2
-
-        self.results.r = self.r
-
-        # Use resampling for error estimation.
-        # We do block averaging for 10 hardcoded blocks.
-        self.resample = 10
-        self.resample_freq = int(np.ceil(self.n_frames / self.resample))
-
-        self.m_rad = np.zeros((self.n_bins, self.resample))
-
-        self.M_rad = np.zeros((self.resample))
-        self.mM_rad = np.zeros(
-            (self.n_bins, self.resample))  # total fluctuations
-
-        self.m_ax = np.zeros((self.n_bins, self.resample))
-        self.M_ax = np.zeros((self.resample))
-        self.mM_ax = np.zeros((self.n_bins, self.resample)
-                              )  # total fluctuations
-
-        logger.info('Using', self.n_bins, 'bins.')
+        super(DielectricCylinder, self)._prepare()
+        self.comp, ix = get_compound(self.atomgroup.atoms, return_index=True)
+        _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
     def _single_frame(self):
-        # Transform from cartesian coordinates [x,y,z] to cylindrical
-        # coordinates [r,z] (skip phi because of symmetry)
-        positions_cyl = np.empty([self.atomgroup.positions.shape[0], 2])
-        positions_cyl[:, 0] = np.linalg.norm(
-            (self.atomgroup.positions[:, 0:2] - self.com[0:2]), axis=1)
-        positions_cyl[:, 1] = self.atomgroup.positions[:, 2]
-        positions_cyl[:, 1] %= self._ts.dimensions[2]
+        super(DielectricCylinder, self)._single_frame()
 
-        # Use polarization density ( for radial component )
+        # Use polarization density (for radial component)
         # ========================================================
-        curQ_rad = np.histogram(positions_cyl[:, 0],
-                                bins=self.n_bins,
-                                range=(0, self.radius),
-                                weights=self.atomgroup.charges)[0]
-        this_m_rad = -np.cumsum(
-            (curQ_rad / self.delta_r_sq) * self.r * self.dr) / (self.r * np.pi
-                                                                * self.length)
+        rbins = np.digitize(self.pos_cyl[:, 0], self._obs.bin_edges[1:])
 
-        this_M_rad = np.sum(this_m_rad * self.dr)
-        self.M_rad[self._frame_index // self.resample_freq] += this_M_rad
+        curQ_rad, _ = np.histogram(rbins,
+                                   bins=np.arange(self.n_bins + 1),
+                                   weights=self.atomgroup.charges)
 
-        self.m_rad[:, self._frame_index // self.resample_freq] += this_m_rad
-        self.mM_rad[:, self._frame_index
-                    // self.resample_freq] += this_m_rad * this_M_rad
-
+        self._obs.m_rad = -np.cumsum(
+            (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos
+            * self._obs.bin_width) / self._obs.bin_pos
+        self._obs.M_rad = np.sum(self._obs.m_rad * self._obs.bin_width)
+        self._obs.mM_rad = self._obs.m_rad * self._obs.M_rad
         # Use virtual cutting method ( for axial component )
         # ========================================================
-        nbinsz = 250  # number of virtual cuts ("many")
-
-        this_M_ax = np.dot(self.atomgroup.charges, positions_cyl[:, 1])
-        self.M_ax[self._frame_index // self.resample_freq] += this_M_ax
+        # number of virtual cuts ("many")
+        nbinsz = np.ceil(self._obs.L / self.vcutwidth).astype(int)
 
         # Move all r-positions to 'center of charge' such that we avoid
         # monopoles in r-direction. We only want to cut in z direction.
-        chargepos = positions_cyl * np.abs(
-            self.atomgroup.charges[:, np.newaxis])
-        centers = self.atomgroup.accumulate(
-            chargepos, compound=get_compound(self.atomgroup))
-        centers /= self.atomgroup.accumulate(
-            np.abs(self.atomgroup.charges),
-            compound=get_compound(self.atomgroup))[:, np.newaxis]
-        comp = get_compound(self.atomgroup)
-        if comp == "molecules":
-            repeats = np.unique(self.atomgroup.molnums, return_counts=True)[1]
-        elif comp == "fragments":
-            repeats = np.unique(self.atomgroup.fragindices,
-                                return_counts=True)[1]
-        else:
-            repeats = np.unique(self.atoms.resids, return_counts=True)[1]
-        testpos = np.empty(positions_cyl[:, 0].shape)
-        testpos = np.repeat(centers[:, 0], repeats)
+        chargepos = self.pos_cyl[:, 0] * np.abs(self.atomgroup.charges)
+        center = (self.atomgroup.accumulate(chargepos, compound=self.comp)
+                  / self.atomgroup.accumulate(np.abs(self.atomgroup.charges),
+                                              compound=self.comp))
+        testpos = center[self.inverse_ix]
+        rbins = np.digitize(testpos, self._obs.bin_edges[1:])
+        z = (np.arange(nbinsz) + 1) * (self._obs.L / nbinsz)
+        zbins = np.digitize(self.pos_cyl[:, 2], z)
 
-        curQz = np.histogram2d(
-            testpos,
-            positions_cyl[:, 1],
-            bins=(self.n_bins, nbinsz),
-            range=((0, self.radius),
-                   (0, self._ts.dimensions[2])),
-            weights=self.atomgroup.charges)[0]
-        curqz = np.cumsum(curQz,
-                          axis=1) / (np.pi * self.delta_r_sq)[:, np.newaxis]
+        curQz, _, _ = np.histogram2d(
+            zbins, rbins,
+            bins=[np.arange(nbinsz + 1), np.arange(self.n_bins + 1)],
+            weights=self.atomgroup.charges)
 
-        this_m_ax = -curqz.mean(axis=1)
-
-        self.m_ax[:, self._frame_index // self.resample_freq] += this_m_ax
-        self.mM_ax[:, self._frame_index
-                   // self.resample_freq] += this_m_ax * this_M_ax
+        curqz = np.cumsum(curQz, axis=0) / (self._obs.bin_area)[np.newaxis, :]
+        self._obs.m_ax = -curqz.mean(axis=0)
+        self._obs.M_ax = np.dot(self.atomgroup.charges, self.pos_cyl[:, 2])
+        self._obs.mM_ax = self._obs.m_ax * self._obs.M_ax
 
     def _conclude(self):
-        eps0inv = 1. / scipy.constants.epsilon_0
-        pref = (scipy.constants.elementary_charge)**2 / 1e-10
+        super(DielectricCylinder, self)._conclude()
 
-        if self.single:  # removed average of M if single line water.
-            cov_ax = self.mM_ax.sum(axis=1) / self._index
-            cov_rad = self.mM_rad.sum(axis=1) / self._index
+        pref = 1 / scipy.constants.epsilon_0
+        pref /= scipy.constants.Boltzmann * self.temperature
+        # Convert from ~e^2/m to ~base units
+        pref /= scipy.constants.angstrom / \
+            (scipy.constants.elementary_charge)**2
 
-            dcov_ax = (self.mM_ax.std(axis=1) / self._index * self.resample) \
-                / np.sqrt(self.resample - 1)
-            dcov_rad = (self.mM_rad.std(axis=1) / self._index * self.resample) \
-                / np.sqrt(self.resample - 1)
+        if not self.single:
+            cov_ax = self.means.mM_ax - self.means.m_ax * self.means.M_ax
+            cov_rad = self.means.mM_rad - self.means.m_rad * self.means.M_rad
+
+            dcov_ax = 0.5 * np.sqrt(
+                self.sems.mM_ax**2 + self.sems.m_ax**2 * self.means.M_ax**2
+                + self.means.m_ax**2 * self.sems.M_ax**2)
+            dcov_rad = 0.5 * np.sqrt(
+                self.sems.mM_rad**2 + self.sems.m_rad**2 * self.means.M_rad**2
+                + self.means.m_rad**2 * self.sems.M_rad**2)
         else:
-            cov_ax = self.mM_ax.sum(axis=1) / self._index - \
-                self.m_ax.sum(axis=1) / self._index * \
-                self.M_ax.sum() / self._index
-            cov_rad = self.mM_rad.sum(axis=1) / self._index - \
-                self.m_rad.sum(axis=1) / self._index * \
-                self.M_rad.sum() / self._index
+            # <M> = 0 for a single line of water molecules.
+            cov_ax = self.means.mM_ax
+            cov_rad = self.means.mM_rad
+            dcov_ax = self.sems.mM_ax
+            dcov_rad = self.sems.mM_rad
 
-            dcov_ax = np.sqrt(
-                (self.mM_ax.std(axis=1) / self._index * self.resample)**2
-                + (self.m_ax.std(axis=1) / self._index * self.resample
-                   * self.M_ax.sum() / self._index)**2
-                + (self.m_ax.sum(axis=1) / self._index * self.M_ax.std()
-                   / self._index * self.resample)**2
-                ) / np.sqrt(self.resample - 1)
-            dcov_rad = np.sqrt((self.mM_rad.std(axis=1)
-                                / self._index * self.resample)**2
-                               + (self.m_rad.std(axis=1)
-                                  / self._index * self.resample
-                                  * self.M_rad.sum() / self._index)**2
-                               + (self.m_rad.sum(axis=1)
-                                  / self._index * self.M_rad.std()
-                                  / self._index * self.resample)**2
-                               ) / np.sqrt(self.resample - 1)
+        self.results.eps_ax = 1 + pref * cov_ax
+        self.results.deps_ax = pref * dcov_ax
 
-        beta = 1 / (scipy.constants.Boltzmann * self.temperature)
-
-        self.results.eps_ax = 1 + beta * eps0inv * pref * cov_ax
-        self.results.deps_ax = beta * eps0inv * pref * dcov_ax
-
-        self.results.eps_rad = 1 - beta * eps0inv * pref * \
-            2 * np.pi * self.r * self.length * cov_rad
-        self.results.deps_rad = beta * eps0inv * pref * \
-            2 * np.pi * self.r * self.length * dcov_rad
+        self.results.eps_rad = 1 - (2 * np.pi * self._obs.L
+                                    * pref * self.results.bin_pos * cov_rad)
+        self.results.deps_rad = (2 * np.pi * self._obs.L
+                                 * pref * self.results.bin_pos * dcov_rad)
 
     def save(self):
         """Save result."""
         outdata_ax = np.array([
-            self.results.r, self.results.eps_ax, self.results.deps_ax
+            self.results.bin_pos, self.results.eps_ax, self.results.deps_ax
             ]).T
         outdata_rad = np.array([
-            self.results.r, self.results.eps_rad, self.results.deps_rad
+            self.results.bin_pos, self.results.eps_rad, self.results.deps_rad
             ]).T
 
-        columns = "positions [Å] | "
-        columns += "eps_sum"
-        columns += f" | {'eps_ax'} ({1}) | {'eps_ax'} ({1})"
-        columns += f" | {'eps_rad'} ({1}) error | {'eps_rad'} ({1}) error"
+        columns = ["positions [Å]"]
+
+        columns += ["eps_ax", "eps_ax error"]
 
         self.savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
                      outdata_ax,
                      columns=columns)
+
+        columns = ["positions [Å]"]
+
+        columns += ["eps_rad", "eps_rad error"]
+
         self.savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
                      outdata_rad,
                      columns=columns)
