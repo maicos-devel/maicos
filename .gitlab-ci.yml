@@ -1,11 +1,20 @@
 default:
+  image: python:3.10
   before_script:
     - python -m pip install -U tox
     - export USE_CYTHON=True
 
+.matrix:
+  image: python:$PYTHON_VERSION
+  needs: []
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.8', '3.9', '3.10']
+
 stages:
   - lint
   - build
+  - docs
   - tests
   - deploy
 
@@ -13,52 +22,33 @@ stages:
 ######### LINT ############
 ###########################
 
-.lint:
+lint:
   stage: lint
   needs: []
   script:
     - tox -e lint
 
-lint:3.8:
-  image: python:3.8
-  extends: .lint
-
-lint:3.9:
-  image: python:3.9
-  extends: .lint
-
-lint:3.10:
-  image: python:3.10
-  extends: .lint
-
 ###########################
 ######### BUILD ###########
 ###########################
 
-.build:
+build:
+  extends: .matrix
   stage: build
-  needs: []
   script:
     - tox -e build
   artifacts:
     paths:
       - dist
+    expire_in: 1 week
 
-build:3.8:
-  image: python:3.8
-  extends: .build
 
-build:3.9:
-  image: python:3.9
-  extends: .build
+###########################
+######### DOCS ############
+###########################
 
-build:3.10:
-  image: python:3.10
-  extends: .build
-
-build:docs:
-  image: python:3.10
-  stage: build
+docs:
+  stage: docs
   needs: []
   script:
     - apt-get update -q -y
@@ -72,9 +62,9 @@ build:docs:
 ######### TESTS ###########
 ###########################
 
-.tests:
+tests:
+  extends: .matrix
   stage: tests
-  needs: []
   variables:
     CODECOV_TOKEN: $CODECOV_TOKEN
   script:
@@ -84,18 +74,6 @@ build:docs:
     - chmod +x codecov
     - ./codecov -t $CODECOV_TOKEN
 
-tests:3.8:
-  image: python:3.8
-  extends: .tests
-
-tests:3.9:
-  image: python:3.9
-  extends: .tests
-
-tests:3.10:
-  image: python:3.10
-  extends: .tests
-
 ###########################
 ######## DEPLOY ###########
 ###########################
@@ -103,7 +81,6 @@ tests:3.10:
 # The name must be `pages`!
 # Otherwise webpage on gitlab.io will not be updated!
 pages:
-  image: python:3.10
   stage: deploy
   script:
     - cp -r dist/docs public
@@ -114,7 +91,6 @@ pages:
       - public
 
 pypi:
-  image: python:3.10
   stage: deploy
   variables:
     TWINE_USERNAME: $PYPI_USERNAME
