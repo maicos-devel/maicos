@@ -9,12 +9,15 @@
 """Tests for main."""
 
 import subprocess
+import sys
 
 import pytest
 
 from maicos import __all__ as available_modules
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="CLI not yet available on platform Windows")
 class Test_parse_args(object):
     """Tests for the parse argurment."""
 

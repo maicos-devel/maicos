@@ -1,8 +1,16 @@
+###########################
+######## TEMPLATES ########
+###########################
+
 default:
   image: python:3.10
+  tags:
+    - linux
   before_script:
     - python -m pip install -U tox
     - export USE_CYTHON=True
+  artifacts:
+    expire_in: 1 week
 
 .matrix:
   image: python:$PYTHON_VERSION
@@ -10,6 +18,21 @@ default:
   parallel:
     matrix:
       - PYTHON_VERSION: ['3.8', '3.9', '3.10']
+
+.windows:
+  extends: .matrix
+  tags:
+    - windows
+  before_script:
+    - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+    - choco install -y python --version=$PYTHON_VERSION --no-progress
+    - RefreshEnv
+    - python -m pip install -U tox
+    - $env:USE_CYTHON = "True"
+
+###########################
+######### STAGES ##########
+###########################
 
 stages:
   - lint
@@ -32,16 +55,23 @@ lint:
 ######### BUILD ###########
 ###########################
 
-build:
+build-linux:
   extends: .matrix
   stage: build
   script:
-    - tox -e build
+    - tox -e build-linux
   artifacts:
     paths:
       - dist
-    expire_in: 1 week
 
+build-windows:
+  extends: .windows
+  stage: build
+  script:
+    - tox -e build-windows
+  artifacts:
+    paths:
+      - dist
 
 ###########################
 ######### DOCS ############
@@ -62,7 +92,7 @@ docs:
 ######### TESTS ###########
 ###########################
 
-tests:
+tests-linux:
   extends: .matrix
   stage: tests
   variables:
@@ -73,6 +103,12 @@ tests:
     - curl -Os https://uploader.codecov.io/latest/linux/codecov
     - chmod +x codecov
     - ./codecov -t $CODECOV_TOKEN
+
+tests-windows:
+  extends: .windows
+  stage: tests
+  script:
+    - tox -e tests
 
 ###########################
 ######## DEPLOY ###########
