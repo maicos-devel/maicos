@@ -328,4 +328,4 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             header += '|'.join([f"{i:^26}"for i in columns])[2:]
 
         fname = "{}{}".format(fname, (not fname.endswith('.dat')) * '.dat')
-        np.savetxt(fname, X, header=header, fmt='% .18e ')
+        np.savetxt(fname, X, header=header, fmt='% .18e ', encoding='utf8')
