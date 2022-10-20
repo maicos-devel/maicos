@@ -105,8 +105,22 @@ html_static_path = []
 #using the keyboard’s left and right arrows. The default is False.
 html_theme_options = {
     "navigation_with_keys": True,
+    'footer_icons': [
+        {
+            'name': 'GitLab',
+            'url': 'https://gitlab.com/maicos-devel/maicos',
+            'html': '',
+            'class': 'fa-brands fa-gitlab fa-2x',
+        },
+    ],
 }
 
+# font-awesome logos
+html_css_files = [
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css',  # noqa: E501
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css',  # noqa: E501
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css',  # noqa: E501
+]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
