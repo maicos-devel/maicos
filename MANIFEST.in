@@ -6,8 +6,7 @@ graft src
 
 include *.rst
 include LICENSE
-include requirements.txt
-include requirements_setup.txt
+include versioneer.py
 
 exclude .codacy.yaml
 exclude .codeclimate.yml
@@ -16,7 +15,6 @@ exclude .gitignore
 exclude .gitlab-ci.yml
 exclude .readthedocs.yml
 exclude tox.ini
-exclude requirements_cython.txt
 
 prune .gitlab
 prune .tox

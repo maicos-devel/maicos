@@ -8,6 +8,8 @@ branch = true
 source =
     maicos
 parallel = true
+omit =
+    */src/maicos/_version.py
 
 [report]
 show_missing = true

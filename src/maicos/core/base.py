@@ -18,6 +18,7 @@ import numpy as np
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 
+from .._version import get_versions
 from ..lib.math import cluster_com, correlation_time, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
@@ -25,8 +26,10 @@ from ..lib.util import (
     get_compound,
     render_docs,
     )
-from ..version import __version__
 
+
+__version__ = get_versions()['version']
+del get_versions
 
 logger = logging.getLogger(__name__)
 
