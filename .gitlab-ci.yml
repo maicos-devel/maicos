@@ -49,7 +49,7 @@ lint:
   stage: lint
   needs: []
   script:
-    - tox -e lint
+    - python -m tox -e lint
 
 ###########################
 ######### BUILD ###########
@@ -59,7 +59,7 @@ build-linux:
   extends: .matrix
   stage: build
   script:
-    - tox -e build-linux
+    - python -m tox -e build-linux
   artifacts:
     paths:
       - dist
@@ -68,7 +68,7 @@ build-windows:
   extends: .windows
   stage: build
   script:
-    - tox -e build-windows
+    - python -m tox -e build-windows
   artifacts:
     paths:
       - dist
@@ -83,7 +83,7 @@ docs:
   script:
     - apt-get update -q -y
     - apt-get -y install pandoc gnuplot
-    - tox -e docs
+    - python -m tox -e docs
   artifacts:
     paths:
       - dist/docs
@@ -98,7 +98,7 @@ tests-linux:
   variables:
     CODECOV_TOKEN: $CODECOV_TOKEN
   script:
-    - tox -e tests
+    - python -m tox -e tests
   after_script:
     - curl -Os https://uploader.codecov.io/latest/linux/codecov
     - chmod +x codecov
@@ -108,7 +108,7 @@ tests-windows:
   extends: .windows
   stage: tests
   script:
-    - tox -e tests
+    - python -m tox -e tests
 
 ###########################
 ######## DEPLOY ###########
@@ -132,7 +132,7 @@ pypi:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
-    - pip install twine
-    - twine upload --verbose dist/*.tar.gz dist/*.whl
+    - python -m pip install twine
+    - python -m twine upload --verbose dist/*.tar.gz dist/*.whl
   only:
     - tags
