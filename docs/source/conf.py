@@ -11,22 +11,15 @@
 # To link modules with autodoc
 import os
 import sys
-
+import importlib
 
 sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 project = 'MAICoS'
 copyright = 'All source code is available under the GNU General Public License v3.0'
-author = 'See the file AUTHORS for the full list of names.'
-
-# The short X.Y version
-# NOTE: keep in sync with VERSION in setup.py
-# NOTE: keep in sync with __version__ in maicos.version.py
-version = '0.7'
-# The full version, including alpha/beta/rc tags
-release = version + "-dev"
-
+author = importlib.import_module('maicos').__authors__
+version = importlib.import_module('maicos').__version__
 
 # -- General configuration ---------------------------------------------------
 

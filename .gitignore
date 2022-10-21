@@ -56,7 +56,6 @@ docs/latex
 
 # Allow maicos share text files
 !maicos/share/*.dat
-!*requirements*.txt
 
 # editors and IDEs
 *.sw[a-z]

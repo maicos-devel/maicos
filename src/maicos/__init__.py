@@ -28,6 +28,7 @@ import os
 import sys
 import warnings
 
+from ._version import get_versions
 from .modules.density import (
     ChemicalPotentialPlanar,
     DensityCylinder,
@@ -42,7 +43,6 @@ from .modules.dielectric import (
 from .modules.structure import Diporder, RDFPlanar, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy
 from .modules.transport import VelocityCylinder, VelocityPlanar
-from .version import __version__
 
 
 try:
@@ -54,6 +54,15 @@ except ImportError:
     pass
 
 __authors__ = "MAICoS Developer Team"
+ #: Version information for MAICoS, following :pep:`440`
+ #: and `semantic versioning <http://semver.org/>`_.
+__version__ = get_versions()['version']
+del get_versions
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')
+
+from . import _version
+
+
+__version__ = _version.get_versions()['version']

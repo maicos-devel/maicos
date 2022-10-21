@@ -10,9 +10,6 @@ Credit to MDAnalysis setup.py.
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-from __future__ import print_function
-
 import os
 import shutil
 import sys
@@ -23,11 +20,11 @@ from distutils.sysconfig import customize_compiler
 import numpy as np
 from setuptools import Extension, setup
 
+import versioneer
 
-# NOTE: keep in sync with __version__ in maicos.version.py
-# NOTE: keep in sync with version in docs/source/conf.py
-VERSION = "0.7-dev"
-is_release = 'dev' not in VERSION
+
+VERSION = versioneer.get_version()
+is_release = '+' not in VERSION
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
@@ -131,4 +128,6 @@ if __name__ == "__main__":
                                   "install, or a failed/disabled "
                                   "Cython build.")
 
-    setup(ext_modules=extensions)
+    setup(cmdclass=versioneer.get_cmdclass(),
+          version=VERSION,
+          ext_modules=extensions)
