@@ -13,7 +13,8 @@ requires = [
     "numpy==1.21.0; python_version=='3.9' and platform_machine=='arm64' and platform_system=='Darwin'",
     # As per https://github.com/scipy/oldest-supported-numpy/blob/main/setup.cfg
     # safest to build at 1.21.6 for all platforms
-    "numpy==1.21.6; python_version=='3.10' and platform_python_implementation != 'PyPy'",
+    "numpy==1.21.6; python_version=='3.10' and (platform_system!='Windows' and platform_machine!='loongarch64') and platform_python_implementation != 'PyPy'",
+    "numpy==1.23.2; python_version=='3.11' and platform_python_implementation != 'PyPy'",
     "setuptools>=43.0.0",
     "setuptools-git-versioning<2",
     "versioneer",
