@@ -1,4 +1,4 @@
-.. image:: https://gitlab.com/maicos-devel/maicos/-/raw/main/docs/source/images/logo_MAICOS_small.png
+.. image:: https://gitlab.com/maicos-devel/maicos/-/raw/main/docs/static/logo_MAICOS_small.png
    :align: left
    :alt: MAICoS
 
@@ -14,20 +14,39 @@ including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
 MAICoS is a tool for beginners of molecular simulations with no Python
-experience. For these users MAICoS provides a descriptive command line interface. 
-Also experienced users can use the Python API for their day to day analysis or 
-use the provided infrastructure to build their own analysis for interfacial 
+experience. For these users MAICoS provides a descriptive command line interface.
+Also experienced users can use the Python API for their day to day analysis or
+use the provided infrastructure to build their own analysis for interfacial
 and confined systems.
 
-Keep up to date with MAICoS news by following us on `Twitter`_. 
+Keep up to date with MAICoS news by following us on `Twitter`_.
+If you find an issue, you can report it on `Gitlab`_.
+You can also join the developer team on Discord_
+to discuss possible improvements and usages of MAICoS
 
-If you are using an older version of MAICoS, you can access the corresponding
-documentation on `ReadTheDocs`_.
+
+Keep up to date with MAICoS news by following us on `Twitter`_. If you find an
+issue, you can report it on `Gitlab`_. You can also join the developer team on
+`Discord`_ to discuss possible improvements and usages of MAICoS.
+
+.. _`Twitter`: https://twitter.com/maicos_analysis
+.. _`Discord`: https://discord.com/channels/869537986977603604
+.. _`Gitlab`: https://gitlab.com/maicos-devel/maicos
+.. _`Python3`: https://www.python.org
+.. _`Cython` : https://cython.org/
+.. _`MDAnalysis`: https://www.mdanalysis.org
 
 .. inclusion-readme-intro-end
 
+Documentation
+#############
+
 For details, tutorials, and examples, please have a look at
-our `documentation`_.
+our `documentation`_. If you are using an older version of MAICoS,
+you can access the corresponding documentation on `ReadTheDocs`_.
+
+.. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
+.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
 
 Basic example
 #############
@@ -48,6 +67,8 @@ correspond to a water slab in vacuum that was simulated in this case using the
 
 
 Results can be accessed from ``dplan.results``.
+
+.. _`GROMACS` : https://www.gromacs.org/
 
 Installation
 ############
@@ -110,14 +131,5 @@ List of analysis modules
      - mean velocity profile in a cartesian geometry
    * - VelocityCylinder
      - mean velocity profile in a cylindrical geometry
-
-
-.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
-.. _`Twitter`: https://twitter.com/maicos_analysis
-.. _`Python3`: https://www.python.org
-.. _`Cython` : https://cython.org/
-.. _`GROMACS` : https://www.gromacs.org/
-.. _`MDAnalysis`: https://www.mdanalysis.org
-.. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
 
 .. inclusion-marker-modules-end

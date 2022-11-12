@@ -35,7 +35,7 @@ scattered photons as a function of the scattering angle :math:`2\theta`, i.e.
 the intensity of the scattered rays across a range of small angles.
 The general set-up of a SAXS experiment is shown in figure below
 
-.. image:: ../images/saxs.png
+.. image:: ../../static/saxs.png
    :alt: Setup of a SAXS 
 
 The experiments are carried out by placing the sample of interest in a highly 
