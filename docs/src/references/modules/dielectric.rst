@@ -13,4 +13,5 @@ Dielectric modules
 
    dielectric_planar
    dielectric_cylinder
+   dielectric_sphere
    dielectric_spectrum

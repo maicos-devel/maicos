@@ -13,5 +13,6 @@ Density modules
 
    density_planar
    density_cylinder
+   density_sphere
    chemical_potential_planar
    temperature_planar
