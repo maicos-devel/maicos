@@ -24,7 +24,7 @@ import warnings
 import numpy as np
 from MDAnalysis.exceptions import NoDataError
 
-from ..core import ProfileCylinderBase, ProfilePlanarBase
+from ..core import ProfileCylinderBase, ProfilePlanarBase, ProfileSphereBase
 from ..lib.math import dmu, mu
 from ..lib.util import atomgroup_header, render_docs
 from ..lib.weights import density_weights, temperature_weights
@@ -378,6 +378,64 @@ class DensityCylinder(ProfileCylinderBase):
             dim=dim,
             zmin=zmin,
             zmax=zmax,
+            bin_width=bin_width,
+            rmin=rmin,
+            rmax=rmax,
+            refgroup=refgroup,
+            grouping=grouping,
+            unwrap=unwrap,
+            bin_method=bin_method,
+            output=output,
+            concfreq=concfreq)
+
+
+@render_docs
+class DensitySphere(ProfileSphereBase):
+    r"""Compute partial densities across a spahere.
+
+    Calculation are carried out for mass
+    (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
+    charge (:math:`\rm e \cdot A^{-3}`) density profiles along the radial
+    axes.
+
+    For grouping with respect to molecules, residues etc. the corresponding
+    centers (i.e center of mass) using of periodic boundary conditions
+    are calculated.
+    For these center calculations molecules will be unwrapped/made whole.
+    Trajectories containing already whole molecules can be run with
+    `unwrap=False` to gain a speedup.
+    For grouping with respect to atoms the `unwrap` option is always
+    ignored.
+
+    Parameters
+    ----------
+    ${PROFILE_SPHERE_CLASS_PARAMETERS}
+    dens : str {'mass', 'number', 'charge'}
+        density type to be calculated
+
+    Attributes
+    ----------
+    ${PROFILE_SPHERE_CLASS_ATTRIBUTES}
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 dens="mass",
+                 bin_width=1,
+                 rmin=0,
+                 rmax=None,
+                 refgroup=None,
+                 grouping="atoms",
+                 unwrap=True,
+                 bin_method="com",
+                 output="density.dat",
+                 concfreq=0):
+
+        super(DensitySphere, self).__init__(
+            weighting_function=density_weights,
+            f_kwargs={"dens": dens},
+            normalization="volume",
+            atomgroups=atomgroups,
             bin_width=bin_width,
             rmin=rmin,
             rmax=rmax,
