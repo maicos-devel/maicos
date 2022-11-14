@@ -244,7 +244,7 @@ class Diporder(ProfilePlanarBase):
                  sym=False,
                  grouping="residues",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="diporder.dat",
                  concfreq=0,
                  order_parameter="P0"):
@@ -255,7 +255,7 @@ class Diporder(ProfilePlanarBase):
             normalization = "number"
 
         super(Diporder, self).__init__(
-            function=diporder_weights,
+            weighting_function=diporder_weights,
             f_kwargs={"dim": dim, "order_parameter": order_parameter},
             normalization=normalization,
             atomgroups=atomgroups,
@@ -267,7 +267,7 @@ class Diporder(ProfilePlanarBase):
             sym=sym,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
 
@@ -309,7 +309,7 @@ class RDFPlanar(PlanarBase):
         dz height of a RDF slab (Å)
     range: (float, float)
         the minimum and maximum pairwise distance between 'g1' and 'g2'. (Å)
-    binmethod : str
+    bin_method : str
         Method for position binning; possible options are
         center of geometry (cog), center of mass (com) or
         center of charge (coc).
@@ -332,7 +332,7 @@ class RDFPlanar(PlanarBase):
                  rdf_bin_width=0.3,
                  dzheight=0.1,
                  range=(0.0, None),
-                 binmethod="com",
+                 bin_method="com",
                  output="rdf.dat",
                  # Planar base arguments
                  refgroup=None,
@@ -361,7 +361,7 @@ class RDFPlanar(PlanarBase):
         self.rdf_bin_width = rdf_bin_width
         self.dzheight = dzheight
         self.output = output
-        self.binmethod = binmethod.lower()
+        self.bin_method = bin_method.lower()
 
     def _prepare(self):
         super(RDFPlanar, self)._prepare()
@@ -385,8 +385,8 @@ class RDFPlanar(PlanarBase):
         except TypeError:
             raise ValueError("RDF bin_width must be a number.")
 
-        if self.binmethod not in ["cog", "com", "coc"]:
-            raise ValueError(f"{self.binmethod} is an unknown binning "
+        if self.bin_method not in ["cog", "com", "coc"]:
+            raise ValueError(f"{self.bin_method} is an unknown binning "
                              "method. Use `cog`, `com` or `coc`.")
 
         logger.info(f"Using {self.rdf_nbins} rdf bins.")
@@ -405,17 +405,17 @@ class RDFPlanar(PlanarBase):
         super(RDFPlanar, self)._single_frame()
         bin_width = (self.zmax - self.zmin) / self.n_bins
 
-        if self.binmethod == 'com':
+        if self.bin_method == 'com':
             g1_bin_positions = self.g1.center_of_mass(
                 compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_mass(
                 compound=get_compound(self.g2))
-        elif self.binmethod == 'coc':
+        elif self.bin_method == 'coc':
             g1_bin_positions = self.g1.center_of_charge(
                 compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_charge(
                 compound=get_compound(self.g2))
-        elif self.binmethod == 'cog':
+        elif self.bin_method == 'cog':
             g1_bin_positions = self.g1.center_of_geometry(
                 compound=get_compound(self.g1))
             g2_bin_positions = self.g2.center_of_geometry(

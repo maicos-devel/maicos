@@ -122,7 +122,7 @@ doc_dict = dict(
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the calculations are performed.""",
     ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for whiches
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the calculations are performed.""",
     BASE_CLASS_PARAMETERS="""refgroup : AtomGroup
         Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the
@@ -153,7 +153,21 @@ doc_dict = dict(
     concfreq : int,
         When concfreq (for conclude frequency) is larger than 0,
         the conclude function is called and the output files are
-        written every number=concfreq frames""",
+        written every concfreq frames""",
+    PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
+        The function calculating the array weights for the histogram analysis.
+        It must take an `Atomgroup` as first argument and a
+        grouping ('atoms', 'residues', 'segments', 'molecules', 'fragments')
+        as second. Additional parameters can
+        be given as `f_kwargs`. The function must return a numpy.ndarray with
+        the same length as the number of group members.
+    normalization : str {'None', 'number', 'volume'}
+        The normalization of the profile performed in every frame.
+        If `None` no normalization is performed. If `number` the histogram
+        is divided by the number of occurences in each bin. If `volume` the
+        profile is divided by the volume of each bin.
+    f_kwargs : dict
+        Additional parameters for `function`""",
     PLANAR_CLASS_PARAMETERS="""dim : int,
         Dimension for binning (x=0, y=1, z=2).
     zmin : float,
@@ -188,7 +202,7 @@ doc_dict = dict(
           the case where grouping='atoms') or the center of mass of
           the specified grouping unit (in the case where
           grouping='residues', 'segments', 'molecules' or 'fragments').
-    binmethod : str, {'cog', 'com', 'coc'}"""
+    bin_method : str, {'cog', 'com', 'coc'}"""
     """
         Method for the position binning.
 

@@ -250,8 +250,8 @@ class TestRDFPlanar(object):
         bin3 = 2 / (np.pi * (10**2 - 9**2)) / 6 / 2
         assert_allclose(rdfplanar.results.rdf[:, 0], [bin1, bin2, bin3])
 
-    def run_rdf_with_binmethod(self, get_universe, binmethod):
-        """Run rdf with binmethod and zmax.
+    def run_rdf_with_bin_method(self, get_universe, bin_method):
+        """Run rdf with bin_method and zmax.
 
         Because  0 < z < 10.1 com has 3 atom layers, but cog only 2
         rdf counts differ between com and cog.
@@ -261,23 +261,23 @@ class TestRDFPlanar(object):
         rdfplanar = RDFPlanar(grp_water, grp_water, rdf_bin_width=1,
                               range=(7, 10), dzheight=2,
                               zmax=10 + z_dist_OH / 4, bin_width=20,
-                              binmethod=binmethod)
+                              bin_method=bin_method)
         rdfplanar.run()
         return rdfplanar
 
-    @pytest.mark.parametrize("binmethod, count", [("com", 24),
-                                                  ("coc", 16),
-                                                  ("cog", 16)])
-    def test_binmethod(self, get_universe, binmethod, count):
-        """Test binmethods."""
-        rdfplanar = self.run_rdf_with_binmethod(
-            get_universe, binmethod=binmethod)
+    @pytest.mark.parametrize("bin_method, count", [("com", 24),
+                                                   ("coc", 16),
+                                                   ("cog", 16)])
+    def test_bin_method(self, get_universe, bin_method, count):
+        """Test bin_methods."""
+        rdfplanar = self.run_rdf_with_bin_method(
+            get_universe, bin_method=bin_method)
         assert_allclose(rdfplanar.means.count[0], [0, 0, count])
 
-    def test_wrong_binmethod(self, get_universe):
-        """Test grouping for a non existing binmethod."""
+    def test_wrong_bin_method(self, get_universe):
+        """Test grouping for a non existing bin_method."""
         with pytest.raises(ValueError, match="is an unknown binning"):
-            self.run_rdf(get_universe, binmethod="foo")
+            self.run_rdf(get_universe, bin_method="foo")
 
     def test_large_range(self, get_universe):
         """Test that range is larger thanhalf of the cell length."""

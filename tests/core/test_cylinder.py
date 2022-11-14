@@ -439,7 +439,7 @@ class TestProfileCylinderBase:
     @pytest.fixture()
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(function=self.weights,
+        p = dict(weighting_function=self.weights,
                  atomgroups=u.atoms,
                  normalization="number",
                  dim=2,
@@ -451,7 +451,7 @@ class TestProfileCylinderBase:
                  refgroup=None,
                  grouping="atoms",
                  unwrap=False,
-                 binmethod="com",
+                 bin_method="com",
                  concfreq=0,
                  output="profile.dat")
         return p
@@ -505,108 +505,36 @@ class TestProfileCylinderBase:
 
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("binmethod, desired",
+    @pytest.mark.parametrize("bin_method, desired",
                              [("cog", [1, 1]),
                               ("com", [2, 0]),
                               ("coc", [1, 1])])
-    def test_binmethod(self, u_dimers, binmethod, desired, params):
+    def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
                       bin_width=1,
-                      binmethod=binmethod,
+                      bin_method=bin_method,
                       normalization="none",
                       grouping="molecules")
         profile = ProfileCylinderBase(**params).run()
         actual = profile.results.profile_mean.flatten()
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("unwrap, desired",
-                             [(False, [1, 1]), (True, [2, 0])])
-    def test_unwrap(self, u_dimers, unwrap, desired, params):
-        """Test making molecules whole."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      unwrap=unwrap,
-                      binmethod='cog',
-                      normalization="none",
-                      grouping="molecules")
+    def test_histogram(self, params):
+        """Test the histogram method."""
+        p = ProfileCylinderBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None)
 
-        profile = ProfileCylinderBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
-        assert_equal(actual, desired)
+        assert_equal(hist, [0, 2, 0, 0, 2, 0, 0, 2, 0, 0])
 
-    def test_wrong_normalization(self, params):
-        """Test profile for a non existing normalization."""
-        params.update(normalization="foo")
+    def test_histogram_weight(self, params):
+        """Test the histogram method with weights."""
+        p = ProfileCylinderBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
+            weights=5 * np.ones(p.n_bins))
 
-        with pytest.raises(ValueError, match="not supported"):
-            ProfileCylinderBase(**params).run()
-
-    def test_wrong_grouping(self, params):
-        """Test grouping for a non existing type."""
-        params.update(grouping="foo")
-
-        with pytest.raises(ValueError, match="is not a valid option for"):
-            ProfileCylinderBase(**params).run()
-
-    def test_wrong_binmethod(self, params):
-        """Test error raise for a non existing binmethod."""
-        params.update(binmethod="foo")
-
-        with pytest.raises(ValueError, match="is an unknown binning"):
-            ProfileCylinderBase(**params).run()
-
-    def test_unwrap_atoms(self, params):
-        """Test that unwrap is always False for grouping wrt to atoms."""
-        params.update(unwrap=True, grouping="atoms")
-        profile = ProfileCylinderBase(**params).run(stop=1)
-        assert profile.unwrap is False
-
-    def test_f_kwargs(self, params):
-        """Test an extra keyword argument."""
-        scale = 3
-        params.update(f_kwargs={"scale": scale})
-        profile = ProfileCylinderBase(**params).run()
-
-        actual = profile.results.profile_mean.flatten()
-        desired = np.nan * np.ones(profile.n_bins)
-        desired[:5] = scale
-
-        assert_allclose(actual, desired, rtol=1e-2)
-
-    def test_multigroup(self, u, params):
-        """Test analysis for a list of atomgroups."""
-        params.update(atomgroups=[u.atoms, u.atoms])
-        profile = ProfileCylinderBase(**params).run()
-
-        actual = profile.results.profile_mean
-        desired = np.nan * np.ones([profile.n_bins, 2])
-        desired[:5, :] = 1
-
-        assert_allclose(actual, desired, rtol=1e-2)
-
-    def test_output_name(self, params):
-        """Test output name of save method."""
-        params.update(output="foo.dat")
-        profile = ProfileCylinderBase(**params).run(stop=1)
-        profile.save()
-        assert os.path.exists(params["output"])
-
-    def test_output(self, params, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            profile = ProfileCylinderBase(**params).run(stop=1)
-            profile.save()
-            res_dens = np.loadtxt(profile.output)
-
-        assert_allclose(profile.results.bin_pos,
-                        res_dens[:, 0],
-                        rtol=2)
-
-        assert_allclose(profile.results.profile_mean[:, 0],
-                        res_dens[:, 1],
-                        rtol=2)
-
-        assert_allclose(profile.results.profile_err[:, 0],
-                        res_dens[:, 2],
-                        rtol=2)
+        assert_equal(hist, [0, 10, 0, 0, 10, 0, 0, 10, 0, 0])

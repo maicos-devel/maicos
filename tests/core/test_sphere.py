@@ -418,7 +418,7 @@ class TestProfileSphereBase:
     @pytest.fixture()
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(function=self.weights,
+        p = dict(weighting_function=self.weights,
                  atomgroups=u.atoms,
                  normalization="number",
                  rmin=0,
@@ -427,7 +427,7 @@ class TestProfileSphereBase:
                  refgroup=None,
                  grouping="atoms",
                  unwrap=False,
-                 binmethod="com",
+                 bin_method="com",
                  concfreq=0,
                  output="profile.dat")
         return p
@@ -478,16 +478,16 @@ class TestProfileSphereBase:
 
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("binmethod, desired",
+    @pytest.mark.parametrize("bin_method, desired",
                              [("cog", [np.nan, 1]),
                               ("com", [1, 1]),
                               ("coc", [np.nan, 1])])
-    def test_binmethod(self, u_dimers, binmethod, desired, params):
+    def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
         params.update(atomgroups=u_dimers.atoms,
                       bin_width=1,
                       rmax=2,
-                      binmethod=binmethod,
+                      bin_method=bin_method,
                       grouping="molecules")
         profile = ProfileSphereBase(**params).run()
         actual = profile.results.profile_mean.flatten()
@@ -501,7 +501,7 @@ class TestProfileSphereBase:
                       bin_width=1,
                       rmax=2,
                       unwrap=unwrap,
-                      binmethod='com',
+                      bin_method='com',
                       normalization="none",
                       grouping="molecules")
 
@@ -509,80 +509,21 @@ class TestProfileSphereBase:
         actual = profile.results.profile_mean.flatten()
         assert_equal(actual, desired)
 
-    def test_wrong_normalization(self, params):
-        """Test profile for a non existing normalization."""
-        params.update(normalization="foo")
+    def test_histogram(self, params):
+        """Test the histogram method."""
+        p = ProfileSphereBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins), weights=None)
 
-        with pytest.raises(ValueError, match="not supported"):
-            ProfileSphereBase(**params).run()
+        assert_equal(hist, [1, 1, 0, 1, 0, 1, 0, 1, 0, 1])
 
-    def test_wrong_grouping(self, params):
-        """Test grouping for a non existing type."""
-        params.update(grouping="foo")
+    def test_histogram_weight(self, params):
+        """Test the histogram method with weights."""
+        p = ProfileSphereBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins),
+            weights=5 * np.ones(p.n_bins))
 
-        with pytest.raises(ValueError, match="is not a valid option for"):
-            ProfileSphereBase(**params).run()
-
-    def test_wrong_binmethod(self, params):
-        """Test error raise for a non existing binmethod."""
-        params.update(binmethod="foo")
-
-        with pytest.raises(ValueError, match="is an unknown binning"):
-            ProfileSphereBase(**params).run()
-
-    def test_unwrap_atoms(self, params):
-        """Test that unwrap is always False for grouping wrt to atoms."""
-        params.update(unwrap=True, grouping="atoms")
-        profile = ProfileSphereBase(**params).run(stop=1)
-        assert profile.unwrap is False
-
-    def test_f_kwargs(self, params):
-        """Test an extra keyword argument."""
-        scale = 3
-        params.update(f_kwargs={"scale": scale})
-        profile = ProfileSphereBase(**params).run()
-
-        actual = profile.results.profile_mean.flatten()
-        desired = np.nan * np.ones(profile.n_bins)
-        desired[:5] = scale
-        desired[0] = scale * 0.63
-
-        assert_allclose(actual, desired, rtol=1e-2)
-
-    def test_multigroup(self, u, params):
-        """Test analysis for a list of atomgroups."""
-        params.update(atomgroups=[u.atoms, u.atoms])
-        profile = ProfileSphereBase(**params).run()
-
-        actual = profile.results.profile_mean
-        desired = np.nan * np.ones([profile.n_bins, 2])
-        desired[:5, :] = 1
-        desired[0, :] = 0.63
-
-        assert_allclose(actual, desired, rtol=1e-2)
-
-    def test_output_name(self, params):
-        """Test output name of save method."""
-        params.update(output="foo.dat")
-        profile = ProfileSphereBase(**params).run(stop=1)
-        profile.save()
-        assert os.path.exists(params["output"])
-
-    def test_output(self, params, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            profile = ProfileSphereBase(**params).run(stop=1)
-            profile.save()
-            res_dens = np.loadtxt(profile.output)
-
-        assert_allclose(profile.results.bin_pos,
-                        res_dens[:, 0],
-                        rtol=2)
-
-        assert_allclose(profile.results.profile_mean[:, 0],
-                        res_dens[:, 1],
-                        rtol=2)
-
-        assert_allclose(profile.results.profile_err[:, 0],
-                        res_dens[:, 2],
-                        rtol=2)
+        assert_equal(hist, [5, 5, 0, 5, 0, 5, 0, 5, 0, 5])

@@ -71,7 +71,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  sym=False,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="density.dat",
                  concfreq=0,
                  center=False,
@@ -80,7 +80,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  zpos=None,
                  muout="muout.dat"):
         super(ChemicalPotentialPlanar, self).__init__(
-            function=density_weights,
+            weighting_function=density_weights,
             f_kwargs={"dens": "number"},
             normalization="volume",
             atomgroups=atomgroups,
@@ -92,7 +92,7 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             sym=sym,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
 
@@ -241,12 +241,12 @@ class TemperaturePlanar(ProfilePlanarBase):
                  sym=False,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="temperature.dat",
                  concfreq=0):
 
         super(TemperaturePlanar, self).__init__(
-            function=temperature_weights,
+            weighting_function=temperature_weights,
             normalization="number",
             atomgroups=atomgroups,
             dim=dim,
@@ -257,7 +257,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             sym=sym,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
 
@@ -303,12 +303,12 @@ class DensityPlanar(ProfilePlanarBase):
                  sym=False,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="density.dat",
                  concfreq=0):
 
         super(DensityPlanar, self).__init__(
-            function=density_weights,
+            weighting_function=density_weights,
             f_kwargs={"dens": dens},
             normalization="volume",
             atomgroups=atomgroups,
@@ -320,7 +320,7 @@ class DensityPlanar(ProfilePlanarBase):
             sym=sym,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
 
@@ -366,12 +366,12 @@ class DensityCylinder(ProfileCylinderBase):
                  refgroup=None,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="density.dat",
                  concfreq=0):
 
         super(DensityCylinder, self).__init__(
-            function=density_weights,
+            weighting_function=density_weights,
             f_kwargs={"dens": dens},
             normalization="volume",
             atomgroups=atomgroups,
@@ -384,6 +384,6 @@ class DensityCylinder(ProfileCylinderBase):
             refgroup=refgroup,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
