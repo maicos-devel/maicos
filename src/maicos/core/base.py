@@ -50,8 +50,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
     Parameters
     ----------
-    atomgroups : MDAnalysis.core.groups.AtomGroup or list[AtomGroup]
-        Atomgroups taken for the Analysis
+    ${ATOMGROUPS_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     multi_group : bool
         Analysis is able to work with list of atomgroups
@@ -332,3 +331,148 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         fname = "{}{}".format(fname, (not fname.endswith('.dat')) * '.dat')
         np.savetxt(fname, X, header=header, fmt='% .18e ', encoding='utf8')
+
+
+@render_docs
+class ProfileBase:
+    """Base class for computing profiles.
+
+    Parameters
+    ----------
+    ${ATOMGROUPS_PARAMETER}
+    ${PROFILE_CLASS_PARAMETERS}
+    ${PROFILE_CLASS_PARAMETERS_PRIVATE}
+
+    Attributes
+    ----------
+    ${PROFILE_CLASS_ATTRIBUTES}
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 weighting_function,
+                 normalization,
+                 grouping,
+                 bin_method,
+                 output,
+                 f_kwargs=None,):
+        self.atomgroups = atomgroups
+        self.normalization = normalization.lower()
+        self.grouping = grouping.lower()
+        self.bin_method = bin_method.lower()
+        self.output = output
+
+        if f_kwargs is None:
+            f_kwargs = {}
+
+        self.weighting_function = lambda ag: weighting_function(ag,
+                                                                grouping,
+                                                                **f_kwargs)
+        self.results = Results()
+        self._obs = Results()
+
+    def _prepare(self):
+        normalizations = ["none", "volume", "number"]
+        if self.normalization not in normalizations:
+            raise ValueError(f"`{self.normalization}` not supported. "
+                             f"Use {', '.join(normalizations)}.")
+
+        groupings = ["atoms", "segments", "residues", "molecules", "fragments"]
+        if self.grouping not in groupings:
+            raise ValueError(f"`{self.grouping}` is not a valid option for "
+                             f"grouping. Use {', '.join(groupings)}.")
+
+        # If unwrap has not been set we define it here
+        if not hasattr(self, "unwrap"):
+            self.unwrap = True
+
+        if self.unwrap and self.grouping == "atoms":
+            logger.warning("Unwrapping in combination with atom grouping "
+                           "is superfluous. `unwrap` will be set to `False`.")
+            self.unwrap = False
+
+        bin_methods = ["cog", "com", "coc"]
+        if self.bin_method not in bin_methods:
+            raise ValueError(f"`{self.bin_method}` is an unknown binning "
+                             f"method. Use {', '.join(bin_methods)}.")
+
+        # Arrays for accumulation
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
+
+        if self.normalization == 'number':
+            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
+
+    def _compute_histogram(self, positions, weights=None):
+        """Calculate histogram based on positions.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            positions
+        weights : numpy.ndarray
+            weights for the histogram.
+
+        Returns
+        -------
+        hist : numpy.ndarray
+            histogram
+        """
+        raise NotImplementedError("Only implemented in child classes")
+
+    def _single_frame(self):
+        for index, selection in enumerate(self.atomgroups):
+            if self.grouping == 'atoms':
+                positions = selection.atoms.positions
+            else:
+                kwargs = dict(compound=self.grouping)
+                if self.bin_method == "cog":
+                    positions = selection.atoms.center_of_geometry(**kwargs)
+                elif self.bin_method == "com":
+                    positions = selection.atoms.center_of_mass(**kwargs)
+                elif self.bin_method == "coc":
+                    positions = selection.atoms.center_of_charge(**kwargs)
+
+            weights = self.weighting_function(selection)
+            profile = self._compute_histogram(positions, weights)
+
+            if self.normalization == 'number':
+                bincount = self._compute_histogram(positions, weights=None)
+
+                self.tot_bincount[:, index] += bincount
+
+                # If a bin does not contain any particles we divide by 0.
+                with np.errstate(invalid='ignore'):
+                    profile /= bincount
+                profile = np.nan_to_num(profile)
+            elif self.normalization == "volume":
+                profile /= self._obs.bin_volume
+
+            self._obs.profile[:, index] = profile
+
+    def _conclude(self):
+        self.results.profile_mean = self.means.profile
+        self.results.profile_err = self.sems.profile
+
+        if self.normalization == 'number':
+            no_occurences_idx = self.tot_bincount == 0
+            self.results.profile_mean[no_occurences_idx] = np.nan
+            self.results.profile_err[no_occurences_idx] = np.nan
+
+    def save(self):
+        """Save results of analysis to file."""
+        columns = ["positions [Å]"]
+
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) profile')
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) error')
+
+        # Required attribute to use method from `AnalysisBase`
+        self._allow_multiple_atomgroups = True
+
+        AnalysisBase.savetxt(self,
+                             self.output,
+                             np.hstack((self.results.bin_pos[:, np.newaxis],
+                                        self.results.profile_mean,
+                                        self.results.profile_err)),
+                             columns=columns)

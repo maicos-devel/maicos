@@ -17,7 +17,7 @@ import pytest
 from MDAnalysis.analysis.base import Results
 from numpy.testing import assert_allclose
 
-from maicos.core import AnalysisBase
+from maicos.core import AnalysisBase, ProfileBase
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -257,3 +257,114 @@ class Test_AnalysisBase(object):
         ana_obj.run(stop=1)
 
         assert "Using 10 bins." in [rec.message for rec in caplog.records]
+
+
+class Test_ProfileBase:
+    """Test class for the ProfileBase Class.
+
+    The single_frame is for now extensivley tested in the child
+    `ProfilePlanarBase`, `ProfileCylinderBase` and `ProfileSphereBase` for
+    simple physical system.
+    """
+
+    @pytest.fixture()
+    def u(self):
+        """Simple empty Universe."""
+        universe = mda.Universe.empty(n_atoms=10,
+                                      n_residues=10,
+                                      n_segments=10,
+                                      atom_resindex=np.arange(10),
+                                      residue_segindex=np.arange(10))
+
+        return universe
+
+    @pytest.fixture()
+    def params(self, u):
+        """Fixture for PlanarBase class atributes."""
+        p = dict(weighting_function=lambda x, grouping, a=1: a * x,
+                 atomgroups=[u.atoms],
+                 normalization="number",
+                 grouping="atoms",
+                 bin_method="com",
+                 output="profile.dat")
+        return p
+
+    def test_wrong_normalization(self, params):
+        """Test a wrong normalization string."""
+        with pytest.raises(ValueError, match="`foo` not supported"):
+            params.update(normalization="foo")
+            ProfileBase(**params)._prepare()
+
+    def test_wrong_grouping(self, params):
+        """Test a wrong grouping."""
+        with pytest.raises(ValueError, match="`foo` is not a valid option"):
+            params.update(grouping="foo")
+            ProfileBase(**params)._prepare()
+
+    def test_bin_method(self, params):
+        """Test a wrong bin_method."""
+        with pytest.raises(ValueError, match="`foo` is an unknown binning"):
+            params.update(bin_method="foo")
+            ProfileBase(**params)._prepare()
+
+    def test_unwrap_atoms(self, params):
+        """Test that unwrap is always False for grouping wrt to atoms."""
+        params.update(grouping="atoms")
+        profile = ProfileBase(**params)
+
+        profile.unwrap = True
+        profile.n_bins = 1
+        profile.n_atomgroups = 1
+
+        profile._prepare()
+
+        assert profile.unwrap is False
+
+    def test_f_kwargs(self, params):
+        """Test an extra keyword argument."""
+        profile = ProfileBase(**params)
+        params.update(f_kwargs={"a": 2})
+        profile_scaled = ProfileBase(**params)
+
+        assert 2 * profile.weighting_function(1) == \
+            profile_scaled.weighting_function(1)
+
+    def test_output_name(self, params, tmpdir):
+        """Test output name of save method."""
+        params.update(output="foo.dat")
+        profile = ProfileBase(**params)
+        profile.results.bin_pos = np.zeros(10)
+        profile.results.profile_mean = np.zeros((10, 1))
+        profile.results.profile_err = np.zeros((10, 1))
+        profile.run = lambda x: x
+        profile._index = 0
+
+        with tmpdir.as_cwd():
+            profile.save()
+            assert os.path.exists(params["output"])
+
+    def test_output(self, params, tmpdir):
+        """Test output."""
+        profile = ProfileBase(**params)
+        profile.results.bin_pos = np.random.random(10)
+        profile.results.profile_mean = np.random.random((10, 1))
+        profile.results.profile_err = np.random.random((10, 1))
+        profile.run = lambda x: x
+        profile._index = 0
+
+        with tmpdir.as_cwd():
+
+            profile.save()
+            res_dens = np.loadtxt(profile.output)
+
+        assert_allclose(profile.results.bin_pos,
+                        res_dens[:, 0],
+                        rtol=2)
+
+        assert_allclose(profile.results.profile_mean[:, 0],
+                        res_dens[:, 1],
+                        rtol=2)
+
+        assert_allclose(profile.results.profile_err[:, 0],
+                        res_dens[:, 2],
+                        rtol=2)

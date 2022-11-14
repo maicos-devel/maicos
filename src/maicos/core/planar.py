@@ -14,7 +14,7 @@ import numpy as np
 
 from ..lib.math import symmetrize
 from ..lib.util import render_docs
-from .base import AnalysisBase
+from .base import AnalysisBase, ProfileBase
 
 
 logger = logging.getLogger(__name__)
@@ -140,23 +140,12 @@ class PlanarBase(AnalysisBase):
 
 
 @render_docs
-class ProfilePlanarBase(PlanarBase):
+class ProfilePlanarBase(PlanarBase, ProfileBase):
     """Base class for computing profiles in a cartesian geometry.
 
     Parameters
     ----------
-    function : callable
-        The function calculating the array for the analysis.
-        It must take an `Atomgroup` as first argument and a
-        grouping ('atoms', 'residues', 'segments', 'molecules', 'fragments')
-        as second. Additional parameters can
-        be given as `f_kwargs`. The function must return a numpy.ndarry with
-        the same length as the number of group members.
-    normalization : str {'None', 'number', 'volume'}
-        The normalization of the profile performed in every frame.
-        If `None` no normalization is performed. If `number` the histogram
-        is divided by the number of occurences in each bin. If `volume` the
-        profile is divided by the volume of each bin.
+    ${PROFILE_CLASS_PARAMETERS_PRIVATE}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
     f_kwargs : dict
         Additional parameters for `function`
@@ -164,138 +153,69 @@ class ProfilePlanarBase(PlanarBase):
     Attributes
     ----------
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
-    profile_cum : numpy.ndarray
-        cumulative profile
-    profile_cum_sq : numpy.ndarray
-        cumulative squared profile
     """
 
     def __init__(self,
-                 function,
+                 weighting_function,
                  normalization,
                  atomgroups,
                  sym,
                  grouping,
-                 binmethod,
+                 bin_method,
                  output,
                  f_kwargs=None,
                  **kwargs):
-        super(ProfilePlanarBase, self).__init__(atomgroups=atomgroups,
-                                                multi_group=True,
-                                                **kwargs)
-        if f_kwargs is None:
-            f_kwargs = {}
+        PlanarBase.__init__(self,
+                            atomgroups=atomgroups,
+                            multi_group=True,
+                            **kwargs)
+        # `AnalysisBase` performs conversions on `atomgroups`.
+        # Take converted `atomgroups` and not the user provided ones.
+        ProfileBase.__init__(self,
+                             atomgroups=self.atomgroups,
+                             weighting_function=weighting_function,
+                             normalization=normalization,
+                             grouping=grouping,
+                             bin_method=bin_method,
+                             output=output,
+                             f_kwargs=f_kwargs)
 
-        self.function = lambda ag: function(ag, grouping, **f_kwargs)
-        self.normalization = normalization.lower()
         self.sym = sym
-        self.grouping = grouping.lower()
-        self.binmethod = binmethod.lower()
-        self.output = output
 
     def _prepare(self):
-        super(ProfilePlanarBase, self)._prepare()
-
-        if self.normalization not in ["none", "volume", "number"]:
-            raise ValueError(f"`{self.normalization}` not supported. "
-                             "Use `None`, `volume` or `number`.")
+        PlanarBase._prepare(self)
+        ProfileBase._prepare(self)
 
         if self.sym and self.refgroup is None:
             raise ValueError("For symmetrization the `refgroup` argument is "
                              "required.")
 
-        if self.grouping not in ["atoms", "segments", "residues", "molecules",
-                                 "fragments"]:
-            raise ValueError(f"{self.grouping} is not a valid option for "
-                             "grouping. Use 'atoms', 'residues', "
-                             "'segments', 'molecules' or 'fragments'.")
-
-        if self.unwrap and self.grouping == "atoms":
-            logger.warning("Unwrapping in combination with atom grouping "
-                           "is superfluous. `unwrap` will be set to `False`.")
-            self.unwrap = False
-
-        if self.binmethod not in ["cog", "com", "coc"]:
-            raise ValueError(f"{self.binmethod} is an unknown binning "
-                             "method. Use `cog`, `com` or `coc`.")
-
         logger.info(f"Computing {self.grouping} profile along "
                     f"{'XYZ'[self.dim]}-axes.")
 
-        # Arrays for accumulation
-        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
+    def _compute_histogram(self, positions, weights):
+        positions = positions[:, self.dim]
+        hist, _ = np.histogram(positions,
+                               bins=self.n_bins,
+                               range=(self.zmin, self.zmax),
+                               weights=weights)
 
-        if self.normalization == 'number':
-            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
+        return hist
 
     def _single_frame(self):
-        super(ProfilePlanarBase, self)._single_frame()
-
-        for index, selection in enumerate(self.atomgroups):
-            if self.grouping == 'atoms':
-                positions = selection.atoms.positions
-            else:
-                kwargs = dict(compound=self.grouping)
-                if self.binmethod == "cog":
-                    positions = selection.atoms.center_of_geometry(**kwargs)
-                elif self.binmethod == "com":
-                    positions = selection.atoms.center_of_mass(**kwargs)
-                elif self.binmethod == "coc":
-                    positions = selection.atoms.center_of_charge(**kwargs)
-
-            positions = positions[:, self.dim]
-            weights = self.function(selection)
-
-            profile, _ = np.histogram(positions,
-                                      bins=self.n_bins,
-                                      range=(self.zmin, self.zmax),
-                                      weights=weights)
-
-            if self.normalization == 'number':
-                bincount, _ = np.histogram(positions,
-                                           bins=self.n_bins,
-                                           range=(self.zmin, self.zmax))
-
-                self.tot_bincount[:, index] += bincount
-
-                # If a bin does not contain any particles we divide by 0.
-                with np.errstate(invalid='ignore'):
-                    profile /= bincount
-                profile = np.nan_to_num(profile)
-            elif self.normalization == "volume":
-                profile /= self._obs.bin_volume
-
-            self._obs.profile[:, index] = profile
+        PlanarBase._single_frame(self)
+        ProfileBase._single_frame(self)
 
     def _conclude(self):
-        super(ProfilePlanarBase, self)._conclude()
-
-        self.results.profile_mean = self.means.profile
-        self.results.profile_err = self.sems.profile
+        PlanarBase._conclude(self)
 
         if self.sym:
-            symmetrize(self.results.profile_mean, inplace=True)
-            symmetrize(self.results.profile_err, inplace=True)
+            symmetrize(self.means.profile, inplace=True)
+            symmetrize(self.sems.profile, inplace=True)
 
             if self.normalization == 'number':
                 symmetrize(self.tot_bincount, inplace=True)
 
-        if self.normalization == 'number':
-            no_occurences_idx = self.tot_bincount == 0
-            self.results.profile_mean[no_occurences_idx] = np.nan
-            self.results.profile_err[no_occurences_idx] = np.nan
-
-    def save(self):
-        """Save results of analysis to file."""
-        columns = ["positions [Å]"]
-
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f'({i + 1}) profile')
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f'({i + 1}) error')
-
-        self.savetxt(self.output, np.hstack(
-                     (self.results.bin_pos[:, np.newaxis],
-                      self.results.profile_mean,
-                      self.results.profile_err)),
-                     columns=columns)
+        # Call conclude after symmetrize since `_concude` sets
+        # empty bins to `nan` and this prevents symmetrizing.
+        ProfileBase._conclude(self)

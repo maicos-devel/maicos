@@ -13,6 +13,7 @@ import logging
 import numpy as np
 
 from ..lib.util import render_docs
+from .base import ProfileBase
 from .planar import PlanarBase
 
 
@@ -155,160 +156,70 @@ class CylinderBase(PlanarBase):
 
 
 @render_docs
-class ProfileCylinderBase(CylinderBase):
-    """Base class for computing radial profiles in a cylinder geometry.
+class ProfileCylinderBase(CylinderBase, ProfileBase):
+    """Base class for computing radial profiles in a cylindrical geometry.
 
     Parameters
     ----------
-    function : callable
-        The function calculating the array for the analysis.
-        It must take an `Atomgroup` as first argument and a
-        grouping ('atoms', 'residues', 'segments', 'molecules', 'fragments')
-        as second. Additional parameters can
-        be given as `f_kwargs`. The function must return a numpy.ndarry with
-        the same length as the number of group members.
-    normalization : str {'None', 'number', 'volume'}
-        The normalization of the profile performed in every frame.
-        If `None` no normalization is performed. If `number` the histogram
-        is divided by the number of occurences in each bin. If `volume` the
-        profile is divided by the volume of each bin.
+    ${PROFILE_CLASS_PARAMETERS_PRIVATE}
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    f_kwargs : dict
-        Additional parameters for `function`
 
     Attributes
     ----------
     ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
-    profile_cum : numpy.ndarray
-        cumulative profile
-    profile_cum_sq : numpy.ndarray
-        cumulative squared profile
     """
 
     def __init__(self,
-                 function,
+                 weighting_function,
                  normalization,
                  atomgroups,
                  grouping,
-                 binmethod,
+                 bin_method,
                  output,
                  f_kwargs=None,
                  **kwargs):
-        super(ProfileCylinderBase, self).__init__(atomgroups=atomgroups,
-                                                  multi_group=True,
-                                                  **kwargs)
-        if f_kwargs is None:
-            f_kwargs = {}
-
-        self.function = lambda ag: function(ag, grouping, **f_kwargs)
-        self.normalization = normalization.lower()
-        self.grouping = grouping.lower()
-        self.binmethod = binmethod.lower()
-        self.output = output
+        CylinderBase.__init__(self,
+                              atomgroups=atomgroups,
+                              multi_group=True,
+                              **kwargs)
+        # `AnalysisBase` performs conversions on `atomgroups`.
+        # Take converted `atomgroups` and not the user provided ones.
+        ProfileBase.__init__(self,
+                             atomgroups=self.atomgroups,
+                             weighting_function=weighting_function,
+                             normalization=normalization,
+                             grouping=grouping,
+                             bin_method=bin_method,
+                             output=output,
+                             f_kwargs=f_kwargs)
 
     def _prepare(self):
-        super(ProfileCylinderBase, self)._prepare()
+        CylinderBase._prepare(self)
+        ProfileBase._prepare(self)
 
-        if self.normalization not in ["none", "volume", "number"]:
-            raise ValueError(f"`{self.normalization}` not supported. "
-                             "Use `None`, `volume` or `number`.")
-
-        if self.grouping not in ["atoms", "segments", "residues", "molecules",
-                                 "fragments"]:
-            raise ValueError(f"{self.grouping} is not a valid option for "
-                             "grouping. Use 'atoms', 'residues', "
-                             "'segments', 'molecules' or 'fragments'.")
-
-        if self.unwrap and self.grouping == "atoms":
-            logger.warning("Unwrapping in combination with atom grouping "
-                           "is superfluous. `unwrap` will be set to `False`.")
-            self.unwrap = False
-
-        if self.binmethod not in ["cog", "com", "coc"]:
-            raise ValueError(f"{self.binmethod} is an unknown binning "
-                             "method. Use `cog`, `com` or `coc`.")
-
-        logger.info(f"Computing {self.grouping} radial cylinder profile along "
+        logger.info(f"Computing {self.grouping} radial profile along "
                     f"{'XYZ'[self.dim]}-axes.")
 
-        # Arrays for accumulation
-        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
+    def _compute_histogram(self, positions, weights):
+        positions = self.transform_positions(positions)
+        # Use the 2D histogram function to perform the selection in
+        # the z dimension.
+        hist, _, _ = np.histogram2d(positions[:, 0],
+                                    positions[:, 2],
+                                    bins=(self.n_bins, 1),
+                                    range=((self.rmin, self.rmax),
+                                           (self.zmin, self.zmax)),
+                                    weights=weights)
 
-        if self.normalization == 'number':
-            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
+        # Reshape into 1D array
+        hist = hist[:, 0]
+
+        return hist
 
     def _single_frame(self):
-        super(ProfileCylinderBase, self)._single_frame()
-
-        for index, selection in enumerate(self.atomgroups):
-            if self.grouping == 'atoms':
-                positions = selection.atoms.positions
-            else:
-                kwargs = dict(compound=self.grouping)
-                if self.binmethod == "cog":
-                    positions = selection.atoms.center_of_geometry(**kwargs)
-                elif self.binmethod == "com":
-                    positions = selection.atoms.center_of_mass(**kwargs)
-                elif self.binmethod == "coc":
-                    positions = selection.atoms.center_of_charge(**kwargs)
-
-            positions = self.transform_positions(positions)
-            weights = self.function(selection)
-
-            profile, _, _ = np.histogram2d(positions[:, 0],
-                                           positions[:, 2],
-                                           bins=(self.n_bins, 1),
-                                           range=((self.rmin, self.rmax),
-                                                  (self.zmin, self.zmax)),
-                                           weights=weights)
-
-            # Reshape into 1D array
-            profile = profile[:, 0]
-
-            if self.normalization == 'number':
-                # Use the 2D histogram function to perform the selection in
-                # the z dimension.
-                bincount, _, _ = np.histogram2d(positions[:, 0],
-                                                positions[:, 2],
-                                                bins=(self.n_bins, 1),
-                                                range=((self.rmin, self.rmax),
-                                                       (self.zmin, self.zmax)))
-                # Reshape into 1D array
-                bincount = bincount[:, 0]
-
-                self.tot_bincount[:, index] += bincount
-
-                # If a bin does not contain any particles we divide by 0.
-                with np.errstate(invalid='ignore'):
-                    profile /= bincount
-                profile = np.nan_to_num(profile)
-            elif self.normalization == "volume":
-                profile /= self._obs.bin_volume
-
-            self._obs.profile[:, index] = profile
+        CylinderBase._single_frame(self)
+        ProfileBase._single_frame(self)
 
     def _conclude(self):
-        super(ProfileCylinderBase, self)._conclude()
-
-        self.results.profile_mean = self.means.profile
-        self.results.profile_err = self.sems.profile
-
-        if self.normalization == 'number':
-            no_occurences_idx = self.tot_bincount == 0
-            self.results.profile_mean[no_occurences_idx] = np.nan
-            self.results.profile_err[no_occurences_idx] = np.nan
-
-    def save(self):
-        """Save results of analysis to file."""
-        columns = ["radial positions [Å]"]
-
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f'({i + 1}) profile')
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f'({i + 1}) error')
-
-        self.savetxt(self.output, np.hstack(
-                     (self.results.bin_pos[:, np.newaxis],
-                      self.results.profile_mean,
-                      self.results.profile_err)),
-                     columns=columns)
+        CylinderBase._conclude(self)
+        ProfileBase._conclude(self)

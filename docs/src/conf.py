@@ -8,10 +8,11 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import importlib
 # To link modules with autodoc
 import os
 import sys
-import importlib
+
 
 sys.path.insert(0, os.path.abspath('../../'))
 

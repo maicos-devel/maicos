@@ -37,7 +37,7 @@ Alexander Schlaich, Maximilian Becker, Kira Fischer
 - Generalize `concfreq` attribute in `AnalysisBase` (!122)
 - Fix broken binning in `EpsilonPlanar` (!125)
 - Removed `repairMolecules` (!119)
-- Added `grouping` and `binmethod` option (!117)
+- Added `grouping` and `bin_method` option (!117)
 - Bump minimum MDAnalysis version to 2.2.0 (!117)
 - Bump minimum Python version to 3.8 (!117)
 - Use base units exclusively (!115)

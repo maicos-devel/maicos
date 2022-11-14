@@ -418,7 +418,7 @@ class TestProfilePlanarBase:
     @pytest.fixture()
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        p = dict(function=self.weights,
+        p = dict(weighting_function=self.weights,
                  atomgroups=u.atoms,
                  normalization="number",
                  dim=2,
@@ -429,7 +429,7 @@ class TestProfilePlanarBase:
                  sym=False,
                  grouping="atoms",
                  unwrap=False,
-                 binmethod="com",
+                 bin_method="com",
                  concfreq=0,
                  output="profile.dat")
         return p
@@ -490,82 +490,6 @@ class TestProfilePlanarBase:
 
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("binmethod, desired",
-                             [("cog", [1, 1, np.nan]),
-                              ("com", [1, np.nan, 1]),
-                              ("coc", [1, 1, np.nan])])
-    def test_binmethod(self, u_dimers, binmethod, desired, params):
-        """Test different bin methods."""
-        params.update(atomgroups=u_dimers.atoms,
-                      dim=1,
-                      bin_width=1,
-                      binmethod=binmethod,
-                      grouping="molecules")
-        profile = ProfilePlanarBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
-        assert_equal(actual, desired)
-
-    @pytest.mark.parametrize("unwrap, desired",
-                             [(False, [1, 1]), (True, [2, 0])])
-    def test_unwrap(self, u_dimers, unwrap, desired, params):
-        """Test making molecules whole."""
-        params.update(atomgroups=u_dimers.atoms,
-                      dim=0,
-                      bin_width=1,
-                      unwrap=unwrap,
-                      binmethod='com',
-                      normalization="none",
-                      grouping="molecules")
-
-        profile = ProfilePlanarBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
-        assert_equal(actual, desired)
-
-    def test_raise_sym_no_refgroup(self, params):
-        """Test error raise for symmetrization without provided refgroup."""
-        params.update(sym=True)
-        with pytest.raises(ValueError, match="For symmetrization the"):
-            ProfilePlanarBase(**params).run()
-
-    def test_wrong_normalization(self, params):
-        """Test profile for a non existing normalization."""
-        params.update(normalization="foo")
-
-        with pytest.raises(ValueError, match="not supported"):
-            ProfilePlanarBase(**params).run()
-
-    def test_wrong_grouping(self, params):
-        """Test grouping for a non existing type."""
-        params.update(grouping="foo")
-
-        with pytest.raises(ValueError, match="is not a valid option for"):
-            ProfilePlanarBase(**params).run()
-
-    def test_wrong_binmethod(self, params):
-        """Test error raise for a non existing binmethod."""
-        params.update(binmethod="foo")
-
-        with pytest.raises(ValueError, match="is an unknown binning"):
-            ProfilePlanarBase(**params).run()
-
-    def test_unwrap_atoms(self, params):
-        """Test that unwrap is always False for grouping wrt to atoms."""
-        params.update(unwrap=True, grouping="atoms")
-        profile = ProfilePlanarBase(**params).run(stop=1)
-        assert profile.unwrap is False
-
-    def test_f_kwargs(self, params):
-        """Test an extra keyword argument."""
-        scale = 3
-        params.update(f_kwargs={"scale": scale})
-        profile = ProfilePlanarBase(**params).run()
-
-        actual = profile.results.profile_mean.flatten()
-        desired = np.nan * np.ones(profile.n_bins)
-        desired[:10] = scale
-
-        assert_allclose(actual, desired)
-
     def test_multigroup(self, u, params):
         """Test analysis for a list of atomgroups."""
         params.update(atomgroups=[u.atoms, u.atoms])
@@ -577,29 +501,27 @@ class TestProfilePlanarBase:
 
         assert_allclose(actual, desired)
 
-    def test_output_name(self, params, tmpdir):
-        """Test output name of save method."""
-        with tmpdir.as_cwd():
-            params.update(output="foo.dat")
-            profile = ProfilePlanarBase(**params).run(stop=1)
-            profile.save()
-            assert os.path.exists(params["output"])
+    def test_histogram(self, params):
+        """Test the histogram method."""
+        p = ProfilePlanarBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None)
 
-    def test_output(self, params, tmpdir):
-        """Test output."""
-        with tmpdir.as_cwd():
-            profile = ProfilePlanarBase(**params).run(stop=1)
-            profile.save()
-            res_dens = np.loadtxt(profile.output)
+        assert_equal(hist, 1)
 
-        assert_allclose(profile.results.bin_pos,
-                        res_dens[:, 0],
-                        rtol=2)
+    def test_histogram_weight(self, params):
+        """Test the histogram method with weights."""
+        p = ProfilePlanarBase(**params)
+        p._prepare()
+        hist = p._compute_histogram(
+            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
+            weights=5 * np.ones(p.n_bins))
 
-        assert_allclose(profile.results.profile_mean[:, 0],
-                        res_dens[:, 1],
-                        rtol=2)
+        assert_equal(hist, 5)
 
-        assert_allclose(profile.results.profile_err[:, 0],
-                        res_dens[:, 2],
-                        rtol=2)
+    def test_raise_sym_no_refgroup(self, params):
+        """Test error raise for symmetrization without provided refgroup."""
+        params.update(sym=True)
+        with pytest.raises(ValueError, match="For symmetrization the"):
+            ProfilePlanarBase(**params).run()

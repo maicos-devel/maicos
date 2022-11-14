@@ -10,6 +10,7 @@
 
 __all__ = [
     'AnalysisBase',
+    'ProfileBase',
     'CylinderBase',
     'ProfileCylinderBase',
     'PlanarBase',
@@ -18,7 +19,7 @@ __all__ = [
     'ProfileSphereBase'
     ]
 
-from .base import AnalysisBase
+from .base import AnalysisBase, ProfileBase
 from .cylinder import CylinderBase, ProfileCylinderBase
 from .planar import PlanarBase, ProfilePlanarBase
 from .sphere import ProfileSphereBase, SphereBase

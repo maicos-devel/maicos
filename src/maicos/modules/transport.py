@@ -53,7 +53,7 @@ class VelocityPlanar(ProfilePlanarBase):
                  sym=False,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="velocity.dat",
                  concfreq=0,
                  vdim=2,
@@ -63,7 +63,7 @@ class VelocityPlanar(ProfilePlanarBase):
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
 
         super(VelocityPlanar, self).__init__(
-            function=velocity_weights,
+            weighting_function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
             normalization="volume",
             atomgroups=atomgroups,
@@ -75,7 +75,7 @@ class VelocityPlanar(ProfilePlanarBase):
             sym=sym,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
 
@@ -111,7 +111,7 @@ class VelocityCylinder(ProfileCylinderBase):
                  refgroup=None,
                  grouping="atoms",
                  unwrap=True,
-                 binmethod="com",
+                 bin_method="com",
                  output="velocity.dat",
                  concfreq=0,
                  vdim=2,
@@ -121,7 +121,7 @@ class VelocityCylinder(ProfileCylinderBase):
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
 
         super(VelocityCylinder, self).__init__(
-            function=velocity_weights,
+            weighting_function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
             normalization="volume",
             atomgroups=atomgroups,
@@ -134,6 +134,6 @@ class VelocityCylinder(ProfileCylinderBase):
             refgroup=refgroup,
             grouping=grouping,
             unwrap=unwrap,
-            binmethod=binmethod,
+            bin_method=bin_method,
             output=output,
             concfreq=concfreq)
