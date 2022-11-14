@@ -105,16 +105,20 @@ List of analysis modules
 
    * - DensityPlanar
      - partial densities profiles in a cartesian geometry
+   * - DensityCylinder
+     - partial densities across a cylinder
+   * - DensitySphere
+     - partial densities profiles in a spherical geometry
    * - TemperaturePlanar
      - temperature profiles in a cartesian geometry
    * - ChemicalPotentialPlanar
      - chemical potential in a cartesian geometry
-   * - DensityCylinder
-     - partial densities across a cylinder
-   * - EpsilonPlanar
+   * - DielectricPlanar
      - planar dielectric profiles
-   * - EpsilonCylinder
+   * - DielectricCylinder
      - cylindrical dielectric profiles
+   * - DielectricSphere
+     - spherical dielectric profiles
    * - DielectricSpectrum
      - linear dielectric spectrum of a bulk system
    * - Saxs

@@ -327,7 +327,7 @@ class TestSphereBaseChilds:
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = SphereBase(ag_single_frame, **params).run()
 
-        assert_equal(ana_obj.results.r, pb_obj.results.r)
+        assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
 
         assert ana_obj.rmin == pb_obj.rmin

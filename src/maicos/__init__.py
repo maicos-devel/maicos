@@ -12,8 +12,10 @@ __all__ = [
     'TemperaturePlanar',
     'DensityPlanar',
     'DensityCylinder',
+    'DensitySphere',
     'DielectricPlanar',
     'DielectricCylinder',
+    'DielectricSphere',
     'DielectricSpectrum',
     'Saxs',
     'Diporder',
@@ -33,12 +35,14 @@ from .modules.density import (
     ChemicalPotentialPlanar,
     DensityCylinder,
     DensityPlanar,
+    DensitySphere,
     TemperaturePlanar,
     )
 from .modules.dielectric import (
     DielectricCylinder,
     DielectricPlanar,
     DielectricSpectrum,
+    DielectricSphere,
     )
 from .modules.structure import Diporder, RDFPlanar, Saxs
 from .modules.timeseries import DipoleAngle, KineticEnergy

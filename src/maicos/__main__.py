@@ -13,13 +13,7 @@ import os
 from mdacli import cli
 
 from maicos import __version__
-from maicos.core import (
-    AnalysisBase,
-    CylinderBase,
-    PlanarBase,
-    ProfileCylinderBase,
-    ProfilePlanarBase,
-    )
+from maicos.core import AnalysisBase
 from maicos.modules import __all__
 
 
@@ -27,12 +21,6 @@ def main():
     """Execute main CLI entry point."""
     # These module are currently not supported. Either due a different
     # structure or due parameters that are not supported by our parser.
-    skip_mods = ['base']
-    base_cls = [AnalysisBase,
-                PlanarBase,
-                ProfilePlanarBase,
-                CylinderBase,
-                ProfileCylinderBase]
     available_mods = [f"maicos.modules.{m}" for m in __all__]
     if os.path.isfile(os.path.join(os.path.expanduser("~"),
                                    ".maicos",
@@ -41,10 +29,9 @@ def main():
 
     cli(name="MAICoS",
         module_list=available_mods,
-        base_class=base_cls,
+        base_class=AnalysisBase,
         version=__version__,
         description=__doc__,
-        skip_modules=skip_mods,
         ignore_warnings=True)
 
 

@@ -252,3 +252,22 @@ class TestDensityCylinder(object):
         dens = density.DensityCylinder(ag, dens=dens_type).run()
         assert_allclose(dens.results.profile_mean.mean(), mean,
                         atol=1e-4, rtol=1e-2)
+
+
+class TestDensitySphere(object):
+    """Tests for the density.DensitySphere class."""
+
+    @pytest.fixture()
+    def ag(self):
+        """Import MDA universe."""
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        return u.atoms
+
+    @pytest.mark.parametrize('dens_type, mean',
+                             (('mass', 0.555), ('number', 0.093),
+                              ('charge', 2e-4)))
+    def test_dens(self, ag, dens_type, mean):
+        """Test density."""
+        dens = density.DensitySphere(ag, dens=dens_type).run()
+        assert_allclose(dens.results.profile_mean.mean(), mean,
+                        atol=1e-4, rtol=1e-2)
