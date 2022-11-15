@@ -25,12 +25,20 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 
 
-class Series(AnalysisBase):
-    """Class creating an empty file in the current directory.
+class Output(AnalysisBase):
+    """Class creating a file to check the output."""
 
-    A new file with a file name of the current analysis frame number
-    is created every time the `_conclude` method is called.
-    """
+    OUTPUT = "This is the output message of an analysis class."
+
+
+class SubOutput(Output):
+    """Class creating a file to check the output, but as a child class."""
+
+    OUTPUT = "This is another output message from an inheriting class."
+
+
+class Series(AnalysisBase):
+    """Class creating a random time series to check observables."""
 
     def _prepare(self):
         self.series = np.random.rand(self.n_frames)
@@ -56,7 +64,7 @@ class Frame_types(AnalysisBase):
 
 
 class Conclude(AnalysisBase):
-    """Class sampling random data to test the .
+    """Class to test the _conclude method.
 
     A new file with a file name of the current analysis frame number
     is created every time the `_conclude` method is called.
@@ -140,6 +148,31 @@ class Test_AnalysisBase(object):
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable,
                         np.std(ana.series) / np.sqrt(ana.n_frames))
+
+    def test_output_message(self, ag, tmpdir):
+        """Test the output message of modules."""
+        data = np.random.rand(100, 2)
+        ana = Output(ag)
+        ana._index = 1
+        sub_ana = SubOutput(ag)
+        sub_ana._index = 1
+
+        with tmpdir.as_cwd():
+            # Simple check if a single message gets written to the output file
+            ana.savetxt('foo', data, columns=['First', 'Second'])
+            assert ana.OUTPUT in open('foo.dat').read()
+
+            # More elaborate check to find out if output messages of subclasses
+            # get written to the file in the right order.
+            sub_ana.savetxt('foo2', data, columns=['First', 'Second'])
+            foo = open('foo2.dat', 'r').readlines()
+            for i, line in enumerate(foo):
+                if ana.OUTPUT in line:
+                    assert sub_ana.OUTPUT in foo[i + 1]
+                    break
+            else:
+                # Fail if the loop finished without finding the first
+                raise AssertionError()
 
     @pytest.mark.parametrize('concfreq, files',
                              [(0, []),
