@@ -52,7 +52,7 @@ class DielectricPlanar(PlanarBase):
     Attributes
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
-    results.dens_mean : numpy.ndarray
+    results.eps_par : numpy.ndarray
         eps_par: Parallel dielectric profile ε_∥
     results.deps_par : numpy.ndarray
         Error of parallel dielectric profile
