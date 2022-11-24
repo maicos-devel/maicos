@@ -15,6 +15,7 @@ import warnings
 from typing import Callable
 
 import numpy as np
+from scipy.signal import find_peaks
 
 
 _share_path = os.path.realpath(os.path.join(os.path.dirname(__file__),
@@ -27,7 +28,7 @@ def get_compound(atomgroup, return_index=False):
     The order is "molecules", "fragments", "residues". If the topology contains
     none of those attributes, an AttributeError is raised. Optionally, the
     indices of the attribute as given by `molnums`, `fragindices` or
-    `resindices` respectivly are also returned.
+    `resindices` respectively are also returned.
 
     Parameters
     ----------
@@ -170,24 +171,39 @@ doc_dict = dict(
         Additional parameters for `function`""",
     PLANAR_CLASS_PARAMETERS="""dim : int,
         Dimension for binning (x=0, y=1, z=2).
-    zmin : float,
+    zmin : float
         Minimal coordinate for evaluation (in Å) with respect to the
         center of mass of the refgroup.
 
         If zmin=None, all coordinates down to the lower cell boundary
         are taken into account.
-    zmax : float,
+    zmax : float
         Maximal coordinate for evaluation (in Å) with respect to the
         center of mass of the refgroup.
 
         If `zmax = None`, all coordinates up to the upper cell boundary
-        are taken into account.""",
+        are taken into account.
+    jitter : float
+        If `jitter` is not `None`, random numbers of the order of jitter (Å)
+        are added to the atom positions.
+
+        The appilication of a jitter is rationalined in possible aliasing
+        effects when histogramming data i.e. for spatial profiles. These
+        aliasing effects can be stabilized with the application
+        of a numerical jitter. The jitter value should be the precision of the
+        trajectory and will not alter the results of the histogram.
+
+        You can estimate the precision of the positions in your trajectory
+        with :func:maicos.utils.trajectory_precision. Note that if the
+        precision is not the same for all frames, the smallest precision
+        should be used.
+        """,
     BIN_WIDTH_PARAMETER="""bin_width : float
         Width of the bins (in Å).""",
     RADIAL_CLASS_PARAMETERS="""rmin : float,
         Minimal r-coordinate relative to the center of mass of the
         refgroup for evaluation (in Å).
-    rmax : float,
+    rmax : float
         Maximal r-coordinate relative to the center of mass of the
         refgroup for evaluation (in Å).
 
@@ -274,7 +290,7 @@ def render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
     func : callable
         The callable (function, class) where the phrase old should be replaced.
     doc_dict : str
-        The dictionary containing phrase which will be replaced
+        The dictionary containing phrase which will be replaced.
 
     Returns
     -------
@@ -335,3 +351,49 @@ def charge_neutral(filter):
         return original_class
 
     return inner
+
+
+def trajectory_precision(trajectory, dim=2):
+    """Detect the precision of a trajectory.
+
+    Parameters
+    ----------
+    trajectory : MDAnalysis trajectory
+        Trajectory from which the precision is detected.
+    dim : int, optional
+        Dimension along which the precision is detected.
+
+    Returns
+    -------
+    precision : array
+        Precision of each frame of the trajectory.
+
+    Returns an array of the size of the trajectory.
+
+    If the trajectory has a high precision,
+    its resolution will not be detected, and a value of 1e-4
+    is returned.
+    """
+    # The threshold will limit the precision of the
+    # detection. Using a value that is too low will end up
+    # costing a lot of memory.
+    # 1e-4 is enough to safely detect the resolution of
+    # format like XTC
+    threshold_bin_width = 1e-4
+    precision = np.zeros(trajectory.n_frames)
+    # to be done, add range=(0, -1, 1) parameter
+    # for ts in trajectory[range[0]:range[1]:range[2]]:
+    for ts in trajectory:
+        n_bins = int(np.ceil(
+            (np.max(trajectory.ts.positions[:, dim])
+             - np.min(trajectory.ts.positions[:, dim])) / threshold_bin_width))
+        hist1, z = np.histogram(trajectory.ts.positions[:, dim], bins=n_bins)
+        hist2, bin_edges, = np.histogram(np.diff(z[np.where(hist1)]),
+                                         bins=1000, range=(0, 0.1))
+        if len(find_peaks(hist2)[0]) == 0:
+            precision[ts.frame] = 1e-4
+        elif bin_edges[find_peaks(hist2)[0][0]] <= 5e-4:
+            precision[ts.frame] = 1e-4
+        else:
+            precision[ts.frame] = bin_edges[find_peaks(hist2)[0][0]]
+    return precision

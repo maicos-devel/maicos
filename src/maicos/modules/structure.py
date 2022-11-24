@@ -247,7 +247,8 @@ class Diporder(ProfilePlanarBase):
                  bin_method="com",
                  output="diporder.dat",
                  concfreq=0,
-                 order_parameter="P0"):
+                 order_parameter="P0",
+                 jitter=None):
 
         if order_parameter == "P0":
             normalization = "volume"
@@ -269,7 +270,8 @@ class Diporder(ProfilePlanarBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)
 
 
 @render_docs

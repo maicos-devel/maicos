@@ -12,6 +12,7 @@ import sys
 from unittest.mock import patch
 
 import MDAnalysis as mda
+import numpy as np
 import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
 from numpy.testing import assert_equal
@@ -151,3 +152,17 @@ class TestChargedDecorator(object):
         """Test universe slightly charged single."""
         ag[0].charge += 1E-5
         single_class(ag, filter="error")._prepare()
+
+
+class TestTrajectoryPrecision(object):
+    """Test the detection of the trajectory precision."""
+
+    @pytest.fixture()
+    def trj(self):
+        """Import MDA universe trajectory."""
+        return mda.Universe(WATER_TPR, WATER_GRO).trajectory
+
+    def test_gro_trajectory(self, trj):
+        """Test detect gro traj."""
+        assert_equal(maicos.lib.util.trajectory_precision(trj),
+                     np.float32(0.01))

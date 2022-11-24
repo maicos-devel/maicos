@@ -57,7 +57,8 @@ class VelocityPlanar(ProfilePlanarBase):
                  output="velocity.dat",
                  concfreq=0,
                  vdim=2,
-                 flux=False):
+                 flux=False,
+                 jitter=None):
 
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
@@ -77,7 +78,8 @@ class VelocityPlanar(ProfilePlanarBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)
 
 
 @render_docs
