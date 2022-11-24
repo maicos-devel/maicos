@@ -66,7 +66,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     _universe : MDAnalysis.core.universe.Universe
         The Universe the atomgroups belong to
     _trajectory : MDAnalysis.coordinates.base.ReaderBase
-        The trajetcory the atomgroups belong to
+        The trajectory the atomgroups belong to
     times : numpy.ndarray
         array of Timestep times. Only exists after calling
         :meth:`AnalysisBase.run`
@@ -104,6 +104,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                  multi_group=False,
                  refgroup=None,
                  unwrap=False,
+                 jitter=None,
                  concfreq=0):
         if multi_group:
             if type(atomgroups) not in (list, tuple):
@@ -137,6 +138,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self._trajectory = self._universe.trajectory
         self.refgroup = refgroup
         self.unwrap = unwrap
+        self.jitter = jitter
         self.concfreq = concfreq
 
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
@@ -202,13 +204,16 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 self._universe.atoms.translate(t)
                 self._universe.atoms.wrap()
 
-            if self.unwrap:
-                if hasattr(self, "atomgroup"):
-                    groups = [self.atomgroup]
-                else:
-                    groups = self.atomgroups
-                for group in groups:
+            if hasattr(self, "atomgroup"):
+                groups = [self.atomgroup]
+            else:
+                groups = self.atomgroups
+            for group in groups:
+                if self.unwrap:
                     group.unwrap(compound=get_compound(group))
+                if self.jitter:
+                    ts.positions += np.random.random(
+                        size=(len(ts.positions), 3)) * self.jitter
 
             timeseries[i] = self._single_frame()
 

@@ -45,7 +45,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
     temperature : float
         temperature (K) for chemical potential
     mass : float
-        Mass (u) for the chemical potential. By default taken from topology.
+        Mass (u) for the chemical potential. By default, the mass
+         is taken from the topology.
     zpos : float
         position (Å) at which the chemical potential will be computed.
         By default average over box.
@@ -78,7 +79,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
                  temperature=300,
                  mass=None,
                  zpos=None,
-                 muout="muout.dat"):
+                 muout="muout.dat",
+                 jitter=None):
         super(ChemicalPotentialPlanar, self).__init__(
             weighting_function=density_weights,
             f_kwargs={"dens": "number"},
@@ -94,7 +96,8 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)
 
         self.center = center
         self.temperature = temperature
@@ -243,7 +246,8 @@ class TemperaturePlanar(ProfilePlanarBase):
                  unwrap=True,
                  bin_method="com",
                  output="temperature.dat",
-                 concfreq=0):
+                 concfreq=0,
+                 jitter=None):
 
         super(TemperaturePlanar, self).__init__(
             weighting_function=temperature_weights,
@@ -259,7 +263,8 @@ class TemperaturePlanar(ProfilePlanarBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)
 
 
 @render_docs
@@ -305,7 +310,8 @@ class DensityPlanar(ProfilePlanarBase):
                  unwrap=True,
                  bin_method="com",
                  output="density.dat",
-                 concfreq=0):
+                 concfreq=0,
+                 jitter=None):
 
         super(DensityPlanar, self).__init__(
             weighting_function=density_weights,
@@ -322,7 +328,8 @@ class DensityPlanar(ProfilePlanarBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)
 
 
 @render_docs

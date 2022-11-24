@@ -431,7 +431,8 @@ class TestProfilePlanarBase:
                  unwrap=False,
                  bin_method="com",
                  concfreq=0,
-                 output="profile.dat")
+                 output="profile.dat",
+                 jitter=False)
         return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
