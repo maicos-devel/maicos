@@ -15,6 +15,7 @@ The base units are:
    quantity    unit            SI units
    =========== ============== ===============================================
    length       Å              :math:`10^{-10}` m
+   mass         u              :math:`1.660538921 \times 10^{-27}` kg
    time         ps             :math:`10^{-12}` s
    energy       kJ/mol         :math:`1.66053892103219 \times 10^{-21}` J
    charge       :math:`e`      :math:`1.602176565 \times 10^{-19}` As

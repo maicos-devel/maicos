@@ -132,18 +132,18 @@ doc_dict = dict(
         If refgroup is provided, the calculation is
         performed relative to the center of mass of the AtomGroup.
 
-        If refgroup is `None` the calculations
+        If refgroup is ``None`` the calculations
         are performed relative to the center of the box. If the box
         size is fluctuating with time, the instantaneous center
         of the box is used.
     unwrap : bool
-        When `unwrap = True`, molecules that are broken due to the
+        When ``unwrap = True``, molecules that are broken due to the
         periodic boundary conditions are made whole.
 
         If the input contains molecules that are already whole,
         speed up the calculation by disabling unwrap. To do so,
-        use the flag `-no-unwrap` when using MAICoS from the
-        command line, or use `unwrap = False` when using MAICoS from
+        use the flag ``-no-unwrap`` when using MAICoS from the
+        command line, or use ``unwrap = False`` when using MAICoS from
         the Python interpreter.
 
         Note: Molecules containing virtual sites (e.g. TIP4P water
@@ -181,11 +181,11 @@ doc_dict = dict(
         Maximal coordinate for evaluation (in Å) with respect to the
         center of mass of the refgroup.
 
-        If `zmax = None`, all coordinates up to the upper cell boundary
+        If ``zmax = None``, all coordinates up to the upper cell boundary
         are taken into account.
     jitter : float
-        If `jitter` is not `None`, random numbers of the order of jitter (Å)
-        are added to the atom positions.
+        If ``jitter`` is not ``None``, random numbers of the order of jitter
+        (Å) are added to the atom positions.
 
         The appilication of a jitter is rationalined in possible aliasing
         effects when histogramming data i.e. for spatial profiles. These
@@ -194,7 +194,7 @@ doc_dict = dict(
         trajectory and will not alter the results of the histogram.
 
         You can estimate the precision of the positions in your trajectory
-        with :func:maicos.utils.trajectory_precision. Note that if the
+        with :func:`maicos.lib.util.trajectory_precision`. Note that if the
         precision is not the same for all frames, the smallest precision
         should be used.
         """,
@@ -222,8 +222,8 @@ doc_dict = dict(
     """
         Method for the position binning.
 
-        The possible options are center of geometry (`'cog'`),
-        center of mass (`'com'`), and center of charge (`'coc'`).
+        The possible options are center of geometry (``'cog'``),
+        center of mass (``'com'``), and center of charge (``'coc'``).
     output : str
         Output filename.""",
     PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
