@@ -27,17 +27,22 @@ version = importlib.import_module('maicos').__version__
 # Add any Sphinx extension module names here, as strings.
 extensions = [
     'sphinx.ext.autodoc', # import the modules you are documenting
+    "sphinx_gallery.gen_gallery", # Generate rst and notebooks files from python files
     'sphinx.ext.viewcode', # tries to find the source files where the objects are contained
     'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
     'sphinx.ext.mathjax', # Render math via JavaScript
     'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
-    'nbsphinx', # provides a source parser for *.ipynb files
 ]
 
-# Execute the notebooks
-nbsphinx_execute = 'always'
-nbsphinx_allow_errors = False  # Fail if there are errors in notebook
-exclude_patterns = ['_build', '**.ipynb_checkpoints']
+sphinx_gallery_conf = {
+    "filename_pattern": "/*",
+    "ignore_pattern": "maicos_custom_modules\.py",
+    "examples_dirs": ["../../examples"],
+    "gallery_dirs": ["examples"],
+    "min_reported_time": 60,
+    # Make the code snippet for rascaline functions clickable
+    "reference_url": {"maicos": None},
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -195,9 +200,10 @@ epub_exclude_files = ['search.html']
 
 # Configuration for intersphinx: refer to the Python standard library
 # and other packages used by MAICoS
-intersphinx_mapping = {'https://docs.python.org/3/': None,
-                       'https://docs.scipy.org/doc/scipy/': None,
-                       'https://matplotlib.org/stable/': None,
-                       'https://docs.mdanalysis.org/stable/': None,
-                       'https://numpy.org/doc/stable/': None,
-                       }
+intersphinx_mapping = {
+    "scipy": ('https://docs.scipy.org/doc/scipy/', None),
+    "matplotlib": ('https://matplotlib.org/stable/', None),
+    "MDAnalysis": ('https://docs.mdanalysis.org/stable/', None),
+    "numpy": ('https://numpy.org/doc/stable/', None),
+    "python": ('https://docs.python.org/3/', None),
+}

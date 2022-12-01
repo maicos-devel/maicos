@@ -91,6 +91,7 @@ docs = [
     "nbsphinx",
     "nbval",
     "sphinx",
+    "sphinx-gallery"
 ]
 
 [project.scripts]

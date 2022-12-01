@@ -12,14 +12,14 @@ from pkg_resources import resource_filename
 
 
 # bulk water
-WATER_GRO = resource_filename(__name__, "water/confout.gro")
-WATER_TRR = resource_filename(__name__, "water/traj.trr")
-WATER_TPR = resource_filename(__name__, "water/topol.tpr")
+WATER_GRO = resource_filename(__name__, "../../docs/static/water/water.gro")
+WATER_TRR = resource_filename(__name__, "../../docs/static/water/water.trr")
+WATER_TPR = resource_filename(__name__, "../../docs/static/water/water.tpr")
 
 # air-water interface
-AIRWATER_GRO = resource_filename(__name__, "airwater/confout.gro")
-AIRWATER_TRR = resource_filename(__name__, "airwater/traj.trr")
-AIRWATER_TPR = resource_filename(__name__, "airwater/topol.tpr")
+AIRWATER_GRO = resource_filename(__name__, "airwater/airwater.gro")
+AIRWATER_TRR = resource_filename(__name__, "airwater/airwater.trr")
+AIRWATER_TPR = resource_filename(__name__, "airwater/airwater.tpr")
 
 SALT_WATER_GRO = resource_filename(__name__, "salt_water/salt_water.gro")
 SALT_WATER_TPR = resource_filename(__name__, "salt_water/salt_water.tpr")

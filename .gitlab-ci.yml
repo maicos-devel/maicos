@@ -81,8 +81,6 @@ docs:
   stage: docs
   needs: []
   script:
-    - apt-get update -q -y
-    - apt-get -y install pandoc gnuplot
     - python -m tox -e docs
   artifacts:
     paths:

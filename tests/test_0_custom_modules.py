@@ -32,7 +32,7 @@ except FileExistsError:
 
 EXAMPLE_PATH = resource_filename(__name__, "../examples")
 shutil.copy(os.path.join(EXAMPLE_PATH, "maicos_custom_modules.py"), custom_dir)
-shutil.copy(os.path.join(EXAMPLE_PATH, "analysis_example.py"), custom_dir)
+shutil.copy(os.path.join(EXAMPLE_PATH, "own_module.py"), custom_dir)
 
 from maicos import AnalysisExample  # noqa: E402
 
