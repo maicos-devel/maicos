@@ -271,20 +271,19 @@ class TemperaturePlanar(ProfilePlanarBase):
 class DensityPlanar(ProfilePlanarBase):
     r"""Compute the partial density profile in a cartesian geometry.
 
-    Calculation are carried out for mass
-    (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
-    charge (:math:`\rm e \cdot A^{-3}`) density profiles along a certain
-    cartesian axes [x,y,z] of the simulation cell. Supported cells can be of
-    arbitrary shapes and as well fluctuate over time.
+    Calculation are carried out for ``mass`` (:math:`\rm u \cdot Å^{-3}`),
+    ``number`` (:math:`\rm Å^{-3}`) or ``charge`` (:math:`\rm e \cdot Å^{-3}`)
+    density profiles along a certain cartesian axes ``[x, y, z]`` of the
+    simulation cell. Supported cells can be of arbitrary shapes and as well
+    fluctuate over time.
 
-    For grouping with respect to molecules, residues etc. the corresponding
-    centers (i.e center of mass) using of periodic boundary conditions
-    are calculated.
+    For grouping with respect to ``molecules``, ``residues`` etc. the
+    corresponding centers (i.e center of mass) using of periodic boundary
+    conditions are calculated.
     For these center calculations molecules will be unwrapped/made whole.
     Trajectories containing already whole molecules can be run with
-    `unwrap=False` to gain a speedup.
-    For grouping with respect to atoms the `unwrap` option is always
-    ignored.
+    ``unwrap=False`` to gain a speedup. For grouping with respect to atoms the
+    ``unwrap`` option is always ignored since this superflous.
 
     Parameters
     ----------

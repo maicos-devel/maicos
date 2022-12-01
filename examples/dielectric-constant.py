@@ -74,7 +74,7 @@ Dielectric constant
 # %%
 #
 # By default the bin_width is 1 Å, the unit is atomic mass per Ångstrom$^3$
-# ($\text{amu}/\text{Å}^3$),
+# ($\text{u}/\text{Å}^3$),
 # and the axis is $z$.
 #
 # Plot the density profile using :
@@ -82,7 +82,7 @@ Dielectric constant
 # fig = plt.figure(figsize=(13,6.5))
 # ax1 = plt.subplot(1, 1, 1)
 # plt.xlabel(r"z coordinate (Å)", fontdict=font)
-# plt.ylabel(r"density H2O (amu / Å$^3$)]", fontdict=font)
+# plt.ylabel(r"density H2O (u / Å$^3$)]", fontdict=font)
 # plt.xticks(fontsize=fontsize)
 # plt.yticks(fontsize=fontsize)
 # ax1.plot(X, Y, color=my_color_1, linewidth=4)

@@ -79,7 +79,7 @@ def temperature_weights(ag, grouping):
                                   "is not supported. Use 'atoms' "
                                   "instead.'")
 
-    # ((1 amu * Å^2) / (ps^2)) / Boltzmann constant
+    # ((1 u * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 

@@ -135,7 +135,7 @@ print(dens[:10])
 # %%
 #
 # By default the ``bin_width`` is 1 Å,and the unit is atomic mass per
-# :math:`Å^3` (:math:`\text{amu}/\text{Å}^3`).
+# :math:`Å^3` (:math:`\text{u}/\text{Å}^3`).
 #
 # Let us plot the density profile using Matplotlib:
 
@@ -143,8 +143,8 @@ fig, ax = plt.subplots()
 
 ax.plot(zcoor, dens)
 
-ax.set_xlabel(r"z coordinate (Å)")
-ax.set_ylabel(r"density H2O (amu / Å$^3$)")
+ax.set_xlabel(r"z coordinate ($\rm Å$)")
+ax.set_ylabel(r"density H2O ($\rm u \cdot Å^{-3}$)")
 
 fig.show()
 
@@ -184,11 +184,11 @@ fig, ax1 = plt.subplots()
 ax1.plot(zcoor_smaller_bin, dens_smaller_bin.T[0], label=r"Oxygen")
 ax1.plot(zcoor_smaller_bin, dens_smaller_bin.T[1] * 8, label=r"Hydrogen")
 
-ax1.set_xlabel(r"z coordinate (Å)")
-ax1.set_ylabel(r"density O (amu / Å$^3$)")
+ax1.set_xlabel(r"z coordinate ($Å$)")
+ax1.set_ylabel(r"density O ($\rm u \cdot Å^{-3}$)")
 
 ax2 = ax1.twinx()
-ax2.set_ylabel(r"density H (amu / Å$^3$)]")
+ax2.set_ylabel(r"density H ($\rm u \cdot Å^{-3}$)")
 ax1.legend()
 
 fig.show()
@@ -244,15 +244,15 @@ dens_centered_NaCl = dplan_centered_NaCl.results.profile_mean
 
 fig, ax1 = plt.subplots()
 
-ax1.plot(zcoor_centered_H2O, dens_centered_H2O, label=r"H$_2$O")
-ax1.plot(zcoor_centered_NaCl, dens_centered_NaCl / 5, label=r"NaCl")
+ax1.plot(zcoor_centered_H2O, dens_centered_H2O, label=r"$\rm H_2O$")
+ax1.plot(zcoor_centered_NaCl, dens_centered_NaCl / 5, label=r"$\rm NaCl$")
 
-ax1.set_xlabel(r"z coordinate (Å)")
-ax1.set_ylabel(r"density O (amu / Å$^3$)")
+ax1.set_xlabel(r"z coordinate ($Å$)")
+ax1.set_ylabel(r"density O ($\rm u \cdot Å^{-3}$)")
 ax1.legend()
 
 ax2 = ax1.twinx()
-ax2.set_ylabel(r"density NaCl (amu / Å$^3$)")
+ax2.set_ylabel(r"density NaCl ($\rm u \cdot Å^{-3}$)")
 
 fig.show()
 
@@ -306,8 +306,8 @@ fig, ax = plt.subplots()
 ax.axhline(0, linestyle="dotted", color="gray")
 ax.plot(zcoor, vel)
 
-ax.set_xlabel(r"z coordinate (Å)")
-ax.set_ylabel(r"velocity H2O (Å/ps)")
+ax.set_xlabel(r"z coordinate ($Å$)")
+ax.set_ylabel(r"velocity H2O ($Å ps^{-1}$)")
 
 fig.show()
 
@@ -339,7 +339,7 @@ fig, ax = plt.subplots()
 ax.axhline(0, linestyle="dotted", color="gray")
 ax.plot(zcoor, cos_theta)
 
-ax.set_xlabel(r"z coordinate (Å)")
-ax.set_ylabel(r"$\cos (\theta)$")
+ax.set_xlabel(r"z coordinate ($Å$)")
+ax.set_ylabel(r"$\cos$($\theta$)")
 
 plt.show()
