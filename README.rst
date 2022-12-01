@@ -24,22 +24,36 @@ If you find an issue, you can report it on `Gitlab`_.
 You can also join the developer team on Discord_
 to discuss possible improvements and usages of MAICoS
 
-
-Keep up to date with MAICoS news by following us on `Twitter`_. If you find an
-issue, you can report it on `Gitlab`_. You can also join the developer team on
-`Discord`_ to discuss possible improvements and usages of MAICoS.
-
-.. _`Twitter`: https://twitter.com/maicos_analysis
-.. _`Discord`: https://discord.com/channels/869537986977603604
-.. _`Gitlab`: https://gitlab.com/maicos-devel/maicos
-.. _`Python3`: https://www.python.org
-.. _`Cython` : https://cython.org/
 .. _`MDAnalysis`: https://www.mdanalysis.org
+.. _`Twitter`: https://twitter.com/maicos_analysis
+.. _`Gitlab`: https://gitlab.com/maicos-devel/maicos
+.. _`Discord`: https://discord.com/channels/869537986977603604
 
 .. inclusion-readme-intro-end
 
+Basic example
+=============
+
+This is a simple example showing how to use MAICoS to extract the density
+profile from a molecular dynamics simulation. The files ``conf.gro``
+and ``traj.trr`` correspond to simulation files from a `GROMACS`_ simulation
+package. In a Python environment, type:
+
+.. code-block:: python3
+
+	import MDAnalysis as mda
+	import maicos
+
+	u = mda.Universe('conf.gro', 'traj.trr')
+	dplan = maicos.DensityPlanar(u.atoms).run()
+
+The density profile can be accessed from ``dplan.results.profile_mean`` and 
+the position of the bins from ``dplan.results.bin_pos``.
+
+.. _`GROMACS` : https://www.gromacs.org/
+
 Documentation
-#############
+=============
 
 For details, tutorials, and examples, please have a look at
 our `documentation`_. If you are using an older version of MAICoS,
@@ -48,53 +62,36 @@ you can access the corresponding documentation on `ReadTheDocs`_.
 .. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
 .. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
 
-Basic example
-#############
-
-This is a simple example showing how to use MAICoS to extract the density profile
-from a molecular dynamics simulation. The files ``conf.gro`` and ``traj.trr``
-correspond to a water slab in vacuum that was simulated in this case using the
-`GROMACS`_ simulation package. In a Python environment, type:
-
-.. code-block:: python3
-
-	import MDAnalysis as mda
-	import maicos
-	u = mda.Universe('conf.gro', 'traj.trr')
-	grpH2O = u.select_atoms('type O or type H')
-	dplan = maicos.DensityPlanar(grpH2O)
-	dplan.run()
-
-
-Results can be accessed from ``dplan.results``.
-
-.. _`GROMACS` : https://www.gromacs.org/
+.. inclusion-readme-installation-start
 
 Installation
-############
+============
 
-`Python3`_ and a C-compiler are needed to build the
-underlying libraries.
-
-Using pip
----------
-
-If you have root access, install the package for all users by
-typing in a terminal:
+Install maicos using `pip`_ with:
 
 .. code-block:: bash
 
-    pip3 install numpy
-    pip3 install maicos==0.3
+    pip3 install maicos
 
 Alternatively, if you don't have special privileges, install
-the package in your home directory by using the ``--user`` flag.
+the package only for the current using the ``--user`` flag. 
+Or using `conda`_ with:
 
+.. code-block:: bash
+
+    conda install -c conda-forge maicos 
+
+.. _`pip`: https://pypi.org/project/maicos/
+.. _`conda`: https://anaconda.org/conda-forge/maicos
+
+.. inclusion-readme-installation-end
 
 List of analysis modules
-########################
+========================
 
 .. inclusion-marker-modules-start
+
+Currently, MAICoS supports the following analysis modules:
 
 .. list-table::
    :widths: 25 50

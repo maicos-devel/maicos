@@ -6,9 +6,18 @@
 #
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
-"""An examples Module."""
+"""
+Writing your own analysis module
+================================
 
-# Mandatory imports
+To write your own analysis module you can use the example given below.
+As all MAICoS modules this inherits from the
+:class:`maicos.core.base.AnalysisBase` class.
+
+The example will calculate the average box volume and stores the result
+within the result object of the class.
+"""
+
 import logging
 
 import numpy as np
@@ -16,7 +25,15 @@ import numpy as np
 from maicos.core import AnalysisBase
 
 
+# %%
+#
+# Creating a logger makes debugging easier.
+
 logger = logging.getLogger(__name__)
+
+# %%
+#
+# In the following the example of an analysis class.
 
 
 class AnalysisExample(AnalysisBase):
@@ -48,8 +65,8 @@ class AnalysisExample(AnalysisBase):
 
     def _prepare(self):
         """Set things up before the analysis loop begins."""
-        # self.atomgroup - given atomgroup
-        # self._universe - full universe of given atomgroup
+        # self.atomgroup refers to the provided `atomgroup`
+        # self._universe refers to full universe of given `atomgroup`
         self.volume = 0
 
     def _single_frame(self):
@@ -60,7 +77,12 @@ class AnalysisExample(AnalysisBase):
         # Current frame index: self._frame_index
         # Current timestep object: self._ts
 
-        self.volume += self._ts.volume
+        volume = self._ts.volume
+        self.volume += volume
+
+        # Eeach module should return a characteristic scalar which is used
+        # by MAICoS to estimate correlations of an Analysis.
+        return volume
 
     def _conclude(self):
         """Finalise the results you've gathered.
@@ -79,3 +101,20 @@ class AnalysisExample(AnalysisBase):
         self.savetxt(self.output,
                      np.array([self.results.volume]),
                      columns='volume / Å³')
+
+# %%
+#
+# Now run your new module as all the other modules.
+#
+# Using your modules from the command line
+# ----------------------------------------
+#
+# To add your custom module to the MAICoS CLI first
+# create a ``.maicos`` folder in your home directory.
+# Afterwards, copy your analysis module file to this folder. MAICoS will detect
+# all modules within the ``.maicos`` folder based on a
+# ``maicos_custom_modules.py`` file. Create this file based on the example below
+# and adjust the name of your module accordingly.
+#
+# .. literalinclude:: ../../../examples/maicos_custom_modules.py
+#    :language: python

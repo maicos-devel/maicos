@@ -10,7 +10,7 @@ The following sections describes how to install and start with using MAICoS.
 
     maicos
     installation
-    usage-python
+    ../examples/usage-python
     usage-bash
     units
     changelog
