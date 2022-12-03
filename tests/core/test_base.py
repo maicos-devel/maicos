@@ -18,8 +18,8 @@ from MDAnalysis.analysis.base import Results
 from numpy.testing import assert_allclose
 from scipy.signal import find_peaks
 
+from maicos import DensityPlanar
 from maicos.core import AnalysisBase, ProfileBase
-from maicos.modules import density
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -300,8 +300,8 @@ class Test_AnalysisBase(object):
         and make sure that the density profile has no peak
         at a position of 100 (which would be the case without jitter).
         """
-        dens = density.DensityPlanar(ag_single_frame,
-                                     bin_width=1e-4, jitter=0.01).run()
+        dens = DensityPlanar(ag_single_frame,
+                             bin_width=1e-4, jitter=0.01).run()
         hist, _, = np.histogram(np.diff(dens.results["bin_pos"][
             np.where(dens.results["profile_mean"].T[0])]),
             bins=1000, range=(0, 0.1))

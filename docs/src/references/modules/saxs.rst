@@ -3,7 +3,7 @@
 Saxs
 ####
 
-.. autoclass:: maicos.modules.structure.Saxs
+.. autoclass:: maicos.modules.saxs.Saxs
     :members:
     :undoc-members:
     :show-inheritance:

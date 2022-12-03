@@ -1,13 +1,26 @@
 .. _userdoc-analysis-modules:
 
-Available Analysis Modules
-==========================
+Analysis Modules
+================
+
+This is a list of all analysis modules provided by MAICoS.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   density
-   dielectric
-   structure
-   timeseries
-   transport
+   chemicalpotentialplanar
+   densitycylinder
+   densityplanar
+   densitysphere
+   dielectriccylinder
+   dielectricplanar
+   dielectricspectrum
+   dielectricsphere
+   dipoleangle
+   diporder
+   kineticenergy
+   rdfplanar
+   saxs
+   temperatureplanar
+   velocitycylinder
+   velocityplanar
