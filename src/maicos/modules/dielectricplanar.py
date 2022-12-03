@@ -1,0 +1,370 @@
+#!/usr/bin/env python3
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
+#
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
+#
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Module for computing planar dielectric profile."""
+
+import logging
+
+import numpy as np
+import scipy.constants
+
+from ..core import PlanarBase
+from ..lib.math import symmetrize
+from ..lib.util import charge_neutral, get_compound, render_docs
+
+
+logger = logging.getLogger(__name__)
+
+
+@render_docs
+@charge_neutral(filter="error")
+class DielectricPlanar(PlanarBase):
+    """Calculate planar dielectric profiles.
+
+    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details.
+
+    Parameters
+    ----------
+    ${ATOMGROUPS_PARAMETER}
+    ${PLANAR_CLASS_PARAMETERS}
+    xy : bool
+        Use 2D slab geometry.
+    vac : bool
+        Use vacuum boundary conditions instead of metallic (2D only!).
+    sym : bool
+        Symmetrize the profiles.
+    temperature : float
+        temperature (K)
+    output_prefix : str
+        Prefix for output files.
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
+
+    Attributes
+    ----------
+    ${PLANAR_CLASS_ATTRIBUTES}
+    results.eps_par : numpy.ndarray
+        eps_par: Parallel dielectric profile ε_∥
+    results.deps_par : numpy.ndarray
+        Error of parallel dielectric profile
+    results.eps_par_self : numpy.ndarray
+        Reduced self contribution of parallel dielectric profile (ε_∥_self - 1)
+    results.eps_par_coll : numpy.ndarray
+        Reduced collective contribution of parallel dielectric profile
+        (ε_∥_coll - 1)
+    results.eps_perp : numpy.ndarray
+        Inverse perpendicular dielectric profile ε^{-1}_⟂
+    results.deps_perp : numpy.ndarray
+        Error of inverse perpendicular dielectric profile
+    results.eps_perp_self : numpy.ndarray
+        Reduced self contribution of Inverse perpendicular dielectric profile
+        (ε^{-1}_⟂_self - 1)
+    results.eps_perp_coll : numpy.ndarray
+        Reduced collective contribution of Inverse perpendicular
+        dielectric profile (ε^{-1}_⟂_coll - 1)
+    """
+
+    def __init__(self,
+                 atomgroups,
+                 dim=2,
+                 zmin=None,
+                 zmax=None,
+                 bin_width=0.5,
+                 refgroup=None,
+                 xy=False,
+                 sym=False,
+                 vac=False,
+                 unwrap=True,
+                 temperature=300,
+                 output_prefix="eps",
+                 concfreq=0,
+                 vcutwidth=0.1):
+        super(DielectricPlanar, self).__init__(atomgroups=atomgroups,
+                                               dim=dim,
+                                               zmin=zmin,
+                                               zmax=zmax,
+                                               bin_width=bin_width,
+                                               refgroup=refgroup,
+                                               unwrap=unwrap,
+                                               multi_group=True)
+        self.xy = xy
+        self.sym = sym
+        self.vac = vac
+
+        self.temperature = temperature
+        self.output_prefix = output_prefix
+        self.concfreq = concfreq
+        self.vcutwidth = vcutwidth
+
+    def _prepare(self):
+        super(DielectricPlanar, self)._prepare()
+
+        self._obs.M_par = np.zeros(2)
+        self._obs.M_perp = 0
+        self._obs.M_perp_2 = 0
+
+        n_ag = self.n_atomgroups
+
+        self._obs.m_par = np.zeros((self.n_bins, 2, n_ag))
+        self._obs.mM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_par = np.zeros((self.n_bins, 2, n_ag))
+
+        self._obs.m_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
+
+        self.comp = []
+        self.inverse_ix = []
+
+        for sel in self.atomgroups:
+            comp, ix = get_compound(sel.atoms, return_index=True)
+            _, inverse_ix = np.unique(ix, return_inverse=True)
+            self.comp.append(comp)
+            self.inverse_ix.append(inverse_ix)
+
+    def _single_frame(self):
+        super(DielectricPlanar, self)._single_frame()
+
+        # precalculate total polarization of the box
+        self._obs.M = np.dot(self._universe.atoms.charges,
+                             self._universe.atoms.positions)
+
+        self._obs.M_perp = self._obs.M[self.dim]
+        self._obs.M_perp_2 = self._obs.M[self.dim]**2
+        self._obs.M_par = self._obs.M[self.odims]
+
+        # Use polarization density (for perpendicular component)
+        # ======================================================
+        for i, sel in enumerate(self.atomgroups):
+            zpos = np.zeros(len(sel))
+            np.clip(sel.atoms.positions[:, self.dim],
+                    self.zmin, self.zmax, zpos)
+
+            curQ = np.histogram(zpos,
+                                bins=self.n_bins,
+                                range=[self.zmin, self.zmax],
+                                weights=sel.atoms.charges)[0]
+
+            self._obs.m_perp[:, i] = -np.cumsum(curQ / self._obs.bin_area)
+            self._obs.mM_perp[:, i] = \
+                self._obs.m_perp[:, i] * self._obs.M_perp
+            self._obs.mm_perp[:, i] = \
+                self._obs.m_perp[:, i]**2 * self._obs.bin_volume
+            self._obs.cmM_perp[:, i] = self._obs.m_perp[:, i] \
+                * (self._obs.M_perp
+                    - self._obs.m_perp[:, i] * self._obs.bin_volume)
+
+            self._obs.cM_perp[:, i] = self._obs.M_perp - \
+                self._obs.m_perp[:, i] * self._obs.bin_volume
+
+            # Use virtual cutting method (for parallel component)
+            # ===================================================
+            # Move all z-positions to 'center of charge' such
+            # that we avoid monopoles in z-direction
+            # (compare Eq. 33 in Bonthuis 2012; we only
+            # want to cut in x/y direction)
+            testpos = \
+                sel.center(weights=np.abs(sel.charges),
+                           compound=self.comp[i])[self.inverse_ix[i], self.dim]
+
+            # Average parallel directions
+            for j, direction in enumerate(self.odims):
+                # At this point we should not use the wrap, which causes
+                # unphysical dipoles at the borders
+                Lx = self._ts.dimensions[direction]
+                Ax = self._ts.dimensions[self.odims[1 - j]] \
+                    * self._obs.bin_width
+                vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
+                xpos = np.clip(sel.atoms.positions[:, direction], 0, Lx)
+
+                curQx = np.histogram2d(
+                    xpos, testpos,
+                    bins=[vbinsx, self.n_bins],
+                    range=[[0, Lx], [self.zmin, self.zmax]],
+                    weights=sel.atoms.charges)[0]
+
+                # integral over x, so uniself._ts of area
+                self._obs.m_par[:, j, i] = \
+                    -np.cumsum(curQx / Ax, axis=0).mean(axis=0)
+
+            # Can not use array for operations below,
+            # without extensive reshaping of each array...
+            # Therefore, take first element only since the volume of each bin
+            # is the same in planar geometry.
+            bin_volume = self._obs.bin_volume[0]
+
+            self._obs.mM_par[:, i] = \
+                np.dot(self._obs.m_par[:, :, i],
+                       self._obs.M_par)
+            self._obs.mm_par[:, i] = (
+                self._obs.m_par[:, :, i]
+                * self._obs.m_par[:, :, i]
+                ).sum(axis=1) \
+                * bin_volume
+            self._obs.cmM_par[:, i] = \
+                (self._obs.m_par[:, :, i]
+                 * (self._obs.M_par
+                    - self._obs.m_par[:, :, i]
+                    * bin_volume)
+                 ).sum(axis=1)
+            self._obs.cM_par[:, :, i] = \
+                self._obs.M_par \
+                - self._obs.m_par[:, :, i] \
+                * bin_volume
+
+        return self._obs.M_par[0]
+
+    def _conclude(self):
+        super(DielectricPlanar, self)._conclude()
+
+        pref = 1 / scipy.constants.epsilon_0
+        pref /= scipy.constants.Boltzmann * self.temperature
+        # Convert from ~e^2/m to ~base units
+        pref /= scipy.constants.angstrom / \
+            (scipy.constants.elementary_charge)**2
+
+        self.results.pref = pref
+        self.results.V = self.means.bin_volume.sum()
+
+        # Perpendicular component
+        # =======================
+        cov_perp = self.means.mM_perp \
+            - self.means.m_perp \
+            * self.means.M_perp
+
+        # Using propagation of uncertainties
+        dcov_perp = np.sqrt(
+            self.sems.mM_perp**2
+            + (self.means.M_perp * self.sems.m_perp)**2
+            + (self.means.m_perp * self.sems.M_perp)**2
+            )
+
+        var_perp = self.means.M_perp_2 - self.means.M_perp**2
+
+        cov_perp_self = self.means.mm_perp \
+            - (self.means.m_perp**2 * self.means.bin_volume[0])
+        cov_perp_coll = self.means.cmM_perp \
+            - self.means.m_perp * self.means.cM_perp
+
+        if self.xy:
+            self.results.eps_perp = -pref * cov_perp
+            self.results.eps_perp_self = - pref * cov_perp_self
+            self.results.eps_perp_coll = - pref * cov_perp_coll
+            self.results.deps_perp = pref * dcov_perp
+            if (self.vac):
+                self.results.eps_perp *= 2. / 3.
+                self.results.eps_perp_self *= 2. / 3.
+                self.results.eps_perp_coll *= 2. / 3.
+                self.results.deps_perp *= 2. / 3.
+
+        else:
+            self.results.eps_perp = \
+                - cov_perp / (pref**-1 + var_perp / self.results.V)
+            self.results.deps_perp = pref * dcov_perp
+
+            self.results.eps_perp_self = \
+                (- pref * cov_perp_self) \
+                / (1 + pref / self.results.V * var_perp)
+            self.results.eps_perp_coll = \
+                (- pref * cov_perp_coll) \
+                / (1 + pref / self.results.V * var_perp)
+
+        self.results.eps_perp += 1
+
+        # Parallel component
+        # ==================
+        cov_par = np.zeros((self.n_bins, self.n_atomgroups))
+        dcov_par = np.zeros((self.n_bins, self.n_atomgroups))
+        cov_par_self = np.zeros((self.n_bins, self.n_atomgroups))
+        cov_par_coll = np.zeros((self.n_bins, self.n_atomgroups))
+
+        for i in range(self.n_atomgroups):
+            cov_par[:, i] = 0.5 * (self.means.mM_par[:, i]
+                                   - np.dot(self.means.m_par[:, :, i],
+                                            self.means.M_par))
+
+            # Using propagation of uncertainties
+            dcov_par[:, i] = 0.5 * np.sqrt(
+                self.sems.mM_par[:, i]**2
+                + np.dot(self.sems.m_par[:, :, i]**2,
+                         self.means.M_par**2)
+                + np.dot(self.means.m_par[:, :, i]**2,
+                         self.sems.M_par**2)
+                )
+
+            cov_par_self[:, i] = 0.5 * (
+                self.means.mm_par[:, i]
+                - np.dot(self.means.m_par[:, :, i],
+                         self.means.m_par[:, :, i].sum(axis=0)))
+            cov_par_coll[:, i] = \
+                0.5 * (self.means.cmM_par[:, i]
+                       - (self.means.m_par[:, :, i]
+                       * self.means.cM_par[:, :, i]).sum(axis=1))
+
+        self.results.eps_par = pref * cov_par
+        self.results.deps_par = pref * dcov_par
+        self.results.eps_par_self = pref * cov_par_self
+        self.results.eps_par_coll = pref * cov_par_coll
+
+        self.results.eps_par += 1
+
+        if self.sym:
+            symmetrize(self.results.eps_perp, axis=0, inplace=True)
+            symmetrize(self.results.deps_perp, axis=0, inplace=True)
+            symmetrize(self.results.eps_perp_self, axis=0, inplace=True)
+            symmetrize(self.results.eps_perp_coll, axis=0, inplace=True)
+
+            symmetrize(self.results.eps_par, axis=0, inplace=True)
+            symmetrize(self.results.deps_par, axis=0, inplace=True)
+            symmetrize(self.results.eps_par_self, axis=0, inplace=True)
+            symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
+
+    def save(self):
+        """Save results."""
+        outdata_perp = np.hstack([
+            self.results.bin_pos[:, np.newaxis],
+            self.results.eps_perp.sum(axis=1)[:, np.newaxis],
+            np.linalg.norm(self.results.deps_perp, axis=1)[:, np.newaxis],
+            self.results.eps_perp,
+            self.results.deps_perp,
+            self.results.eps_perp_self.sum(axis=1)[:, np.newaxis],
+            self.results.eps_perp_coll.sum(axis=1)[:, np.newaxis],
+            self.results.eps_perp_self,
+            self.results.eps_perp_coll
+            ])
+        outdata_par = np.hstack([
+            self.results.bin_pos[:, np.newaxis],
+            self.results.eps_par.sum(axis=1)[:, np.newaxis],
+            np.linalg.norm(self.results.deps_par, axis=1)[:, np.newaxis],
+            self.results.eps_par,
+            self.results.deps_par,
+            self.results.eps_par_self.sum(axis=1)[:, np.newaxis],
+            self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
+            self.results.eps_par_self,
+            self.results.eps_par_coll
+            ])
+
+        columns = ["position [Å]", "ε_r (system)", "Δε_r (system)"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"ε_r ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"Δε_r ({i+1})")
+        columns += ["self ε_r - 1 (system)", "coll. ε_r - 1 (system)"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"self ε_r - 1 ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"coll. ε_r - 1 ({i+1})")
+
+        self.savetxt("{}{}".format(self.output_prefix, "_perp"),
+                     outdata_perp, columns=columns)
+        self.savetxt("{}{}".format(self.output_prefix, "_par"),
+                     outdata_par, columns=columns)

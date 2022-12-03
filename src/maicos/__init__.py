@@ -7,46 +7,13 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-__all__ = [
-    'ChemicalPotentialPlanar',
-    'TemperaturePlanar',
-    'DensityPlanar',
-    'DensityCylinder',
-    'DensitySphere',
-    'DielectricPlanar',
-    'DielectricCylinder',
-    'DielectricSphere',
-    'DielectricSpectrum',
-    'Saxs',
-    'Diporder',
-    'DipoleAngle',
-    'KineticEnergy',
-    'VelocityPlanar',
-    'VelocityCylinder',
-    'RDFPlanar',
-    ]
-
 import os
 import sys
 import warnings
 
 from ._version import get_versions
-from .modules.density import (
-    ChemicalPotentialPlanar,
-    DensityCylinder,
-    DensityPlanar,
-    DensitySphere,
-    TemperaturePlanar,
-    )
-from .modules.dielectric import (
-    DielectricCylinder,
-    DielectricPlanar,
-    DielectricSpectrum,
-    DielectricSphere,
-    )
-from .modules.structure import Diporder, RDFPlanar, Saxs
-from .modules.timeseries import DipoleAngle, KineticEnergy
-from .modules.transport import VelocityCylinder, VelocityPlanar
+from .modules import *
+from .modules import __all__
 
 
 try:
