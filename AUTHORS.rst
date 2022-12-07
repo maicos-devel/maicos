@@ -23,6 +23,7 @@ Contributors
 - Shane Carlson
 - Kira Fischer
 - Julian Kappler
+- Marc Sauter
 - Laura Scalfi
 - Julius Schulz
 - Dominik Wille
