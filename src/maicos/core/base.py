@@ -210,7 +210,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 groups = self.atomgroups
             for group in groups:
                 if self.unwrap:
-                    group.unwrap(compound=get_compound(group))
+                    self._universe.atoms.unwrap(compound=get_compound(group))
                 if self.jitter:
                     ts.positions += np.random.random(
                         size=(len(ts.positions), 3)) * self.jitter
