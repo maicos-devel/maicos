@@ -1,5 +1,5 @@
 ..
-    Names should be in alphabetical order
+    Names are in alphabetical order
 
 Maintainers
 -----------
@@ -15,7 +15,6 @@ Developers
 - Simon Gravelle
 - Philipp Stärk
 - Srihas Velpuri
-
 
 Contributors
 ------------
