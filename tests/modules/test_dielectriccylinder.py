@@ -43,10 +43,11 @@ class TestDielectricCylinder(object):
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
-    def test_radial_dipole_orientations(self):
+    @pytest.mark.parametrize('selection', (1, 2))
+    def test_radial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
-        create 4 dipoles radially pointing outwards and check if the
+        Create 4 dipoles radially pointing outwards and check if the
         volume integral over the dipole radial dipole moment density
         equals the total radial dipole moment of the system.
         """
@@ -71,17 +72,23 @@ class TestDielectricCylinder(object):
         dipole.atoms.translate(- dipole.atoms.center_of_mass()
                                + dipole.dimensions[:3] / 2)
 
+        if selection == 2:
+            n = int(len(dipole.atoms) / selection)
+        else:
+            n = len(dipole.atoms)
         # very fine binning to get the correct value for the dipole
-        eps = DielectricCylinder(dipole.atoms, bin_width=0.001, vcutwidth=0.001)
+        eps = DielectricCylinder(dipole.atoms[:n], bin_width=0.001,
+                                 vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_rad),
-                        4, rtol=0.1)
+                        4 / selection, rtol=0.1)
         assert_allclose(eps._obs.M_rad,
-                        np.sum(eps._obs.m_rad * eps._obs.bin_width), rtol=0.1)
+                        4, rtol=0.1)
         assert_allclose(np.sum(eps._obs.m_ax), 0, rtol=0.1)
 
-    def test_axial_dipole_orientations(self):
+    @pytest.mark.parametrize('selection', (1, 2))
+    def test_axial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
         create 4 dipoles pointing in the axial direction and check if the
@@ -110,20 +117,22 @@ class TestDielectricCylinder(object):
         dipole.atoms.translate(- dipole.atoms.center_of_mass()
                                + dipole.dimensions[:3] / 2)
 
+        if selection == 2:
+            n = int(len(dipole.atoms) / selection)
+        else:
+            n = len(dipole.atoms)
+
         # very fine binning to get the correct value for the dipole
-        eps = DielectricCylinder(dipole.atoms, bin_width=1, vcutwidth=0.001)
+        eps = DielectricCylinder(dipole.atoms[:n],
+                                 bin_width=1,
+                                 vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_ax), 4,
+        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_ax),
+                        4 / selection,
                         rtol=0.1)
         assert_allclose(eps._obs.M_ax, 4, rtol=0.1)
         assert_allclose(np.sum(eps._obs.m_rad), 0, rtol=0.1)
-
-    def test_repaired_molecules(self, ag):
-        """Tests repaired molecules."""
-        eps = DielectricCylinder(ag, unwrap=True).run()
-        assert_allclose(eps.results['eps_ax'].mean(), 19.8, rtol=1e-1)
-        assert_allclose(eps.results['eps_rad'].mean(), -2.2, rtol=1e-1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""

@@ -43,7 +43,8 @@ class TestDielectricSphere(object):
         u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
-    def test_radial_dipole_orientations(self):
+    @pytest.mark.parametrize('selection', (1, 2))
+    def test_radial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
         create 6 dipoles radially pointing outwards and check if the
@@ -81,15 +82,19 @@ class TestDielectricSphere(object):
         dipole.atoms.translate(- dipole.atoms.center_of_mass()
                                + dipole.dimensions[:3] / 2)
 
+        if selection == 2:
+            n = int(len(dipole.atoms) / selection)
+        else:
+            n = len(dipole.atoms)
+
         # very fine binning to get the correct value for the dipole
-        # dipole.atoms.write('test_dipole.gro')
-        eps = DielectricSphere(dipole.atoms, bin_width=0.001)
+        eps = DielectricSphere(dipole.atoms[:n], bin_width=0.001)
         eps.run()
         # Check the total dipole moment of the system
         assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_rad),
-                        6, rtol=0.1)
+                        6 / selection, rtol=0.1)
         assert_allclose(eps._obs.M_rad,
-                        np.sum(eps._obs.m_rad * eps._obs.bin_width), rtol=0.1)
+                        6, rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""

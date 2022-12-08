@@ -75,9 +75,8 @@ class DielectricSphere(SphereBase):
 
     def _single_frame(self):
         super(DielectricSphere, self)._single_frame()
-        rbins = np.digitize(
-            self.transform_positions(self.atomgroup.positions)[:, 0],
-            self._obs.bin_edges[1:])
+        rbins = np.digitize(self.pos_sph[self.atomgroup.ix, 0],
+                            self._obs.bin_edges[1:])
 
         curQ_rad, _ = np.histogram(rbins,
                                    bins=np.arange(self.n_bins + 1),
@@ -86,7 +85,8 @@ class DielectricSphere(SphereBase):
         self._obs.m_rad = -np.cumsum(
             (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos**2
             * self._obs.bin_width) / self._obs.bin_pos**2
-        self._obs.M_rad = np.sum(self._obs.m_rad * self._obs.bin_width)
+        self._obs.M_rad = np.dot(self._universe.atoms.charges,
+                                 self.pos_sph[:, 0])
         self._obs.mM_rad = self._obs.m_rad * self._obs.M_rad
 
     def _conclude(self):

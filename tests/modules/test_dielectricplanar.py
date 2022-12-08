@@ -127,27 +127,25 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(dipole, bin_width=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert np.allclose(eps._obs.M_par, M_par, rtol=0.1)
-        assert np.allclose(eps._obs.M_perp, M_perp, rtol=0.1)
+        assert_allclose(eps._obs.M_par, M_par, rtol=0.1)
+        assert_allclose(eps._obs.M_perp, M_perp, rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
-        assert np.allclose(
-            np.sum(eps._obs.m_par[:, :, 0], axis=0)
-            * bin_volume,
-            M_par, rtol=0.1)
-        assert np.allclose(
-            np.sum(eps._obs.m_perp[:, 0], axis=0)
-            * bin_volume,
-            M_perp, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume,
+                        M_par, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume,
+                        M_perp, rtol=0.1)
 
+    @pytest.mark.parametrize('selection', (1, 2))
     @pytest.mark.parametrize('orientation, M_par, M_perp', (
         ([0, 0, 1], [0, 0], 1),
         ([1, 0, 0], [1, 0], 0),
         ([0, 1, 0], [0, 1], 0),
         ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
         )
-    def test_multiple_dipole_orientations(self, orientation, M_par, M_perp):
+    def test_multiple_dipole_orientations(self, selection,
+                                          orientation, M_par, M_perp):
         """Test the dipole moment density with multiple dipoles."""
         """
         This test places a grid of 5x5x5 dipoles (two unit charges separated by
@@ -175,27 +173,29 @@ class TestDielectricPlanar(object):
         n_dipoles = len(pos)
         dipole = dipoles(pos, [orientation] * n_dipoles)
 
+        if selection == 2:
+            n = int(len(dipole) / selection) + 1
+        else:
+            n = len(dipole)
         # very fine binning to get the correct value for the dipole
-        eps = DielectricPlanar(dipole, bin_width=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole[:n], bin_width=0.001, vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert np.allclose(eps._obs.M_par,
-                           np.multiply(M_par, n_dipoles),
-                           rtol=0.1)
-        assert np.allclose(eps._obs.M_perp,
-                           np.multiply(M_perp, n_dipoles),
-                           rtol=0.1)
+        assert_allclose(eps._obs.M_par, np.multiply(M_par, n_dipoles),
+                        rtol=0.1)
+        assert_allclose(eps._obs.M_perp, np.multiply(M_perp, n_dipoles),
+                        rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
-        assert np.allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0)
-                           * bin_volume,
-                           np.multiply(M_par, n_dipoles),
-                           rtol=0.1)
-        assert np.allclose(np.sum(eps._obs.m_perp[:, 0], axis=0)
-                           * bin_volume,
-                           np.multiply(M_perp, n_dipoles),
-                           rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0)
+                        * bin_volume, np.multiply(M_par,
+                                                  n_dipoles / selection),
+                        rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_perp[:, 0], axis=0)
+                        * bin_volume, np.multiply(M_perp,
+                                                  n_dipoles / selection),
+                        rtol=0.1)
 
     def test_epsilon(self, ag):
         """Test that epsilon is constructed correctly from covariances."""
@@ -220,14 +220,13 @@ class TestDielectricPlanar(object):
         permute = rng.permutation(len(ag))
         ag2 = ag[permute]
 
-        eps1 = DielectricPlanar(ag, xy=True)
+        eps1 = DielectricPlanar(ag)
         eps1.run()
-        k1 = eps1.results.eps_par
-
-        eps2 = DielectricPlanar(ag2, xy=True, vac=True)
+        eps2 = DielectricPlanar(ag2)
         eps2.run()
-        k2 = eps2.results.eps_par
-        assert np.allclose(k1, k2, rtol=1e-1)
+
+        assert np.allclose(eps1.results.eps_par, eps2.results.eps_par)
+        assert np.allclose(eps1.results.eps_perp, eps2.results.eps_perp)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Test output."""
