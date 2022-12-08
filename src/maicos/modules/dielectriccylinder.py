@@ -110,7 +110,9 @@ class DielectricCylinder(CylinderBase):
 
         # Use polarization density (for radial component)
         # ========================================================
-        rbins = np.digitize(self.pos_cyl[:, 0], self._obs.bin_edges[1:])
+        rbins = np.digitize(
+            self.transform_positions(self.atomgroup.positions)[:, 0],
+            self._obs.bin_edges[1:])
 
         curQ_rad, _ = np.histogram(rbins,
                                    bins=np.arange(self.n_bins + 1),
