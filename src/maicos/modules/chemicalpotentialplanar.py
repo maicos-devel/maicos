@@ -16,7 +16,7 @@ from MDAnalysis.exceptions import NoDataError
 
 from ..core import ProfilePlanarBase
 from ..lib.math import dmu, mu
-from ..lib.util import atomgroup_header, render_docs
+from ..lib.util import render_docs
 from ..lib.weights import density_weights
 
 
@@ -184,26 +184,19 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
 
     def save(self):
         """Save results of analysis to file."""
-        super(ChemicalPotentialPlanar, self).save()
-
         if self.zpos is not None:
-            columns = "Chemical potential calculated at "
-            columns += f"z = {self.zpos} Å."
+            self.OUTPUT = \
+                f"Chemical potential calculated at z = {self.zpos} Å."
         else:
-            columns = "Chemical potential averaged over the whole system."
-        columns += "\nstatistics over "
-        columns += "{self._index * self._trajectory.dt:.1f} ps\n"
-        try:
-            for group in self.atomgroups:
-                columns += atomgroup_header(group) + " μ [kJ/mol]" + "\t"
-            for group in self.atomgroups:
-                columns += atomgroup_header(group) + " μ error [kJ/mol]" \
-                    + "\t"
-        except AttributeError:
-            with warnings.catch_warnings():
-                warnings.simplefilter('always')
-                warnings.warn("AtomGroup does not contain resnames."
-                              " Not writing residues information to output.")
+            self.OUTPUT = \
+                "Chemical potential averaged over the whole system."
+        """Save results of analysis to file."""
+        columns = []
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) µ_id [kJ/mol]')
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f'({i + 1}) Δµ_id [kJ/mol]')
+
         self.savetxt(self.muout,
                      np.hstack((self.results.mu, self.results.dmu))[None],
                      columns=columns)
