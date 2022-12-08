@@ -123,7 +123,7 @@ class TestDielectricCylinder(object):
         """Tests repaired molecules."""
         eps = DielectricCylinder(ag, unwrap=True).run()
         assert_allclose(eps.results['eps_ax'].mean(), 19.8, rtol=1e-1)
-        assert_allclose(eps.results['eps_rad'].mean(), -1.2, rtol=1e-1)
+        assert_allclose(eps.results['eps_rad'].mean(), -2.2, rtol=1e-1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""

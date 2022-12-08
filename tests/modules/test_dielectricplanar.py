@@ -204,14 +204,14 @@ class TestDielectricPlanar(object):
         cov_perp = eps.means.mM_perp \
             - eps.means.m_perp * eps.means.M_perp
         assert_equal(eps.results.eps_perp,
-                     1 - eps.results.pref * cov_perp)
+                     - eps.results.pref * cov_perp)
 
         cov_par = 0.5 * (eps.means.mM_par[:, 0]
                          - np.dot(eps.means.m_par[:, :, 0],
                                   eps.means.M_par))
 
         assert_equal(eps.results.eps_par[:, 0],
-                     1 + eps.results.pref * cov_par)
+                     eps.results.pref * cov_par)
 
     def test_unsorted_ags(self, ag):
         """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""
