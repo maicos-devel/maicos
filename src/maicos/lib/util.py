@@ -247,6 +247,7 @@ doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
     doc_dict["RADIAL_CLASS_PARAMETERS"]
 
 doc_dict["SPHERE_CLASS_PARAMETERS"] = \
+    doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["BIN_WIDTH_PARAMETER"]
 
@@ -263,6 +264,7 @@ doc_dict["PROFILE_CYLINDER_CLASS_PARAMETERS"] = \
 
 doc_dict["PROFILE_SPHERE_CLASS_PARAMETERS"] = \
     doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    doc_dict["SPHERE_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
     doc_dict["PROFILE_CLASS_PARAMETERS"]
 
