@@ -278,18 +278,21 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
     return S_new / length
 
 
-def cluster_com(ag):
-    """Calculate the center of mass of the atomgroup.
+def center_cluster(ag, weights):
+    """Calculate the center of the atomgroup with respect to some weights.
 
     Parameters
     ----------
     ag : MDAnalysis.core.groups.AtomGroup
-        Group of atoms to calculate the center of mass for.
+        Group of atoms to calculate the center for.
+
+    weights : numpy.ndarray
+        Weights in the shape of ag.
 
     Returns
     -------
     com : numpy.ndarray
-        The center of mass.
+        The center with respect to the weights.
 
 
     Without proper treatment of periodic boundrary conditions most algorithms
@@ -327,15 +330,11 @@ def cluster_com(ag):
        |           |
        +-----------+
     """
-    L = ag.universe.dimensions[:3]
-    theta = (ag.positions / L) * 2 * np.pi
-    xi = ((np.cos(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
-          / ag.masses.sum())
-    zeta = ((np.sin(theta) * ag.masses[:, np.newaxis]).sum(axis=0)
-            / ag.masses.sum())
+    theta = (ag.positions / ag.universe.dimensions[:3]) * 2 * np.pi
+    xi = ((np.cos(theta) * weights[:, None]).sum(axis=0) / weights.sum())
+    zeta = ((np.sin(theta) * weights[:, None]).sum(axis=0) / weights.sum())
     theta_com = np.arctan2(-zeta, -xi) + np.pi
-    com = theta_com / (2 * np.pi) * L
-    return com
+    return theta_com / (2 * np.pi) * ag.universe.dimensions[:3]
 
 
 def symmetrize(m, axis=None, inplace=False):

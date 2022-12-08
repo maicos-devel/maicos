@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricPlanar(PlanarBase):
-    """Calculate planar dielectric profiles.
+    r"""Calculate planar dielectric profiles.
 
     See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details.
 
@@ -49,24 +49,27 @@ class DielectricPlanar(PlanarBase):
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
     results.eps_par : numpy.ndarray
-        eps_par: Parallel dielectric profile ε_∥
+        eps_par: Reduced parallel dielectric profile
+        :math:`(\varepsilon_\parallel - 1)` of the selected atomgroups
     results.deps_par : numpy.ndarray
-        Error of parallel dielectric profile
+        Uncertainty of parallel dielectric profile
     results.eps_par_self : numpy.ndarray
-        Reduced self contribution of parallel dielectric profile (ε_∥_self - 1)
+        Reduced self contribution of parallel dielectric profile
+        :math:`(\varepsilon_{\parallel,\mathrm{self}} - 1)`
     results.eps_par_coll : numpy.ndarray
         Reduced collective contribution of parallel dielectric profile
-        (ε_∥_coll - 1)
+        :math:`(\varepsilon_{\parallel,\mathrm{coll}} - 1)`
     results.eps_perp : numpy.ndarray
-        Inverse perpendicular dielectric profile ε^{-1}_⟂
+        Reduced inverse perpendicular dielectric profile
+        :math:`(\varepsilon^{-1}_\perp - 1)`
     results.deps_perp : numpy.ndarray
-        Error of inverse perpendicular dielectric profile
+        Uncertainty of inverse perpendicular dielectric profile
     results.eps_perp_self : numpy.ndarray
-        Reduced self contribution of Inverse perpendicular dielectric profile
-        (ε^{-1}_⟂_self - 1)
+        Reduced self contribution of the inverse perpendicular dielectric
+        profile :math:`(\varepsilon^{-1}_{\perp,\mathrm{self}} - 1)`
     results.eps_perp_coll : numpy.ndarray
-        Reduced collective contribution of Inverse perpendicular
-        dielectric profile (ε^{-1}_⟂_coll - 1)
+        Reduced collective contribution of the inverse perpendicular dielectric
+        profile :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}} - 1)`
     """
 
     def __init__(self,
@@ -278,8 +281,6 @@ class DielectricPlanar(PlanarBase):
                 (- pref * cov_perp_coll) \
                 / (1 + pref / self.results.V * var_perp)
 
-        self.results.eps_perp += 1
-
         # Parallel component
         # ==================
         cov_par = np.zeros((self.n_bins, self.n_atomgroups))
@@ -315,8 +316,6 @@ class DielectricPlanar(PlanarBase):
         self.results.eps_par_self = pref * cov_par_self
         self.results.eps_par_coll = pref * cov_par_coll
 
-        self.results.eps_par += 1
-
         if self.sym:
             symmetrize(self.results.eps_perp, axis=0, inplace=True)
             symmetrize(self.results.deps_perp, axis=0, inplace=True)
@@ -330,41 +329,44 @@ class DielectricPlanar(PlanarBase):
 
     def save(self):
         """Save results."""
+        columns = ["position [Å]"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"ε^-1_⟂ - 1 ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"Δε^-1_⟂ ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"self ε^-1_⟂ - 1 ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"coll. ε^-1_⟂ - 1 ({i+1})")
+
         outdata_perp = np.hstack([
             self.results.bin_pos[:, np.newaxis],
-            self.results.eps_perp.sum(axis=1)[:, np.newaxis],
-            np.linalg.norm(self.results.deps_perp, axis=1)[:, np.newaxis],
             self.results.eps_perp,
             self.results.deps_perp,
-            self.results.eps_perp_self.sum(axis=1)[:, np.newaxis],
-            self.results.eps_perp_coll.sum(axis=1)[:, np.newaxis],
             self.results.eps_perp_self,
             self.results.eps_perp_coll
             ])
+
+        self.savetxt("{}{}".format(self.output_prefix, "_perp"),
+                     outdata_perp, columns=columns)
+
+        columns = ["position [Å]"]
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"ε_∥ - 1 ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"Δε_∥ ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"self ε_∥ - 1 ({i+1})")
+        for i, _ in enumerate(self.atomgroups):
+            columns.append(f"coll ε_∥ - 1 ({i+1})")
+
         outdata_par = np.hstack([
             self.results.bin_pos[:, np.newaxis],
-            self.results.eps_par.sum(axis=1)[:, np.newaxis],
-            np.linalg.norm(self.results.deps_par, axis=1)[:, np.newaxis],
             self.results.eps_par,
             self.results.deps_par,
-            self.results.eps_par_self.sum(axis=1)[:, np.newaxis],
-            self.results.eps_par_coll.sum(axis=1)[:, np.newaxis],
             self.results.eps_par_self,
             self.results.eps_par_coll
             ])
 
-        columns = ["position [Å]", "ε_r (system)", "Δε_r (system)"]
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"ε_r ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"Δε_r ({i+1})")
-        columns += ["self ε_r - 1 (system)", "coll. ε_r - 1 (system)"]
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"self ε_r - 1 ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"coll. ε_r - 1 ({i+1})")
-
-        self.savetxt("{}{}".format(self.output_prefix, "_perp"),
-                     outdata_perp, columns=columns)
         self.savetxt("{}{}".format(self.output_prefix, "_par"),
                      outdata_par, columns=columns)
