@@ -305,14 +305,18 @@ def test_new_variance():
 
 
 @pytest.mark.parametrize('dim', (0, 1, 2))
-def test_cluster_com(dim):
+@pytest.mark.parametrize('weight', ('mass', 'none'))
+def test_center_cluster(dim, weight):
     """Tests for pbc com."""
     e_z = np.isin([0, 1, 2], dim)
 
     dimensions = [20, 30, 100, 90, 90, 90]
 
     water1 = mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp')
-    water1.atoms.translate(-water1.atoms.center_of_mass())
+    if weight == 'mass':
+        water1.atoms.translate(-water1.atoms.center_of_mass())
+    elif weight == 'none':
+        water1.atoms.translate(-water1.atoms.center_of_geometry())
 
     water2 = water1.copy()
 
@@ -322,11 +326,17 @@ def test_cluster_com(dim):
     water = mda.Merge(water1.atoms, water2.atoms)
     water.dimensions = dimensions
 
+    if weight == 'mass':
+        ref_weight = water.atoms.masses
+    elif weight == 'none':
+        ref_weight = np.ones_like(water.atoms.masses)
+
     for z in np.linspace(0, dimensions[dim], 10):
         water_shifted = water.copy()
         water_shifted.atoms.translate(e_z * z)
         water_shifted.atoms.wrap()
-        com = maicos.lib.math.cluster_com(water_shifted.atoms)[dim]
+        com = maicos.lib.math.center_cluster(water_shifted.atoms,
+                                             ref_weight)[dim]
         assert_almost_equal(minimum_image_distance(com, z, dimensions[dim]),
                             0, decimal=5)
 

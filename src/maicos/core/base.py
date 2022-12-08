@@ -19,7 +19,7 @@ from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 
 from .._version import get_versions
-from ..lib.math import cluster_com, correlation_time, new_mean, new_variance
+from ..lib.math import center_cluster, correlation_time, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
     get_cli_input,
@@ -174,7 +174,18 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self._setup_frames(self._trajectory, start, stop, step)
         logger.info("Starting preparation")
 
+        if self.refgroup is not None:
+            if not hasattr(self.refgroup, 'masses') \
+               or np.sum(self.refgroup.masses) == 0:
+                logger.warning("No masses available in refgroup, falling back "
+                               "to center of geometry")
+                ref_weights = np.ones_like(self.refgroup.atoms)
+
+            else:
+                ref_weights = self.refgroup.masses
+
         self._obs = Results()
+
         compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
 
         self._prepare()
@@ -199,7 +210,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self._obs.box_center = self.box_center
 
             if self.refgroup is not None:
-                com_refgroup = cluster_com(self.refgroup)
+                com_refgroup = center_cluster(self.refgroup, ref_weights)
                 t = self.box_center - com_refgroup
                 self._universe.atoms.translate(t)
                 self._universe.atoms.wrap()
