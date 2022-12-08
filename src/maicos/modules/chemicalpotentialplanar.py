@@ -185,10 +185,10 @@ class ChemicalPotentialPlanar(ProfilePlanarBase):
     def save(self):
         """Save results of analysis to file."""
         if self.zpos is not None:
-            self.OUTPUT = \
+            ChemicalPotentialPlanar.OUTPUT = \
                 f"Chemical potential calculated at z = {self.zpos} Å."
         else:
-            self.OUTPUT = \
+            ChemicalPotentialPlanar.OUTPUT = \
                 "Chemical potential averaged over the whole system."
         """Save results of analysis to file."""
         columns = []
