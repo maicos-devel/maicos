@@ -65,6 +65,12 @@ Alexander Schlaich
 - ``norm=number``: Declare bins with no atoms as ``nan`` (!157)
 - Simplify weight functions (!158)
 
+v0.6.1 (2022/09/26)
+-----------------
+Henrik Jaeger
+
+- Fix the output of the `ChemicalPotentialPlanar` module (!173)
+
 v0.6 (2022/09/01)
 -----------------
 Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger,
@@ -144,7 +150,6 @@ Philip Loche, Srihas Velpuri, Simon Gravelle
 - Added docstring Decorator for ``PlanarDocstring`` and ``verbose`` option (!80)
 - Use ``MDAnalysis``'s' ``center_of_mass`` function for center of
   mass shifting (!80)
-
 
 v0.4.1 (2021/12/17)
 -------------------
