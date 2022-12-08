@@ -66,7 +66,7 @@ Alexander Schlaich
 - Simplify weight functions (!158)
 
 v0.6.1 (2022/09/26)
------------------
+-------------------
 Henrik Jaeger
 
 - Fix the output of the `ChemicalPotentialPlanar` module (!173)
