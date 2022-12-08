@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricCylinder(CylinderBase):
-    """Calculate cylindrical dielectric profiles.
+    r"""Calculate cylindrical dielectric profiles.
 
     Components are calculated along the axial (z) and radial (along xy)
     direction at the system's center of mass.
@@ -59,13 +59,15 @@ class DielectricCylinder(CylinderBase):
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
     results.eps_ax : numpy.ndarray
-        Parallel dielectric profile (ε_∥)
+        Reduced axial dielectric profile :math:`(\varepsilon_z - 1)` of the
+        selected atomgroup
     results.deps_ax : numpy.ndarray
-        Error of parallel dielectric profile
+        Uncertainty of axial dielectric profile
     results.eps_rad : numpy.ndarray
-        Inverse perpendicular dielectric profile (ε^{-1}_⟂)
+        Reduced inverse radial dielectric profile
+        :math:`(\varepsilon^{-1}_\rho - 1)`
     results.deps_rad : numpy.ndarray
-        Error of inverse perpendicular dielectric profile
+        Uncertainty of inverse radial dielectric profile
     """
 
     def __init__(self,
@@ -171,10 +173,10 @@ class DielectricCylinder(CylinderBase):
             dcov_ax = self.sems.mM_ax
             dcov_rad = self.sems.mM_rad
 
-        self.results.eps_ax = 1 + pref * cov_ax
+        self.results.eps_ax = pref * cov_ax
         self.results.deps_ax = pref * dcov_ax
 
-        self.results.eps_rad = 1 - (2 * np.pi * self._obs.L
+        self.results.eps_rad = - (2 * np.pi * self._obs.L
                                     * pref * self.results.bin_pos * cov_rad)
         self.results.deps_rad = (2 * np.pi * self._obs.L
                                  * pref * self.results.bin_pos * dcov_rad)
@@ -190,16 +192,14 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["eps_ax", "eps_ax error"]
+        columns += ["ε_z - 1", "Δε_z"]
 
         self.savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
-                     outdata_ax,
-                     columns=columns)
+                     outdata_ax, columns=columns)
 
         columns = ["positions [Å]"]
 
-        columns += ["eps_rad", "eps_rad error"]
+        columns += ["ε^-1_r - 1", "Δε^-1_r"]
 
         self.savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
-                     outdata_rad,
-                     columns=columns)
+                     outdata_rad, columns=columns)

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricSphere(SphereBase):
-    """Calculate spherical dielectric profiles.
+    r"""Calculate spherical dielectric profiles.
 
     Components are calculated along and radial direction at the
     system's center of mass.
@@ -41,9 +41,10 @@ class DielectricSphere(SphereBase):
     ----------
     ${RADIAL_CLASS_ATTRIBUTES}
     results.eps_rad : numpy.ndarray
-        Inverse perpendicular dielectric profile (ε^{-1}_⟂)
+        Reduced inverse radial dielectric profile
+        (:math:`\varepsilon^{-1}_r - 1)`
     results.deps_rad : numpy.ndarray
-        Error of inverse perpendicular dielectric profile
+        Uncertainty of inverse radial dielectric profile
     """
 
     def __init__(self,
@@ -114,7 +115,7 @@ class DielectricSphere(SphereBase):
             self.results.bin_pos, self.results.eps_rad, self.results.deps_rad
             ]).T
 
-        columns = ["positions [Å]", "eps_rad", "eps_rad error"]
+        columns = ["positions [Å]", "eps_rad - 1", "eps_rad error"]
 
         self.savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
                      outdata_rad,
