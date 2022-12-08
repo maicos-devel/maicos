@@ -110,9 +110,8 @@ class DielectricCylinder(CylinderBase):
 
         # Use polarization density (for radial component)
         # ========================================================
-        rbins = np.digitize(
-            self.transform_positions(self.atomgroup.positions)[:, 0],
-            self._obs.bin_edges[1:])
+        rbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 0],
+                            self._obs.bin_edges[1:])
 
         curQ_rad, _ = np.histogram(rbins,
                                    bins=np.arange(self.n_bins + 1),
@@ -121,7 +120,7 @@ class DielectricCylinder(CylinderBase):
         self._obs.m_rad = -np.cumsum(
             (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos
             * self._obs.bin_width) / self._obs.bin_pos
-        self._obs.M_rad = np.sum(self._obs.m_rad * self._obs.bin_width)
+        self._obs.M_rad = np.dot(self._universe.atoms.charges, self.pos_cyl)[0]
         self._obs.mM_rad = self._obs.m_rad * self._obs.M_rad
         # Use virtual cutting method ( for axial component )
         # ========================================================
@@ -130,14 +129,15 @@ class DielectricCylinder(CylinderBase):
 
         # Move all r-positions to 'center of charge' such that we avoid
         # monopoles in r-direction. We only want to cut in z direction.
-        chargepos = self.pos_cyl[:, 0] * np.abs(self.atomgroup.charges)
+        chargepos = (self.pos_cyl[self.atomgroup.ix, 0]
+                     * np.abs(self.atomgroup.charges))
         center = (self.atomgroup.accumulate(chargepos, compound=self.comp)
                   / self.atomgroup.accumulate(np.abs(self.atomgroup.charges),
                                               compound=self.comp))
         testpos = center[self.inverse_ix]
         rbins = np.digitize(testpos, self._obs.bin_edges[1:])
         z = (np.arange(nbinsz) + 1) * (self._obs.L / nbinsz)
-        zbins = np.digitize(self.pos_cyl[:, 2], z)
+        zbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 2], z)
 
         curQz, _, _ = np.histogram2d(
             zbins, rbins,
@@ -146,7 +146,8 @@ class DielectricCylinder(CylinderBase):
 
         curqz = np.cumsum(curQz, axis=0) / (self._obs.bin_area)[np.newaxis, :]
         self._obs.m_ax = -curqz.mean(axis=0)
-        self._obs.M_ax = np.dot(self.atomgroup.charges, self.pos_cyl[:, 2])
+        self._obs.M_ax = np.dot(self._universe.atoms.charges,
+                                self.pos_cyl[:, 2])
         self._obs.mM_ax = self._obs.m_ax * self._obs.M_ax
 
     def _conclude(self):
