@@ -3,9 +3,9 @@
 How-to guides
 =============
 
-How-to guides are like recipes when you are cooking. Equipped with basic
-knowledge about MAICoS, you can find key problems and use-cases here. If you
-are a total beginner, you can go to :ref:`userdoc-get-started` section.
+Like a cooking recipe, How-to guides help you solve key problems and use cases.
+If you are a total MAICoS beginner, you should start with the
+:ref:`userdoc-get-started` section.
 
 .. toctree::
     :maxdepth: 1

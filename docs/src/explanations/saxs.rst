@@ -33,7 +33,7 @@ Experiments
 The measured quantity in SAXS experiments is the number of elastically
 scattered photons as a function of the scattering angle :math:`2\theta`, i.e.
 the intensity of the scattered rays across a range of small angles.
-The general set-up of a SAXS experiment is shown in figure below
+The general set-up of a SAXS experiment is shown in figure below.
 
 .. image:: ../../static/saxs.png
    :alt: Setup of a SAXS 
@@ -41,7 +41,7 @@ The general set-up of a SAXS experiment is shown in figure below
 The experiments are carried out by placing the sample of interest in a highly 
 monochromatic and collimated (parallel) X-ray beam of wavelength :math:`\lambda`.
 When the incident rays with wave vector :math:`\boldsymbol{k}_i` reach the
-sample they scatter. The scattered rays, with wave vector ks, are recorded by
+sample they scatter. The scattered rays, with wave vector :math:`\boldsymbol{k}_s`, are recorded by
 a 2D-detector revealing a diffraction pattern.
 
 The scattering agents in the sample are electrons and so diffraction patterns

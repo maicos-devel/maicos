@@ -101,36 +101,36 @@ Currently, MAICoS supports the following analysis modules:
      - Description
 
    * - DensityPlanar
-     - partial densities profiles in a cartesian geometry
+     - Compute the partial density profile in a cartesian geometry
    * - DensityCylinder
-     - partial densities across a cylinder
+     - Compute partial densities across a cylinder
    * - DensitySphere
-     - partial densities profiles in a spherical geometry
+     - Compute partial densities across a sphere
    * - TemperaturePlanar
-     - temperature profiles in a cartesian geometry
+     - Compute temperature profile in a cartesian geometry
    * - ChemicalPotentialPlanar
-     - chemical potential in a cartesian geometry
+     - Compute the chemical potential in a cartesian geometry
    * - DielectricPlanar
-     - planar dielectric profiles
+     - Calculate planar dielectric profiles
    * - DielectricCylinder
-     - cylindrical dielectric profiles
+     - Calculate cylindrical dielectric profiles
    * - DielectricSphere
-     - spherical dielectric profiles
+     - Compute partial densities across a sphere
    * - DielectricSpectrum
-     - linear dielectric spectrum of a bulk system
+     - Compute the linear dielectric spectrum
    * - Saxs
-     - SAXS scattering intensities
+     - Compute small angle X-Ray scattering intensities (SAXS)
    * - Diporder
-     - dipolar order parameters
+     - Calculate dipolar order parameters
    * - RDFPlanar
-     - planar radial distribution function
+     - Compute slab-wise planar two dimensional radial distribution functions
    * - DipoleAngle
-     - angle timeseries of dipole moments with respect to an axis
+     - Calculate angle timeseries of dipole moments with respect to an axis
    * - KineticEnergy
-     - energy timeseries.
+     - Calculate the timeseries of energies
    * - VelocityPlanar
-     - mean velocity profile in a cartesian geometry
+     - Compute the velocity profile in a cartesian geometry
    * - VelocityCylinder
-     - mean velocity profile in a cylindrical geometry
+     - Compute the cartesian velocity profile across a cylinder
 
 .. inclusion-marker-modules-end

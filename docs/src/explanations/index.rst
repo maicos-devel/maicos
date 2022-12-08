@@ -3,10 +3,10 @@
 Explanations
 ============
 
-The explanation section discusses topics that broaden your knowledge of
-MAICoS. The theory behind the analysis modules and additional useful information
-are found here to give you more clarity and understanding of what MAICoS is
-all about.
+This section provides the theory behind some of the most complex analysis
+modules, and explains the general design of MAICoS.
+Its purpose is to provide more clarity and understanding of what MAICoS
+is all about.
 
 .. toctree::
     :maxdepth: 1

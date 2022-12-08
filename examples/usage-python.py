@@ -13,10 +13,11 @@ Usage - Python interpreter
 To follow this tutorial, it is assumed that MAICoS has been
 :ref:`installed <label_installation>` on your computer.
 
-MAICoS heavily depends on the `MDAnalysis`_ infrastruce for trajectory loading
-and atom selection. Here we will only cover a small aspects of the capabiloties
-of `MDAnalysis`_. If you want to learn more about the library take a look
-at their `documentation <https://docs.mdanalysis.org/stable/index.html>`_.
+MAICoS heavily depends on the `MDAnalysis`_ infrastructure for
+trajectory loading and atom selection. Here we will only cover
+a small aspects of the capabilities of `MDAnalysis`_. If you want to
+learn more about the library, take a look at their
+`documentation <https://docs.mdanalysis.org/stable/index.html>`_.
 
 .. _`MDAnalysis`: https://www.mdanalysis.org
 
@@ -29,14 +30,14 @@ modules follow the same structure:
 1. load your simulation data into an
    :class:`MDAnalysis.core.universe.Universe`
 2. define analysis parameters like bin width or the direction of the analysis
-3. after the analysis was succesful all results are stored in a
+3. after the analysis was succesful, access all results in a
    :class:`MDAnalysis.analysis.base.Results` of the analysis object.
 
 Note that some of the calculations may contain pitfall, such as dielectric
 profiles calculation. Potential pitfalls and best practices are listed in
 the :ref:`userdoc-how-to` section.
 
-To start let us first import Matplotlib, MDAnalysis and MAICoS
+To start, let us first import Matplotlib, MDAnalysis and MAICoS
 """
 
 import matplotlib.pyplot as plt
@@ -52,17 +53,17 @@ import maicos
 # For this tutorial we use a system consisting of a 2D slab
 # with 1176 water molecules confined in a 2D slit made of NaCl atoms, where the
 # two water/solid interfaces are normal to the axis :math:`z` as shown in the
-# snapshot below
+# snapshot below:
 #
 # .. image:: ../../static/slit_flow.png
 #   :alt: Snapshot Slit Flow System
 #
-# An acceleration :math:`a = 0.05\,\text{nm}\,\text{ps}^{-2}` is applied to
+# An acceleration :math:`a = 0.05\,\text{nm}\,\text{ps}^{-2}` was applied to
 # the water molecules in the :math:`\boldsymbol{e}_x` direction parallel to
-# the NaCl wall, and the atoms of the wall are maintained frozen along
+# the NaCl wall, and the atoms of the wall were maintained frozen along
 # :math:`\boldsymbol{e}_x`.
 #
-# We first create an :class:`MDAnalysis.core.universe.Universe`,
+# We first create an :class:`MDAnalysis.core.universe.Universe`
 # by loading a topology and trajectory from disk.
 # You can download the
 # :download:`topology <../../static/slit_flow/slit_flow.tpr>`
@@ -70,7 +71,7 @@ import maicos
 # :download:`trajectory <../../static/slit_flow/slit_flow.trr>`
 # from our website.
 
-u = mda.Universe('slit_flow.tpr', 'slit_flow.trr')
+u = mda.Universe("slit_flow.tpr", "slit_flow.trr")
 
 # %%
 #
@@ -84,12 +85,12 @@ print(f"Total simulation time is {total_time} ps.")
 
 # %%
 #
-# Now we define the four groups
+# Now, we define four atom groups containing repectively:
 #
-# 1. the oxygen and the hydrogen atoms of the water molecules,
-# 2. the oxygen atoms,
-# 3. the hydrogen atoms,
-# 4. the Na and Cl atoms of the wall:
+# 1. the oxygen and the hydrogen atoms (of the water molecules),
+# 2. the oxygen atoms (of the water molecules),
+# 3. the hydrogen atoms (of the water molecules),
+# 4. the Na and Cl atoms (of the wall):
 
 group_H2O = u.select_atoms('type OW HW')
 group_O = u.select_atoms('type OW')
@@ -134,7 +135,7 @@ print(dens[:10])
 
 # %%
 #
-# By default the ``bin_width`` is 1 Å,and the unit is atomic mass per
+# By default the ``bin_width`` is 1 Å, and the unit is atomic mass per
 # :math:`Å^3` (:math:`\text{u}/\text{Å}^3`).
 #
 # Let us plot the density profile using Matplotlib:
@@ -157,7 +158,7 @@ fig.show()
 # and perform more advanced operations.
 #
 # Let us increase the spacial resolution by reducing the ``bin_width``, and
-# extract two profiles instead of one
+# extract two profiles instead of one:
 #
 # * one for the oxygen atoms of the water molecules,
 # * one from the hydrogen atoms:
@@ -209,7 +210,7 @@ help(maicos.DensityPlanar)
 #
 # Here we can see that for :class:`maicos.modules.densiity.DensityPlanar`,
 # there are several possible options such as ``zmin``, ``zmax`` (the minimal
-# and maximal coordinate to consider), or ``refgroup`` (to perform the binning
+# and maximal coordinates to consider), or ``refgroup`` (to perform the binning
 # with respect to the center of mass of a certain group of atoms).
 #
 # Knowing this, let us re-calculate the density profile of

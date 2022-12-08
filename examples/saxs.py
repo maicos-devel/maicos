@@ -14,9 +14,9 @@ Small-angle X-ray scattering (SAXS) can be extracted using MAICoS. To
 follow this how-to guide, you should download the
 :download:`topology <../../static/water/water.tpr>`
 and the
-:download:`trajectory <../../static//water/water.trr>`.
+:download:`trajectory <../../static//water/water.trr>` files.
 
-First we import Matplotlib, MDAnalysis, NumPy and MAICoS:
+First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:
 """
 
 import matplotlib.pyplot as plt
@@ -55,15 +55,15 @@ saxs = maicos.Saxs(u.atoms).run(stop=30)
 
 # %%
 #
-# Note: SAXS computations are extensive calculation. To get an overview of the
-# scattering intensities we reduce the number of
-# to be analyzed frames from `101` to the first `30` frames of the trajectory
+# Note: SAXS computations are extensive calculations. Here, to get an
+# overview of the scattering intensities, we reduce the number of frames
+# to be analyzed from `101` to `30`,
 # by adding the ``stop=30`` parameter to the `run` method. Due to the small
 # number of analyzed frames, the scattering intensities
 # shown in this tutorial should not be used to draw any conclusions
 # from the data.
 #
-# Extract the $q$ values and the averaged saxs scattering intensities
+# Extract the :math:`q` values and the averaged saxs scattering intensities
 # ``scat_factor`` from the ``results`` attribute:
 
 q_vals = saxs.results.q
@@ -78,7 +78,7 @@ print(scat_factor[:10])
 
 # %%
 #
-# By default the binwidth in q space is 0.005 1/Å
+# By default, the binwidth in the recipocal :math:`(q)` space is 0.005 1/Å.
 #
 # Plot the structure factors profile using:
 
@@ -96,9 +96,9 @@ fig.show()
 # Computing oxygen and hydrogen contributions
 # -------------------------------------------
 #
-# An advantage of full atomistic simulation is their ability to investigate
-# atomic contributions individually. Let us calculate the oxygen and hydrogen
-# contribution:
+# An advantage of full atomistic simulations is their ability to investigate
+# atomic contributions individually. Let us calculate both oxygen and hydrogen
+# contributions, respectively:
 
 saxs_O = maicos.Saxs(group_O).run(stop=30)
 saxs_H = maicos.Saxs(group_H).run(stop=30)
