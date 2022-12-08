@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DensitySphere(ProfileSphereBase):
-    r"""Compute partial densities across a spahere.
+    r"""Compute partial densities across a sphere.
 
     Calculation are carried out for mass
     (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or

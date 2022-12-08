@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class RDFPlanar(PlanarBase):
-    r"""Compute slab wise planar two dimensional radial distribution functions.
+    r"""Compute slab-wise planar two dimensional radial distribution functions.
 
     The radial distribution function :math:`g_\text{planar}(r)` describes the
     spatial correlation between atoms in `g1` and atoms in `g2`. The 2D RDF can
