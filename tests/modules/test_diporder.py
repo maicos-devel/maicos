@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the Diporder class."""
+"""Tests for the DiporderPlanar class."""
 import os
 import sys
 
@@ -16,15 +16,15 @@ import pytest
 from create_mda_universe import line_of_water_molecules
 from numpy.testing import assert_allclose
 
-from maicos import Diporder
+from maicos import DiporderPlanar
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import AIRWATER_TPR, AIRWATER_TRR  # noqa: E402
 
 
-class TestDiporder(object):
-    """Tests for the Diporder class."""
+class TestDiporderPlanar(object):
+    """Tests for the DiporderPlanar class."""
 
     @pytest.fixture()
     def result_dict(self):
@@ -58,35 +58,35 @@ class TestDiporder(object):
     @pytest.mark.parametrize('order_parameter',
                              ['P0', 'cos_theta', 'cos_2_theta'])
     @pytest.mark.parametrize('dim', [0, 1, 2])
-    def test_Diporder_slab(self, ag, dim, order_parameter, result_dict):
-        """Test Diporder for slab system in x,y,z direction."""
-        dip = Diporder(ag,
-                       bin_width=5,
-                       dim=dim,
-                       refgroup=ag,
-                       order_parameter=order_parameter).run()
-        assert_allclose(dip.results.profile_mean.flatten(),
+    def test_DiporderPlanar_slab(self, ag, dim, order_parameter, result_dict):
+        """Test DiporderPlanar for slab system in x,y,z direction."""
+        dip = DiporderPlanar(ag,
+                             bin_width=5,
+                             dim=dim,
+                             refgroup=ag,
+                             order_parameter=order_parameter).run()
+        assert_allclose(dip.results.profile.flatten(),
                         result_dict[dim][order_parameter],
                         atol=1e-1)
 
     @pytest.mark.parametrize('order_parameter, output',
                              [('P0', 0), ('cos_theta', 1), ('cos_2_theta', 1)])
-    def test_Diporder_3_water_0(self, order_parameter, output):
-        """Test Diporder for 3 water molecules with angle 0."""
+    def test_DiporderPlanar_3_water_0(self, order_parameter, output):
+        """Test DiporderPlanar for 3 water molecules with angle 0."""
         group_H2O_1 = line_of_water_molecules(n_molecules=3, angle_deg=0)
-        dip = Diporder(group_H2O_1, bin_width=10,
-                       order_parameter=order_parameter).run()
+        dip = DiporderPlanar(group_H2O_1, bin_width=10,
+                             order_parameter=order_parameter).run()
 
-        assert_allclose(np.mean(dip.results.profile_mean.flatten()),
+        assert_allclose(np.mean(dip.results.profile.flatten()),
                         output, atol=1e-3)
 
     @pytest.mark.parametrize('order_parameter, output',
                              [('P0', 0), ('cos_theta', 0), ('cos_2_theta', 0)])
-    def test_Diporder_3_water_90(self, order_parameter, output):
-        """Test Diporder for 3 water molecules with angle 90."""
+    def test_DiporderPlanar_3_water_90(self, order_parameter, output):
+        """Test DiporderPlanar for 3 water molecules with angle 90."""
         group_H2O_2 = line_of_water_molecules(n_molecules=3, angle_deg=90)
-        dip = Diporder(group_H2O_2, bin_width=10,
-                       order_parameter=order_parameter).run()
+        dip = DiporderPlanar(group_H2O_2, bin_width=10,
+                             order_parameter=order_parameter).run()
 
-        assert_allclose(np.mean(dip.results.profile_mean.flatten()),
+        assert_allclose(np.mean(dip.results.profile.flatten()),
                         output, atol=1e-6)

@@ -20,27 +20,15 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DensitySphere(ProfileSphereBase):
-    r"""Compute partial densities across a sphere.
+    r"""Compute spherical partial density profiles.
 
-    Calculation are carried out for mass
-    (:math:`\rm u \cdot A^{-3}`), number (:math`\rm A^{-3}`) or
-    charge (:math:`\rm e \cdot A^{-3}`) density profiles along the radial
-    axes.
-
-    For grouping with respect to molecules, residues etc. the corresponding
-    centers (i.e center of mass) using of periodic boundary conditions
-    are calculated.
-    For these center calculations molecules will be unwrapped/made whole.
-    Trajectories containing already whole molecules can be run with
-    `unwrap=False` to gain a speedup.
-    For grouping with respect to atoms the `unwrap` option is always
-    ignored.
+    ${DENSITY_DESCRIPTION}
 
     Parameters
     ----------
     ${PROFILE_SPHERE_CLASS_PARAMETERS}
     dens : str {'mass', 'number', 'charge'}
-        density type to be calculated
+        density type to be calculated.
 
     Attributes
     ----------

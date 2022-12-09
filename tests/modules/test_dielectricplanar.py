@@ -199,7 +199,7 @@ class TestDielectricPlanar(object):
 
     def test_epsilon(self, ag):
         """Test that epsilon is constructed correctly from covariances."""
-        eps = DielectricPlanar(ag, xy=True).run()
+        eps = DielectricPlanar(ag).run()
 
         cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
         assert_equal(eps.results.eps_perp, - eps.results.pref * cov_perp)
@@ -218,6 +218,7 @@ class TestDielectricPlanar(object):
 
         eps1 = DielectricPlanar(ag)
         eps1.run()
+
         eps2 = DielectricPlanar(ag2)
         eps2.run()
 
@@ -246,10 +247,10 @@ class TestDielectricPlanar(object):
 
     def test_xy_vac(self, ag):
         """Tests for conditions xy & vac when True."""
-        eps1 = DielectricPlanar(ag, xy=True)
+        eps1 = DielectricPlanar(ag)
         eps1.run()
         k1 = np.mean(eps1.results.eps_perp - 1)
-        eps2 = DielectricPlanar(ag, xy=True, vac=True)
+        eps2 = DielectricPlanar(ag, vac=True)
         eps2.run()
         k2 = np.mean(eps2.results.eps_perp - 1)
         assert_allclose((k1 / k2), 1.5, rtol=1e-1)

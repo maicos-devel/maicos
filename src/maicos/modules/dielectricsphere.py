@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module for computing spherical dielectric profiles."""
+"""Module for calculating spherical dielectric profiles."""
 
 import logging
 
@@ -25,8 +25,14 @@ logger = logging.getLogger(__name__)
 class DielectricSphere(SphereBase):
     r"""Calculate spherical dielectric profiles.
 
-    Components are calculated along and radial direction at the
-    system's center of mass.
+    Components are calculated along the radial (:math:`r`)
+    direction either with respect to the center of the simulation box or the
+    center of mass of the refgroup if provided.
+
+    For usage please refer to :ref:`How-to: Dielectric
+    constant<howto-dielectric>`.
+
+    Please read and cite :footcite:p:`schaafDielectricResponseWater2015`.
 
     Parameters
     ----------
@@ -45,6 +51,10 @@ class DielectricSphere(SphereBase):
         (:math:`\varepsilon^{-1}_r - 1)`
     results.deps_rad : numpy.ndarray
         Uncertainty of inverse radial dielectric profile
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(self,
@@ -82,12 +92,12 @@ class DielectricSphere(SphereBase):
                                    bins=np.arange(self.n_bins + 1),
                                    weights=self.atomgroup.charges)
 
-        self._obs.m_rad = -np.cumsum(
+        self._obs.m_r = -np.cumsum(
             (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos**2
             * self._obs.bin_width) / self._obs.bin_pos**2
-        self._obs.M_rad = np.dot(self._universe.atoms.charges,
-                                 self.pos_sph[:, 0])
-        self._obs.mM_rad = self._obs.m_rad * self._obs.M_rad
+        self._obs.M_r = np.dot(self._universe.atoms.charges,
+                               self.pos_sph[:, 0])
+        self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
     def _conclude(self):
         super(DielectricSphere, self)._conclude()
@@ -98,11 +108,11 @@ class DielectricSphere(SphereBase):
         pref /= scipy.constants.angstrom / \
             (scipy.constants.elementary_charge)**2
 
-        cov_rad = self.means.mM_rad - self.means.m_rad * self.means.M_rad
+        cov_rad = self.means.mM_r - self.means.m_r * self.means.M_r
 
         dcov_rad = 0.5 * np.sqrt(
-            self.sems.mM_rad**2 + self.sems.m_rad**2 * self.means.M_rad**2
-            + self.means.m_rad**2 * self.sems.M_rad**2)
+            self.sems.mM_r**2 + self.sems.m_r**2 * self.means.M_r**2
+            + self.means.m_r**2 * self.sems.M_r**2)
 
         self.results.eps_rad = 1 - (4 * np.pi * self.results.bin_pos**2
                                     * pref * cov_rad)

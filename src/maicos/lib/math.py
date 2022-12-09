@@ -118,7 +118,7 @@ def scalar_prod_corr(a, b=None, subtract_mean=False):
 
 
 def correlation_time(x_n, method='Sokal', c=8, mintime=3):
-    """Compute the integrated correlation time of a timeseries.
+    r"""Compute the integrated correlation time of a timeseries.
 
     Parameters
     ----------
@@ -129,8 +129,9 @@ def correlation_time(x_n, method='Sokal', c=8, mintime=3):
         'Sokal'
         'Chodera'
     c : float
-        cut-off factor for calculation of correlation time tau for Sokal method.
-        cut-off T for integration is determined to be T >= c * tau
+        cut-off factor for calculation of correlation time :math:`\tau` for
+        the Sokal method. The cut-off :math:`T` for integration is
+        determined to be :math:`T >= c \cdot tau`.
     mintime: int
         minimum possible value for cut-off
 
@@ -189,6 +190,7 @@ def new_mean(old_mean, data, length):
 
     The first term can be identified as the mean of the first N - 1 values
     and we arrive at
+
     .. math::
 
         \bar x_N = \frac{N-1}{N} \bar x_{N-1} + \frac{x_N}{N}
@@ -213,10 +215,13 @@ def new_mean(old_mean, data, length):
     The mean of a data set can easily be calculated from the data points.
     However this requires one to keep all data points on hand until the
     end of the calculation.
+
     >>> np.mean([1,3,5,7])
     4.0
+
     Alternatively, one can update an existing mean, this requires only
     knowledge of the total number of samples.
+
     >>> maicos.utils.new_mean(np.mean([1, 3, 5]), 7, 4)
     4.0
     """
@@ -224,14 +229,17 @@ def new_mean(old_mean, data, length):
 
 
 def new_variance(old_variance, old_mean, new_mean, data, length):
-    """Calculate the variance of a timeseries iteratively.
+    r"""Calculate the variance of a timeseries iteratively.
 
-    The variance of a timeseries can be calculated iteratively by
-    using the following formula
+    The variance of a timeseries :math:`x_n` can be calculated iteratively by
+    using the following formula:
 
     .. math::
 
-        S_n = S_n-1 + (n-1) * (data_n - mean_n-1)^2 / (n-1)
+        S_n = S_n-1 + (n-1) * (x_n - \bar{x}_n-1)^2 / (n-1)
+
+    Here, :math:`\bar{x}_n` is the mean of the timeseries up to the :math:`n`-th
+    value.
 
     Floating point imprecision can lead to slight negative variances
     leading non defined standard deviations. Therefore a negetaive variance
@@ -257,11 +265,14 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
 
     Examples
     --------
-    The data set [1,5,5,1] has a variance of 4.0
+    The data set ``[1,5,5,1]`` has a variance of ``4.0``
+
     >>> np.var([1,5,5,1])
     4.0
+
     Knowing the total number of data points, this operation
     can be performed iteratively.
+
     >>> maicos.utils.new_variance(np.var([1,5,5]), 1, 4)
     4.0
     """
@@ -353,7 +364,7 @@ def symmetrize(m, axis=None, inplace=False):
          If axis is a tuple of ints, symmetrizing is performed on all of the
          axes specified in the tuple.
     inplace : bool
-        Do symmetrizations inplace. If `False` a new array is returnd.
+        Do symmetrizations inplace. If `False` a new array is returned.
 
     Returns
     -------

@@ -6,31 +6,32 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Module for computing pipolar order parameter."""
+r"""Module for computing dipolar order parameter."""
 
 import logging
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
-from ..lib.weights import diporder_weights
+from ..lib.weights import diporder_planar_weights
 
 
 logger = logging.getLogger(__name__)
 
 
 @render_docs
-class Diporder(ProfilePlanarBase):
-    """Calculate dipolar order parameters.
+class DiporderPlanar(ProfilePlanarBase):
+    r"""Calculate dipolar order parameters.
 
     Calculations include the projected dipole density
-    P_0⋅ρ(z)⋅cos(θ[z]), the dipole orientation cos(θ[z]), the squared dipole
-    orientation cos²(Θ[z]) and the number density ρ(z).
+    :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation
+    :math:`\cos(θ[z])`, the squared dipole
+    orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.
 
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
     order_parameter : str
-        `P0`, `cos_theta` or `cos_2_theta`
+        ``P0``, ``cos_theta`` or ``cos_2_theta``.
 
     Attributes
     ----------
@@ -48,7 +49,7 @@ class Diporder(ProfilePlanarBase):
                  grouping="residues",
                  unwrap=True,
                  bin_method="com",
-                 output="diporder.dat",
+                 output="diporder_planar.dat",
                  concfreq=0,
                  order_parameter="P0",
                  jitter=None):
@@ -58,8 +59,8 @@ class Diporder(ProfilePlanarBase):
         else:
             normalization = "number"
 
-        super(Diporder, self).__init__(
-            weighting_function=diporder_weights,
+        super(DiporderPlanar, self).__init__(
+            weighting_function=diporder_planar_weights,
             f_kwargs={"dim": dim, "order_parameter": order_parameter},
             normalization=normalization,
             atomgroups=atomgroups,

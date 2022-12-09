@@ -466,13 +466,13 @@ class ProfileBase:
             self._obs.profile[:, index] = profile
 
     def _conclude(self):
-        self.results.profile_mean = self.means.profile
-        self.results.profile_err = self.sems.profile
+        self.results.profile = self.means.profile
+        self.results.dprofile = self.sems.profile
 
         if self.normalization == 'number':
             no_occurences_idx = self.tot_bincount == 0
-            self.results.profile_mean[no_occurences_idx] = np.nan
-            self.results.profile_err[no_occurences_idx] = np.nan
+            self.results.profile[no_occurences_idx] = np.nan
+            self.results.dprofile[no_occurences_idx] = np.nan
 
     def save(self):
         """Save results of analysis to file."""
@@ -489,6 +489,6 @@ class ProfileBase:
         AnalysisBase.savetxt(self,
                              self.output,
                              np.hstack((self.results.bin_pos[:, np.newaxis],
-                                        self.results.profile_mean,
-                                        self.results.profile_err)),
+                                        self.results.profile,
+                                        self.results.dprofile)),
                              columns=columns)

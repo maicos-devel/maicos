@@ -36,5 +36,5 @@ class TestDensityCylinder(object):
     def test_dens(self, ag, dens_type, mean):
         """Test the density profile."""
         dens = DensityCylinder(ag, dens=dens_type).run()
-        assert_allclose(dens.results.profile_mean.mean(), mean,
+        assert_allclose(dens.results.profile.mean(), mean,
                         atol=1e-4, rtol=1e-2)

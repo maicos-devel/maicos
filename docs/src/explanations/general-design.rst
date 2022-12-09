@@ -127,7 +127,7 @@ For instance, the atomic weight could be the masses,
 thus resulting in mass density profiles as done
 in :ref:`DensityPlanar`, atomic or molecular velocities as for
 :ref:`VelocityPlanar`, or the dipolar orientations as used by the
-:ref:`Diporder` class.
+:ref:`DiporderPlanar` class.
 
 More details on each base class are given in the API Documentation. For
 detailed information on the physical principles of each module consider

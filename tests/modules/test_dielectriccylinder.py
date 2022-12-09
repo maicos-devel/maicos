@@ -81,11 +81,10 @@ class TestDielectricCylinder(object):
                                  vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_rad),
+        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_r),
                         4 / selection, rtol=0.1)
-        assert_allclose(eps._obs.M_rad,
-                        4, rtol=0.1)
-        assert_allclose(np.sum(eps._obs.m_ax), 0, rtol=0.1)
+        assert_allclose(eps._obs.M_r, 4, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_z), 0, rtol=0.1)
 
     @pytest.mark.parametrize('selection', (1, 2))
     def test_axial_dipole_orientations(self, selection):
@@ -128,11 +127,11 @@ class TestDielectricCylinder(object):
                                  vcutwidth=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_ax),
+        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_z),
                         4 / selection,
                         rtol=0.1)
-        assert_allclose(eps._obs.M_ax, 4, rtol=0.1)
-        assert_allclose(np.sum(eps._obs.m_rad), 0, rtol=0.1)
+        assert_allclose(eps._obs.M_z, 4, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""
@@ -140,10 +139,10 @@ class TestDielectricCylinder(object):
             eps = DielectricCylinder(ag_single_frame)
             eps.run()
             eps.save()
-            res_ax = np.loadtxt("{}_ax.dat".format(eps.output_prefix))
-            assert_allclose(eps.results["eps_ax"], res_ax[:, 1], rtol=1e-1)
-            res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
-            assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
+            res_z = np.loadtxt("{}_z.dat".format(eps.output_prefix))
+            assert_allclose(eps.results["eps_z"], res_z[:, 1], rtol=1e-1)
+            res_r = np.loadtxt("{}_r.dat".format(eps.output_prefix))
+            assert_allclose(eps.results["eps_r"], res_r[:, 1], rtol=1e-2)
 
     def test_output_name(self, ag_single_frame, tmpdir):
         """Tests output name."""
@@ -151,11 +150,11 @@ class TestDielectricCylinder(object):
             eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
             eps.run()
             eps.save()
-            open("foo_ax.dat")
-            open("foo_rad.dat")
+            open("foo_z.dat")
+            open("foo_r.dat")
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""
         eps = DielectricCylinder(ag, single=True, bin_width=0.5)
         eps.run()
-        assert_allclose(np.mean(eps.results.eps_ax), 90., rtol=1e-1)
+        assert_allclose(np.mean(eps.results.eps_z), 90., rtol=1e-1)

@@ -26,14 +26,22 @@ logger = logging.getLogger(__name__)
 class DielectricPlanar(PlanarBase):
     r"""Calculate planar dielectric profiles.
 
-    See Schlaich, et al., Phys. Rev. Lett., vol. 117 (2016) for details.
+    For usage please refer to :ref:`How-to: Dielectric
+    constant<howto-dielectric>`.
+
+    Please read and cite
+    :footcite:t:`schlaichWaterDielectricEffects2016` and Refs.
+    :footcite:p:`locheUniversalNonuniversalAspects2020`,
+    :footcite:p:`bonthuisProfileStaticPermittivity2012`.
 
     Parameters
     ----------
     ${ATOMGROUPS_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
-    xy : bool
-        Use 2D slab geometry.
+    is_3d : bool
+        Use 3d-periodic boundary conditions, i.e., include the dipole correction
+        for the interaction between periodic images
+        :footcite:p:`sternCalculationDielectricPermittivity2003`.
     vac : bool
         Use vacuum boundary conditions instead of metallic (2D only!).
     sym : bool
@@ -49,7 +57,7 @@ class DielectricPlanar(PlanarBase):
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
     results.eps_par : numpy.ndarray
-        eps_par: Reduced parallel dielectric profile
+        Reduced parallel dielectric profile
         :math:`(\varepsilon_\parallel - 1)` of the selected atomgroups
     results.deps_par : numpy.ndarray
         Uncertainty of parallel dielectric profile
@@ -70,6 +78,10 @@ class DielectricPlanar(PlanarBase):
     results.eps_perp_coll : numpy.ndarray
         Reduced collective contribution of the inverse perpendicular dielectric
         profile :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}} - 1)`
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(self,
@@ -79,7 +91,7 @@ class DielectricPlanar(PlanarBase):
                  zmax=None,
                  bin_width=0.5,
                  refgroup=None,
-                 xy=False,
+                 is_3d=False,
                  sym=False,
                  vac=False,
                  unwrap=True,
@@ -95,7 +107,7 @@ class DielectricPlanar(PlanarBase):
                                                refgroup=refgroup,
                                                unwrap=unwrap,
                                                multi_group=True)
-        self.xy = xy
+        self.is_3d = is_3d
         self.sym = sym
         self.vac = vac
 
@@ -258,7 +270,7 @@ class DielectricPlanar(PlanarBase):
         cov_perp_coll = self.means.cmM_perp \
             - self.means.m_perp * self.means.cM_perp
 
-        if self.xy:
+        if not self.is_3d:
             self.results.eps_perp = -pref * cov_perp
             self.results.eps_perp_self = - pref * cov_perp_self
             self.results.eps_perp_coll = - pref * cov_perp_coll

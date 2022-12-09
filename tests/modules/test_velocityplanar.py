@@ -79,7 +79,7 @@ class TestVelocityPlanar(object):
     def test_vel_1(self, ag, dim, vdim, vel_array_1):
         """Test velocity module using WATER_TPR data."""
         vel = VelocityPlanar(ag, dim=dim, vdim=vdim).run()
-        assert_allclose(vel.results.profile_mean.mean(),
+        assert_allclose(vel.results.profile.mean(),
                         vel_array_1[dim][vdim])
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -96,7 +96,7 @@ class TestVelocityPlanar(object):
                              grouping="molecules").run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results.profile_mean.mean(),
+        assert_allclose(vel.results.profile.mean(),
                         vel_array_2[dim][vdim] / vol, rtol=1e-6)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -113,7 +113,7 @@ class TestVelocityPlanar(object):
                              grouping="atoms").run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results.profile_mean.mean(),
+        assert_allclose(vel.results.profile.mean(),
                         vel_array_3[dim][vdim] / vol)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
@@ -130,5 +130,5 @@ class TestVelocityPlanar(object):
                              grouping="atoms", flux=True).run()
 
         # Divide by volume for normalization as in module.
-        assert_allclose(vel.results.profile_mean,
+        assert_allclose(vel.results.profile,
                         flux_array_1[dim][vdim] / vol)

@@ -16,31 +16,39 @@ from ..lib.util import get_compound, render_docs
 
 @render_docs
 class DipoleAngle(AnalysisBase):
-    """Calculate angle timeseries of dipole moments with respect to an axis.
+    r"""Calculate angle timeseries of dipole moments with respect to an axis.
+
+    The analysis can be applied to study the orientational dynamics of water
+    molecules during an excitation pulse. For more details read
+    :footcite:t:`elgabartyEnergyTransferHydrogen2020`.
 
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     dim : int
-        Reference vector for angle (x=0, y=1, z=2).
+        Reference vector for angle (``x=0``, ``y=1``, ``z=2``).
     output : str
-       Prefix for output filenames
+       Prefix for output filenames.
     concfreq : int
         Default number of frames after which results are calculated
-        and files refreshed. If `0` results are only calculated at
+        and files refreshed. If ``0`` results are only calculated at
         the end of the analysis and not saved by default.
 
     Attributes
     ----------
     results.t : numpy.ndarray
-        time (ps)
+        time (ps).
     resulst.cos_theta_i : numpy.ndarray
-        Average cos between dipole and axis
+        Average :math:`\cos` between dipole and axis.
     resulst.cos_theta_ii : numpy.ndarray
-        Average cos^2 of the same between dipole and axis
+        Average :math:`\cos²` of the dipoles and axis.
     resulst.cos_theta_ij : numpy.ndarray
-        Product cos of dipole i and cos of dipole j (i!=j)
+        Product :math:`\cos` of dipole i and cos of dipole j (``i != j``).
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(self,

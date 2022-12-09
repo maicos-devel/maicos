@@ -30,13 +30,13 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
     Parameters
     ----------
     positions : numpy.ndarray
-        position array
+        position array.
     boxdimensions : numpy.ndarray
-        dimensions of the cell
+        dimensions of the cell.
     startq : float
-        Starting q (1/Å)
+        Starting q (1/Å).
     endq : float
-        Ending q (1/Å)
+        Ending q (1/Å).
     mintheta : float
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float

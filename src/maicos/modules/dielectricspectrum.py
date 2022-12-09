@@ -26,17 +26,21 @@ logger = logging.getLogger(__name__)
 class DielectricSpectrum(AnalysisBase):
     r"""Compute the linear dielectric spectrum.
 
-    This module, given molecular dynamics trajectory data, produces a
+    This module, given a molecular dynamics trajectory, produces a
     `.txt` file containing the complex dielectric function as a function of
     the (linear, not radial -
-    i.e. :math:`\nu` or :math:`f`, rather than :math:`\omega`) frequency, along
+    i.e., :math:`\nu` or :math:`f`, rather than :math:`\omega`) frequency, along
     with the associated standard deviations.
-    The algorithm is based on the Fluctuation Dissipation Relation (FDR):
+    The algorithm is based on the Fluctuation Dissipation Relation:
     :math:`\chi(f) = -1/(3 V k_B T \varepsilon_0)
-    FT[\theta(t) \langle P(0) dP(t)/dt\rangle]`.
-    By default, the polarization trajectory, time series array and the average
-    system volume are saved in the working directory, and the data are
-    reloaded from these files if they are present.
+    \mathcal{L}[\theta(t) \langle P(0) dP(t)/dt\rangle]`, where
+    :math:`\mathcal{L}` is the Laplace transformation.
+
+    .. note::
+        The polarization time series and the average
+        system volume are also saved.
+
+    Please read and cite :footcite:p:`carlsonExploringAbsorptionSpectrum2020`.
 
     Parameters
     ----------
@@ -69,6 +73,10 @@ class DielectricSpectrum(AnalysisBase):
     Attributes
     ----------
     results
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     # TODO: set up script to calc spectrum at intervals while calculating
