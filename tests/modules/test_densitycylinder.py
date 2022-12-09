@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Tests for the density cylinder module."""
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
 # Copyright (c) 2022 Authors and contributors
@@ -6,35 +7,64 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the DensityCylinder class."""
 import os
 import sys
 
 import MDAnalysis as mda
+import numpy as np
 import pytest
+from create_mda_universe import circle_of_water_molecules
 from numpy.testing import assert_allclose
 
 from maicos import DensityCylinder
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from data import WATER_TPR, WATER_TRR  # noqa: E402
+from data import WATER_GRO, WATER_TPR  # noqa: E402
 
 
-class TestDensityCylinder(object):
-    """Tests for the density.DensityCylinder class."""
+class ReferenceAtomGroups:
+    """Super class with methods reference AtomGroups for tests."""
 
     @pytest.fixture()
-    def ag(self):
-        """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+    def ag_single_frame(self):
+        """Import MDA universe, single frame."""
+        u = mda.Universe(WATER_TPR, WATER_GRO)
         return u.atoms
 
+
+class TestDensityCylinder(ReferenceAtomGroups):
+    """Tests for the DensityCylinder class."""
+
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.59), ('number', 0.099),
-                              ('charge', -1e-4)))
-    def test_dens(self, ag, dens_type, mean):
-        """Test the density profile."""
-        dens = DensityCylinder(ag, dens=dens_type).run()
+                             (('mass', 0.561), ('number', 0.093),
+                              ('charge', -6.5e-5)))
+    def test_actual_simulation(self, ag_single_frame, dens_type, mean):
+        """
+        Test DensityCylinder from a single frame.
+
+        Import a single frame universe and measure the density.
+        """
+        dens = DensityCylinder(ag_single_frame, dens=dens_type).run()
         assert_allclose(dens.results.profile.mean(), mean,
                         atol=1e-4, rtol=1e-2)
+
+    def test_regularly_spaced_molecule(self):
+        """
+        Test VelocityCylinder module using regularly spaced molecules.
+
+        Create a universe with 10 water molecules
+        along a circle of radius equal to 5 Angstroms.
+
+        Call DensityCylinder module to measure the density,
+        using a bin width of 2, and a grouping per molecule.
+        """
+        n_molecule = 10
+        bin_width = 2
+        ag, volume_slices = circle_of_water_molecules(n_molecules=n_molecule,
+                                                      radius=5,
+                                                      bin_width=bin_width)
+        dens = DensityCylinder(ag, bin_width=bin_width,
+                               dens='number', refgroup=ag).run()
+        assert_allclose(dens.results.profile.T[0],
+                        np.array([0, 0, 3 * n_molecule, 0, 0]) / volume_slices)
