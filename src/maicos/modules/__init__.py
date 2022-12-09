@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Modules init file."""
 
-from .chemicalpotentialplanar import ChemicalPotentialPlanar
 from .densitycylinder import DensityCylinder
 from .densityplanar import DensityPlanar
 from .densitysphere import DensitySphere
@@ -27,7 +26,6 @@ from .velocityplanar import VelocityPlanar
 
 
 __all__ = [
-    'ChemicalPotentialPlanar',
     'DensityCylinder',
     'DensityPlanar',
     'DensitySphere',
