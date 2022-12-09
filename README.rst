@@ -7,7 +7,7 @@
 **MAICoS** is the acronym for Molecular Analysis for Interfacial
 and Confined Systems. It is an object-oriented python toolkit for
 analysing the structure and dynamics of interfacial and confined
-fluids from molecular simulations. Combined with `MDAnalysis`_,
+fluids from molecular simulations. Combined with MDAnalysis_,
 MAICoS can be used to extract density profiles, dielectric constants,
 structure factors, or transport properties from trajectories files,
 including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
@@ -19,8 +19,8 @@ Also experienced users can use the Python API for their day to day analysis or
 use the provided infrastructure to build their own analysis for interfacial
 and confined systems.
 
-Keep up to date with MAICoS news by following us on `Twitter`_.
-If you find an issue, you can report it on `Gitlab`_.
+Keep up to date with MAICoS news by following us on Twitter_.
+If you find an issue, you can report it on Gitlab_.
 You can also join the developer team on Discord_
 to discuss possible improvements and usages of MAICoS
 
@@ -36,7 +36,7 @@ Basic example
 
 This is a simple example showing how to use MAICoS to extract the density
 profile from a molecular dynamics simulation. The files ``conf.gro``
-and ``traj.trr`` correspond to simulation files from a `GROMACS`_ simulation
+and ``traj.trr`` correspond to simulation files from a GROMACS_ simulation
 package. In a Python environment, type:
 
 .. code-block:: python
@@ -56,8 +56,8 @@ Documentation
 =============
 
 For details, tutorials, and examples, please have a look at
-our `documentation`_. If you are using an older version of MAICoS,
-you can access the corresponding documentation on `ReadTheDocs`_.
+our documentation_. If you are using an older version of MAICoS,
+you can access the corresponding documentation on ReadTheDocs_.
 
 .. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
 .. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
@@ -75,7 +75,7 @@ Install maicos using `pip`_ with:
 
 Alternatively, if you don't have special privileges, install
 the package only for the current using the ``--user`` flag. 
-Or using `conda`_ with:
+Or using conda_ with:
 
 .. code-block:: bash
 

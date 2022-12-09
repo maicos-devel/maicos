@@ -7,6 +7,8 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
+.. _usage-python:
+
 Usage - Python interpreter
 ##########################
 

@@ -3,15 +3,15 @@
 Installation
 ============
 
-`Python3`_ and a C-compiler are needed to build the
+Python3_ and a C-compiler are needed to build the
 underlying libraries. Install the package using 
-`pip`_ with:
+pip_ with:
 
 .. code-block:: bash
 
     pip3 install maicos
 
-or using `conda`_:
+or using conda_:
 
 .. code-block:: bash
 
