@@ -133,7 +133,7 @@ Expressed in terms of the scattering vector we can write
     f(q) = \sum_{i=1}^4 a_i e^{-b_i q^2/(4\pi)^2} + c \,.
 
 The coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and :math:`c` 
-are documented in :footcite:t:`princeInternational2004`.
+are documented in :footcite:t:`princeInternationalTablesCrystallography2004`.
 
 References
 ----------
