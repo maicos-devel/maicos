@@ -16,7 +16,7 @@ This is a list of all analysis modules provided by MAICoS.
    dielectricspectrum
    dielectricsphere
    dipoleangle
-   diporder
+   diporderplanar
    kineticenergy
    rdfplanar
    saxs

@@ -60,9 +60,9 @@ def dmu(rho, drho, T):
 water = mda.Universe('water.tpr', 'water.trr')
 ana = maicos.DensityPlanar(water.atoms)
 ana.run()
-print('µ_id =', mu(ana.results.profile_mean.mean(), 300, 18))
-print('Δµ_id =', dmu(ana.results.profile_mean.mean(),
-                     ana.results.profile_err.mean(),
+print('µ_id =', mu(ana.results.profile.mean(), 300, 18))
+print('Δµ_id =', dmu(ana.results.profile.mean(),
+                     ana.results.dprofile.mean(),
                      300))
 
 # %%

@@ -39,7 +39,7 @@ profile from a molecular dynamics simulation. The files ``conf.gro``
 and ``traj.trr`` correspond to simulation files from a `GROMACS`_ simulation
 package. In a Python environment, type:
 
-.. code-block:: python3
+.. code-block:: python
 
 	import MDAnalysis as mda
 	import maicos
@@ -47,7 +47,7 @@ package. In a Python environment, type:
 	u = mda.Universe('conf.gro', 'traj.trr')
 	dplan = maicos.DensityPlanar(u.atoms).run()
 
-The density profile can be accessed from ``dplan.results.profile_mean`` and 
+The density profile can be accessed from ``dplan.results.profile`` and 
 the position of the bins from ``dplan.results.bin_pos``.
 
 .. _`GROMACS` : https://www.gromacs.org/
@@ -101,11 +101,11 @@ Currently, MAICoS supports the following analysis modules:
      - Description
 
    * - DensityPlanar
-     - Compute the partial density profile in a cartesian geometry
+     - Compute the cartesian partial density profiles
    * - DensityCylinder
-     - Compute partial densities across a cylinder
+     - Compute cylindrical partial densitiy profiles
    * - DensitySphere
-     - Compute partial densities across a sphere
+     - Compute spherical partial density profiles
    * - TemperaturePlanar
      - Compute temperature profile in a cartesian geometry
    * - DielectricPlanar
@@ -113,17 +113,17 @@ Currently, MAICoS supports the following analysis modules:
    * - DielectricCylinder
      - Calculate cylindrical dielectric profiles
    * - DielectricSphere
-     - Compute partial densities across a sphere
+     - Calculating spherical dielectric profiles
    * - DielectricSpectrum
      - Compute the linear dielectric spectrum
    * - Saxs
      - Compute small angle X-Ray scattering intensities (SAXS)
-   * - Diporder
+   * - DiporderPlanar
      - Calculate dipolar order parameters
    * - RDFPlanar
-     - Compute slab-wise planar two dimensional radial distribution functions
+     - Compute slab-wise planar 2D radial distribution functions
    * - DipoleAngle
-     - Calculate angle timeseries of dipole moments with respect to an axis
+     - Calculate angle timeseries of dipole moments
    * - KineticEnergy
      - Calculate the timeseries of energies
    * - VelocityPlanar

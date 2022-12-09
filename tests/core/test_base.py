@@ -302,8 +302,8 @@ class Test_AnalysisBase(object):
         """
         dens = DensityPlanar(ag_single_frame,
                              bin_width=1e-4, jitter=0.01).run()
-        hist, _, = np.histogram(np.diff(dens.results["bin_pos"][
-            np.where(dens.results["profile_mean"].T[0])]),
+        hist, _, = np.histogram(np.diff(dens.results.bin_pos[
+            np.where(dens.results.profile.T[0])]),
             bins=1000, range=(0, 0.1))
         assert find_peaks(hist)[0][0] < 100
 
@@ -383,8 +383,8 @@ class Test_ProfileBase:
         params.update(output="foo.dat")
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.zeros(10)
-        profile.results.profile_mean = np.zeros((10, 1))
-        profile.results.profile_err = np.zeros((10, 1))
+        profile.results.profile = np.zeros((10, 1))
+        profile.results.dprofile = np.zeros((10, 1))
         profile.run = lambda x: x
         profile._index = 0
 
@@ -396,8 +396,8 @@ class Test_ProfileBase:
         """Test output."""
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.random.random(10)
-        profile.results.profile_mean = np.random.random((10, 1))
-        profile.results.profile_err = np.random.random((10, 1))
+        profile.results.profile = np.random.random((10, 1))
+        profile.results.dprofile = np.random.random((10, 1))
         profile.run = lambda x: x
         profile._index = 0
 
@@ -410,10 +410,10 @@ class Test_ProfileBase:
                         res_dens[:, 0],
                         rtol=2)
 
-        assert_allclose(profile.results.profile_mean[:, 0],
+        assert_allclose(profile.results.profile[:, 0],
                         res_dens[:, 1],
                         rtol=2)
 
-        assert_allclose(profile.results.profile_err[:, 0],
+        assert_allclose(profile.results.dprofile[:, 0],
                         res_dens[:, 2],
                         rtol=2)

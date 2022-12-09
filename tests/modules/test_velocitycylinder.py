@@ -54,5 +54,5 @@ class TestVelocityCylinder(object):
                                grouping="molecules",
                                refgroup=ag_v).run()
 
-        assert_allclose(vel.results.profile_mean.T[0],
+        assert_allclose(vel.results.profile.T[0],
                         vel_array_4 / bin_volume_1)

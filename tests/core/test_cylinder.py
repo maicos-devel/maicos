@@ -475,7 +475,7 @@ class TestProfileCylinderBase:
             profile_vals *= 0.4 * np.arange(5)
             profile_vals += 5
 
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         desired = np.zeros(profile.n_bins)
         desired[:5] = profile_vals
 
@@ -496,7 +496,7 @@ class TestProfileCylinderBase:
                       normalization="None",
                       grouping=grouping)
         profile = ProfileCylinderBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
 
         if grouping == "atoms":
             desired = [2, 1]
@@ -517,7 +517,7 @@ class TestProfileCylinderBase:
                       normalization="none",
                       grouping="molecules")
         profile = ProfileCylinderBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
 
     def test_histogram(self, params):

@@ -91,9 +91,9 @@ class TestDielectricSphere(object):
         eps = DielectricSphere(dipole.atoms[:n], bin_width=0.001)
         eps.run()
         # Check the total dipole moment of the system
-        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_rad),
+        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_r),
                         6 / selection, rtol=0.1)
-        assert_allclose(eps._obs.M_rad,
+        assert_allclose(eps._obs.M_r,
                         6, rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):

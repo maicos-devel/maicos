@@ -84,8 +84,8 @@ def temperature_weights(ag, grouping):
     return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 
 
-def diporder_weights(atomgroup, grouping, dim, order_parameter):
-    """Weights for diporder calculations.
+def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
+    """Weights for DiporderPlanar calculations.
 
     Parameters
     ----------

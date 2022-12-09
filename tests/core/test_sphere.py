@@ -447,7 +447,7 @@ class TestProfileSphereBase:
         else:  # == None
             profile_vals = 6 * np.array([0, 1, 3, 6, 10]) + 1
 
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         desired = np.zeros(profile.n_bins)
         desired[:5] = profile_vals
 
@@ -469,7 +469,7 @@ class TestProfileSphereBase:
                       normalization="None",
                       grouping=grouping)
         profile = ProfileSphereBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
 
         if grouping == "atoms":
             desired = [2, 2]
@@ -490,7 +490,7 @@ class TestProfileSphereBase:
                       bin_method=bin_method,
                       grouping="molecules")
         profile = ProfileSphereBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("unwrap, desired",
@@ -506,7 +506,7 @@ class TestProfileSphereBase:
                       grouping="molecules")
 
         profile = ProfileSphereBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
 
     def test_histogram(self, params):

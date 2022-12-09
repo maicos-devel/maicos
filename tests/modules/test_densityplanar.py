@@ -103,7 +103,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = DensityPlanar(multiple_ags, dens=dens_type).run()
-        assert_allclose(dens.results.profile_mean.mean(axis=0), mean,
+        assert_allclose(dens.results.profile.mean(axis=0), mean,
                         rtol=1e-1, atol=1e-1)
 
     @pytest.mark.parametrize('dens_type, mean',
@@ -113,7 +113,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
     def test_dens(self, ag, dens_type, mean, dim):
         """Test density."""
         dens = DensityPlanar(ag, dens=dens_type, dim=dim).run()
-        assert_allclose(dens.results.profile_mean.mean(), mean,
+        assert_allclose(dens.results.profile.mean(), mean,
                         rtol=1e-1, atol=1e-8)
 
     def test_one_frame(self, ag):
@@ -122,21 +122,21 @@ class TestDensityPlanar(ReferenceAtomGroups):
         Test if the division by the number of frames is correct.
         """
         dens = DensityPlanar(ag).run(stop=1)
-        assert not np.isnan(dens.results.profile_mean).any()
+        assert not np.isnan(dens.results.profile).any()
 
     def test_comshift(self, mica_water):
         """Test comshift."""
         dens = DensityPlanar(mica_water, refgroup=mica_water).run()
-        assert_allclose(dens.results['profile_mean'][20], 0.581, rtol=1e-1)
+        assert_allclose(dens.results.profile[20], 0.581, rtol=1e-1)
 
     def test_comshift_z2(self, mica_water):
         """Test comshift with an additional shift by z/2."""
         mica_water.atoms.translate(
             (0, 0, mica_water.universe.dimensions[2] / 2))
         dens = DensityPlanar(mica_water, refgroup=mica_water).run()
-        assert_allclose(dens.results['profile_mean'][20], 0.56, rtol=1e-1)
+        assert_allclose(dens.results.profile[20], 0.56, rtol=1e-1)
 
     def test_comshift_over_boundaries(self, mica_water, mica_surface):
         """Test comshift over box boundaries."""
         dens = DensityPlanar(mica_water, refgroup=mica_surface).run()
-        assert_allclose(dens.results['profile_mean'][20], 0.0, rtol=1e-1)
+        assert_allclose(dens.results.profile[20], 0.0, rtol=1e-1)

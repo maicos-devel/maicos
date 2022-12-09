@@ -22,19 +22,20 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class RDFPlanar(PlanarBase):
-    r"""Compute slab-wise planar two dimensional radial distribution functions.
+    r"""Compute slab-wise planar 2D radial distribution functions.
 
-    The radial distribution function :math:`g_\text{planar}(r)` describes the
-    spatial correlation between atoms in `g1` and atoms in `g2`. The 2D RDF can
-    be used in systems that are inhomogeneous along one axis, and homogeneous
-    along a plane. It gives the average number density of `g2` as a
-    function of lateral distance from a centered `g1` atom. In fully
+    The radial distribution function :math:`g_\mathrm{2d}(r)` describes the
+    spatial correlation between atoms in :math:`g1` and atoms in :math:`g2`.
+    The 2D RDF can be used in systems that are inhomogeneous along
+    one axis, and homogeneous in a plane. It gives the average
+    number density of :math:`g2` as a
+    function of lateral distance from a centered :math:`g1` atom. In fully
     homogeneous systems and in the limit of small 'dzheight' :math:`\Delta z`,
     it is the same as the well known three dimensional RDF.
 
     .. math::
 
-     g_\text{planar}(r) =
+     g_\mathrm{2d}(r) =
      \frac{1}{N_{g1}2 \Delta z} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
      \delta(r - r_{ij}) \cdot \left( \theta \left(|z_{ij}| + {\Delta z}
      \right) - \theta \left( |z_{ij}| - {\Delta z} \right) \right) .
@@ -42,25 +43,25 @@ class RDFPlanar(PlanarBase):
     As the density to normalise the RDF with is unknown, the output
     is in the dimension of number/volume in 1/Å^3.
 
-    Functionally, RDFPlanar bins all pairwise `g1`-`g2` distances
+    Functionally, RDFPlanar bins all pairwise :math:`g1`-:math:`g2` distances
     where the z distance is smaller than `dzheight` in a histogram.
 
     Parameters
     ----------
     g1 : AtomGroup
-        First AtomGroup
+        First AtomGroup.
     g2 : AtomGroup
-        Second AtomGroup
+        Second AtomGroup.
     rdf_bin_width : int
-        Binwidth of bins in the histogram of the RDF (Å)
+        Binwidth of bins in the histogram of the RDF (Å).
     dzheight : float
-        dz height of a RDF slab (Å)
+        dz height of a RDF slab (Å).
     range: (float, float)
-        the minimum and maximum pairwise distance between 'g1' and 'g2'. (Å)
+        the minimum and maximum pairwise distance between 'g1' and 'g2' (Å).
     bin_method : str
         Method for position binning; possible options are
-        center of geometry (cog), center of mass (com) or
-        center of charge (coc).
+        center of geometry (``cog``), center of mass (``com``) or
+        center of charge (``coc``).
     output : str
         Output filename
     ${PLANAR_CLASS_PARAMETERS}

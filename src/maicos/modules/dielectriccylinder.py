@@ -25,49 +25,43 @@ logger = logging.getLogger(__name__)
 class DielectricCylinder(CylinderBase):
     r"""Calculate cylindrical dielectric profiles.
 
-    Components are calculated along the axial (z) and radial (along xy)
-    direction at the system's center of mass.
+    Components are calculated along the axial (:math:`z`) and radial (:math:`r`)
+    direction either with respect to the center of the simulation box or the
+    center of mass of the refgroup if provided. The axial direction is selected
+    using the ``dim`` parameter.
+
+    For usage please refer to :ref:`How-to: Dielectric
+    constant<howto-dielectric>`.
+
+    Please read and cite :footcite:p:`locheGiantaxialDielectric2019`.
 
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
-    atomgroup : AtomGroup
-        :class:`~MDAnalysis.core.groups.AtomGroup` for which
-        the dielectric profiles are calculated
-    geometry : str
-        A structure file without water from which com is calculated.
-    radius : float
-        Radius of the cylinder (Å)
-    bin_width : float
-        Bindiwdth the bin_width (Å)
-    variable_dr : bool
-        Use a variable bin_width, where the volume is kept fixed.
-    length : float
-        Length of the cylinder (Å)
     temperature : float
         temperature (K)
     single : bool
         For a single chain of molecules the average of M is zero. This flag sets
         <M> = 0.
-    temperature : float
-        temperature (K)
-    output_prefix : str
-        Prefix for output_prefix files
 
     Attributes
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
-    results.eps_ax : numpy.ndarray
+    results.eps_z : numpy.ndarray
         Reduced axial dielectric profile :math:`(\varepsilon_z - 1)` of the
         selected atomgroup
-    results.deps_ax : numpy.ndarray
-        Uncertainty of axial dielectric profile
-    results.eps_rad : numpy.ndarray
+    results.deps_z : numpy.ndarray
+        Estimated uncertainty of axial dielectric profile
+    results.eps_r : numpy.ndarray
         Reduced inverse radial dielectric profile
-        :math:`(\varepsilon^{-1}_\rho - 1)`
-    results.deps_rad : numpy.ndarray
-        Uncertainty of inverse radial dielectric profile
+        :math:`(\varepsilon^{-1}_r - 1)`
+    results.deps_r : numpy.ndarray
+        Estimated uncertainty of inverse radial dielectric profile
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(self,
@@ -113,15 +107,15 @@ class DielectricCylinder(CylinderBase):
         rbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 0],
                             self._obs.bin_edges[1:])
 
-        curQ_rad, _ = np.histogram(rbins,
-                                   bins=np.arange(self.n_bins + 1),
-                                   weights=self.atomgroup.charges)
+        curQ_r, _ = np.histogram(rbins,
+                                 bins=np.arange(self.n_bins + 1),
+                                 weights=self.atomgroup.charges)
 
-        self._obs.m_rad = -np.cumsum(
-            (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos
+        self._obs.m_r = -np.cumsum(
+            (curQ_r / self._obs.bin_volume) * self._obs.bin_pos
             * self._obs.bin_width) / self._obs.bin_pos
-        self._obs.M_rad = np.dot(self._universe.atoms.charges, self.pos_cyl)[0]
-        self._obs.mM_rad = self._obs.m_rad * self._obs.M_rad
+        self._obs.M_r = np.dot(self._universe.atoms.charges, self.pos_cyl)[0]
+        self._obs.mM_r = self._obs.m_r * self._obs.M_r
         # Use virtual cutting method ( for axial component )
         # ========================================================
         # number of virtual cuts ("many")
@@ -145,10 +139,9 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges)
 
         curqz = np.cumsum(curQz, axis=0) / (self._obs.bin_area)[np.newaxis, :]
-        self._obs.m_ax = -curqz.mean(axis=0)
-        self._obs.M_ax = np.dot(self._universe.atoms.charges,
-                                self.pos_cyl[:, 2])
-        self._obs.mM_ax = self._obs.m_ax * self._obs.M_ax
+        self._obs.m_z = -curqz.mean(axis=0)
+        self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2])
+        self._obs.mM_z = self._obs.m_z * self._obs.M_z
 
     def _conclude(self):
         super(DielectricCylinder, self)._conclude()
@@ -160,49 +153,49 @@ class DielectricCylinder(CylinderBase):
             (scipy.constants.elementary_charge)**2
 
         if not self.single:
-            cov_ax = self.means.mM_ax - self.means.m_ax * self.means.M_ax
-            cov_rad = self.means.mM_rad - self.means.m_rad * self.means.M_rad
+            cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
+            cov_r = self.means.mM_r - self.means.m_r * self.means.M_r
 
-            dcov_ax = 0.5 * np.sqrt(
-                self.sems.mM_ax**2 + self.sems.m_ax**2 * self.means.M_ax**2
-                + self.means.m_ax**2 * self.sems.M_ax**2)
-            dcov_rad = 0.5 * np.sqrt(
-                self.sems.mM_rad**2 + self.sems.m_rad**2 * self.means.M_rad**2
-                + self.means.m_rad**2 * self.sems.M_rad**2)
+            dcov_z = 0.5 * np.sqrt(
+                self.sems.mM_z**2 + self.sems.m_z**2 * self.means.M_z**2
+                + self.means.m_z**2 * self.sems.M_z**2)
+            dcov_r = 0.5 * np.sqrt(
+                self.sems.mM_r**2 + self.sems.m_r**2 * self.means.M_r**2
+                + self.means.m_r**2 * self.sems.M_r**2)
         else:
             # <M> = 0 for a single line of water molecules.
-            cov_ax = self.means.mM_ax
-            cov_rad = self.means.mM_rad
-            dcov_ax = self.sems.mM_ax
-            dcov_rad = self.sems.mM_rad
+            cov_z = self.means.mM_z
+            cov_r = self.means.mM_r
+            dcov_z = self.sems.mM_z
+            dcov_r = self.sems.mM_r
 
-        self.results.eps_ax = pref * cov_ax
-        self.results.deps_ax = pref * dcov_ax
+        self.results.eps_z = pref * cov_z
+        self.results.deps_z = pref * dcov_z
 
-        self.results.eps_rad = - (2 * np.pi * self._obs.L
-                                    * pref * self.results.bin_pos * cov_rad)
-        self.results.deps_rad = (2 * np.pi * self._obs.L
-                                 * pref * self.results.bin_pos * dcov_rad)
+        self.results.eps_r = - (2 * np.pi * self._obs.L
+                                * pref * self.results.bin_pos * cov_r)
+        self.results.deps_r = (2 * np.pi * self._obs.L
+                                 * pref * self.results.bin_pos * dcov_r)
 
     def save(self):
         """Save result."""
-        outdata_ax = np.array([
-            self.results.bin_pos, self.results.eps_ax, self.results.deps_ax
+        outdata_z = np.array([
+            self.results.bin_pos, self.results.eps_z, self.results.deps_z
             ]).T
-        outdata_rad = np.array([
-            self.results.bin_pos, self.results.eps_rad, self.results.deps_rad
+        outdata_r = np.array([
+            self.results.bin_pos, self.results.eps_r, self.results.deps_r
             ]).T
 
         columns = ["positions [Å]"]
 
         columns += ["ε_z - 1", "Δε_z"]
 
-        self.savetxt("{}{}".format(self.output_prefix, "_ax.dat"),
-                     outdata_ax, columns=columns)
+        self.savetxt("{}{}".format(self.output_prefix, "_z.dat"),
+                     outdata_z, columns=columns)
 
         columns = ["positions [Å]"]
 
         columns += ["ε^-1_r - 1", "Δε^-1_r"]
 
-        self.savetxt("{}{}".format(self.output_prefix, "_rad.dat"),
-                     outdata_rad, columns=columns)
+        self.savetxt("{}{}".format(self.output_prefix, "_r.dat"),
+                     outdata_r, columns=columns)

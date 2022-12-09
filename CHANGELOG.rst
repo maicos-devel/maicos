@@ -16,6 +16,12 @@ v0.7 (XXXX/XX/XX)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
 Alexander Schlaich
 
+- Rename Diporder to DiporderPlanar (!202)
+- Change default behavior of DielectricPlanar: assume slab geometry by default
+  (removing the ``xy`` flag and instead introduce ``is_3d`` for 3d-periodic
+  systems) (!202)
+- Rename ``profile_mean`` to ``profile`` (!202)
+- Major improvements on the documentation (!202)
 - Add a check if the CHANGELOG.rst has been updated (!198)
 - Fix behaviour of refgroup (!192)
 - Resolve +1 is summed for epsilon for each atom group (#101, !193)

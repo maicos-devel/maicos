@@ -450,7 +450,7 @@ class TestProfilePlanarBase:
             # Divide by 2: Half of the box is filled with atoms.
             profile_vals = u.atoms.n_atoms * profile.n_bins / 2 / 100
 
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         desired = np.zeros(profile.n_bins)
         desired[:10] = profile_vals
 
@@ -467,7 +467,7 @@ class TestProfilePlanarBase:
         params.update(refgroup=u.atoms, sym=True)
         profile = ProfilePlanarBase(**params).run()
 
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
         desired = [np.nan, np.nan, np.nan, 1e-04, 0.4, 1, 1, 1, 1, 1]
         desired += desired[::-1]
 
@@ -482,7 +482,7 @@ class TestProfilePlanarBase:
                       bin_width=1,
                       grouping=grouping)
         profile = ProfilePlanarBase(**params).run()
-        actual = profile.results.profile_mean.flatten()
+        actual = profile.results.profile.flatten()
 
         if grouping == "atoms":
             desired = [1, 1, 1]
@@ -496,7 +496,7 @@ class TestProfilePlanarBase:
         params.update(atomgroups=[u.atoms, u.atoms])
         profile = ProfilePlanarBase(**params).run()
 
-        actual = profile.results.profile_mean
+        actual = profile.results.profile
         desired = np.nan * np.ones([profile.n_bins, 2])
         desired[:10, :] = 1
 

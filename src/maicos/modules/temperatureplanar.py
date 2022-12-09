@@ -22,7 +22,9 @@ logger = logging.getLogger(__name__)
 class TemperaturePlanar(ProfilePlanarBase):
     """Compute temperature profile in a cartesian geometry.
 
-    Currently only atomistic temperature profiles are supported.
+    Currently only atomistic temperature profiles are supported,
+    therefore grouping per molecule, segment, residue, or fragment
+    is not possible.
 
     Parameters
     ----------
@@ -47,6 +49,9 @@ class TemperaturePlanar(ProfilePlanarBase):
                  output="temperature.dat",
                  concfreq=0,
                  jitter=None):
+
+        if grouping != "atoms":
+            raise ValueError("Invalid choice of grouping, must use atoms")
 
         super(TemperaturePlanar, self).__init__(
             weighting_function=temperature_weights,

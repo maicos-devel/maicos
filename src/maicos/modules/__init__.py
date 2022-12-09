@@ -16,7 +16,7 @@ from .dielectricplanar import DielectricPlanar
 from .dielectricspectrum import DielectricSpectrum
 from .dielectricsphere import DielectricSphere
 from .dipoleangle import DipoleAngle
-from .diporder import Diporder
+from .diporderplanar import DiporderPlanar
 from .kineticenergy import KineticEnergy
 from .rdfplanar import RDFPlanar
 from .saxs import Saxs
@@ -34,7 +34,7 @@ __all__ = [
     'DielectricSpectrum',
     'DielectricSphere',
     'DipoleAngle',
-    'Diporder',
+    'DiporderPlanar',
     'KineticEnergy',
     'RDFPlanar',
     'Saxs',

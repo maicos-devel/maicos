@@ -23,38 +23,45 @@ class KineticEnergy(AnalysisBase):
     (center of mass, center of charge) of a molecular dynamics
     simulation trajectory.
 
+    The analysis can be applied to study the dynamics of water
+    molecules during an excitation pulse. For more details read
+    :footcite:t:`elgabartyEnergyTransferHydrogen2020`.
+
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     refpoint : str
         reference point for molecular center: center of
-        mass (COM) or center of charge (COC)
-        Note: The oxygen position only works for systems of pure water
+        mass (``com``) or center of charge (``coc``).
     output : str
-        Output filename
+        Output filename.
 
     Attributes
     ----------
     results.t : numpy.ndarray
-        time (ps)
+        time (ps).
     results.trans : numpy.ndarray
-        translational kinetic energy (kJ/mol)
+        translational kinetic energy (kJ/mol).
     results.rot : numpy.ndarray
-        rotational kinetic energy (kJ/mol)
+        rotational kinetic energy (kJ/mol).
+
+    References
+    ----------
+    .. footbibliography::
     """
 
     def __init__(self, atomgroup, output="ke.dat", refpoint="COM"):
         super(KineticEnergy, self).__init__(atomgroup)
         self.output = output
-        self.refpoint = refpoint
+        self.refpoint = refpoint.lower()
 
     def _prepare(self):
         """Set things up before the analysis loop begins."""
-        if self.refpoint not in ["COM", "COC"]:
+        if self.refpoint not in ["com", "coc"]:
             raise ValueError(
                 "Invalid choice for dens: '{}' (choose "
-                "from 'COM' or " "'COC')".format(self.refpoint))
+                "from 'com' or " "'coc')".format(self.refpoint))
 
         self.masses = self.atomgroup.atoms.accumulate(
             self.atomgroup.atoms.masses,
@@ -73,14 +80,14 @@ class KineticEnergy(AnalysisBase):
             self.atomgroup.masses,
             np.linalg.norm(self.atomgroup.velocities, axis=1)**2)
 
-        if self.refpoint == "COM":
+        if self.refpoint == "com":
             massvel = self.atomgroup.velocities * \
                 self.atomgroup.masses[:, np.newaxis]
             v = self.atomgroup.accumulate(
                 massvel, compound=get_compound(self.atomgroup))
             v /= self.masses[:, np.newaxis]
 
-        elif self.refpoint == "COC":
+        elif self.refpoint == "coc":
             abschargevel = self.atomgroup.velocities * \
                 np.abs(self.atomgroup.charges)[:, np.newaxis]
             v = self.atomgroup.accumulate(

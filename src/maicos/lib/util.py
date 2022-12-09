@@ -119,11 +119,25 @@ def bin(a, bins):
 
 
 doc_dict = dict(
+    DENSITY_DESCRIPTION=r"""Calculations are carried out for
+    ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or
+    ``charge`` :math:`(\rm e \cdot Å^{-3})` density profiles along a certain
+    cartesian axes ``[x, y, z]`` of the simulation cell. Cell dimensions are
+    allowed to fluctuate in time.
+
+    For grouping with respect to ``molecules``, ``residues`` etc., the
+    corresponding centers (i.e., center of mass) taking into account periodic
+    boundary conditions are calculated.
+    For these calculations molecules will be unwrapped/made whole.
+    Trajectories containing already whole molecules can be run with
+    ``unwrap=False`` to gain a speedup.
+    For grouping with respect to atoms the `unwrap` option is always
+    ignored.""",
     ATOMGROUP_PARAMETER="""atomgroup : AtomGroup
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which
         the calculations are performed.""",
     ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` for which
+        a list of :class:`~MDAnalysis.core.groups.AtomGroup` objects for which
         the calculations are performed.""",
     BASE_CLASS_PARAMETERS="""refgroup : AtomGroup
         Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the
@@ -133,9 +147,7 @@ doc_dict = dict(
         performed relative to the center of mass of the AtomGroup.
 
         If refgroup is ``None`` the calculations
-        are performed relative to the center of the box. If the box
-        size is fluctuating with time, the instantaneous center
-        of the box is used.
+        are performed to the center of the (changing) box.
     unwrap : bool
         When ``unwrap = True``, molecules that are broken due to the
         periodic boundary conditions are made whole.
@@ -147,11 +159,12 @@ doc_dict = dict(
         the Python interpreter.
 
         Note: Molecules containing virtual sites (e.g. TIP4P water
-        models) are not currently supported. In this case, provide
-        unwrapped trajectory files directly, and disable unwrap.
-        Trajectory can be unwrapped for example using the
-        trjconv function of GROMACS.
-    concfreq : int,
+        models) are not currently supported in MDAnalysis.
+        In this case, you need to provide unwrapped trajectory files directly,
+        and disable unwrap.
+        Trajectories can be unwrapped, for example, using the
+        ``trjconv`` command of GROMACS.
+    concfreq : int
         When concfreq (for conclude frequency) is larger than 0,
         the conclude function is called and the output files are
         written every concfreq frames""",
@@ -169,13 +182,13 @@ doc_dict = dict(
         profile is divided by the volume of each bin.
     f_kwargs : dict
         Additional parameters for `function`""",
-    PLANAR_CLASS_PARAMETERS="""dim : int,
-        Dimension for binning (x=0, y=1, z=2).
+    PLANAR_CLASS_PARAMETERS="""dim : int
+        Dimension for binning (``x=0``, ``y=1``, ``z=2``).
     zmin : float
         Minimal coordinate for evaluation (in Å) with respect to the
         center of mass of the refgroup.
 
-        If zmin=None, all coordinates down to the lower cell boundary
+        If ``zmin=None``, all coordinates down to the lower cell boundary
         are taken into account.
     zmax : float
         Maximal coordinate for evaluation (in Å) with respect to the
@@ -184,14 +197,14 @@ doc_dict = dict(
         If ``zmax = None``, all coordinates up to the upper cell boundary
         are taken into account.
     jitter : float
-        If ``jitter`` is not ``None``, random numbers of the order of jitter
+        If ``jitter is not None``, random numbers of the order of jitter
         (Å) are added to the atom positions.
 
-        The appilication of a jitter is rationalined in possible aliasing
-        effects when histogramming data i.e. for spatial profiles. These
+        The appilication of a jitter is rationalized in possible aliasing
+        effects when histogramming data, i.e., for spatial profiles. These
         aliasing effects can be stabilized with the application
-        of a numerical jitter. The jitter value should be the precision of the
-        trajectory and will not alter the results of the histogram.
+        of a numerical jitter. The jitter value should be about the precision of
+        the trajectory and will not alter the results of the histogram.
 
         You can estimate the precision of the positions in your trajectory
         with :func:`maicos.lib.util.trajectory_precision`. Note that if the
@@ -200,40 +213,41 @@ doc_dict = dict(
         """,
     BIN_WIDTH_PARAMETER="""bin_width : float
         Width of the bins (in Å).""",
-    RADIAL_CLASS_PARAMETERS="""rmin : float,
-        Minimal r-coordinate relative to the center of mass of the
+    RADIAL_CLASS_PARAMETERS="""rmin : float
+        Minimal radial coordinate relative to the center of mass of the
         refgroup for evaluation (in Å).
     rmax : float
-        Maximal r-coordinate relative to the center of mass of the
+        Maximal radial coordinate relative to the center of mass of the
         refgroup for evaluation (in Å).
 
-        If rmax=None, the box extension is taken.""",
-    SYM_PARAMETER="""sym : bool,
-        Symmetrize the profile. Only works in combinations with `refgroup`.""",
-    PROFILE_CLASS_PARAMETERS="""grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}"""  # noqa
+        If ``rmax=None``, the box extension is taken.""",
+    SYM_PARAMETER="""sym : bool
+        Symmetrize the profile. Only works in combinations with
+        ``refgroup``.""",
+    PROFILE_CLASS_PARAMETERS="""grouping : str {``'atoms'``, ``'residues'``, ``'segments'``, ``'molecules'``, ``'fragments'``}"""  # noqa
     """
           Atom grouping for the calculations of profiles.
 
           The possible grouping options are the atom positions (in
-          the case where grouping='atoms') or the center of mass of
+          the case where ``grouping='atoms'``) or the center of mass of
           the specified grouping unit (in the case where
-          grouping='residues', 'segments', 'molecules' or 'fragments').
-    bin_method : str, {'cog', 'com', 'coc'}"""
-    """
+          ``grouping='residues'``, ``'segments'``, ``'molecules'`` or
+          ``'fragments'``).
+    bin_method : str {``'cog'``, ``'com'``, ``'coc'``}
         Method for the position binning.
 
-        The possible options are center of geometry (``'cog'``),
-        center of mass (``'com'``), and center of charge (``'coc'``).
+        The possible options are center of geometry (``cog``),
+        center of mass (``com``), and center of charge (``coc``).
     output : str
         Output filename.""",
     PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
-        Bin positions (in Å) ranging from `zmin` to `zmax`.""",
+        Bin positions (in Å) ranging from ``zmin`` to ``zmax``.""",
     RADIAL_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
-        Bin positions (in Å) ranging from `rmin` to `rmax`.""",
-    PROFILE_CLASS_ATTRIBUTES="""results.profile_mean : numpy.ndarray
-        Calculated profile's averaged value.
-    results.profile_err : numpy.ndarray
-        Calculated profile's error."""
+        Bin positions (in Å) ranging from ``rmin`` to ``rmax``.""",
+    PROFILE_CLASS_ATTRIBUTES="""results.profile : numpy.ndarray
+        Calculated profile.
+    results.dprofile : numpy.ndarray
+        Estimated profile's uncertainity."""
     )
 
 # Inherit docstrings
@@ -284,26 +298,28 @@ doc_dict["PROFILE_SPHERE_CLASS_ATTRIBUTES"] = \
     doc_dict["PROFILE_CLASS_ATTRIBUTES"]
 
 
-def render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
+def _render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
+    if func.__doc__ is not None:
+        for pattern in doc_dict.keys():
+            func.__doc__ = func.__doc__.replace(f"${{{pattern}}}",
+                                                doc_dict[pattern])
+    return func
+
+
+def render_docs(func: Callable) -> Callable:
     """Replace all template phrases in the functions docstring.
 
     Parameters
     ----------
     func : callable
         The callable (function, class) where the phrase old should be replaced.
-    doc_dict : str
-        The dictionary containing phrase which will be replaced.
 
     Returns
     -------
     Callable
         callable with replaced phrase
     """
-    if func.__doc__ is not None:
-        for pattern in doc_dict.keys():
-            func.__doc__ = func.__doc__.replace(f"${{{pattern}}}",
-                                                doc_dict[pattern])
-    return func
+    return _render_docs(func, doc_dict=doc_dict)
 
 
 def charge_neutral(filter):
@@ -370,11 +386,8 @@ def trajectory_precision(trajectory, dim=2):
     precision : array
         Precision of each frame of the trajectory.
 
-    Returns an array of the size of the trajectory.
-
-    If the trajectory has a high precision,
-    its resolution will not be detected, and a value of 1e-4
-    is returned.
+        If the trajectory has a high precision, its resolution will not be
+        detected, and a value of 1e-4 is returned.
     """
     # The threshold will limit the precision of the
     # detection. Using a value that is too low will end up

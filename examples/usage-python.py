@@ -24,7 +24,7 @@ learn more about the library, take a look at their
 Only three MAICoS analysis modules are used in this tutorial
 :class:`maicos.modules.density.DensityPlanar`,
 :class:`maicos.modules.transport.VelocityPlanar` and
-:class:`maicos.modules.structure.Diporder` but all
+:class:`maicos.modules.structure.DiporderPlanar` but all
 modules follow the same structure:
 
 1. load your simulation data into an
@@ -124,7 +124,7 @@ dplan = maicos.DensityPlanar(group_H2O).run()
 # from the ``results`` attribute:
 
 zcoor = dplan.results.bin_pos
-dens = dplan.results.profile_mean
+dens = dplan.results.profile
 
 # %%
 #
@@ -168,7 +168,7 @@ dplan_smaller_bin = maicos.DensityPlanar([group_O, group_H],
                                          unwrap=False).run()
 
 zcoor_smaller_bin = dplan_smaller_bin.results.bin_pos
-dens_smaller_bin = dplan_smaller_bin.results.profile_mean
+dens_smaller_bin = dplan_smaller_bin.results.profile
 
 # %%
 #
@@ -223,7 +223,7 @@ dplan_centered_H2O = maicos.DensityPlanar(group_H2O,
                                           unwrap=False)
 dplan_centered_H2O.run()
 zcoor_centered_H2O = dplan_centered_H2O.results.bin_pos
-dens_centered_H2O = dplan_centered_H2O.results.profile_mean
+dens_centered_H2O = dplan_centered_H2O.results.profile
 
 # %%
 #
@@ -237,7 +237,7 @@ dplan_centered_NaCl = maicos.DensityPlanar(group_NaCl,
                                            unwrap=False)
 dplan_centered_NaCl.run()
 zcoor_centered_NaCl = dplan_centered_NaCl.results.bin_pos
-dens_centered_NaCl = dplan_centered_NaCl.results.profile_mean
+dens_centered_NaCl = dplan_centered_NaCl.results.profile
 
 # %%
 #
@@ -292,7 +292,7 @@ tplan = maicos.VelocityPlanar(group_H2O,
                               flux=False).run()
 
 zcoor = tplan.results.bin_pos
-vel = tplan.results.profile_mean
+vel = tplan.results.profile
 
 # %%
 #
@@ -320,12 +320,12 @@ fig.show()
 # Finally, still using the same trajectory file, we extract the average
 # orientation of the water molecules.
 #
-# Let us call the :class:`maicos.modules.structure.Diporder` to extract the
-# average orientation of the water molecules:
+# Let us call the :class:`maicos.modules.structure.DiporderPlanar` to extract
+# the average orientation of the water molecules:
 
-mydiporder = maicos.Diporder(group_H2O,
-                             refgroup=group_H2O,
-                             order_parameter="cos_theta").run()
+mydiporder = maicos.DiporderPlanar(group_H2O,
+                                   refgroup=group_H2O,
+                                   order_parameter="cos_theta").run()
 
 # %%
 #
@@ -333,7 +333,7 @@ mydiporder = maicos.Diporder(group_H2O,
 # :math:`\cos(\theta)`:
 
 zcoor = mydiporder.results.bin_pos
-cos_theta = mydiporder.results.profile_mean
+cos_theta = mydiporder.results.profile
 
 fig, ax = plt.subplots()
 
