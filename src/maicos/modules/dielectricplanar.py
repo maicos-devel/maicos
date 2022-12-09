@@ -15,7 +15,12 @@ import scipy.constants
 
 from ..core import PlanarBase
 from ..lib.math import symmetrize
-from ..lib.util import charge_neutral, get_compound, render_docs
+from ..lib.util import (
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -338,6 +343,9 @@ class DielectricPlanar(PlanarBase):
             symmetrize(self.results.deps_par, axis=0, inplace=True)
             symmetrize(self.results.eps_par_self, axis=0, inplace=True)
             symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
+
+        # Print Alex Schlaich citation
+        logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 
     def save(self):
         """Save results."""

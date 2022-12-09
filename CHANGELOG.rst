@@ -14,8 +14,9 @@ The rules for MAICoS' CHANGELOG file:
 v0.7 (XXXX/XX/XX)
 -----------------
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
-Alexander Schlaich
+Alexander Schlaich, Philipp Staerk
 
+- Add a logger info for citations (!205)
 - Rename Diporder to DiporderPlanar (!202)
 - Change default behavior of DielectricPlanar: assume slab geometry by default
   (removing the ``xy`` flag and instead introduce ``is_3d`` for 3d-periodic
