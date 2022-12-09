@@ -9,7 +9,6 @@
 """Helper functions for mathematical and physical operations."""
 
 import numpy as np
-from scipy import constants
 
 from . import tables
 from ._cutil import compute_structure_factor  # noqa: F401
@@ -460,49 +459,3 @@ def compute_form_factor(q, atom_type):
                 np.exp(-tables.CM_parameters[element].b[i] * q2)
 
     return form_factor
-
-
-def mu(rho, temperature, m):
-    """Calculate the chemical potential.
-
-    The chemical potential is calculated from the
-    density: mu = k_B T log(rho. / m)
-    """
-    # kT in KJ/mol
-    kT = temperature * constants.Boltzmann \
-        * constants.Avogadro / constants.kilo
-
-    results = []
-
-    for srho, mass in zip(np.array(rho).T, m):
-        # De Broglie (converted to nm)
-        db = np.sqrt(
-            constants.h ** 2 / (2 * np.pi * mass * constants.atomic_mass
-                                * constants.Boltzmann * temperature)
-            ) / constants.angstrom
-
-        if np.all(srho > 0):
-            results.append(kT * np.log(srho * db ** 3))
-        elif np.any(srho == 0):
-            results.append(np.float64("-inf") * np.ones(srho.shape))
-        else:
-            results.append(np.float64("nan") * np.ones(srho.shape))
-    return np.squeeze(np.array(results).T)
-
-
-def dmu(rho, drho, temperature):
-    """Calculate the error of the chemical potential.
-
-    The error is calculated from the density using propagation of uncertainty.
-    """
-    kT = temperature * constants.Boltzmann \
-        * constants.Avogadro / constants.kilo
-
-    results = []
-
-    for srho, sdrho in zip(np.array(rho).T, np.array(drho).T):
-        if np.all(srho > 0):
-            results.append(kT * (sdrho / srho))
-        else:
-            results.append(np.float64("nan") * np.ones(srho.shape))
-    return np.squeeze(np.array(results).T)

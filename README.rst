@@ -108,8 +108,6 @@ Currently, MAICoS supports the following analysis modules:
      - Compute partial densities across a sphere
    * - TemperaturePlanar
      - Compute temperature profile in a cartesian geometry
-   * - ChemicalPotentialPlanar
-     - Compute the chemical potential in a cartesian geometry
    * - DielectricPlanar
      - Calculate planar dielectric profiles
    * - DielectricCylinder

@@ -201,17 +201,13 @@ class TestDielectricPlanar(object):
         """Test that epsilon is constructed correctly from covariances."""
         eps = DielectricPlanar(ag, xy=True).run()
 
-        cov_perp = eps.means.mM_perp \
-            - eps.means.m_perp * eps.means.M_perp
-        assert_equal(eps.results.eps_perp,
-                     - eps.results.pref * cov_perp)
+        cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
+        assert_equal(eps.results.eps_perp, - eps.results.pref * cov_perp)
 
         cov_par = 0.5 * (eps.means.mM_par[:, 0]
-                         - np.dot(eps.means.m_par[:, :, 0],
-                                  eps.means.M_par))
+                         - np.dot(eps.means.m_par[:, :, 0], eps.means.M_par))
 
-        assert_equal(eps.results.eps_par[:, 0],
-                     eps.results.pref * cov_par)
+        assert_equal(eps.results.eps_par[:, 0], eps.results.pref * cov_par)
 
     def test_unsorted_ags(self, ag):
         """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""

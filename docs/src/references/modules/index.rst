@@ -8,7 +8,6 @@ This is a list of all analysis modules provided by MAICoS.
 .. toctree::
    :maxdepth: 1
 
-   chemicalpotentialplanar
    densitycylinder
    densityplanar
    densitysphere
