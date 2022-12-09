@@ -36,9 +36,10 @@ class DielectricCylinder(CylinderBase):
     using the ``dim`` parameter.
 
     For usage please refer to :ref:`How-to: Dielectric
-    constant<howto-dielectric>`.
+    constant<howto-dielectric>` and for details on the theory see
+    :ref:`dielectric-explanations`.
 
-    Please read and cite :footcite:p:`locheGiantaxialDielectric2019`.
+    Also, please read and cite :footcite:p:`locheGiantaxialDielectric2019`.
 
     Parameters
     ----------
