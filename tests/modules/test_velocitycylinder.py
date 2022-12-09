@@ -25,34 +25,32 @@ class TestVelocityCylinder(object):
     """Tests for the VelocityCylinder class."""
 
     @pytest.fixture()
-    def vel_array_4(self):
-        """Set velocity array."""
-        # average velocity of 1 in the third bin
-        v_array_1 = np.zeros(5)
-        v_array_1[2] += 1
-        return v_array_1
+    def vel_array(self):
+        """Set velocity array for test_vel_cylinder."""
+        array = []
+        array.append([1, 0, 0, 0, 0])  # rad=0
+        array.append([0, 1, 0, 0, 0])  # rad=2
+        array.append([0, 0, 1, 0, 0])  # rad=5
+        array.append([0, 0, 0, 1, 0])  # rad=7.5
+        return array
 
-    @pytest.fixture()
-    def bin_volume_1(self):
-        """Set the volume of the bin."""
-        # estimate the volume
-        _rmax = 10
-        _rmin = 0
-        _zmax = 20
-        _zmin = 0
-        _n_bins = 5
-        _bin_edges = np.linspace(_rmin, _rmax, _n_bins + 1, endpoint=True)
-        _bin_area = np.pi * np.diff(_bin_edges ** 2)
-        _L = _zmax - _zmin
-        return _bin_area * _L
+    @pytest.mark.parametrize('rad', [(0, 0), (2, 1), (5, 2), (7.5, 3)])
+    def test_vel_cylinder(self, vel_array, rad):
+        """
+        Test VelocityCylinder module.
 
-    def test_vel_cylinder(self, vel_array_4, bin_volume_1):
-        """Test velocity module with 10 waters molecules in circle."""
-        ag_v = circle_of_water_molecules(myvel=np.array([0, 0, 1]))
+        Create a universe with 10 water molecules
+        along a circle (in the (x,y) plan) of radius equal to rad,
+        with an imposed velocity of 1 along z.
 
+        Call VelocityCylinder module to measure,
+        using a bin width of 2, and a grouping per molecule.
+        """
+        ag_v, bin_volume = circle_of_water_molecules(myvel=np.array([0, 0, 1]),
+                                                     bin_width=2,
+                                                     radius=rad[0])
         vel = VelocityCylinder(ag_v, vdim=2, bin_width=2,
                                grouping="molecules",
                                refgroup=ag_v).run()
-
         assert_allclose(vel.results.profile.T[0],
-                        vel_array_4 / bin_volume_1)
+                        vel_array[rad[1]] / bin_volume)

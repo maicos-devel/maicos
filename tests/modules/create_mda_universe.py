@@ -66,7 +66,7 @@ def line_of_water_molecules(n_molecules=1, angle_deg=0,
 
 def circle_of_water_molecules(n_molecules=10, angle_deg=0,
                               axis_rotation=(0, 1, 0), myvel=(0, 0, 0),
-                              radius=5):
+                              radius=5, bin_width=1):
     """
     Create a MDAnalysis universe with regularly spaced molecules.
 
@@ -109,4 +109,16 @@ def circle_of_water_molecules(n_molecules=10, angle_deg=0,
     # give velocities to the molecules
     u.trajectory.ts.has_velocities = True
     u.atoms.velocities += np.array(myvel)
-    return u.select_atoms("name OW HW1 HW2")
+
+    # return the volume of each slice
+    rmin = 0
+    rmax = u.dimensions[0] / 2
+
+    zmin = 0
+    zmax = u.dimensions[2]
+    L = zmax - zmin
+    n_bins = np.int32((rmax - rmin) / bin_width)
+    bin_edges = np.linspace(rmin, rmax, n_bins + 1)
+    bin_area = np.pi * np.diff(bin_edges ** 2)
+    volume = bin_area * L
+    return u.select_atoms("name OW HW1 HW2"), volume

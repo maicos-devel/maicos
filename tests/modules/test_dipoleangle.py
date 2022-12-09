@@ -13,29 +13,72 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_equal
+from create_mda_universe import line_of_water_molecules
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 from maicos import DipoleAngle
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from data import WATER_TPR, WATER_TRR  # noqa: E402
+from data import WATER_GRO, WATER_TPR  # noqa: E402
 
 
-class TestDipoleAngle(object):
-    """Tests for the DipoleAngle class."""
+class ReferenceAtomGroups:
+    """Super class with methods reference AtomGroups for tests."""
 
     @pytest.fixture()
-    def ag(self):
+    def ag_single_frame(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
-        return u.select_atoms('type OW or type H')
+        u = mda.Universe(WATER_TPR, WATER_GRO)
+        return u.atoms
 
-    def test_DipoleAngle(self, ag, tmpdir):
-        """Test dipole angle."""
+
+class TestDipoleAngle(ReferenceAtomGroups):
+    """Tests for the DipoleAngle class."""
+
+    def test_DipoleAngle_trajectory(self, ag_single_frame):
+        """Test dipole angle module on a single frame."""
+        dip = DipoleAngle(ag_single_frame).run()
+        assert_allclose(dip.results.cos_theta_i, -0.0821, rtol=1e-3)
+
+    def test_DipoleAngle_trajectory_save(self, ag_single_frame, tmpdir):
+        """
+        Test dipole angle module on a single frame.
+
+        Save the result in a text file, and assert that the
+        results printed in the file is correct.
+        """
         with tmpdir.as_cwd():
-            dipa = DipoleAngle(ag)
-            dipa.run()
+            dipa = DipoleAngle(ag_single_frame).run()
             dipa.save()
             assert_equal(os.path.exists("dipangle.dat"), True)
-            assert_almost_equal(np.sum(dipa.cos_theta_i), -3.99, decimal=2)
+            saved_data = np.loadtxt("dipangle.dat")
+            assert_allclose(saved_data[1], -0.0821, rtol=1e-3)
+
+    @pytest.mark.parametrize('angle', (0, 30, 60, 90, 180, 272.15))
+    def test_orientation_single_molecule_cos(self, angle):
+        """
+        Test DipoleAngle module on a single molecule.
+
+        Create a universe with one single water molecule
+        with a given orientation 'angle' (in degree).
+
+        The expected result is cos(angle).
+        """
+        ag = line_of_water_molecules(angle_deg=angle)
+        assert_almost_equal(DipoleAngle(ag).run().results.cos_theta_i,
+                            np.cos(np.radians(angle)), decimal=3)
+
+    @pytest.mark.parametrize('angle', (0, 30, 60, 90, 180, 272.15))
+    def test_orientation_single_molecule_cos2(self, angle):
+        """
+        Test DipoleAngle module on a single molecule.
+
+        Create a universe with one single water molecule
+        with a given orientation 'angle' (in degree).
+
+        The expected result is cos(angle)**2.
+        """
+        ag = line_of_water_molecules(angle_deg=angle)
+        assert_almost_equal(DipoleAngle(ag).run().results.cos_theta_ii,
+                            np.cos(np.radians(angle))**2, decimal=3)
