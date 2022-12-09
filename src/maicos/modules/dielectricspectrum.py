@@ -15,7 +15,7 @@ import scipy.constants
 
 from ..core import AnalysisBase
 from ..lib.math import FT, iFT
-from ..lib.util import bin, charge_neutral, render_docs
+from ..lib.util import bin, charge_neutral, citation_reminder, render_docs
 
 
 logger = logging.getLogger(__name__)
@@ -229,6 +229,9 @@ class DielectricSpectrum(AnalysisBase):
         # data is binned
         logger.info(f'Not binning data: there are '
                     f'{len(self.results.susc)} datapoints')
+
+        # Print the Shane Carlson citation
+        logger.info(citation_reminder('10.1021/acs.jpca.0c04063'))
 
     def save(self):
         """Save result."""

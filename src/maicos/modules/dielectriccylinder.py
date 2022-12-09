@@ -14,7 +14,12 @@ import numpy as np
 import scipy.constants
 
 from ..core import CylinderBase
-from ..lib.util import charge_neutral, get_compound, render_docs
+from ..lib.util import (
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -176,6 +181,9 @@ class DielectricCylinder(CylinderBase):
                                 * pref * self.results.bin_pos * cov_r)
         self.results.deps_r = (2 * np.pi * self._obs.L
                                  * pref * self.results.bin_pos * dcov_r)
+
+        # Print Philip Loche citation
+        logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 
     def save(self):
         """Save result."""

@@ -412,3 +412,36 @@ def trajectory_precision(trajectory, dim=2):
         else:
             precision[ts.frame] = bin_edges[find_peaks(hist2)[0][0]]
     return precision
+
+
+# All references associated with code are registered here in the format
+# doi : Short Reference
+DOI_LIST = {"10.1103/PhysRevLett.117.048001":
+            "Schlaich, A. et al., Phys. Rev. Lett. 117, (2016).",
+            "10.1021/acs.jpcb.9b09269":
+            "Loche, P. et al., J. Phys. Chem. B 123, (2019).",
+            "10.1021/acs.jpca.0c04063":
+            "Carlson, S. et al., J. Phys. Chem. A 124, (2020).",
+            "10.1103/PhysRevE.92.032718":
+            "1. Schaaf, C. et al., Phys. Rev. E 92, (2015)."}
+
+
+def citation_reminder(*dois):
+    """Prints citations in order to remind users to give due credit.
+
+    Parameters
+    ----------
+    dois : list of dois associated with the method which calls this.
+        These have to be registered here.
+
+    """
+    txt = ''
+    for doi in dois:
+        citation = DOI_LIST[doi]
+        txt += f"{citation}; doi:{doi}\n"
+
+    txt += ("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+            + "If you use this module in your work, please read and cite:"
+            + f"\n{txt}"
+            + "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+    return txt

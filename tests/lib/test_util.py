@@ -166,3 +166,25 @@ class TestTrajectoryPrecision(object):
         """Test detect gro traj."""
         assert_equal(maicos.lib.util.trajectory_precision(trj),
                      np.float32(0.01))
+
+
+class TestCitationReminder(object):
+    """Test the detection of the trajectory precision."""
+
+    def test_single_citation(self):
+        """Test if a single citation will get printed correctly."""
+        doi = "10.1103/PhysRevE.92.032718"
+
+        assert doi in maicos.lib.util.citation_reminder(doi)
+        assert "please read" in maicos.lib.util.citation_reminder(doi)
+        assert "Schaaf" in maicos.lib.util.citation_reminder(doi)
+
+    def test_mutliple_citation(self):
+        """Test if a two citations will get printed at the same time."""
+        dois = ["10.1103/PhysRevE.92.032718",
+                "10.1103/PhysRevLett.117.048001"]
+
+        assert 'Schlaich' in maicos.lib.util.citation_reminder(*dois)
+        assert 'Schaaf' in maicos.lib.util.citation_reminder(*dois)
+        assert dois[0] in maicos.lib.util.citation_reminder(*dois)
+        assert dois[1] in maicos.lib.util.citation_reminder(*dois)

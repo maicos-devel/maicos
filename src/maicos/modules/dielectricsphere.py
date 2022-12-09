@@ -14,7 +14,12 @@ import numpy as np
 import scipy.constants
 
 from ..core import SphereBase
-from ..lib.util import charge_neutral, get_compound, render_docs
+from ..lib.util import (
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -118,6 +123,9 @@ class DielectricSphere(SphereBase):
                                     * pref * cov_rad)
         self.results.deps_rad = (4 * np.pi * self.results.bin_pos**2
                                  * pref * dcov_rad)
+
+        # Print the Christian Schaaf citation
+        logger.info(citation_reminder("10.1103/PhysRevE.92.032718"))
 
     def save(self):
         """Save result."""
