@@ -13,3 +13,4 @@ If you are a total MAICoS beginner, you should start with the
     ../examples/dielectric-constant
     ../examples/radial-distribution-function
     ../examples/saxs
+    ../examples/chemical-potential
