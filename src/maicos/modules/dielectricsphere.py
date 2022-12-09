@@ -35,9 +35,10 @@ class DielectricSphere(SphereBase):
     center of mass of the refgroup if provided.
 
     For usage please refer to :ref:`How-to: Dielectric
-    constant<howto-dielectric>`.
+    constant<howto-dielectric>` and for details on the theory see
+    :ref:`dielectric-explanations`.
 
-    Please read and cite :footcite:p:`schaafDielectricResponseWater2015`.
+    Also, please read andcite :footcite:p:`schaafDielectricResponseWater2015`.
 
     Parameters
     ----------

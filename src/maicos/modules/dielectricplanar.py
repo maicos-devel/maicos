@@ -32,9 +32,10 @@ class DielectricPlanar(PlanarBase):
     r"""Calculate planar dielectric profiles.
 
     For usage please refer to :ref:`How-to: Dielectric
-    constant<howto-dielectric>`.
+    constant<howto-dielectric>` and for details on the theory see
+    :ref:`dielectric-explanations`.
 
-    Please read and cite
+    Also, please read and cite
     :footcite:t:`schlaichWaterDielectricEffects2016` and Refs.
     :footcite:p:`locheUniversalNonuniversalAspects2020`,
     :footcite:p:`bonthuisProfileStaticPermittivity2012`.
