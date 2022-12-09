@@ -14,6 +14,8 @@ from pkg_resources import resource_filename
 # bulk water
 WATER_GRO = resource_filename(__name__, "../../docs/static/water/water.gro")
 WATER_TRR = resource_filename(__name__, "../../docs/static/water/water.trr")
+WATER_2F_TRR = \
+    resource_filename(__name__, "../../docs/static/water/water_two_frames.trr")
 WATER_TPR = resource_filename(__name__, "../../docs/static/water/water.tpr")
 
 # air-water interface

@@ -22,7 +22,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import (  # noqa: E402
     DIPOLE_GRO,
     DIPOLE_ITP,
-    WATER_GRO,
+    WATER_2F_TRR,
     WATER_TPR,
     WATER_TRR,
     )
@@ -35,11 +35,13 @@ def dipoles(positions, orientations):
     inside a 10 Å x 10 Å x 10 Å box cubic box.
     """
 
+    template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format='itp')
+
     dipoles = []
     for position, orientation in zip(positions, orientations):
         position = np.array(position)
         orientation = np.array(orientation)
-        dipole = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format='itp')
+        dipole = template.copy()
         # The dipole from the itp file is oriented in the x-direction
         angle = np.arccos(orientation[0] / np.linalg.norm(orientation))
         direction = np.cross(np.array([1, 0, 0]), np.array(orientation))
@@ -97,9 +99,9 @@ class TestDielectricPlanar(object):
         return u.atoms
 
     @pytest.fixture()
-    def ag_single_frame(self):
+    def ag_two_frames(self):
         """Import MDA universe, single frame."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
+        u = mda.Universe(WATER_TPR, WATER_2F_TRR)
         return u.atoms
 
     @pytest.mark.parametrize('orientation, M_par, M_perp', (
@@ -124,7 +126,7 @@ class TestDielectricPlanar(object):
 
         dipole = dipoles([[5, 5, 5]], [orientation])
         # very fine binning to get the correct value for the dipole
-        eps = DielectricPlanar(dipole, bin_width=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole, bin_width=0.01, vcutwidth=0.01)
         eps.run()
         # Check the total dipole moment of the system
         assert_allclose(eps._obs.M_par, M_par, rtol=0.1)
@@ -178,7 +180,7 @@ class TestDielectricPlanar(object):
         else:
             n = len(dipole)
         # very fine binning to get the correct value for the dipole
-        eps = DielectricPlanar(dipole[:n], bin_width=0.001, vcutwidth=0.001)
+        eps = DielectricPlanar(dipole[:n], bin_width=0.01, vcutwidth=0.01)
         eps.run()
         # Check the total dipole moment of the system
         assert_allclose(eps._obs.M_par, np.multiply(M_par, n_dipoles),
@@ -197,9 +199,9 @@ class TestDielectricPlanar(object):
                                                   n_dipoles / selection),
                         rtol=0.1)
 
-    def test_epsilon(self, ag):
+    def test_epsilon(self, ag_two_frames):
         """Test that epsilon is constructed correctly from covariances."""
-        eps = DielectricPlanar(ag).run()
+        eps = DielectricPlanar(ag_two_frames).run()
 
         cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
         assert_equal(eps.results.eps_perp, - eps.results.pref * cov_perp)
@@ -209,14 +211,14 @@ class TestDielectricPlanar(object):
 
         assert_equal(eps.results.eps_par[:, 0], eps.results.pref * cov_par)
 
-    def test_unsorted_ags(self, ag):
+    def test_unsorted_ags(self, ag_two_frames):
         """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""
         # Randomly shuffle the atomgroup
         rng = np.random.default_rng()
-        permute = rng.permutation(len(ag))
-        ag2 = ag[permute]
+        permute = rng.permutation(len(ag_two_frames))
+        ag2 = ag_two_frames[permute]
 
-        eps1 = DielectricPlanar(ag)
+        eps1 = DielectricPlanar(ag_two_frames)
         eps1.run()
 
         eps2 = DielectricPlanar(ag2)
@@ -225,10 +227,10 @@ class TestDielectricPlanar(object):
         assert np.allclose(eps1.results.eps_par, eps2.results.eps_par)
         assert np.allclose(eps1.results.eps_perp, eps2.results.eps_perp)
 
-    def test_output(self, ag_single_frame, tmpdir):
+    def test_output(self, ag_two_frames, tmpdir):
         """Test output."""
         with tmpdir.as_cwd():
-            eps = DielectricPlanar(ag_single_frame)
+            eps = DielectricPlanar(ag_two_frames)
             eps.run()
             eps.save()
             res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
@@ -236,31 +238,31 @@ class TestDielectricPlanar(object):
             res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
             assert_allclose(eps.results.eps_par[:, 0], res_par[:, 1])
 
-    def test_output_name(self, ag_single_frame, tmpdir):
+    def test_output_name(self, ag_two_frames, tmpdir):
         """Test output name."""
         with tmpdir.as_cwd():
-            eps = DielectricPlanar(ag_single_frame, output_prefix="foo")
+            eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
             eps.run()
             eps.save()
             open("foo_perp.dat")
             open("foo_par.dat")
 
-    def test_xy_vac(self, ag):
+    def test_is_3d_vac(self, ag_two_frames):
         """Tests for conditions xy & vac when True."""
-        eps1 = DielectricPlanar(ag)
+        eps1 = DielectricPlanar(ag_two_frames)
         eps1.run()
-        k1 = np.mean(eps1.results.eps_perp - 1)
-        eps2 = DielectricPlanar(ag, vac=True)
+        k1 = np.mean(eps1.results.eps_perp)
+        eps2 = DielectricPlanar(ag_two_frames, vac=True)
         eps2.run()
-        k2 = np.mean(eps2.results.eps_perp - 1)
-        assert_allclose((k1 / k2), 1.5, rtol=1e-1)
+        k2 = np.mean(eps2.results.eps_perp)
+        assert_allclose((k1 / k2), 1.5)
 
-    def test_sym(self, ag_single_frame):
+    def test_sym(self, ag_two_frames):
         """Test for symmetric case."""
         eps_sym = DielectricPlanar(
-            [ag_single_frame, ag_single_frame[:-30]], sym=True).run()
+            [ag_two_frames, ag_two_frames[:-30]], sym=True).run()
         eps = DielectricPlanar(
-            [ag_single_frame, ag_single_frame[:-30]], sym=False).run()
+            [ag_two_frames, ag_two_frames[:-30]], sym=False).run()
 
         # Check that the z column is not changed
         assert_equal(eps.results.bin_pos, eps_sym.results.bin_pos)
