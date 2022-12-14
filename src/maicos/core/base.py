@@ -184,8 +184,6 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             else:
                 ref_weights = self.refgroup.masses
 
-        self._obs = Results()
-
         compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
 
         self._prepare()
@@ -207,7 +205,6 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self._ts = ts
             self.frames[i] = ts.frame
             self.times[i] = ts.time
-            self._obs.box_center = self.box_center
 
             if self.refgroup is not None:
                 com_refgroup = center_cluster(self.refgroup, ref_weights)
@@ -226,8 +223,12 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                     ts.positions += np.random.random(
                         size=(len(ts.positions), 3)) * self.jitter
 
+            self._obs = Results()
+
             timeseries[i] = self._single_frame()
 
+            # This try/except block is used because it will fail only once and
+            # is therefore not a performance issue like a if statement would be.
             try:
                 for key in self._obs.keys():
                     if type(self._obs[key]) is list:
@@ -384,6 +385,8 @@ class ProfileBase:
         self.weighting_function = lambda ag: weighting_function(ag,
                                                                 grouping,
                                                                 **f_kwargs)
+        # We need to set the following dictionaries here because ProfileBase
+        # is not a subclass of AnalysisBase (only needed for tests)
         self.results = Results()
         self._obs = Results()
 
@@ -412,9 +415,6 @@ class ProfileBase:
             raise ValueError(f"`{self.bin_method}` is an unknown binning "
                              f"method. Use {', '.join(bin_methods)}.")
 
-        # Arrays for accumulation
-        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
-
         if self.normalization == 'number':
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
 
@@ -436,6 +436,7 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes")
 
     def _single_frame(self):
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
         for index, selection in enumerate(self.atomgroups):
             if self.grouping == 'atoms':
                 positions = selection.atoms.positions
