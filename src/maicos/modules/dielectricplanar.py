@@ -125,24 +125,6 @@ class DielectricPlanar(PlanarBase):
     def _prepare(self):
         super(DielectricPlanar, self)._prepare()
 
-        self._obs.M_par = np.zeros(2)
-        self._obs.M_perp = 0
-        self._obs.M_perp_2 = 0
-
-        n_ag = self.n_atomgroups
-
-        self._obs.m_par = np.zeros((self.n_bins, 2, n_ag))
-        self._obs.mM_par = np.zeros((self.n_bins, n_ag))
-        self._obs.mm_par = np.zeros((self.n_bins, n_ag))
-        self._obs.cmM_par = np.zeros((self.n_bins, n_ag))
-        self._obs.cM_par = np.zeros((self.n_bins, 2, n_ag))
-
-        self._obs.m_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.mM_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.mm_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
-
         self.comp = []
         self.inverse_ix = []
 
@@ -162,6 +144,20 @@ class DielectricPlanar(PlanarBase):
         self._obs.M_perp = self._obs.M[self.dim]
         self._obs.M_perp_2 = self._obs.M[self.dim]**2
         self._obs.M_par = self._obs.M[self.odims]
+
+        n_ag = self.n_atomgroups
+
+        self._obs.m_par = np.zeros((self.n_bins, 2, n_ag))
+        self._obs.mM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_par = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_par = np.zeros((self.n_bins, 2, n_ag))
+
+        self._obs.m_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.mm_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
 
         # Use polarization density (for perpendicular component)
         # ======================================================

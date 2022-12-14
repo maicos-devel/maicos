@@ -128,13 +128,15 @@ class Saxs(AnalysisBase):
                     self._universe.dimensions))
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
-            self._obs.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
         else:
             self.n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
-            self._obs.struct_factor = np.zeros([self.n_bins, len(self.groups)])
 
     def _single_frame(self):
         # Convert everything to cartesian coordinates.
+        if self.nobindata:
+            self._obs.S_array = np.zeros(list(self.maxn) + [len(self.groups)])
+        else:
+            self._obs.struct_factor = np.zeros([self.n_bins, len(self.groups)])
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
         for i, t in enumerate(self.groups):
             # map coordinates onto cubic cell

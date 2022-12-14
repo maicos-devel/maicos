@@ -118,7 +118,7 @@ class PlanarBase(AnalysisBase):
         """Single frame for the planar analysis."""
         self._compute_lab_frame_planar()
         self._obs.L = self.zmax - self.zmin
-
+        self._obs.box_center = self.box_center
         self._obs.bin_edges = np.linspace(
             self.zmin, self.zmax, self.n_bins + 1)
 

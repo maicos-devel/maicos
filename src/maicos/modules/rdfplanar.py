@@ -141,17 +141,18 @@ class RDFPlanar(PlanarBase):
         logger.info(f"Using {self.rdf_nbins} rdf bins.")
 
         # Empty histogram self.count to store the RDF.
-        self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
         self.edges = np.histogram([-1], bins=self.rdf_nbins,
                                   range=self.range)[1]
         self.results.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
-        self._obs.n_g1 = np.zeros((self.n_bins, 1))
 
         # Set the max range to filter the search radius.
         self._maxrange = self.range[1]
 
     def _single_frame(self):
         super(RDFPlanar, self)._single_frame()
+        self._obs.n_g1 = np.zeros((self.n_bins, 1))
+        self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
+
         bin_width = (self.zmax - self.zmin) / self.n_bins
 
         if self.bin_method == 'com':
