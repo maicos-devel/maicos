@@ -14,4 +14,3 @@ is all about.
     general-design
     dielectric
     saxs
-    2d-rdf
