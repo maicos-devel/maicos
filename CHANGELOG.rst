@@ -16,6 +16,7 @@ v0.7 (XXXX/XX/XX)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
 Alexander Schlaich, Philipp Staerk
 
+- Fix velocity profiles (!211)
 - Added the Theory to the Dielectric docs (!201) 
 - Add a logger info for citations (!205)
 - Rename Diporder to DiporderPlanar (!202)

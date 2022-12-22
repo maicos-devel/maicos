@@ -15,13 +15,16 @@ from ..lib.weights import velocity_weights
 
 @render_docs
 class VelocityPlanar(ProfilePlanarBase):
-    """Compute the velocity profile in a cartesian geometry.
+    r"""Compute the velocity profile in a cartesian geometry.
 
     Reads in coordinates and velocities from a trajectory and calculates a
-    velocity or a flux profile along a given axis.
+    velocity :math:`[\mathrm{Å/ps}]` or a flux per unit area
+    :math:`[\mathrm{Å^{-2}\,ps^{-1}}]` profile along a given axis.
 
-    When MAICoS is used from the command line, the result
-    is written in a file named output="velocity.dat" by default.
+    The ``grouping`` keyword gives you fine control over the velocity profile,
+    e.g., you can choose atomar or molecular velocities.
+    Note, that if the first one is employed for complex compounds, usually a
+    contribution corresponding to the vorticity appears in the profile.
 
     Parameters
     ----------
@@ -30,9 +33,6 @@ class VelocityPlanar(ProfilePlanarBase):
         Dimension for velocity binning (x=0, y=1, z=2).
     flux : bool
         Calculate the flux instead of the velocity.
-
-        Flux is calculated by multiplying the velocity by the
-        number of compounds.
 
     Attributes
     ----------
@@ -52,17 +52,21 @@ class VelocityPlanar(ProfilePlanarBase):
                  bin_method="com",
                  output="velocity.dat",
                  concfreq=0,
-                 vdim=2,
+                 vdim=0,
                  flux=False,
                  jitter=None):
 
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
+        if flux:
+            normalization = 'volume'
+        else:
+            normalization = 'number'
 
         super(VelocityPlanar, self).__init__(
             weighting_function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
-            normalization="volume",
+            normalization=normalization,
             atomgroups=atomgroups,
             dim=dim,
             zmin=zmin,

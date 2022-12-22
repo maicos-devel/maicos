@@ -68,12 +68,14 @@ def circle_of_water_molecules(n_molecules=10, angle_deg=0,
                               axis_rotation=(0, 1, 0), myvel=(0, 0, 0),
                               radius=5, bin_width=1):
     """
-    Create a MDAnalysis universe with regularly spaced molecules.
+    Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
 
-    Molecules are placed on a circle of radius `radius`.
-    The box dimensions are set to 20x20x20, and the z coordinate is 10.
-    The radius must be smaller than 10.
+    Molecules are placed on a circle of radius `radius` around the box center.
+    The box dimensions are set to 20x20x20. The radius must be smaller than 10!
     """
+    if radius > 10:
+        raise ValueError("radius has to be smaller than 10")
+
     # import molecule topology
     fluid = []
     for _n in range(n_molecules):
@@ -84,8 +86,8 @@ def circle_of_water_molecules(n_molecules=10, angle_deg=0,
     for _n in range(0, n_molecules):
         x = np.cos(2 * np.pi / n_molecules * _n) * radius
         y = np.sin(2 * np.pi / n_molecules * _n) * radius
-        z = 10
-        positions.append((x, y, z))
+        z = 0
+        positions.append(10 + np.array([x, y, z]))
 
     # set the orientation of the molecules
     rotations = []

@@ -35,7 +35,8 @@ class ReferenceAtomGroups:
         components of the velocity along all 3 dimensions of space,
         respectively. Only the first frame is considered.
         """
-        v_array_1 = ([5.09e-6, 7.9e-6, 4.8e-6])
+        u = mda.Universe(WATER_TPR, WATER_TRR)
+        v_array_1 = u.atoms.velocities.mean(axis=0)
         return v_array_1
 
     @pytest.fixture()
@@ -46,7 +47,7 @@ class ReferenceAtomGroups:
 
 
 class TestVelocityPlanar(ReferenceAtomGroups):
-    """Tests for the velocityPlanar class."""
+    """Tests for the VelocityPlanar class."""
 
     def test_wrong_vdim(self, ag):
         """Test a wrong dimension for velocity."""
@@ -66,7 +67,9 @@ class TestVelocityPlanar(ReferenceAtomGroups):
 
         All 9 combinations of dim and vdim are tested.
         """
-        vel = VelocityPlanar(ag, dim=dim, vdim=vdim).run(stop=1)
+        vel = VelocityPlanar(ag, dim=dim,
+                             vdim=vdim,
+                             bin_width=ag.dimensions[dim]).run(stop=1)
         assert_allclose(vel.results.profile.mean(),
                         vel_frame1_TRR[vdim], rtol=1e-2)
 
@@ -91,12 +94,11 @@ class TestVelocityPlanar(ReferenceAtomGroups):
         myvel = np.zeros(3)
         myvel[dim] += 1
         ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
-        vol = np.prod(ag_v.dimensions[:3])
         vel = VelocityPlanar(ag_v, vdim=vdim,
                              bin_width=ag_v.dimensions[dim],
                              grouping="molecules").run()
         assert_allclose(vel.results.profile.mean(),
-                        np.identity(3)[dim][vdim] / vol, rtol=1e-6)
+                        np.identity(3)[dim][vdim], rtol=1e-6)
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     @pytest.mark.parametrize('vdim', (0, 1, 2))
@@ -119,12 +121,11 @@ class TestVelocityPlanar(ReferenceAtomGroups):
         myvel = np.zeros(3)
         myvel[dim] += 1
         ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
-        vol = np.prod(ag_v.dimensions[:3])
         vel = VelocityPlanar(ag_v, vdim=vdim,
                              bin_width=ag_v.dimensions[dim],
                              grouping="atoms").run()
         assert_allclose(vel.results.profile.mean(),
-                        np.identity(3)[dim][vdim] / vol)
+                        np.identity(3)[dim][vdim])
 
     @pytest.mark.parametrize('dim', (0, 1, 2))
     @pytest.mark.parametrize('vdim', (0, 1, 2))
@@ -152,4 +153,5 @@ class TestVelocityPlanar(ReferenceAtomGroups):
                              bin_width=ag_v.dimensions[dim],
                              grouping="atoms", flux=True).run()
         assert_allclose(vel.results.profile,
-                        3 * np.identity(3)[dim][vdim] / vol)
+                        ag_v.n_atoms * np.identity(ag_v.n_atoms)[dim][vdim]
+                        / vol)
