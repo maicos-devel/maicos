@@ -163,6 +163,4 @@ def velocity_weights(atomgroup, grouping, vdim, flux):
             atomgroup.atoms.masses, compound=grouping)
         vels = mass_vels / group_mass
 
-    if not flux:
-        vels /= len(vels)
     return vels
