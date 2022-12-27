@@ -12,3 +12,4 @@ If you are a total MAICoS beginner, you should start with the
 
     ../examples/saxs
     ../examples/chemical-potential
+    ../examples/dielectric-profiles

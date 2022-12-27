@@ -10,7 +10,7 @@ The linear dielectric response of a material relates the displacement field
 :math:`D` to the electric field :math:`E`, which in the isotropic, homogenous
 case can be written as (in SI units)
 
- .. math::
+.. math::
    \mathbf{D} = \varepsilon_0 \varepsilon \mathbf{E}
 
 where :math:`\varepsilon_0` is
@@ -26,7 +26,7 @@ however, the most common boundary conditions of molecular dynamics simulations
 are tin-foil boundary conditions in conjunction with an Ewald-summation type
 approach. In this case, we get for a bulk material
 
- .. math::
+.. math::
    \varepsilon = 1 + \frac{\langle M^2 \rangle - \langle M \rangle^2}
                           {3 \varepsilon_0 V k _{\mathrm{B}} T}
 
@@ -36,7 +36,7 @@ where :math:`M` is the dipole moment of the sample, :math:`V` is its volume,
 
 The dipole moment is defined by
 
- .. math::
+.. math::
    M = \sum_i \mathbf{r}_i q_i
 
 where :math:`\mathbf{r}_i` is the position of the :math:`i`-th particle and
@@ -87,7 +87,7 @@ is aligned along the :math:`z`-axis.
 The non-local, anisotropic, linear dielectric response of a fluid can generally
 be written as :footcite:p:`bonthuisProfileStaticPermittivity2012`
 
- .. math::
+.. math::
    D(\mathbf{r}) = \varepsilon_0 \int_V \mathrm{d}^3 r'
                 \varepsilon(\mathbf{r}, \mathbf{r}') E(\mathbf{r}')
 
@@ -100,7 +100,7 @@ influences of the fluid response at other locations.
 In planar symmetry, we can simplify the above expression further, because the Maxwell
 relations give
 
- .. math::
+.. math::
      \nabla \times \mathbf{E} = 0
 
 in the absence of external magnetic fields.
@@ -112,7 +112,7 @@ components of the electric field do not vary with :math:`z`.
 Thus, we can simplify the anisotropic, non-linear equation above in the
 parallel case to
 
- .. math::
+.. math::
      D _\parallel = \epsilon_0 E_\parallel \int \mathrm{d}z'
      \epsilon_\parallel(z, z') =: \epsilon_0 \epsilon_\parallel(z) E_\parallel
 
@@ -127,7 +127,7 @@ confined fluid's response and does not require additional assumptions.
 
 In the absence of "free charges" we can use the macroscopic Maxwell equation
 
- .. math::
+.. math::
      \nabla \cdot \mathbf{D} = 0
 
 to derive the perpendicular dielectric profile.
@@ -143,14 +143,14 @@ implies that the perpendicular components of the displacement field do not
 vary with :math:`z`. Thus, if we start with the inverse dielectric response,
 defined as
 
- .. math::
+.. math::
      E(z) = \varepsilon_0^{-1} \int \mathrm{d} z' \varepsilon^{-1}(z, z') D(z')
 
 where :math:`\varepsilon^{-1}(z, z')` is the matrix inverse of the dielectric
 tensor. Similar to above, we use the fact that :math:`D` does not vary with
 :math:`z` and simplify
 
- .. math::
+.. math::
      E_\perp = \epsilon_0^{-1} D_\perp \int \mathrm{d}z'
                \epsilon_\perp^{-1}(z, z') =: \epsilon_0^{-1}
                \epsilon_\perp^{-1}(z)  D_\perp
@@ -179,14 +179,14 @@ One can then show
 :footcite:p:`schlaichWaterDielectricEffects2016` that the
 dielectric response formalism is given by
 
- .. math::
+.. math::
      \epsilon_\parallel(z) = 1 + \frac{\langle m_\parallel(z) M_\parallel \rangle 
                             - \langle m_\parallel (z) \rangle \langle M \rangle}
                             {\epsilon_0 k_\mathrm{B}T}
 
-for the parallel dielectric profile, and
+for the **parallel** dielectric profile, and
 
- .. math::
+.. math::
      \epsilon_\perp^{-1}(z) = 1 - \frac{\langle m_\perp(z) M_\perp \rangle
                              - \langle m_\perp (z) \rangle \langle M \rangle}
                              {\epsilon_0 k_\mathrm{B}T},
@@ -198,7 +198,7 @@ and :math:`m_\perp(z)`.
 For the perpendicular polarization density, we have
 :footcite:p:`bonthuisProfileStaticPermittivity2012`
 
- .. math::
+.. math::
      m_\perp (z) = - \int^z _0 \mathrm{d}z' \rho(z').
 
 For the parallel case, we have to derive the lateral component of the polarization
@@ -217,7 +217,7 @@ multiple such cuts.
 This gives a good estimate for the average surface charge density
 :math:`\sigma(z)` w.r.t the coordinate :math:`z`. Finally, we can identify
 
- .. math::
+.. math::
      m_\parallel (z) = \mp \sigma (z).
 
 Boundary Conditions
@@ -247,7 +247,7 @@ For tin-foil boundary conditions  (which are most commonly used),
 one gets
 :footcite:p:`schlaichWaterDielectricEffects2016`
 
- .. math::
+.. math::
          \epsilon_\perp^{-1} (z) = 1 - \frac{\langle m_\perp(z) M_\perp\rangle 
          - \langle m_\perp(z)\rangle \langle M_\perp \rangle}{\epsilon_0 
          k_{\text{B}}T + C_\perp/V},
