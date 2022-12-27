@@ -32,8 +32,3 @@ del get_versions
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action='once', category=DeprecationWarning, module='maicos')
-
-from . import _version
-
-
-__version__ = _version.get_versions()['version']
