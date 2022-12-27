@@ -371,6 +371,26 @@ def charge_neutral(filter):
     return inner
 
 
+def unwrap_refgroup(original_class):
+    """Class decorator error if `unwrap = False` and `refgroup != None`."""
+    def unwrap_check(function):
+        @functools.wraps(function)
+        def unwrap_check(self):
+            if hasattr(self, 'unwrap') and hasattr(self, 'refgroup'):
+                if not self.unwrap and self.refgroup is not None:
+                    raise ValueError("Analysis using `unwrap=False` and "
+                                     "`refgroup != None` can lead to "
+                                     "broken molecules and severe errors."
+                                     )
+            return function(self)
+
+        return unwrap_check
+
+    original_class._prepare = unwrap_check(original_class._prepare)
+
+    return original_class
+
+
 def trajectory_precision(trajectory, dim=2):
     """Detect the precision of a trajectory.
 
