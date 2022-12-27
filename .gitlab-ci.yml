@@ -8,7 +8,6 @@ default:
     - linux
   before_script:
     - python -m pip install -U tox
-    - export USE_CYTHON=True
   artifacts:
     expire_in: 1 week
 
