@@ -109,6 +109,7 @@ multi_line_output = 8
 include_trailing_comma = true
 lines_after_imports = 2
 known_first_party = "maicos"
+skip = ["src/maicos/_version.py", "versioneer.py"]
 
 [tool.pytest.ini_options]
 addopts = "-p pytest_cov"
