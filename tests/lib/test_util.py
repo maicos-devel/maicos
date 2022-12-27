@@ -154,6 +154,44 @@ class TestChargedDecorator(object):
         single_class(ag, filter="error")._prepare()
 
 
+def unwrap_refgroup_class(**kwargs):
+    """Simple class setting kywword arguments as attrubutes."""
+
+    @maicos.lib.util.unwrap_refgroup
+    class UnwrapRefgroup(AnalysisBase):
+
+        def __init__(self, **kwargs):
+            for key, val in kwargs.items():
+                setattr(self, key, val)
+
+        def _prepare(self):
+
+            def inner_func(self):
+                pass
+
+            inner_func(self)
+
+    return UnwrapRefgroup(**kwargs)
+
+
+class TestWrapRefgroup:
+    """Test the `unwrap_refgroup` decorator."""
+
+    def test_unwrap_refgroup(self):
+        """Test to raise an error if unwrap and refgroup."""
+        with pytest.raises(ValueError, match="`unwrap=False` and `refgroup"):
+            unwrap_refgroup_class(unwrap=False, refgroup="foo")._prepare()
+
+    @pytest.mark.parametrize("kwargs", (
+        {},
+        {"unwrap": True, "refgroup": None},
+        {"unwrap": False, "refgroup": None},
+        {"unwrap": True, "refgroup": "foo"},))
+    def test_noerror(self, kwargs):
+        """Decorator should raise an error otherwise."""
+        unwrap_refgroup_class(**kwargs)._prepare()
+
+
 class TestTrajectoryPrecision(object):
     """Test the detection of the trajectory precision."""
 

@@ -135,7 +135,7 @@ class DielectricSpectrum(AnalysisBase):
         pref /= scipy.constants.k * self.temperature
         pref /= scipy.constants.epsilon_0
 
-        logger.info('Calculating susceptibilty and errors...')
+        logger.info('Calculating susceptibility and errors...')
 
         # if t too short to simply truncate
         if len(self.results.t) < 2 * self.seglen:

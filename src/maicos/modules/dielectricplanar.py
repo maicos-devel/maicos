@@ -20,6 +20,7 @@ from ..lib.util import (
     citation_reminder,
     get_compound,
     render_docs,
+    unwrap_refgroup,
     )
 
 
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 @render_docs
+@unwrap_refgroup
 @charge_neutral(filter="error")
 class DielectricPlanar(PlanarBase):
     r"""Calculate planar dielectric profiles.
