@@ -16,6 +16,7 @@ v0.7 (XXXX/XX/XX)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
 Alexander Schlaich, Philipp Staerk
 
+- Added dielectric how-to (!208)
 - Raise an error if ``unwrap=False`` and ``refgroup != None`` in dielectric
   modules (!215).
 - Fix velocity profiles (!211)

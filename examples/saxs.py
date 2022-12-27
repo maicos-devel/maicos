@@ -57,13 +57,13 @@ saxs = maicos.Saxs(u.atoms).run(stop=30)
 #
 # Note: SAXS computations are extensive calculations. Here, to get an
 # overview of the scattering intensities, we reduce the number of frames
-# to be analyzed from `101` to `30`,
-# by adding the ``stop=30`` parameter to the `run` method. Due to the small
+# to be analyzed from ``101`` to ``30``,
+# by adding the ``stop = 30`` parameter to the ``run`` method. Due to the small
 # number of analyzed frames, the scattering intensities
 # shown in this tutorial should not be used to draw any conclusions
 # from the data.
 #
-# Extract the :math:`q` values and the averaged saxs scattering intensities
+# Extract the :math:`q` values and the averaged SAXS scattering intensities
 # ``scat_factor`` from the ``results`` attribute:
 
 q_vals = saxs.results.q
@@ -106,7 +106,7 @@ saxs_H = maicos.Saxs(group_H).run(stop=30)
 # %%
 #
 # Let us plot the results together with the full scattering intensity.
-# Note that here we access the results directly from the `results` attribute
+# Note that here we access the results directly from the ``results`` attribute
 # without storing them in individual variables before:
 
 fig, ax = plt.subplots()
