@@ -27,7 +27,6 @@ default:
     - choco install -y python --version=$PYTHON_VERSION --no-progress
     - RefreshEnv
     - python -m pip install -U tox
-    - $env:USE_CYTHON = "True"
 
 ###########################
 ######### STAGES ##########
