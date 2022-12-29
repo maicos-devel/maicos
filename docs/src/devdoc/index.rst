@@ -12,3 +12,4 @@ Developer documentation
     tests
     documentation
     versioning
+    release
