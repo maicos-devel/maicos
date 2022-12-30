@@ -16,12 +16,13 @@ v0.7 (2022/12/27)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
 Alexander Schlaich, Philipp Staerk
 
+- Added MacOS pipeline, fixed wheels (!218)
 - Fix CHANGELOG testing (!220)
 - Added dielectric how-to (!208)
 - Raise an error if ``unwrap=False`` and ``refgroup != None`` in dielectric
   modules (!215).
 - Fix velocity profiles (!211)
-- Added the Theory to the Dielectric docs (!201) 
+- Added the Theory to the Dielectric docs (!201)
 - Add a logger info for citations (!205)
 - Rename Diporder to DiporderPlanar (!202)
 - Change default behavior of DielectricPlanar: assume slab geometry by default
@@ -64,7 +65,7 @@ Alexander Schlaich, Philipp Staerk
 - ``get_compound``: option for returning indices of topology attributes
 - Added Tutorial for non-spatial analysis module (!170)
 - Check atomgroups if they contain any atoms (!172)
-- New core attributes: ``bin_edges``, ``bin_area``, ``bin_volume``, ``bin_pos`` 
+- New core attributes: ``bin_edges``, ``bin_area``, ``bin_volume``, ``bin_pos``
   & ``bin_width`` (!167)
 - Use ``frame`` dict in ``structure.py`` (!169)
 - Fix box dimensions for cylindrical boundaries (!168)
