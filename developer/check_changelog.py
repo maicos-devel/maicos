@@ -22,7 +22,7 @@ with open(path.join(repo_path, changelog), 'r') as f:
     workfile = f.read()
 
 try:
-    if repo.active_branch.name != "main" and file == workfile:
+    if repo.active_branch.name != "main" and file.strip() == workfile.strip():
         raise ChangelogError("You have not updated the CHANGELOG file. Please "
                              f"add a summary of your additions to {changelog}.")
 except TypeError:
