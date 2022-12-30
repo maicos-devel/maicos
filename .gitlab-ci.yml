@@ -3,23 +3,31 @@
 ###########################
 
 default:
-  image: python:3.10
+  artifacts:
+    expire_in: 1 week
+  image:
+    name: python:$PYTHON_VERSION
+
+variables:
+  PYTHON_VERSION: '3.8'
+
+.linux:
+  image: python:$PYTHON_VERSION
+  variables:
+    OS_NAME: "linux"
   tags:
     - linux
   before_script:
     - python -m pip install -U tox
-  artifacts:
-    expire_in: 1 week
 
-.matrix:
-  image: python:$PYTHON_VERSION
-  needs: []
+.supported_python_versions:
   parallel:
     matrix:
       - PYTHON_VERSION: ['3.8', '3.9', '3.10']
 
 .windows:
-  extends: .matrix
+  variables:
+    OS_NAME: "windows"
   tags:
     - windows
   before_script:
@@ -28,15 +36,27 @@ default:
     - RefreshEnv
     - python -m pip install -U tox
 
+.macos:
+  image: macos-11-xcode-12
+  variables:
+    OS_NAME: "macos"
+  tags:
+    - shared-macos-amd64
+  before_script:
+    - HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install --force python@$PYTHON_VERSION
+    - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
+    - python -m pip install -U tox
+
 ###########################
 ######### STAGES ##########
 ###########################
 
 stages:
   - lint
-  - build
   - docs
+  - build
   - tests
+  - wheels
   - deploy
 
 ###########################
@@ -44,6 +64,7 @@ stages:
 ###########################
 
 lint:
+  extends: .linux
   stage: lint
   needs: []
   script:
@@ -53,29 +74,34 @@ lint:
 ######### BUILD ###########
 ###########################
 
-build-linux:
-  extends: .matrix
+build:linux:
+  extends: .linux
   stage: build
+  needs: []
   script:
-    - python -m tox -e build-linux
-  artifacts:
-    paths:
-      - dist
+    - python -m tox -e py${PYTHON_VERSION//.}-build-linux
 
-build-windows:
+build:windows:
   extends: .windows
   stage: build
+  needs: []
   script:
-    - python -m tox -e build-windows
-  artifacts:
-    paths:
-      - dist
+    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-build-windows
+
+build:macos:
+  extends: .macos
+  stage: build
+  needs: []
+  script:
+    - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
+    - python -m tox -e py${PYTHON_VERSION//.}-build-macos
 
 ###########################
 ######### DOCS ############
 ###########################
 
 docs:
+  extends: .linux
   stage: docs
   needs: []
   script:
@@ -90,27 +116,74 @@ docs:
 ######### TESTS ###########
 ###########################
 
-tests-linux:
-  extends: .matrix
-  stage: tests
-  variables:
-    CODECOV_TOKEN: $CODECOV_TOKEN
+.tests:
+  extends: .supported_python_versions
   script:
-    - python -m tox -e tests
+    - python -m tox -e py${PYTHON_VERSION//.}-tests
+  stage: tests
+
+tests:linux:
+  extends:
+    - .linux
+    - .tests
+  needs: ["build:linux"]
   after_script:
     - curl -Os https://uploader.codecov.io/latest/linux/codecov
     - chmod +x codecov
     - ./codecov -t $CODECOV_TOKEN
+  variables:
+    CODECOV_TOKEN: $CODECOV_TOKEN
 
-tests-windows:
-  extends: .windows
-  stage: tests
-  script:
-    - python -m tox -e tests
+tests:windows:
+  extends:
+    - .windows
+    - .tests
+  needs: ["build:windows"]
+
+tests:macos:
+  extends:
+    - .macos
+    - .tests
+  needs: ["build:macos"]
 
 ###########################
 ######## DEPLOY ###########
 ###########################
+
+.build-wheel:
+  extends: .supported_python_versions
+  stage: wheels
+  artifacts:
+    paths:
+      - dist
+  only:
+    - tags
+
+build-wheel:linux:
+  image: quay.io/pypa/manylinux2014_x86_64
+  extends:
+    - .build-wheel
+  script:
+    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m pip install -U tox
+    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m tox -e py${PYTHON_VERSION//.}-build-linux
+    - auditwheel repair dist/*.whl -w dist/
+  needs: ["tests:linux"]
+
+build-wheel:macos:
+  extends:
+    - .macos
+    - .build-wheel
+  script:
+    - python -m tox -e py${PYTHON_VERSION//.}-build-macos
+  needs: ["tests:macos"]
+
+build-wheel:windows:
+  extends:
+    - .windows
+    - .build-wheel
+  script:
+    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-build-windows
+  needs: ["tests:windows"]
 
 # The name must be `pages`!
 # Otherwise webpage on gitlab.io will not be updated!
