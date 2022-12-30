@@ -16,6 +16,7 @@ v0.7 (2022/12/27)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
 Alexander Schlaich, Philipp Staerk
 
+- Fix CHANGELOG testing (!220)
 - Added dielectric how-to (!208)
 - Raise an error if ``unwrap=False`` and ``refgroup != None`` in dielectric
   modules (!215).
