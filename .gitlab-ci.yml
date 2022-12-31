@@ -205,6 +205,6 @@ pypi:
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
     - python -m pip install twine
-    - python -m twine upload --verbose dist/*.whl
+    - python -m twine upload --verbose --skip-existing dist/*.tar.gz dist/*.whl
   only:
     - tags
