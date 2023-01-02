@@ -13,9 +13,16 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Philip Loche
+Philip Loche, Henrik Jaeger
 
+- Migrated versioneer to pyproject.toml
 - Added Support for Python 3.11
+
+v0.7.1 (2023/01/01)
+-------------------
+Henrik Jaeger
+
+- Fix upload to PyPi. This release is idential to v0.7.
 
 v0.7 (2022/12/27)
 -----------------
