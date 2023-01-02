@@ -17,7 +17,7 @@ requires = [
     "numpy==1.23.2; python_version=='3.11' and platform_python_implementation != 'PyPy'",
     "setuptools>=43.0.0",
     "setuptools-git-versioning<2",
-    "versioneer",
+    "versioneer[toml]",
     "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -120,3 +120,10 @@ testpaths = "tests"
 [tool.check-manifest]
 # ignore files missing in VCS
 ignore = ["src/maicos/lib/_cutil.c"]
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "src/maicos/_version.py"
+versionfile_build = "maicos/_version.py"
+tag_prefix = "v"
