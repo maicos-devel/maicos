@@ -10,6 +10,11 @@ default:
 
 variables:
   PYTHON_VERSION: '3.8'
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
 
 .linux:
   image: python:$PYTHON_VERSION
@@ -23,7 +28,7 @@ variables:
 .supported_python_versions:
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.8', '3.9', '3.10']
+      - PYTHON_VERSION: ['3.8', '3.9', '3.10', '3.11']
 
 .windows:
   variables:
@@ -43,7 +48,9 @@ variables:
   tags:
     - shared-macos-amd64
   before_script:
-    - HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install --force python@$PYTHON_VERSION
+    - export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+    - export HOMEBREW_NO_INSTALL_CLEANUP=1
+    - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
     - python -m pip install -U tox
 
