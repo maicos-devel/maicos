@@ -8,18 +8,18 @@ include *.rst
 include LICENSE
 include versioneer.py
 
-exclude .codacy.yaml
-exclude .codeclimate.yml
-exclude .coveragerc
-exclude .gitignore
-exclude .gitlab-ci.yml
-exclude .readthedocs.yml
-exclude tox.ini
-
 prune .gitlab
 prune .tox
 prune developer
-prune tests
 prune examples
+prune tests
+
+exclude .gitlab-ci.yml
+exclude .gitattributes
+exclude .gitignore
+exclude .coveragerc
+exclude .readthedocs.yml
+exclude codecov.yml
+exclude tox.ini
 
 global-exclude *.py[cod] __pycache__/* *.so *.dylib

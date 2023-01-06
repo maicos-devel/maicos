@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Philip Loche, Henrik Jaeger
 
+- Added coverage posting on GitLab (!226)
 - Corrected wrong comparison in correlation analysis and added tests
 - Fixed link to changelog in pyproject.toml
 - Migrated versioneer to pyproject.toml
@@ -24,7 +25,7 @@ v0.7.1 (2023/01/01)
 -------------------
 Henrik Jaeger
 
-- Fix upload to PyPi. This release is idential to v0.7.
+- Fix upload to PyPi. This release is identical to v0.7.
 
 v0.7 (2022/12/27)
 -----------------
