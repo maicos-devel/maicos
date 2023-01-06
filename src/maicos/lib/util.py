@@ -9,6 +9,7 @@
 """Small helper and utilities functions that don't fit anywhere else."""
 
 import functools
+import logging
 import os
 import sys
 import warnings
@@ -17,9 +18,53 @@ from typing import Callable
 import numpy as np
 from scipy.signal import find_peaks
 
+from maicos.lib.math import correlation_time
 
-_share_path = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                            "..", "share"))
+
+logger = logging.getLogger(__name__)
+
+
+def correlation_analysis(timeseries):
+    """Timeseries correlation analysis.
+
+    Analyses a timeseries for correlation and prints a warning if
+    the correlation time is larger than the step size.
+
+    Parameters
+    ----------
+    timeseries : numpy.ndarray
+        Array of (possibly) correlated data.
+
+    Returns
+    -------
+    corrtime: np.float64
+        Estimated correlation time of `timeseries`.
+    """
+    if np.any(np.isnan(timeseries)):
+        # Fail silently if there are NaNs in the timeseries. This is the case
+        # if the feature is not implemented for the given analysis. It could
+        # also be because of a bug, but that is not our business.
+        return -1
+    elif len(timeseries) <= 4:
+        warnings.warn("Your trajectory is too short to estimate a correlation "
+                      "time. Use the calculated error estimates with caution.")
+        return -1
+
+    corrtime = correlation_time(timeseries)
+
+    if corrtime == -1:
+        warnings.warn(
+            "Your trajectory does not provide sufficient statistics to "
+            "estimate a correlation time. Use the calculated error estimates "
+            "with caution.")
+    if corrtime > 0.5:
+        warnings.warn(
+            "Your data seems to be correlated with a correlation time which is "
+            f"{corrtime + 1:.2f} times larger than your step size. "
+            "Consider increasing your step size by a factor of "
+            f"{int(np.ceil(2 * corrtime + 1)):d} to get a reasonable error "
+            "estimate.")
+    return corrtime
 
 
 def get_compound(atomgroup, return_index=False):
@@ -53,11 +98,11 @@ def get_compound(atomgroup, return_index=False):
         compound = "molecules"
         indices = atomgroup.atoms.molnums
     elif hasattr(atomgroup, "fragments"):
-        warnings.warn("Cannot use 'molecules'. Falling back to 'fragments'")
+        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         compound = "fragments"
         indices = atomgroup.atoms.fragindices
     elif hasattr(atomgroup, "residues"):
-        warnings.warn("Cannot use 'fragments'. Falling back to 'residues'")
+        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         compound = "residues"
         indices = atomgroup.atoms.resindices
     else:
@@ -86,8 +131,8 @@ def atomgroup_header(AtomGroup):
     output file headers.
     """
     if not hasattr(AtomGroup, 'types'):
-        warnings.warn("AtomGroup does not contain atom types. "
-                      "Not writing AtomGroup information to output.")
+        logger.warning("AtomGroup does not contain atom types. "
+                       "Not writing AtomGroup information to output.")
         return f"{len(AtomGroup.atoms)} unkown particles"
     unique, unique_counts = np.unique(AtomGroup.types,
                                       return_counts=True)
@@ -434,8 +479,7 @@ def trajectory_precision(trajectory, dim=2):
     return precision
 
 
-# All references associated with code are registered here in the format
-# doi : Short Reference
+#: references associated with MAICoS
 DOI_LIST = {"10.1103/PhysRevLett.117.048001":
             "Schlaich, A. et al., Phys. Rev. Lett. 117, (2016).",
             "10.1021/acs.jpcb.9b09269":
@@ -451,17 +495,25 @@ def citation_reminder(*dois):
 
     Parameters
     ----------
-    dois : list of dois associated with the method which calls this.
-        These have to be registered here.
+    dois : list
+        dois associated with the method which calls this.
+        Possible dois are registered in :attr:`maicos.lib.util.DOI_LIST`.
 
+    Returns
+    -------
+    cite : str
+        formatted citation reminders
     """
-    txt = ''
+    cite = ''
     for doi in dois:
-        citation = DOI_LIST[doi]
-        txt += f"{citation}; doi:{doi}\n"
+        lines = ["If you use this module in your work, please read and cite:",
+                 DOI_LIST[doi],
+                 f"doi: {doi}"]
 
-    txt += ("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-            + "If you use this module in your work, please read and cite:"
-            + f"\n{txt}"
-            + "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n")
-    return txt
+        plus = f"{max([len(i) for i in lines]) * '+'}"
+        lines.insert(0, f"\n{plus}")
+        lines.append(f"{plus}\n")
+
+        cite += "\n".join(lines)
+
+    return cite

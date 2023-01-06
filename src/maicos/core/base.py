@@ -10,18 +10,19 @@
 
 import inspect
 import logging
-import warnings
 from datetime import datetime
 
 import MDAnalysis.analysis.base
 import numpy as np
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .._version import get_versions
-from ..lib.math import center_cluster, correlation_time, new_mean, new_variance
+from ..lib.math import center_cluster, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
+    correlation_analysis,
     get_cli_input,
     get_compound,
     render_docs,
@@ -245,7 +246,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                                              self._obs[key],
                                              self._index) / self._index)
             except AttributeError:
-                logger.info("Preparing error estimation.")
+                with logging_redirect_tqdm():
+                    logger.info("Preparing error estimation.")
                 # the means and sems are not yet defined.
                 # We initialize the means with the data from the first frame
                 # and set the sems to zero (with the correct shape).
@@ -266,20 +268,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         logger.info("Finishing up")
 
-        if len(timeseries > 4) and (timeseries[0] is not None):
-            corrtime = correlation_time(timeseries)
-            if corrtime == -1:
-                warnings.warn("Your trajectory does not provide sufficient"
-                              "statistics to estimate a correlation time."
-                              "Use the calculated error estimates with"
-                              "caution.")
-            if corrtime > 0.5:
-                warnings.warn("Your data seems to be correlated with a "
-                              f"correlation time which is {corrtime + 1:.2f} "
-                              "times larger than your step size. "
-                              "Consider increasing your step size by a factor "
-                              f"of {int(np.ceil(2 * corrtime + 1)):d} to get a "
-                              "reasonable error estimate.")
+        self.corrtime = correlation_analysis(timeseries)
 
         self._conclude()
         if self.concfreq and module_has_save:

@@ -117,17 +117,15 @@ def scalar_prod_corr(a, b=None, subtract_mean=False):
     return corr
 
 
-def correlation_time(x_n, method='Sokal', c=8, mintime=3):
+def correlation_time(x_n, method='sokal', c=8, mintime=3):
     r"""Compute the integrated correlation time of a timeseries.
 
     Parameters
     ----------
     x_n : numpy.ndarray, float
         timeseries
-    method : str
-        Method to choose integration cutoff Should be one of
-        'Sokal'
-        'Chodera'
+    method : str, {'sokal', 'chodera'}
+        Method to choose integration cutoff.
     c : float
         cut-off factor for calculation of correlation time :math:`\tau` for
         the Sokal method. The cut-off :math:`T` for integration is
@@ -139,10 +137,15 @@ def correlation_time(x_n, method='Sokal', c=8, mintime=3):
     -------
     tau : float
         integrated correlation time
+
+    Raises
+    ------
+    ValueError
+        If method is not one of 'Sokal' or 'Chodera'
     """
     corr = correlation(x_n, subtract_mean=True)
 
-    if method == 'Sokal':
+    if method == 'sokal':
 
         cutoff = tau = mintime
         for cutoff in range(mintime, len(x_n)):
@@ -154,12 +157,14 @@ def correlation_time(x_n, method='Sokal', c=8, mintime=3):
             if cutoff > len(x_n) / 3:
                 return -1
 
-    if method == 'Chodera':
+    elif method == 'chodera':
 
         cutoff = max(mintime, np.min(np.argwhere(corr < 0)))
         tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
                      * corr[1:cutoff] / corr[0])
-
+    else:
+        raise ValueError(f"Unknown method: {method}. "
+                         "Chose either 'sokal' or 'chodera'.")
     return tau
 
 

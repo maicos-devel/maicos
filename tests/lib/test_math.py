@@ -263,13 +263,13 @@ def test_corr2(vector1, vector2, subtract_mean, result):
 @pytest.mark.parametrize(
     ('vector, method, c, mintime, result'),
     (
-        (generate_correlated_data(int(1E6), 5), 'Sokal', 8, 3,
+        (generate_correlated_data(int(1E6), 5), 'sokal', 8, 3,
          np.sum(1 - np.arange(1, 5) / 5)),
-        (generate_correlated_data(int(1E6), 10), 'Sokal', 8, 3,
+        (generate_correlated_data(int(1E6), 10), 'sokal', 8, 3,
          np.sum(1 - np.arange(1, 10) / 10)),
-        (generate_correlated_data(int(1E6), 5), 'Chodera', 8, 3,
+        (generate_correlated_data(int(1E6), 5), 'chodera', 8, 3,
          np.sum(1 - np.arange(1, 5) / 5)),
-        (generate_correlated_data(int(1E6), 10), 'Chodera', 8, 3,
+        (generate_correlated_data(int(1E6), 10), 'chodera', 8, 3,
          np.sum(1 - np.arange(1, 10) / 10)),
         ),
     )
@@ -277,6 +277,13 @@ def test_correlation_time(vector, method, c, mintime, result):
     """Tests for correlation_time."""
     utils_run = maicos.lib.math.correlation_time(vector, method, c, mintime)
     assert_almost_equal(np.mean(utils_run), result, decimal=1)
+
+
+def test_correlation_time_wrong_method():
+    """Tests for correlation_time with wrong method."""
+    with pytest.raises(ValueError):
+        maicos.lib.math.correlation_time(
+            generate_correlated_data(int(1E3), 5), 'wrong', 8, 3)
 
 
 def test_new_mean():
