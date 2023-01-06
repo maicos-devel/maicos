@@ -9,6 +9,7 @@
 """Tests for the utilities."""
 import os
 import sys
+import warnings
 from unittest.mock import patch
 
 import MDAnalysis as mda
@@ -226,3 +227,54 @@ class TestCitationReminder(object):
         assert 'Schaaf' in maicos.lib.util.citation_reminder(*dois)
         assert dois[0] in maicos.lib.util.citation_reminder(*dois)
         assert dois[1] in maicos.lib.util.citation_reminder(*dois)
+
+
+class TestCorrelationAnalysis(object):
+    """Test the calculation of the correlation of the data."""
+
+    def test_short_data(self, mocker, caplog):
+        """Test if a warning is raised if the data is too short."""
+        warning = "Your trajectory is too short to estimate a correlation "
+        with pytest.warns(match=warning):
+            corrtime = maicos.lib.util.correlation_analysis(np.arange(4))
+        assert corrtime == -1
+
+    def test_insufficient_data(self, mocker, caplog):
+        """Test if a warning is raised if the data is insufficient."""
+        warning = "Your trajectory does not provide sufficient statistics to "
+        mocker.patch('maicos.lib.util.correlation_time', return_value=-1)
+        with pytest.warns(match=warning):
+            corrtime = maicos.lib.util.correlation_analysis(np.arange(10))
+        assert corrtime == -1
+
+    def test_correlated_data(self, mocker, caplog):
+        """Test if a warning is issued if the data is correlated."""
+        corrtime = 10
+        warnings = ("Your data seems to be correlated with a ",
+                    f"correlation time which is {corrtime + 1:.2f} ",
+                    f"of {int(np.ceil(2 * corrtime + 1)):d} to get a ")
+        mocker.patch('maicos.lib.util.correlation_time', return_value=corrtime)
+        for warning in warnings:
+            with pytest.warns(match=warning):
+                returned_corrtime = \
+                    maicos.lib.util.correlation_analysis(np.arange(10))
+        assert returned_corrtime == corrtime
+
+    def test_uncorrelated_data(self, mocker, caplog):
+        """Test that no warning is issued if the data is uncorrelated."""
+        corrtime = 0.25
+        mocker.patch('maicos.lib.util.correlation_time', return_value=corrtime)
+        with warnings.catch_warnings():  # no warning should be issued
+            warnings.simplefilter("error")
+            returned_corrtime = \
+                maicos.lib.util.correlation_analysis(np.arange(10))
+
+        assert returned_corrtime == corrtime
+
+    def test_no_data(self, mocker, caplog):
+        """Test that no warning is issued if no data exists."""
+        with warnings.catch_warnings():  # no warning should be issued
+            warnings.simplefilter("error")
+            returned_corrtime = \
+                maicos.lib.util.correlation_analysis(np.nan * np.arange(10))
+        assert returned_corrtime == -1

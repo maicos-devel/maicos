@@ -16,7 +16,9 @@ import os
 
 import numpy as np
 
-from .util import _share_path
+
+_share_path = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                            "..", "share"))
 
 
 # Translation of atomnames to types/element

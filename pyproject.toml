@@ -83,6 +83,7 @@ tests = [
     "MDAnalysisTests",
     "pytest",
     "pytest-cov",
+    "pytest-mock",
 ]
 docs = [
     "furo",

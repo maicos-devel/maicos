@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Philip Loche, Henrik Jaeger
 
+- Corrected wrong comparison in correlation analysis and added tests
 - Fixed link to changelog in pyproject.toml
 - Migrated versioneer to pyproject.toml
 - Added Support for Python 3.11
