@@ -31,6 +31,30 @@ from data import (  # noqa: E402
 class TestDielectricSphere(object):
     """Tests for the DielectricSphere class."""
 
+    """
+
+    Number of times DielectricSphere broke: |
+
+    If you are reading this, most likely you are investigating a bug in the
+    DielectricSphere class.
+
+    Most problems with dielectric profiles are already discussed in the test
+    Class for the DielectricPlanar Modules.
+
+    The DielectricCylinder may have the following ambiguities:
+        - The code uses a quanity called M, which in planar geometry is the
+          total dipole moment of the system, because it is int m(z) dz. We then
+          calculate the systems total dipole moment instead of the integral for
+          numerical stability. In spherical geometry, this is not the case,
+          because resulting integral is int m(r) dr and not int r m(r) dr. This
+          might lead to confusion, but just make sure you are using the correct
+          equations. (see 10.1103/PhysRevE.92.032718 for more info.)
+
+          To test the charge density integration, we still integrate
+          the diplome moment density and check if the integral equals the total
+          dipole moment of the system. For the M integral, we just perform the
+          same calculation as the module and check the result.
+    """
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
@@ -91,10 +115,20 @@ class TestDielectricSphere(object):
         eps = DielectricSphere(dipole.atoms[:n], bin_width=0.001)
         eps.run()
         # Check the total dipole moment of the system
+        # M is not equal to the volume integral of the dipole moment density
+        # because it is not actually the total dipole, but just named the same
+        # as in the planar case.
+        # So we first check if the volume integral of the dipole moment density
+        # is equal to the dipole moment of the atomgroup.
         assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_r),
                         6 / selection, rtol=0.1)
+        # Then we check if the volume integral over the whole dipole density
+        # is the total dipole moment.
+        assert_allclose(np.sum(eps._obs.bin_volume * eps._obs.m_r_tot), 6,
+                        rtol=0.1)
+        # Then we check if the value for M is calculated correctly.
         assert_allclose(eps._obs.M_r,
-                        6, rtol=0.1)
+                        np.sum(eps._obs.bin_width * eps._obs.m_r_tot), rtol=0.1)
 
     def test_output(self, ag_single_frame, tmpdir):
         """Tests output."""

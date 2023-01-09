@@ -112,17 +112,29 @@ class DielectricCylinder(CylinderBase):
 
         # Use polarization density (for radial component)
         # ========================================================
-        rbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 0],
-                            self._obs.bin_edges[1:])
+        rbins = np.digitize(self.pos_cyl[:, 0],
+                            self._obs.bin_edges[1:-1])
 
-        curQ_r, _ = np.histogram(rbins,
-                                 bins=np.arange(self.n_bins + 1),
-                                 weights=self.atomgroup.charges)
+        curQ_r = np.bincount(rbins[self.atomgroup.ix],
+                             weights=self.atomgroup.charges,
+                             minlength=self.n_bins)
 
-        self._obs.m_r = -np.cumsum(
-            (curQ_r / self._obs.bin_volume) * self._obs.bin_pos
-            * self._obs.bin_width) / self._obs.bin_pos
-        self._obs.M_r = np.dot(self._universe.atoms.charges, self.pos_cyl)[0]
+        self._obs.m_r = \
+            -np.cumsum((curQ_r / self._obs.bin_volume)
+                       * self._obs.bin_pos * self._obs.bin_width
+                       ) / self._obs.bin_pos
+
+        curQ_r_tot = np.bincount(rbins,
+                                 weights=self._universe.atoms.charges,
+                                 minlength=self.n_bins)
+
+        self._obs.m_r_tot = \
+            -np.cumsum((curQ_r_tot / self._obs.bin_volume)
+                       * self._obs.bin_pos * self._obs.bin_width
+                       ) / self._obs.bin_pos
+        # This is not really the systems dipole moment, but it keeps the
+        # Nomenclature consistent with the DielectricPlanar module.
+        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
         # Use virtual cutting method ( for axial component )
         # ========================================================
@@ -137,18 +149,20 @@ class DielectricCylinder(CylinderBase):
                   / self.atomgroup.accumulate(np.abs(self.atomgroup.charges),
                                               compound=self.comp))
         testpos = center[self.inverse_ix]
-        rbins = np.digitize(testpos, self._obs.bin_edges[1:])
-        z = (np.arange(nbinsz) + 1) * (self._obs.L / nbinsz)
-        zbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 2], z)
 
-        curQz, _, _ = np.histogram2d(
-            zbins, rbins,
-            bins=[np.arange(nbinsz + 1), np.arange(self.n_bins + 1)],
-            weights=self.atomgroup.charges)
+        rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
+        z = (np.arange(nbinsz)) * (self._obs.L / nbinsz)
+        zbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 2], z[1:])
+
+        curQz = np.bincount(rbins + self.n_bins * zbins,
+                            weights=self.atomgroup.charges,
+                            minlength=self.n_bins * nbinsz
+                            ).reshape(nbinsz, self.n_bins)
 
         curqz = np.cumsum(curQz, axis=0) / (self._obs.bin_area)[np.newaxis, :]
         self._obs.m_z = -curqz.mean(axis=0)
-        self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2])
+        self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2]
+                               ) / (2 * np.pi * self._obs.L)
         self._obs.mM_z = self._obs.m_z * self._obs.M_z
 
     def _conclude(self):
