@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Philip Loche, Henrik Jaeger
 
+- Fixed windows string manipulation in test CI (!227)
 - Added coverage posting on GitLab (!226)
 - Corrected wrong comparison in correlation analysis and added tests
 - Fixed link to changelog in pyproject.toml

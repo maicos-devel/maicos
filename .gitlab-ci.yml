@@ -145,6 +145,8 @@ tests:windows:
   extends:
     - .windows
     - .tests
+  script:
+    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-tests
   needs: ["build:windows"]
 
 tests:macos:
