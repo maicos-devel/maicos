@@ -220,23 +220,36 @@ class Test_AnalysisBase(object):
             # check that no double execution of the _conclude method happens
             assert conclude.conclude_count == 1
 
-    def test_refgroup_single(self, ag):
-        """Test refgroup."""
-        class_obj = Conclude(ag, refgroup=ag[:1])
-        class_obj.run(step=1)
+    @pytest.mark.parametrize("indices", [[0], [0, 1, 2], [3, 4, 5]])
+    def test_refgroup(self, ag, indices):
+        """Test refgroup.
 
-        assert_allclose(ag.atoms.positions[0],
+        We test a single atom, a broken water molecule and a
+        whole water molecule. The broken molecule requires the unwrap
+        option to be set Otherwise, the broken water's center of mass
+        is not correct. See next test below.
+        """
+        refgroup = ag.atoms[indices]
+        class_obj = Conclude(ag, refgroup=refgroup, unwrap=True)
+        class_obj.run(stop=1)
+
+        assert_allclose(refgroup.center_of_mass(),
                         ag.universe.dimensions[:3] / 2,
                         rtol=1e-01)
 
-    def test_refgroup_multi(self, ag):
-        """Test refgroup for multiple frames."""
-        class_obj = Conclude(ag, refgroup=ag[:3])
-        class_obj.run(step=1)
+    def test_refgroup_no_unwrap(self, ag,):
+        """Test refgroup without unwrap.
 
-        assert_allclose(ag.atoms[:3].center_of_mass(),
-                        ag.universe.dimensions[:3] / 2,
-                        rtol=1e-01)
+        This will lead to a wrong center of mass for a broken molecule.
+        """
+        refgroup = ag.atoms[:3]
+        class_obj = Conclude(ag, refgroup=refgroup, unwrap=False)
+        class_obj.run(stop=1)
+
+        with pytest.raises(AssertionError):
+            assert_allclose(refgroup.center_of_mass(),
+                            ag.universe.dimensions[:3] / 2,
+                            rtol=1e-01)
 
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""

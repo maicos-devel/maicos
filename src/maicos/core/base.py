@@ -97,7 +97,6 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     ValueError
         If any of the provided AtomGroups (`atomgroups` or `refgroup`) does
         not contain any atoms.
-
     """
 
     def __init__(self,
@@ -207,22 +206,20 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self.frames[i] = ts.frame
             self.times[i] = ts.time
 
+            # Before we do any coordinate transformation we first unwrap
+            # the system to avoid artifacts of later wrapping.
+            if self.unwrap:
+                self._universe.atoms.unwrap(
+                    compound=get_compound(self._universe.atoms))
             if self.refgroup is not None:
                 com_refgroup = center_cluster(self.refgroup, ref_weights)
                 t = self.box_center - com_refgroup
                 self._universe.atoms.translate(t)
-                self._universe.atoms.wrap()
-
-            if hasattr(self, "atomgroup"):
-                groups = [self.atomgroup]
-            else:
-                groups = self.atomgroups
-            for group in groups:
-                if self.unwrap:
-                    self._universe.atoms.unwrap(compound=get_compound(group))
-                if self.jitter:
-                    ts.positions += np.random.random(
-                        size=(len(ts.positions), 3)) * self.jitter
+                self._universe.atoms.wrap(
+                    compound=get_compound(self._universe.atoms))
+            if self.jitter:
+                ts.positions += np.random.random(
+                    size=(len(ts.positions), 3)) * self.jitter
 
             self._obs = Results()
 
