@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Philip Loche, Henrik Jaeger
 
+- Remove superfluous group wise wrapping (!225)
 - Clarify unclear definition in Dieletric modules that could lead to wrong
   results (!228)
 - Fixed windows string manipulation in test CI (!227)
