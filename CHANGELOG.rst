@@ -15,6 +15,8 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Philip Loche, Henrik Jaeger
 
+- Clarify unclear definition in Dieletric modules that could lead to wrong
+  results (!228)
 - Fixed windows string manipulation in test CI (!227)
 - Added coverage posting on GitLab (!226)
 - Corrected wrong comparison in correlation analysis and added tests

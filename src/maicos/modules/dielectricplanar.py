@@ -164,18 +164,15 @@ class DielectricPlanar(PlanarBase):
         # Use polarization density (for perpendicular component)
         # ======================================================
         for i, sel in enumerate(self.atomgroups):
-            zpos = np.zeros(len(sel))
-            np.clip(sel.atoms.positions[:, self.dim],
-                    self.zmin, self.zmax, zpos)
+            zbins = np.digitize(sel.atoms.positions[:, self.dim],
+                                self._obs.bin_edges[1:-1])
 
-            curQ = np.histogram(zpos,
-                                bins=self.n_bins,
-                                range=[self.zmin, self.zmax],
-                                weights=sel.atoms.charges)[0]
+            curQ = np.bincount(zbins,
+                               weights=sel.atoms.charges,
+                               minlength=self.n_bins)
 
             self._obs.m_perp[:, i] = -np.cumsum(curQ / self._obs.bin_area)
-            self._obs.mM_perp[:, i] = \
-                self._obs.m_perp[:, i] * self._obs.M_perp
+            self._obs.mM_perp[:, i] = self._obs.m_perp[:, i] * self._obs.M_perp
             self._obs.mm_perp[:, i] = \
                 self._obs.m_perp[:, i]**2 * self._obs.bin_volume
             self._obs.cmM_perp[:, i] = self._obs.m_perp[:, i] \
@@ -202,14 +199,18 @@ class DielectricPlanar(PlanarBase):
                 Lx = self._ts.dimensions[direction]
                 Ax = self._ts.dimensions[self.odims[1 - j]] \
                     * self._obs.bin_width
-                vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
-                xpos = np.clip(sel.atoms.positions[:, direction], 0, Lx)
 
-                curQx = np.histogram2d(
-                    xpos, testpos,
-                    bins=[vbinsx, self.n_bins],
-                    range=[[0, Lx], [self.zmin, self.zmax]],
-                    weights=sel.atoms.charges)[0]
+                vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
+                x_bin_edges = (np.arange(vbinsx)) * (Lx / vbinsx)
+
+                zpos = np.digitize(testpos, self._obs.bin_edges[1:-1])
+                xbins = np.digitize(sel.atoms.positions[:, direction],
+                                    x_bin_edges[1:])
+
+                curQx = np.bincount(zpos + self.n_bins * xbins,
+                                    weights=self.atomgroups[i].charges,
+                                    minlength=vbinsx * self.n_bins
+                                    ).reshape(vbinsx, self.n_bins)
 
                 # integral over x, so uniself._ts of area
                 self._obs.m_par[:, j, i] = \

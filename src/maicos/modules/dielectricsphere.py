@@ -93,18 +93,28 @@ class DielectricSphere(SphereBase):
 
     def _single_frame(self):
         super(DielectricSphere, self)._single_frame()
-        rbins = np.digitize(self.pos_sph[self.atomgroup.ix, 0],
-                            self._obs.bin_edges[1:])
+        rbins = np.digitize(self.pos_sph[:, 0], self._obs.bin_edges[1:-1])
+        curQ_rad = np.bincount(rbins[self.atomgroup.ix],
+                               weights=self.atomgroup.charges,
+                               minlength=self.n_bins)
 
-        curQ_rad, _ = np.histogram(rbins,
-                                   bins=np.arange(self.n_bins + 1),
-                                   weights=self.atomgroup.charges)
+        self._obs.m_r = \
+            -np.cumsum((curQ_rad / self._obs.bin_volume)
+                       * self._obs.bin_pos**2 * self._obs.bin_width
+                       ) / self._obs.bin_pos**2
 
-        self._obs.m_r = -np.cumsum(
-            (curQ_rad / self._obs.bin_volume) * self._obs.bin_pos**2
-            * self._obs.bin_width) / self._obs.bin_pos**2
-        self._obs.M_r = np.dot(self._universe.atoms.charges,
-                               self.pos_sph[:, 0])
+        curQ_rad_tot = np.bincount(rbins,
+                                   weights=self._universe.atoms.charges,
+                                   minlength=self.n_bins)
+
+        self._obs.m_r_tot = \
+            -np.cumsum((curQ_rad_tot / self._obs.bin_volume)
+                       * self._obs.bin_pos**2 * self._obs.bin_width
+                       ) / self._obs.bin_pos**2
+
+        # This is not really the systems dipole moment, but it keeps the
+        # Nomenclature consistent with the DielectricPlanar module.
+        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
     def _conclude(self):
