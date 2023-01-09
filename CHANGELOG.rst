@@ -11,8 +11,8 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.8 (XXXX/XX/XX)
------------------
+v0.7.2 (2023/01/09)
+-------------------
 Philip Loche, Henrik Jaeger
 
 - Remove superfluous group wise wrapping (!225)

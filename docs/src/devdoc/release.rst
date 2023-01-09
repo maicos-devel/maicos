@@ -5,80 +5,89 @@ Release workflow
 Versioneer (optional)
 ---------------------
 
-- Upgrade versioneer if a new `version`_ is available.
+1. Upgrade versioneer if a new `version`_ is available.
 
-- Check the `upgrade notes`_ if additional steps are required
+2. Check the `upgrade notes`_ if additional steps are required
 
-- Upgrade versioneer
+3. Upgrade versioneer
 
-.. code-block:: bash
+   .. code-block:: bash
 
     pip3 install --upgrade versioneer
 
-- Remove the old versioneer.py file
+4. Remove the old versioneer.py file
 
-.. code-block:: bash
+   .. code-block:: bash
 
     rm versioneer.py
 
-- Install new versioneer.py file
+5. Install new versioneer.py file
 
-.. code-block:: bash
+   .. code-block:: bash
 
     python3 -m versioneer install --vendor
 
-    Revert the changes in `src/maicos/__init__.py`
+   Revert the changes in `src/maicos/__init__.py`
 
--  Commit changes
+6. Commit changes
 
 Create release
 --------------
 
-- Make sure changelog is up to date and add release date
+1. Make sure changelog is up to date and add release date and commit
+   your changes
 
--  Tag commit with the new version
+   .. code-block:: bash
 
-.. code-block:: bash
+    git commit -m 'Release vX.X'
+
+2. Tag commit with the new version
+
+   .. code-block:: bash
 
     git tag -m 'Release vX.X' vX.X
 
--  Test locally!!!
+3. Test locally!!!
 
-.. code-block:: bash
+   .. code-block:: bash
 
     git describe
 
-and
+   and
 
-.. code-block:: bash
+   .. code-block:: bash
 
     pip3 install .
 
-should result in ``vX.X``
+   should result in ``vX.X``
 
-- Create release branch
+4. If a new major release create release branch
 
-.. code-block:: bash
+   .. code-block:: bash
 
     git branch release-X-X
 
+   otherwise update the release branch with respect to the branch
 
--  Push branch, tag
+   .. code-block:: bash
 
-.. code-block:: bash
+    git checkout release-X-X
+    git rebase -i main
+
+5. Push branch, tag
+
+   .. code-block:: bash
 
     git push release-X-X
     git push --tags
 
-- Go to the `web interface`_, add changelog as release message
+6. Go to the `web interface`_, add changelog as release message
 
 After the release
 -----------------
 
 - Bump version (Create new section in CHANGELOG.rst)
 
-
 .. _`version` : https://pypi.org/project/versioneer
 .. _`upgrade notes` : https://github.com/python-versioneer/python-versioneer/blob/master/UPGRADING.md
 .. _`web interface` : https://gitlab.com/maicos-devel/maicos/-/tags
-
