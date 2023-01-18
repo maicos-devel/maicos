@@ -1,8 +1,8 @@
 MAICoS' Documentation
 =====================
 
-.. image:: ../static/logo_MAICOS.png
-   :alt: MAICoS
+.. image:: ../static/logo_MAICOS_gray.png
+   :alt: MAICoS logo
 
 This documentation covers everything you need to know about MAICoS,
 the Molecular Analysis for Interfacial and Confined Systems toolkit.

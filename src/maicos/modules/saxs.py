@@ -110,8 +110,8 @@ class Saxs(AnalysisBase):
             try:
                 element = tables.atomtypes[atom_type]
             except KeyError:
-                raise RuntimeError(f"No suitable element for '{atom_type}' "
-                                   f"found. You can add '{atom_type}' "
+                raise RuntimeError(f"No suitable element for {atom_type!r} "
+                                   f"found. You can add {atom_type!r} "
                                    "together with a suitable element "
                                    "to 'share/atomtypes.dat'.")
             if element == "DUM":

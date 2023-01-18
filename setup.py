@@ -123,7 +123,7 @@ if __name__ == "__main__":
         for ext in extensions:
             for source in ext.sources:
                 if not (os.path.isfile(source) and os.access(source, os.R_OK)):
-                    raise IOError(f"Source file '{source}' not found. This "
+                    raise IOError(f"Source file {source!r} not found. This "
                                   "might be caused by a missing Cython "
                                   "install, or a failed/disabled "
                                   "Cython build.")

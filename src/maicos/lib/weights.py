@@ -75,7 +75,7 @@ def temperature_weights(ag, grouping):
         Currently only works for `grouping='atoms'`
     """
     if grouping != "atoms":
-        raise NotImplementedError(f"Temperature calculations of '{grouping}'"
+        raise NotImplementedError(f"Temperature calculations of {grouping!r}"
                                   "is not supported. Use 'atoms' "
                                   "instead.'")
 
@@ -123,7 +123,7 @@ def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
         if order_parameter == "cos_2_theta":
             weights *= weights
     else:
-        raise ValueError(f"'{order_parameter}' not supported. "
+        raise ValueError(f"{order_parameter!r} not supported. "
                          "Use 'P0', 'cos_theta' or 'cos_2_theta'.")
 
     return weights

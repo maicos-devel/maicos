@@ -57,8 +57,13 @@ import maicos
 # two water/solid interfaces are normal to the axis :math:`z` as shown in the
 # snapshot below:
 #
-# .. image:: ../../static/slit_flow.png
+# .. image:: ../../static/slit-flow-dark.png
 #   :alt: Snapshot Slit Flow System
+#   :class: only-dark
+#
+# .. image:: ../../static/slit-flow-light.png
+#   :alt: Snapshot Slit Flow System
+#   :class: only-light
 #
 # An acceleration :math:`a = 0.05\,\text{nm}\,\text{ps}^{-2}` was applied to
 # the water molecules in the :math:`\boldsymbol{e}_x` direction parallel to
