@@ -35,8 +35,13 @@ scattered photons as a function of the scattering angle :math:`2\theta`, i.e.
 the intensity of the scattered rays across a range of small angles.
 The general set-up of a SAXS experiment is shown in figure below.
 
-.. image:: ../../static/saxs.png
-   :alt: Setup of a SAXS 
+.. image:: ../../static/saxs-light.png
+   :alt: Setup of a SAXS
+   :class: only-light
+
+.. image:: ../../static/saxs-dark.png
+   :alt: Setup of a SAXS
+   :class: only-dark
 
 The experiments are carried out by placing the sample of interest in a highly 
 monochromatic and collimated (parallel) X-ray beam of wavelength :math:`\lambda`.
