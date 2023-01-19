@@ -104,7 +104,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                  multi_group=False,
                  refgroup=None,
                  unwrap=False,
-                 jitter=None,
+                 jitter=0.0,
                  concfreq=0):
         if multi_group:
             if type(atomgroups) not in (list, tuple):
@@ -217,7 +217,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 self._universe.atoms.translate(t)
                 self._universe.atoms.wrap(
                     compound=get_compound(self._universe.atoms))
-            if self.jitter:
+            if self.jitter != 0.0:
                 ts.positions += np.random.random(
                     size=(len(ts.positions), 3)) * self.jitter
 

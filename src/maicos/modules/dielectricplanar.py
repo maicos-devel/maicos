@@ -104,6 +104,7 @@ class DielectricPlanar(PlanarBase):
                  temperature=300,
                  output_prefix="eps",
                  concfreq=0,
+                 jitter=0.0,
                  vcutwidth=0.1):
         super(DielectricPlanar, self).__init__(atomgroups=atomgroups,
                                                dim=dim,
@@ -112,7 +113,8 @@ class DielectricPlanar(PlanarBase):
                                                bin_width=bin_width,
                                                refgroup=refgroup,
                                                unwrap=unwrap,
-                                               multi_group=True)
+                                               multi_group=True,
+                                               jitter=jitter)
         self.is_3d = is_3d
         self.sym = sym
         self.vac = vac

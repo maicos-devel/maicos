@@ -53,11 +53,17 @@ class DipoleAngle(AnalysisBase):
 
     def __init__(self,
                  atomgroup,
+                 refgroup=None,
+                 unwrap=False,
+                 concfreq=0,
                  dim=2,
                  output="dipangle.dat",
-                 concfreq=0):
+                 jitter=0.0):
         super(DipoleAngle, self).__init__(atomgroup,
-                                          concfreq=concfreq)
+                                          refgroup=refgroup,
+                                          unwrap=unwrap,
+                                          concfreq=concfreq,
+                                          jitter=jitter)
         self.dim = dim
         self.output = output
 

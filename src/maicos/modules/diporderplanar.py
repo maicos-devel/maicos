@@ -52,7 +52,7 @@ class DiporderPlanar(ProfilePlanarBase):
                  output="diporder_planar.dat",
                  concfreq=0,
                  order_parameter="P0",
-                 jitter=None):
+                 jitter=0.0):
 
         if order_parameter == "P0":
             normalization = "volume"

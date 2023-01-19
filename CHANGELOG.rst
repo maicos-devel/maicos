@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Simon Gravelle,
+Simon Gravelle, Philip Loche
 
+- Added missing AnalysisBase parameters to modules
 - created dark and light images and logo
 
 v0.7.2 (2023/01/09)

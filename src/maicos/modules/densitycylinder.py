@@ -49,7 +49,8 @@ class DensityCylinder(ProfileCylinderBase):
                  unwrap=True,
                  bin_method="com",
                  output="density.dat",
-                 concfreq=0):
+                 concfreq=0,
+                 jitter=0.0):
 
         super(DensityCylinder, self).__init__(
             weighting_function=density_weights,
@@ -67,4 +68,5 @@ class DensityCylinder(ProfileCylinderBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)

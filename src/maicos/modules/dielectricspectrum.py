@@ -84,16 +84,22 @@ class DielectricSpectrum(AnalysisBase):
     # TODO: merge with molecular version?
     def __init__(self,
                  atomgroup,
+                 refgroup=None,
                  unwrap=True,
+                 concfreq=0,
                  temperature=300,
                  output_prefix="",
                  segs=20,
                  df=None,
                  bins=200,
                  binafter=20,
-                 nobin=False):
+                 nobin=False,
+                 jitter=0.0):
         super(DielectricSpectrum, self).__init__(atomgroup,
-                                                 unwrap=unwrap)
+                                                 unwrap=unwrap,
+                                                 refgroup=refgroup,
+                                                 concfreq=concfreq,
+                                                 jitter=jitter)
         self.temperature = temperature
         self.output_prefix = output_prefix
         self.segs = segs

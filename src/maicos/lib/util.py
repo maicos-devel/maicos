@@ -163,7 +163,9 @@ def bin(a, bins):
     return avg / count
 
 
-doc_dict = dict(
+#: Dictionary containing the keys and the actual docstring used by
+#: :func:`maicos.lib.util.render_docs`.
+DOC_DICT = dict(
     DENSITY_DESCRIPTION=r"""Calculations are carried out for
     ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or
     ``charge`` :math:`(\rm e \cdot Å^{-3})` density profiles along a certain
@@ -184,23 +186,14 @@ doc_dict = dict(
     ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
         a list of :class:`~MDAnalysis.core.groups.AtomGroup` objects for which
         the calculations are performed.""",
-    BASE_CLASS_PARAMETERS="""refgroup : AtomGroup
-        Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the
-        calculation.
-
-        If refgroup is provided, the calculation is
-        performed relative to the center of mass of the AtomGroup.
-
-        If refgroup is ``None`` the calculations
-        are performed to the center of the (changing) box.
-    unwrap : bool
-        When ``unwrap = True``, molecules that are broken due to the
+    BASE_CLASS_PARAMETERS="""unwrap : bool
+        When ``True``, molecules that are broken due to the
         periodic boundary conditions are made whole.
 
         If the input contains molecules that are already whole,
         speed up the calculation by disabling unwrap. To do so,
         use the flag ``-no-unwrap`` when using MAICoS from the
-        command line, or use ``unwrap = False`` when using MAICoS from
+        command line, or use ``unwrap=False`` when using MAICoS from
         the Python interpreter.
 
         Note: Molecules containing virtual sites (e.g. TIP4P water
@@ -209,6 +202,28 @@ doc_dict = dict(
         and disable unwrap.
         Trajectories can be unwrapped, for example, using the
         ``trjconv`` command of GROMACS.
+    refgroup : AtomGroup
+        Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the
+        calculation.
+
+        If refgroup is provided, the calculation is
+        performed relative to the center of mass of the AtomGroup.
+
+        If refgroup is ``None`` the calculations
+        are performed to the center of the (changing) box.
+    jitter : float
+        Magnitude of the random noise to add to the atomic positions.
+
+        A jitter can be used to stabilize the aliasing effects sometimes
+        appearing when histogramming data. The jitter value should be about the
+        precision of the trajectory. In that case, using jitter will not alter
+        the results of the histogram. If ``jitter=0.0`` (default), the original
+        atomic positions are kept unchanged.
+
+        You can estimate the precision of the positions in your trajectory
+        with :func:`maicos.lib.util.trajectory_precision`. Note that if the
+        precision is not the same for all frames, the smallest precision
+        should be used.
     concfreq : int
         When concfreq (for conclude frequency) is larger than 0,
         the conclude function is called and the output files are
@@ -241,20 +256,6 @@ doc_dict = dict(
 
         If ``zmax = None``, all coordinates up to the upper cell boundary
         are taken into account.
-    jitter : float
-        If ``jitter is not None``, random numbers of the order of jitter
-        (Å) are added to the atom positions.
-
-        The appilication of a jitter is rationalized in possible aliasing
-        effects when histogramming data, i.e., for spatial profiles. These
-        aliasing effects can be stabilized with the application
-        of a numerical jitter. The jitter value should be about the precision of
-        the trajectory and will not alter the results of the histogram.
-
-        You can estimate the precision of the positions in your trajectory
-        with :func:`maicos.lib.util.trajectory_precision`. Note that if the
-        precision is not the same for all frames, the smallest precision
-        should be used.
         """,
     BIN_WIDTH_PARAMETER="""bin_width : float
         Width of the bins (in Å).""",
@@ -296,54 +297,54 @@ doc_dict = dict(
     )
 
 # Inherit docstrings
-doc_dict["PLANAR_CLASS_PARAMETERS"] = \
-    doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["BIN_WIDTH_PARAMETER"]
+DOC_DICT["PLANAR_CLASS_PARAMETERS"] = \
+    DOC_DICT["BASE_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["BIN_WIDTH_PARAMETER"]
 
-doc_dict["CYLINDER_CLASS_PARAMETERS"] = \
-    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["RADIAL_CLASS_PARAMETERS"]
+DOC_DICT["CYLINDER_CLASS_PARAMETERS"] = \
+    DOC_DICT["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["RADIAL_CLASS_PARAMETERS"]
 
-doc_dict["SPHERE_CLASS_PARAMETERS"] = \
-    doc_dict["BASE_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["BIN_WIDTH_PARAMETER"]
+DOC_DICT["SPHERE_CLASS_PARAMETERS"] = \
+    DOC_DICT["BASE_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["BIN_WIDTH_PARAMETER"]
 
-doc_dict["PROFILE_PLANAR_CLASS_PARAMETERS"] = \
-    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
-    doc_dict["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["SYM_PARAMETER"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_PARAMETERS"]
+DOC_DICT["PROFILE_PLANAR_CLASS_PARAMETERS"] = \
+    DOC_DICT["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    DOC_DICT["PLANAR_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["SYM_PARAMETER"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_PARAMETERS"]
 
-doc_dict["PROFILE_CYLINDER_CLASS_PARAMETERS"] = \
-    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
-    doc_dict["CYLINDER_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_PARAMETERS"]
+DOC_DICT["PROFILE_CYLINDER_CLASS_PARAMETERS"] = \
+    DOC_DICT["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    DOC_DICT["CYLINDER_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_PARAMETERS"]
 
-doc_dict["PROFILE_SPHERE_CLASS_PARAMETERS"] = \
-    doc_dict["ATOMGROUPS_PARAMETER"] + "\n    " + \
-    doc_dict["SPHERE_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_PARAMETERS"]
+DOC_DICT["PROFILE_SPHERE_CLASS_PARAMETERS"] = \
+    DOC_DICT["ATOMGROUPS_PARAMETER"] + "\n    " + \
+    DOC_DICT["SPHERE_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["RADIAL_CLASS_PARAMETERS"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_PARAMETERS"]
 
-doc_dict["CYLINDER_CLASS_ATTRIBUTES"] = doc_dict["RADIAL_CLASS_ATTRIBUTES"]
-doc_dict["SPHERE_CLASS_ATTRIBUTES"] = doc_dict["RADIAL_CLASS_ATTRIBUTES"]
+DOC_DICT["CYLINDER_CLASS_ATTRIBUTES"] = DOC_DICT["RADIAL_CLASS_ATTRIBUTES"]
+DOC_DICT["SPHERE_CLASS_ATTRIBUTES"] = DOC_DICT["RADIAL_CLASS_ATTRIBUTES"]
 
-doc_dict["PROFILE_PLANAR_CLASS_ATTRIBUTES"] = \
-    doc_dict["PLANAR_CLASS_ATTRIBUTES"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+DOC_DICT["PROFILE_PLANAR_CLASS_ATTRIBUTES"] = \
+    DOC_DICT["PLANAR_CLASS_ATTRIBUTES"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_ATTRIBUTES"]
 
-doc_dict["PROFILE_CYLINDER_CLASS_ATTRIBUTES"] = \
-    doc_dict["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+DOC_DICT["PROFILE_CYLINDER_CLASS_ATTRIBUTES"] = \
+    DOC_DICT["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_ATTRIBUTES"]
 
-doc_dict["PROFILE_SPHERE_CLASS_ATTRIBUTES"] = \
-    doc_dict["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
-    doc_dict["PROFILE_CLASS_ATTRIBUTES"]
+DOC_DICT["PROFILE_SPHERE_CLASS_ATTRIBUTES"] = \
+    DOC_DICT["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
+    DOC_DICT["PROFILE_CLASS_ATTRIBUTES"]
 
 
-def _render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
+def _render_docs(func: Callable, doc_dict: dict = DOC_DICT) -> Callable:
     if func.__doc__ is not None:
         for pattern in doc_dict.keys():
             func.__doc__ = func.__doc__.replace(f"${{{pattern}}}",
@@ -353,6 +354,8 @@ def _render_docs(func: Callable, doc_dict: dict = doc_dict) -> Callable:
 
 def render_docs(func: Callable) -> Callable:
     """Replace all template phrases in the functions docstring.
+
+    Keys for the replacement are taken from in :attr:`maicos.lib.util.DOC_DICT`.
 
     Parameters
     ----------
@@ -364,7 +367,7 @@ def render_docs(func: Callable) -> Callable:
     Callable
         callable with replaced phrase
     """
-    return _render_docs(func, doc_dict=doc_dict)
+    return _render_docs(func, doc_dict=DOC_DICT)
 
 
 def charge_neutral(filter):

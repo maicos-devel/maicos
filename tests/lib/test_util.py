@@ -62,10 +62,10 @@ def test_render_docs(doc, new_doc):
     def func():
         pass
 
-    doc_dict = dict(TEST="test", BLA="blu")
+    DOC_DICT = dict(TEST="test", BLA="blu")
 
     func.__doc__ = doc
-    func_decorated = maicos.lib.util._render_docs(func, doc_dict=doc_dict)
+    func_decorated = maicos.lib.util._render_docs(func, doc_dict=DOC_DICT)
     assert func_decorated.__doc__ == new_doc
 
 
