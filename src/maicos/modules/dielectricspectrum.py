@@ -15,7 +15,13 @@ import scipy.constants
 
 from ..core import AnalysisBase
 from ..lib.math import FT, iFT
-from ..lib.util import bin, charge_neutral, citation_reminder, render_docs
+from ..lib.util import (
+    bin,
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -95,10 +101,12 @@ class DielectricSpectrum(AnalysisBase):
                  binafter=20,
                  nobin=False,
                  jitter=0.0):
+        wrap_compound = get_compound(atomgroup)
         super(DielectricSpectrum, self).__init__(atomgroup,
                                                  unwrap=unwrap,
                                                  refgroup=refgroup,
                                                  concfreq=concfreq,
+                                                 wrap_compound=wrap_compound,
                                                  jitter=jitter)
         self.temperature = temperature
         self.output_prefix = output_prefix

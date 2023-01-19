@@ -59,10 +59,12 @@ class DipoleAngle(AnalysisBase):
                  dim=2,
                  output="dipangle.dat",
                  jitter=0.0):
+        self.wrap_compound = get_compound(atomgroup)
         super(DipoleAngle, self).__init__(atomgroup,
                                           refgroup=refgroup,
                                           unwrap=unwrap,
                                           concfreq=concfreq,
+                                          wrap_compound=self.wrap_compound,
                                           jitter=jitter)
         self.dim = dim
         self.output = output
@@ -85,7 +87,7 @@ class DipoleAngle(AnalysisBase):
         chargepos = self.atomgroup.positions * \
             self.atomgroup.charges[:, np.newaxis]
         dipoles = self.atomgroup.accumulate(
-            chargepos, compound=get_compound(self.atomgroup))
+            chargepos, compound=self.wrap_compound)
 
         cos_theta = np.dot(dipoles, self.unit) / \
             np.linalg.norm(dipoles, axis=1)

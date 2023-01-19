@@ -499,7 +499,7 @@ class TestProfileCylinderBase:
         actual = profile.results.profile.flatten()
 
         if grouping == "atoms":
-            desired = [2, 1]
+            desired = [2, 2]
         else:
             desired = [2, 0]
 

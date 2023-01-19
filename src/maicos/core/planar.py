@@ -168,6 +168,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         PlanarBase.__init__(self,
                             atomgroups=atomgroups,
                             multi_group=True,
+                            wrap_compound=grouping,
                             **kwargs)
         # `AnalysisBase` performs conversions on `atomgroups`.
         # Take converted `atomgroups` and not the user provided ones.

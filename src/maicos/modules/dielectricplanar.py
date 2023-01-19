@@ -106,6 +106,11 @@ class DielectricPlanar(PlanarBase):
                  concfreq=0,
                  jitter=0.0,
                  vcutwidth=0.1):
+        if type(atomgroups) not in (list, tuple):
+            wrap_compound = get_compound(atomgroups)
+        else:  # Get wrap_compound based on fist atom group only
+            wrap_compound = get_compound(atomgroups[0])
+
         super(DielectricPlanar, self).__init__(atomgroups=atomgroups,
                                                dim=dim,
                                                zmin=zmin,
@@ -114,6 +119,7 @@ class DielectricPlanar(PlanarBase):
                                                refgroup=refgroup,
                                                unwrap=unwrap,
                                                multi_group=True,
+                                               wrap_compound=wrap_compound,
                                                jitter=jitter)
         self.is_3d = is_3d
         self.sym = sym

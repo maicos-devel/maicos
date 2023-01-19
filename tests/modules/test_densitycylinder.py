@@ -37,8 +37,9 @@ class TestDensityCylinder(ReferenceAtomGroups):
     """Tests for the DensityCylinder class."""
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.561), ('number', 0.093),
-                              ('charge', -6.5e-5)))
+                             (('mass', 0.561),
+                              ('number', 0.095),
+                              ('charge', 0.000609)))
     def test_actual_simulation(self, ag_single_frame, dens_type, mean):
         """
         Test DensityCylinder from a single frame.

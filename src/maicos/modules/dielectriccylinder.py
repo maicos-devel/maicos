@@ -86,6 +86,8 @@ class DielectricCylinder(CylinderBase):
                  zmax=None,
                  vcutwidth=0.1,
                  unwrap=True):
+        self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
+        _, self.inverse_ix = np.unique(ix, return_inverse=True)
         super(DielectricCylinder, self).__init__(atomgroup,
                                                  concfreq=concfreq,
                                                  jitter=jitter,
@@ -96,7 +98,8 @@ class DielectricCylinder(CylinderBase):
                                                  zmax=zmax,
                                                  dim=dim,
                                                  bin_width=bin_width,
-                                                 unwrap=unwrap)
+                                                 unwrap=unwrap,
+                                                 wrap_compound=self.comp)
         self.output_prefix = output_prefix
         self.temperature = temperature
         self.single = single
@@ -104,8 +107,6 @@ class DielectricCylinder(CylinderBase):
 
     def _prepare(self):
         super(DielectricCylinder, self)._prepare()
-        self.comp, ix = get_compound(self.atomgroup.atoms, return_index=True)
-        _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
     def _single_frame(self):
         super(DielectricCylinder, self)._single_frame()
