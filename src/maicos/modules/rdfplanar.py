@@ -92,7 +92,7 @@ class RDFPlanar(PlanarBase):
                  zmin=None,
                  zmax=None,
                  bin_width=1):
-
+        self.comp_1 = get_compound(g1)
         super(RDFPlanar, self).__init__(atomgroups=g1,
                                         refgroup=refgroup,
                                         unwrap=unwrap,
@@ -101,7 +101,8 @@ class RDFPlanar(PlanarBase):
                                         dim=dim,
                                         zmin=zmin,
                                         zmax=zmax,
-                                        bin_width=bin_width)
+                                        bin_width=bin_width,
+                                        wrap_compound=self.comp_1)
 
         self.g1 = g1
         if g2 is None:
@@ -113,6 +114,8 @@ class RDFPlanar(PlanarBase):
         self.dzheight = dzheight
         self.output = output
         self.bin_method = bin_method.lower()
+
+        self.comp_2 = get_compound(self.g2)
 
     def _prepare(self):
         super(RDFPlanar, self)._prepare()
@@ -158,20 +161,14 @@ class RDFPlanar(PlanarBase):
         bin_width = (self.zmax - self.zmin) / self.n_bins
 
         if self.bin_method == 'com':
-            g1_bin_positions = self.g1.center_of_mass(
-                compound=get_compound(self.g1))
-            g2_bin_positions = self.g2.center_of_mass(
-                compound=get_compound(self.g2))
+            g1_bin_positions = self.g1.center_of_mass(compound=self.comp_1)
+            g2_bin_positions = self.g2.center_of_mass(compound=self.comp_2)
         elif self.bin_method == 'coc':
-            g1_bin_positions = self.g1.center_of_charge(
-                compound=get_compound(self.g1))
-            g2_bin_positions = self.g2.center_of_charge(
-                compound=get_compound(self.g2))
+            g1_bin_positions = self.g1.center_of_charge(compound=self.comp_1)
+            g2_bin_positions = self.g2.center_of_charge(compound=self.comp_2)
         elif self.bin_method == 'cog':
-            g1_bin_positions = self.g1.center_of_geometry(
-                compound=get_compound(self.g1))
-            g2_bin_positions = self.g2.center_of_geometry(
-                compound=get_compound(self.g2))
+            g1_bin_positions = self.g1.center_of_geometry(compound=self.comp_1)
+            g2_bin_positions = self.g2.center_of_geometry(compound=self.comp_2)
 
         # Calculate planar rdf per bin by averaging over all atoms in one bin.
         for z_bin in range(0, self.n_bins):

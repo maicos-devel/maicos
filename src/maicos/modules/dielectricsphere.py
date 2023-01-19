@@ -74,6 +74,8 @@ class DielectricSphere(SphereBase):
                  rmin=0,
                  rmax=None,
                  unwrap=True):
+        self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
+        _, self.inverse_ix = np.unique(ix, return_inverse=True)
         super(DielectricSphere, self).__init__(atomgroup,
                                                concfreq=concfreq,
                                                jitter=jitter,
@@ -81,15 +83,14 @@ class DielectricSphere(SphereBase):
                                                rmin=rmin,
                                                rmax=rmax,
                                                bin_width=bin_width,
-                                               unwrap=unwrap)
+                                               unwrap=unwrap,
+                                               wrap_compound=self.comp)
         self.output_prefix = output_prefix
         self.bin_width = bin_width
         self.temperature = temperature
 
     def _prepare(self):
         super(DielectricSphere, self)._prepare()
-        self.comp, ix = get_compound(self.atomgroup.atoms, return_index=True)
-        _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
     def _single_frame(self):
         super(DielectricSphere, self)._single_frame()

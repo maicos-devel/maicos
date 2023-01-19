@@ -238,20 +238,6 @@ class Test_AnalysisBase(object):
                         ag.universe.dimensions[:3] / 2,
                         rtol=1e-01)
 
-    def test_refgroup_no_unwrap(self, ag,):
-        """Test refgroup without unwrap.
-
-        This will lead to a wrong center of mass for a broken molecule.
-        """
-        refgroup = ag.atoms[:3]
-        class_obj = Conclude(ag, refgroup=refgroup, unwrap=False)
-        class_obj.run(stop=1)
-
-        with pytest.raises(AssertionError):
-            assert_allclose(refgroup.center_of_mass(),
-                            ag.universe.dimensions[:3] / 2,
-                            rtol=1e-01)
-
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""
         with pytest.raises(ValueError,
@@ -306,6 +292,17 @@ class Test_AnalysisBase(object):
         ana_obj.run(stop=1)
 
         assert "Using 10 bins." in [rec.message for rec in caplog.records]
+
+    def test_unwrap_atoms(self, ag, caplog):
+        """Test that unwrap is always False for `wrap_compound="atoms"`."""
+        caplog.set_level(logging.WARN)
+        profile = AnalysisBase(ag, unwrap=True, wrap_compound="atoms")
+
+        msgs = [rec.message for rec in caplog.records]
+        # Assume wrap warning is first warning recorded
+        assert "'atoms` is superfluous." in msgs[0]
+
+        assert profile.unwrap is False
 
     def test_jitter(self, ag_single_frame):
         """Test the jitter option.
@@ -370,19 +367,6 @@ class Test_ProfileBase:
             params.update(bin_method="foo")
             ProfileBase(**params)._prepare()
 
-    def test_unwrap_atoms(self, params):
-        """Test that unwrap is always False for grouping wrt to atoms."""
-        params.update(grouping="atoms")
-        profile = ProfileBase(**params)
-
-        profile.unwrap = True
-        profile.n_bins = 1
-        profile.n_atomgroups = 1
-
-        profile._prepare()
-
-        assert profile.unwrap is False
-
     def test_f_kwargs(self, params):
         """Test an extra keyword argument."""
         profile = ProfileBase(**params)
@@ -436,7 +420,10 @@ class Test_ProfileBase:
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["multi_group", "atomgroups", "atomgroup"]
+    ignored_parameters = ["multi_group",
+                          "atomgroups",
+                          "atomgroup",
+                          "wrap_compound"]
 
     @pytest.mark.parametrize("Member",
                              find_cls_members(AnalysisBase, ["maicos"]))

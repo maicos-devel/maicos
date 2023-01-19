@@ -97,9 +97,9 @@ class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the DensityPlanar class."""
 
     @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [3.88510e-1, 1.53800e-3]),
-                              ('number', [8.62072e-2, 2.02710e-4]),
-                              ('charge', [-6.4894e-05, 1.9499e-06])))
+                             (('mass', [3.893e-1, 1.53800e-3]),
+                              ('number', [8.6453e-2, 2.02710e-4]),
+                              ('charge', [1.070817e-20, 1.9499e-06])))
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = DensityPlanar(multiple_ags, dens=dens_type).run()

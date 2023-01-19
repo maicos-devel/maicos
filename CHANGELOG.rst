@@ -15,8 +15,9 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche
 
-- Added missing AnalysisBase parameters to modules
-- created dark and light images and logo
+- More consistent molecule wrapping (!230)
+- Added missing AnalysisBase parameters to modules (!231)
+- created dark and light images and logo (!229)
 
 v0.7.2 (2023/01/09)
 -------------------

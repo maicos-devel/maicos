@@ -472,15 +472,15 @@ class TestProfileSphereBase:
         actual = profile.results.profile.flatten()
 
         if grouping == "atoms":
-            desired = [2, 2]
+            desired = [4, 0]
         else:
-            desired = [1, 1]
+            desired = [2, 0]
 
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("bin_method, desired",
                              [("cog", [np.nan, 1]),
-                              ("com", [1, 1]),
+                              ("com", [1, np.nan]),
                               ("coc", [np.nan, 1])])
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
@@ -494,7 +494,7 @@ class TestProfileSphereBase:
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize("unwrap, desired",
-                             [(False, [1, 1]), (True, [2, 0])])
+                             [(False, [2, 0]), (True, [2, 0])])
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(atomgroups=u_dimers.atoms,

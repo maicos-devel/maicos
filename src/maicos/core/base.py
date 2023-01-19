@@ -24,7 +24,6 @@ from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
     get_cli_input,
-    get_compound,
     render_docs,
     )
 
@@ -55,6 +54,10 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     ${BASE_CLASS_PARAMETERS}
     multi_group : bool
         Analysis is able to work with list of atomgroups
+    wrap_compound : str
+        The group which will be kept together through the wrap processes.
+        Allowed values are: ``'atoms'``, ``'group'``, ``'residues'``,
+        ``'segments'``, ``'molecules'``, or ``'fragments'``.
 
     Attributes
     ----------
@@ -105,6 +108,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                  refgroup=None,
                  unwrap=False,
                  jitter=0.0,
+                 wrap_compound="atoms",
                  concfreq=0):
         if multi_group:
             if type(atomgroups) not in (list, tuple):
@@ -140,6 +144,23 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self.unwrap = unwrap
         self.jitter = jitter
         self.concfreq = concfreq
+        if wrap_compound not in ["atoms",
+                                 "group",
+                                 "residues",
+                                 "segments",
+                                 "molecules",
+                                 "fragments"]:
+            raise ValueError("Unrecognized `wrap_compound` definition "
+                             f"{wrap_compound}: \nPlease use "
+                             "one of 'atoms', 'group', 'residues', "
+                             "'segments', 'molecules', or 'fragments'.")
+        self.wrap_compound = wrap_compound
+
+        if self.unwrap and self.wrap_compound == "atoms":
+            logger.warning("Unwrapping in combination with the "
+                           "`wrap_compound='atoms` is superfluous. "
+                           "`unwrap` will be set to `False`.")
+            self.unwrap = False
 
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
             raise ValueError("The provided `refgroup` does not contain "
@@ -209,14 +230,16 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             # Before we do any coordinate transformation we first unwrap
             # the system to avoid artifacts of later wrapping.
             if self.unwrap:
-                self._universe.atoms.unwrap(
-                    compound=get_compound(self._universe.atoms))
+                self._universe.atoms.unwrap(compound=self.wrap_compound)
             if self.refgroup is not None:
                 com_refgroup = center_cluster(self.refgroup, ref_weights)
                 t = self.box_center - com_refgroup
                 self._universe.atoms.translate(t)
-                self._universe.atoms.wrap(
-                    compound=get_compound(self._universe.atoms))
+
+            # Wrap into the primary unit cell to use all compounds for
+            # the analysis.
+            self._universe.atoms.wrap(compound=self.wrap_compound)
+
             if self.jitter != 0.0:
                 ts.positions += np.random.random(
                     size=(len(ts.positions), 3)) * self.jitter
@@ -391,11 +414,6 @@ class ProfileBase:
         if not hasattr(self, "unwrap"):
             self.unwrap = True
 
-        if self.unwrap and self.grouping == "atoms":
-            logger.warning("Unwrapping in combination with atom grouping "
-                           "is superfluous. `unwrap` will be set to `False`.")
-            self.unwrap = False
-
         bin_methods = ["cog", "com", "coc"]
         if self.bin_method not in bin_methods:
             raise ValueError(f"`{self.bin_method}` is an unknown binning "
@@ -419,7 +437,7 @@ class ProfileBase:
         hist : numpy.ndarray
             histogram
         """
-        raise NotImplementedError("Only implemented in child classes")
+        raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self):
         self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
