@@ -49,7 +49,7 @@ class DensityPlanar(ProfilePlanarBase):
                  bin_method="com",
                  output="density.dat",
                  concfreq=0,
-                 jitter=None):
+                 jitter=0.0):
 
         super(DensityPlanar, self).__init__(
             weighting_function=density_weights,

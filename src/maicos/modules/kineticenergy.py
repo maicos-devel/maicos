@@ -51,8 +51,19 @@ class KineticEnergy(AnalysisBase):
     .. footbibliography::
     """
 
-    def __init__(self, atomgroup, output="ke.dat", refpoint="COM"):
-        super(KineticEnergy, self).__init__(atomgroup)
+    def __init__(self,
+                 atomgroup,
+                 unwrap=False,
+                 refgroup=None,
+                 jitter=0.0,
+                 concfreq=0,
+                 output="ke.dat",
+                 refpoint="COM"):
+        super(KineticEnergy, self).__init__(atomgroup,
+                                            unwrap=unwrap,
+                                            refgroup=refgroup,
+                                            jitter=jitter,
+                                            concfreq=concfreq)
         self.output = output
         self.refpoint = refpoint.lower()
 

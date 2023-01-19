@@ -70,11 +70,13 @@ class DielectricSphere(SphereBase):
                  output_prefix="eps_sph",
                  refgroup=None,
                  concfreq=0,
+                 jitter=0.0,
                  rmin=0,
                  rmax=None,
                  unwrap=True):
         super(DielectricSphere, self).__init__(atomgroup,
                                                concfreq=concfreq,
+                                               jitter=jitter,
                                                refgroup=refgroup,
                                                rmin=rmin,
                                                rmax=rmax,

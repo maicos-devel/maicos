@@ -78,6 +78,7 @@ class DielectricCylinder(CylinderBase):
                  output_prefix="eps_cyl",
                  refgroup=None,
                  concfreq=0,
+                 jitter=0.0,
                  dim=2,
                  rmin=0,
                  rmax=None,
@@ -87,6 +88,7 @@ class DielectricCylinder(CylinderBase):
                  unwrap=True):
         super(DielectricCylinder, self).__init__(atomgroup,
                                                  concfreq=concfreq,
+                                                 jitter=jitter,
                                                  refgroup=refgroup,
                                                  rmin=rmin,
                                                  rmax=rmax,

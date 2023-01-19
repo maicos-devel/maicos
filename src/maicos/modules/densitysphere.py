@@ -46,7 +46,8 @@ class DensitySphere(ProfileSphereBase):
                  unwrap=True,
                  bin_method="com",
                  output="density.dat",
-                 concfreq=0):
+                 concfreq=0,
+                 jitter=0.0):
 
         super(DensitySphere, self).__init__(
             weighting_function=density_weights,
@@ -61,4 +62,5 @@ class DensitySphere(ProfileSphereBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)

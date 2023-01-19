@@ -53,6 +53,7 @@ class VelocityCylinder(ProfileCylinderBase):
                  bin_method="com",
                  output="velocity.dat",
                  concfreq=0,
+                 jitter=0.0,
                  vdim=0,
                  flux=False):
 
@@ -79,4 +80,5 @@ class VelocityCylinder(ProfileCylinderBase):
             unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq)
+            concfreq=concfreq,
+            jitter=jitter)

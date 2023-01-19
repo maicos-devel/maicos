@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-
+import inspect
 import logging
 import os
 import sys
@@ -14,6 +14,7 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
+from mdacli.libcli import find_cls_members
 from MDAnalysis.analysis.base import Results
 from numpy.testing import assert_allclose
 from scipy.signal import find_peaks
@@ -430,3 +431,25 @@ class Test_ProfileBase:
         assert_allclose(profile.results.dprofile[:, 0],
                         res_dens[:, 2],
                         rtol=2)
+
+
+class TestPlanarBaseChilds:
+    """Tests for the AnalayseBase child classes."""
+
+    ignored_parameters = ["multi_group", "atomgroups", "atomgroup"]
+
+    @pytest.mark.parametrize("Member",
+                             find_cls_members(AnalysisBase, ["maicos"]))
+    def test_parameters(self, Member):
+        """Test if AnalysisBase paramaters exist in all modules."""
+        base_sig = inspect.signature(AnalysisBase)
+        mod_sig = inspect.signature(Member)
+
+        for param in base_sig.parameters.values():
+            if param.name in self.ignored_parameters:
+                continue
+
+            try:
+                mod_sig.parameters[param.name]
+            except KeyError:
+                raise KeyError(f"{param.name} is not a parameter of {Member}!")

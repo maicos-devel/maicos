@@ -68,15 +68,21 @@ class Saxs(AnalysisBase):
 
     def __init__(self,
                  atomgroup,
+                 refgroup=None,
+                 unwrap=False,
+                 jitter=0.0,
+                 concfreq=0,
                  nobin=False,
                  startq=0,
                  endq=6,
                  dq=0.005,
                  mintheta=0,
                  maxtheta=180,
-                 output="sq.dat",
-                 concfreq=0):
+                 output="sq.dat",):
         super(Saxs, self).__init__(atomgroup,
+                                   unwrap=unwrap,
+                                   refgroup=refgroup,
+                                   jitter=jitter,
                                    concfreq=concfreq)
         self.nobindata = nobin
         self.startq = startq

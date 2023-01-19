@@ -311,7 +311,7 @@ class TestPlanarBase(object):
 
 
 class TestPlanarBaseChilds:
-    """Tests for the PlanarBaseChilds class."""
+    """Tests for the PlanarBase child classes."""
 
     @pytest.fixture()
     def ag_single_frame(self):

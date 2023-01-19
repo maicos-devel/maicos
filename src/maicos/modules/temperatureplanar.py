@@ -48,7 +48,7 @@ class TemperaturePlanar(ProfilePlanarBase):
                  bin_method="com",
                  output="temperature.dat",
                  concfreq=0,
-                 jitter=None):
+                 jitter=0.0):
 
         if grouping != "atoms":
             raise ValueError("Invalid choice of grouping, must use atoms")

@@ -318,7 +318,7 @@ class TestCylinderBase(object):
 
 
 class TestCylinderBaseChilds:
-    """Tests for the CylindereBaseChilds class."""
+    """Tests for the CylindereBase child classes."""
 
     @pytest.fixture()
     def ag_single_frame(self):

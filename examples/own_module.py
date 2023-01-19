@@ -23,6 +23,7 @@ import logging
 import numpy as np
 
 from maicos.core import AnalysisBase
+from maicos.lib.util import render_docs
 
 
 # %%
@@ -33,16 +34,22 @@ logger = logging.getLogger(__name__)
 
 # %%
 #
-# In the following the example of an analysis class.
+# In the following the example of an analysis class. To to the simular
+# structure of all MAICoS modules we render the paramaters using
+# the :func:`maicos.lib.util.render_docs` decorator. The decorator will
+# replace for keywors like `${ATOMGROUP_PARAMETER}` or
+# `${BASE_CLASS_PARAMETERS}` with the actual docstring as defined in
+# :attr:`maicos.lib.util.DOC_DICT`.
 
 
+@render_docs
 class AnalysisExample(AnalysisBase):
     """Analysis class calcuting the average box volume.
 
     Parameters
     ----------
-    atomgroup : AtomGroup
-       Atomgroup on which the analysis is executed
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     output : str
         Output filename
     temperature : str
@@ -56,9 +63,17 @@ class AnalysisExample(AnalysisBase):
 
     def __init__(self,
                  atomgroup,
+                 unwrap=False,
+                 refgroup=None,
+                 jitter=0.0,
+                 concfreq=0,
                  temperature=300,
                  output="outfile.dat"):
-        super().__init__(atomgroup)
+        super().__init__(atomgroup,
+                         refgroup=refgroup,
+                         unwrap=unwrap,
+                         jitter=jitter,
+                         concfreq=concfreq)
 
         self.temperature = temperature
         self.output = output
