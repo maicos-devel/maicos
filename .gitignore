@@ -1,58 +1,22 @@
 *.so
-/*.egg-info
-*.pyc
-__pycache__
-*.DS_store
-*.npz
-*.dat
-*.npy
-*.xvg
 *.egg-info
-.duecredit.p
-.tox/
-.swp
 *.npz
-*.dat
-*.npy
-*.txt
-*.xvg
 *.lock
+*.dat
 
 # Cython generated files
 _cutil.c
 
 # Unit test / coverage reports
-htmlcov/
 .tox/
-.coverage
 .coverage.*
-.cache
-nosetests.xml
+.coverage
 coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
 
-# Sphinx documentation
-docs/_build/
-docs/html
-docs/latex
-
-# editors and IDEs
-*.sw[a-z]
-*~
-.idea
-.vscode
-
-# Ignore build dir
-/build
-/dist
-
-# Ignore the .DS_Store file in the osx file system
-*.DS_store
-
-# duecredit
-.duecredit.p
+# Ignore build and cache folders
+__pycache__/
+build/
+dist/
 
 # Allow maicos share text files
 !maicos/share/*.dat

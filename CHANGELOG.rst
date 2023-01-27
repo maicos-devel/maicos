@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche
 
+- Cleanup .gitignore (!233)
 - More consistent molecule wrapping (!230)
 - Added missing AnalysisBase parameters to modules (!231)
 - created dark and light images and logo (!229)
