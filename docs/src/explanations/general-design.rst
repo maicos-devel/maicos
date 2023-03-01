@@ -12,7 +12,7 @@ Foundation
 .. image:: ../../static/maicos_core_design.svg
    :alt: UML chart of the MAICoS core classes
 
-MAICoS analysis modules are build on top of stacked :ref:`core_classes` as
+MAICoS analysis modules are built on top of stacked :ref:`core_classes` as
 shown in the UML chart above.
 For spatial dependent analysis, these are split into the geometries:
 
@@ -27,13 +27,13 @@ The foundation for all these classes is
 :class:`maicos.core.base.AnalysisBase`, inherited and extended from
 :class:`MDAnalysis.analysis.base.AnalysisBase`.
 :class:`maicos.core.base.AnalysisBase` takes case of the
-general aspects of each analysis, which will discussed in details below:
+general aspects of each analysis, which will be discussed in detail below:
 
 1. **Atom Selection -**
    MAICoS builds on top of the MDAnalysis Universe and atom selection
    system, therefore all analysis modules work only on subsets
    of the whole simulation. This allows investigating different species components
-   individually, for example splitting solvent and solute contribution to an
+   individually, for example splitting the contributions of solvent and solute to a single
    observable. Moreover, many MAICoS analysis modules
    are able to process several atom selections from
    one simulation within one analysis run by providing a :class:`list` of atom selections.
@@ -42,7 +42,7 @@ general aspects of each analysis, which will discussed in details below:
 
 2. **Translational coordinate transformations and unit cell wrapping -**
    MAICoS works with a reference structure denoted by `refgroup`
-   which center of mass (com) serves as the coordinate origin for
+   which center of mass (com for short) serves as the coordinate origin for
    every analysis. MDAnalysis's cell dimension and coordinates range from
    0 to `L` where
    `L` is the dimension of the simulation box. Therefore, MAICoS defines the
@@ -60,26 +60,26 @@ general aspects of each analysis, which will discussed in details below:
 
    User-provided ranges for spatial analysis are always with respect to the
    `refgroup` and not in absolute box coordinates.
-   For example, a 1-dimensional planar analysis ranging from -2 `(Å)` to 0
+   For example, a 1-dimensional planar analysis ranging from -2 (Å) to 0
    considers atoms on the left half space of the `refgroup`.
 
 3. **Trajectory iteration -**
    Each module implements an initialization, a prepare, a single frame and a conclude
    method. The `AnalysisBase` will perform an analysis that is based on these provided methods.
-   It is possible to provide an initial and final frame as well as a step size, or
-   to analysis individual frames.
+   It is possible to provide an initial and final frame as well as a step size or
+   to analyse individual frames.
 
 4. **Time averaging of observables -**
    For observables that have to be time-averaged,
-   :class:`maicos.core.base.AnalysisBase` provides a Frame dictionary.
-   Each key has to be updated within the `single_frame` method and the mean and
-   the variance of each observables will be provided within a `mean` and a `var`
+   :class:`maicos.core.base.AnalysisBase` provides a frame dictionary.
+   Each key has to be updated within the (private) `_single_frame` method and the mean
+   and the variance of each observable will be provided within a ``mean`` and a ``var``
    dictionary. Each key name within these two dictionaries is the same as within the
    frame dictionary.
 
 5. **On-the-fly output -**
-   MAICoS is able to update analysis results during the analysis. This can be in
-   particular useful for long analysis providing a way to check the correctness
+   MAICoS is able to update analysis results during the analysis. This can be
+   particularly useful for long analysis providing a way to check the correctness
    of analysis parameters during the run.
 
 6. **Correlation time estimation -**
@@ -87,7 +87,7 @@ general aspects of each analysis, which will discussed in details below:
    uncorrelated data. Since users may not know the correlation time within their
    simulation, MAICoS estimates correlation times and warns users if their
    averages are obtained from correlated data. For dielectric analysis, MAICoS
-   uses the total dipole moment perpendicular in the direction of the analysis.
+   uses the total dipole moment perpendicular to the direction of the analysis.
    For other spatial-dependant analysis, the correlation time is estimated
    from the central bin of the refgroup; in the center of the simulation cell.
 
@@ -110,7 +110,7 @@ spatial boundaries, and of the spatial resolution of the analysis.
 A design concept of MAICoS for spatial analysis is that the user
 always provides the spatial resolution
 via the `bin_width` parameter rather than a number of bins. Therefore, the same analysis
-code is easily transferable to different simulation size without additional
+code is easily transferable to different simulation sizes without additional
 considerations about the spatial resolution.
 
 Based on the three geometric base classes, three corresponding
@@ -129,6 +129,6 @@ in :ref:`DensityPlanar`, atomic or molecular velocities as for
 :ref:`VelocityPlanar`, or the dipolar orientations as used by the
 :ref:`DiporderPlanar` class.
 
-More details on each base class are given in the API Documentation. For
+More details on each base class are given in the :ref:`userdoc_api`. For
 detailed information on the physical principles of each module consider
 the following sections.

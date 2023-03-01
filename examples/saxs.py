@@ -7,6 +7,8 @@
 # Released under the GNU Public Licence, v2 or any higher version
 # SPDX-License-Identifier: GPL-2.0-or-later
 """
+.. _howto-saxs:
+
 SAXS
 ====
 
@@ -14,7 +16,8 @@ Small-angle X-ray scattering (SAXS) can be extracted using MAICoS. To
 follow this how-to guide, you should download the
 :download:`topology <../../static/water/water.tpr>`
 and the
-:download:`trajectory <../../static//water/water.trr>` files.
+:download:`trajectory <../../static//water/water.trr>`
+files of the water system.
 
 First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:
 """
@@ -35,7 +38,7 @@ import maicos
 # --------------------
 #
 # Create a :class:`MDAnalysis.core.universe.Universe` and define a
-# group containing only the oxygen atoms, and a group containing only the
+# group containing only the oxygen atoms and a group containing only the
 # hydrogen atoms:
 
 u = mda.Universe('water.tpr', 'water.trr')
@@ -48,8 +51,8 @@ group_H = u.select_atoms('type H*')
 # Extract small angle x-ray scattering (SAXS) intensities
 # -------------------------------------------------------
 #
-# Let us use the :class:`maicos.saxs` class of MAICoS, and apply it to all
-# atoms in the systems:
+# Let us use the :class:`maicos.saxs` class of MAICoS and apply it to all
+# atoms in the system:
 
 saxs = maicos.Saxs(u.atoms).run(stop=30)
 
@@ -82,14 +85,15 @@ print(scat_factor[:10])
 #
 # Plot the structure factors profile using:
 
-fig, ax = plt.subplots()
+fig1, ax1 = plt.subplots()
 
-ax.plot(q_vals, scat_factor)
+ax1.plot(q_vals, scat_factor)
 
-ax.set_xlabel(r"q (1/Å)")
-ax.set_ylabel(r"S(q) (arb. units)")
+ax1.set_xlabel(r"q (1/Å)")
+ax1.set_ylabel(r"S(q) (arb. units)")
 
-fig.show()
+fig1.show()
+
 
 # %%
 #
@@ -109,14 +113,14 @@ saxs_H = maicos.Saxs(group_H).run(stop=30)
 # Note that here we access the results directly from the ``results`` attribute
 # without storing them in individual variables before:
 
-fig, ax = plt.subplots()
+fig2, ax2 = plt.subplots()
 
-ax.plot(q_vals, scat_factor, label="Water")
-ax.plot(saxs_O.results.q, saxs_O.results.scat_factor, label="Oxygen")
-ax.plot(saxs_H.results.q, saxs_H.results.scat_factor, label="Hydrogen")
+ax2.plot(q_vals, scat_factor, label="Water")
+ax2.plot(saxs_O.results.q, saxs_O.results.scat_factor, label="Oxygen")
+ax2.plot(saxs_H.results.q, saxs_H.results.scat_factor, label="Hydrogen")
 
-ax.set_xlabel(r"q (1/Å)")
-ax.set_ylabel(r"S(q) (arb. units)")
-ax.legend()
+ax2.set_xlabel(r"q (1/Å)")
+ax2.set_ylabel(r"S(q) (arb. units)")
+ax2.legend()
 
-fig.show()
+fig2.show()

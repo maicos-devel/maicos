@@ -15,15 +15,15 @@ from ..lib.weights import velocity_weights
 
 @render_docs
 class VelocityPlanar(ProfilePlanarBase):
-    r"""Compute the velocity profile in a cartesian geometry.
+    r"""Velocity profiles in a cartesian geometry.
 
     Reads in coordinates and velocities from a trajectory and calculates a
     velocity :math:`[\mathrm{Å/ps}]` or a flux per unit area
     :math:`[\mathrm{Å^{-2}\,ps^{-1}}]` profile along a given axis.
 
     The ``grouping`` keyword gives you fine control over the velocity profile,
-    e.g., you can choose atomar or molecular velocities.
-    Note, that if the first one is employed for complex compounds, usually a
+    e.g. you can choose atomar or molecular velocities.
+    Note that if the first one is employed for complex compounds, usually a
     contribution corresponding to the vorticity appears in the profile.
 
     Parameters

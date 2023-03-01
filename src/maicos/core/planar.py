@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class PlanarBase(AnalysisBase):
-    r"""Analysis class providing options and attributes for planar system.
+    r"""Analysis class providing options and attributes for a planar system.
 
     Parameters
     ----------

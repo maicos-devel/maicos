@@ -16,7 +16,7 @@ from ..lib.util import get_compound, render_docs
 
 @render_docs
 class KineticEnergy(AnalysisBase):
-    """Calculate the timeseries of energies.
+    """Kinetic energy timeseries.
 
     The kinetic energy function computes the translational and
     rotational kinetic energy with respect to molecular center

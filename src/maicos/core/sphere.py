@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class SphereBase(AnalysisBase):
-    r"""Analysis class providing options and attributes for spherical system.
+    r"""Analysis class providing options and attributes for a spherical system.
 
     Provide the results attribute `r`.
 

@@ -3,8 +3,8 @@
 Reference guides
 ----------------
 
-The reference guides contain details for all the analysis modules,
-and the API documentation give the details on how the
+The reference guides contain details for all the analysis modules. 
+The API documentation gives details on how the
 calculators and additional functions can be used from each language.
 
 .. toctree::

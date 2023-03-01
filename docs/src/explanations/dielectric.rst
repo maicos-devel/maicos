@@ -138,7 +138,7 @@ to derive the perpendicular dielectric profile.
     and leads to a wrong analysis.
 
 The above equation gives us the important relation of 
-:math:`\partial_z \mathbf{D} = 0`, which
+:math:`\partial_z \mathbf{D}_z = 0`, which
 implies that the perpendicular components of the displacement field do not
 vary with :math:`z`. Thus, if we start with the inverse dielectric response,
 defined as
@@ -171,7 +171,7 @@ of a system can be calculated from equilibrium simulations without the need
 to explicitly define an external field in simulations, using a fluctuation
 dissipation theorem. This can be derived by identifying the linear response
 under consideration, in this case the dielectric response to a derivative of
-the expected value of a observable, in this case the polarization density.
+the expected value of an observable, in this case the polarization density.
 The expectation value is calculated using statistical mechanics.
 One can then show
 :footcite:p:`sternCalculationDielectricPermittivity2003`

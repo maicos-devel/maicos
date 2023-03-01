@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module for computing planar dielectric profile."""
+"""Module for computing planar dielectric profiles."""
 
 import logging
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricPlanar(PlanarBase):
-    r"""Calculate planar dielectric profiles.
+    r"""Planar dielectric profiles.
 
     For usage please refer to :ref:`How-to: Dielectric
     constant<howto-dielectric>` and for details on the theory see

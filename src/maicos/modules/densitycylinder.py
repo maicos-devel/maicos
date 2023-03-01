@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DensityCylinder(ProfileCylinderBase):
-    r"""Compute cylindrical partial density profiles.
+    r"""Cylindrical partial density profiles.
 
     ${DENSITY_DESCRIPTION}
 

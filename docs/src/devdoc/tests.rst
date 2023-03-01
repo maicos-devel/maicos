@@ -2,8 +2,8 @@ Testing
 =======
 
 Whenever you add a new feature to the code you should also add a test case.
-Furthermore test cases are also useful if a bug is fixed or anything you think
-worthwhile. Follow the philosophy - the more the better!
+Further test cases are also useful if a bug is fixed or you consider something
+to be worthwhile. Follow the philosophy - the more the better!
 
 Continuous Integration pipeline is based on Tox_.
 So you need to install `tox` first::

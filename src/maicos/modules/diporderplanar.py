@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Module for computing dipolar order parameter."""
+r"""Module for computing dipolar order parameters."""
 
 import logging
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DiporderPlanar(ProfilePlanarBase):
-    r"""Calculate dipolar order parameters.
+    r"""Dipolar order parameters.
 
     Calculations include the projected dipole density
     :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation

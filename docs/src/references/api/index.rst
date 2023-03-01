@@ -1,3 +1,5 @@
+.. _userdoc_api:
+
 API Documentation
 =================
 

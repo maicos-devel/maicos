@@ -13,8 +13,11 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Simon Gravelle, Philip Loche
+Simon Gravelle, Philip Loche, Marc Sauter
 
+- Added description to the ideal chemical potential how-to
+- Added quotation marks to command in tox.ini to account for spaces in paths
+- Fixed some typos and made minor modifications to the documentation
 - Cleanup .gitignore (!233)
 - More consistent molecule wrapping (!230)
 - Added missing AnalysisBase parameters to modules (!231)

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class CylinderBase(PlanarBase):
-    r"""Analysis class providing options and attributes for cylinder system.
+    r"""Analysis class providing options and attributes for a cylinder system.
 
     Provide the results attribute `r`.
 

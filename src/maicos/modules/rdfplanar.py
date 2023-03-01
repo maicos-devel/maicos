@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class RDFPlanar(PlanarBase):
-    r"""Compute slab-wise planar 2D radial distribution functions.
+    r"""Slab-wise planar 2D radial distribution functions.
 
     The radial distribution function :math:`g_\mathrm{2d}(r)` describes the
     spatial correlation between atoms in :math:`g1` and atoms in :math:`g2`.
@@ -43,7 +43,7 @@ class RDFPlanar(PlanarBase):
     As the density to normalise the RDF with is unknown, the output
     is in the dimension of number/volume in 1/Å^3.
 
-    Functionally, RDFPlanar bins all pairwise :math:`g1`-:math:`g2` distances
+    Functionally, RDFPlanar bins all pairwise :math:`g1`-:math:`g2` distances,
     where the z distance is smaller than `dzheight` in a histogram.
 
     Parameters

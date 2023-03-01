@@ -13,7 +13,7 @@ structure factors, or transport properties from trajectories files,
 including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
-MAICoS is a tool for beginners of molecular simulations with no Python
+MAICoS is a tool for beginners of molecular simulations with no prior Python
 experience. For these users MAICoS provides a descriptive command line interface.
 Also experienced users can use the Python API for their day to day analysis or
 use the provided infrastructure to build their own analysis for interfacial
@@ -22,12 +22,12 @@ and confined systems.
 Keep up to date with MAICoS news by following us on Twitter_.
 If you find an issue, you can report it on Gitlab_.
 You can also join the developer team on Discord_
-to discuss possible improvements and usages of MAICoS
+to discuss possible improvements and usages of MAICoS.
 
 .. _`MDAnalysis`: https://www.mdanalysis.org
 .. _`Twitter`: https://twitter.com/maicos_analysis
 .. _`Gitlab`: https://gitlab.com/maicos-devel/maicos
-.. _`Discord`: https://discord.com/channels/869537986977603604
+.. _`Discord`: https://discord.gg/mnrEQWVAed
 
 .. inclusion-readme-intro-end
 
@@ -101,31 +101,31 @@ Currently, MAICoS supports the following analysis modules:
      - Description
 
    * - DensityPlanar
-     - Compute the cartesian partial density profiles
+     - Compute cartesian partial density profiles
    * - DensityCylinder
      - Compute cylindrical partial densitiy profiles
    * - DensitySphere
      - Compute spherical partial density profiles
    * - TemperaturePlanar
-     - Compute temperature profile in a cartesian geometry
+     - Compute temperature profiles in a cartesian geometry
    * - DielectricPlanar
-     - Calculate planar dielectric profiles
+     - Compute planar dielectric profiles
    * - DielectricCylinder
-     - Calculate cylindrical dielectric profiles
+     - Compute cylindrical dielectric profiles
    * - DielectricSphere
-     - Calculating spherical dielectric profiles
+     - Compute spherical dielectric profiles
    * - DielectricSpectrum
      - Compute the linear dielectric spectrum
    * - Saxs
      - Compute small angle X-Ray scattering intensities (SAXS)
    * - DiporderPlanar
-     - Calculate dipolar order parameters
+     - Compute dipolar order parameters
    * - RDFPlanar
      - Compute slab-wise planar 2D radial distribution functions
    * - DipoleAngle
-     - Calculate angle timeseries of dipole moments
+     - Compute angle timeseries of dipole moments
    * - KineticEnergy
-     - Calculate the timeseries of energies
+     - Compute the timeseries of energies
    * - VelocityPlanar
      - Compute the velocity profile in a cartesian geometry
    * - VelocityCylinder

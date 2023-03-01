@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module for computing cylindrical dielectric profile."""
+"""Module for computing cylindrical dielectric profiles."""
 
 import logging
 
@@ -28,11 +28,11 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricCylinder(CylinderBase):
-    r"""Calculate cylindrical dielectric profiles.
+    r"""Cylindrical dielectric profiles.
 
     Components are calculated along the axial (:math:`z`) and radial (:math:`r`)
     direction either with respect to the center of the simulation box or the
-    center of mass of the refgroup if provided. The axial direction is selected
+    center of mass of the refgroup, if provided. The axial direction is selected
     using the ``dim`` parameter.
 
     For usage please refer to :ref:`How-to: Dielectric

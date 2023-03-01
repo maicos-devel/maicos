@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module for computing module for computing dipole angle timeseries."""
+"""Module for computing dipole angle timeseries."""
 
 import numpy as np
 
@@ -16,7 +16,7 @@ from ..lib.util import get_compound, render_docs
 
 @render_docs
 class DipoleAngle(AnalysisBase):
-    r"""Calculate angle timeseries of dipole moments with respect to an axis.
+    r"""Angle timeseries of dipole moments with respect to an axis.
 
     The analysis can be applied to study the orientational dynamics of water
     molecules during an excitation pulse. For more details read
