@@ -4,7 +4,7 @@ Explanations
 ============
 
 This section provides the theory behind some of the most complex analysis
-modules, and explains the general design of MAICoS.
+modules and explains the general design of MAICoS.
 Its purpose is to provide more clarity and understanding of what MAICoS
 is all about.
 

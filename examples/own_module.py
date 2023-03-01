@@ -11,7 +11,7 @@ Writing your own analysis module
 ================================
 
 To write your own analysis module you can use the example given below.
-As all MAICoS modules this inherits from the
+As with all MAICoS modules, this inherits from the
 :class:`maicos.core.base.AnalysisBase` class.
 
 The example will calculate the average box volume and stores the result
@@ -119,7 +119,7 @@ class AnalysisExample(AnalysisBase):
 
 # %%
 #
-# Now run your new module as all the other modules.
+# Now run your new module like all the other modules.
 #
 # Using your modules from the command line
 # ----------------------------------------

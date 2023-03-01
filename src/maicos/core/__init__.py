@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Core modules init file."""
+"""These Modules build the core of other MAICoS modules."""
 
 __all__ = [
     'AnalysisBase',

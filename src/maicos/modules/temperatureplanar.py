@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Planar temperature profile."""
+"""Module for computing planar temperature profiles."""
 
 import logging
 
@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class TemperaturePlanar(ProfilePlanarBase):
-    """Compute temperature profile in a cartesian geometry.
+    """Temperature profiles in a cartesian geometry.
 
-    Currently only atomistic temperature profiles are supported,
-    therefore grouping per molecule, segment, residue, or fragment
+    Currently only atomistic temperature profiles are supported.
+    Therefore grouping per molecule, segment, residue, or fragment
     is not possible.
 
     Parameters

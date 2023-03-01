@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DensitySphere(ProfileSphereBase):
-    r"""Compute spherical partial density profiles.
+    r"""Spherical partial density profiles.
 
     ${DENSITY_DESCRIPTION}
 

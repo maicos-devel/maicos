@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Module for computing planar density profile."""
+"""Module for computing planar density profiles."""
 
 import logging
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class DensityPlanar(ProfilePlanarBase):
-    r"""Compute the cartesian partial density profiles.
+    r"""Cartesian partial density profiles.
 
     ${DENSITY_DESCRIPTION}
 
@@ -33,6 +33,12 @@ class DensityPlanar(ProfilePlanarBase):
     Attributes
     ----------
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+
+    Notes
+    -----
+    Partial mass density profiles can be used to calculate the ideal component
+    of the chemical potential. For details, take a look at the corresponding
+    :ref:`How-to guide<howto-chemical-potential>`.
     """
 
     def __init__(self,

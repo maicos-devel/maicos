@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricSpectrum(AnalysisBase):
-    r"""Compute the linear dielectric spectrum.
+    r"""Linear dielectric spectrum.
 
     This module, given a molecular dynamics trajectory, produces a
     `.txt` file containing the complex dielectric function as a function of

@@ -171,17 +171,17 @@ def bin(a, bins):
 DOC_DICT = dict(
     DENSITY_DESCRIPTION=r"""Calculations are carried out for
     ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or
-    ``charge`` :math:`(\rm e \cdot Å^{-3})` density profiles along a certain
+    ``charge`` :math:`(\rm e \cdot Å^{-3})` density profiles along certain
     cartesian axes ``[x, y, z]`` of the simulation cell. Cell dimensions are
     allowed to fluctuate in time.
 
     For grouping with respect to ``molecules``, ``residues`` etc., the
-    corresponding centers (i.e., center of mass) taking into account periodic
-    boundary conditions are calculated.
+    corresponding centers (i.e., center of mass), taking into account periodic
+    boundary conditions, are calculated.
     For these calculations molecules will be unwrapped/made whole.
     Trajectories containing already whole molecules can be run with
     ``unwrap=False`` to gain a speedup.
-    For grouping with respect to atoms the `unwrap` option is always
+    For grouping with respect to atoms, the `unwrap` option is always
     ignored.""",
     ATOMGROUP_PARAMETER="""atomgroup : AtomGroup
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which
@@ -240,8 +240,8 @@ DOC_DICT = dict(
         the same length as the number of group members.
     normalization : str {'None', 'number', 'volume'}
         The normalization of the profile performed in every frame.
-        If `None` no normalization is performed. If `number` the histogram
-        is divided by the number of occurences in each bin. If `volume` the
+        If `None`, no normalization is performed. If `number`, the histogram
+        is divided by the number of occurences in each bin. If `volume`, the
         profile is divided by the volume of each bin.
     f_kwargs : dict
         Additional parameters for `function`""",
@@ -271,7 +271,7 @@ DOC_DICT = dict(
 
         If ``rmax=None``, the box extension is taken.""",
     SYM_PARAMETER="""sym : bool
-        Symmetrize the profile. Only works in combinations with
+        Symmetrize the profile. Only works in combination with
         ``refgroup``.""",
     PROFILE_CLASS_PARAMETERS="""grouping : str {``'atoms'``, ``'residues'``, ``'segments'``, ``'molecules'``, ``'fragments'``}"""  # noqa
     """

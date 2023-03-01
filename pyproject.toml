@@ -70,7 +70,7 @@ documentation = "https://maicos-devel.gitlab.io/maicos"
 repository = "https://gitlab.com/maicos-devel/maicos"
 changelog = "https://maicos-devel.gitlab.io/maicos/get-started/changelog.html"
 issues = "https://gitlab.com/maicos-devel/maicos/-/issues"
-discord = "https://discord.com/channels/869537986977603604"
+discord = "https://discord.gg/mnrEQWVAed"
 twitter = "https://twitter.com/maicos_analysis"
 
 [project.optional-dependencies]

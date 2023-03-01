@@ -28,13 +28,13 @@ logger = logging.getLogger(__name__)
 @render_docs
 @charge_neutral(filter="error")
 class DielectricSphere(SphereBase):
-    r"""Calculate spherical dielectric profiles.
+    r"""Spherical dielectric profiles.
 
     Components are calculated along the radial (:math:`r`)
     direction either with respect to the center of the simulation box or the
-    center of mass of the refgroup if provided.
+    center of mass of the refgroup, if provided.
 
-    For usage please refer to :ref:`How-to: Dielectric
+    For usage, please refer to :ref:`How-to: Dielectric
     constant<howto-dielectric>` and for details on the theory see
     :ref:`dielectric-explanations`.
 

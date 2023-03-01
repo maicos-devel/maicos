@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Small Angle X-Ray scattering intensities."""
+r"""Module for computing Small Angle X-Ray scattering intensities."""
 
 import logging
 
@@ -24,18 +24,21 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class Saxs(AnalysisBase):
-    """Compute small angle X-Ray scattering intensities (SAXS).
+    r"""Small angle X-Ray scattering intensities (SAXS).
 
     The q vectors are binned by their length using a bin_width given by -dq.
-    Using the -nobin option the raw intensity for each q_{i,j,k} vector
-    is saved using. Note that this only works reliable using constant
+    Using the -nobin option, the raw intensity for each :math:`q_\mathrm{i,j,k}`
+    vector is saved. Note that this only works reliably when using constant
     box vectors! The possible scattering vectors q can be restricted by a
-    miminal and maximal angle with the z-axis. For 0 and 180 all possible
-    vectors are taken into account. For the scattering factor the structure
-    factor is multiplied by a atom type specific form factor based on
-    Cromer-Mann parameters. By using the -sel option atoms can be selected
+    minimal and maximal angle with the z-axis. For 0 and 180, all possible
+    vectors are taken into account. For the scattering factor, the structure
+    factor is multiplied by an atom type specific form factor based on
+    Cromer-Mann parameters. By using the -sel option, atoms can be selected
     for which the profile is calculated. The selection uses the
     MDAnalysis selection commands.
+
+    For an examples on the usage refer to :ref:`How-to: SAXS<howto-saxs>` and
+    for details on the theory see :ref:`saxs-explanations`.
 
     Parameters
     ----------

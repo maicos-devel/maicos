@@ -23,7 +23,7 @@ Dielectric profile calculation
 #
 # Before producing trajectories to calculate dielectric profiles, you will need
 # to consider which information you will need and thus need to print out.
-# The dielectric profiles calculators need unwrapped positions and charges of
+# The dielectric profile calculators need unwrapped positions and charges of
 # **all** charged atoms in the system. Unwrapped refers to the fact that you
 # will need either "repaired" molecules (which in GROMACS ``trjconv`` with the
 # ``-pbc mol`` option can do for you) or you will need to provide topology
@@ -66,9 +66,9 @@ u = mda.Universe('graphene_water.tpr', 'graphene_water.xtc')
 # ``unwrap = False`` keyword.
 #
 # The simulation trajectory that we provide was simulated using Yeh-Berkowitz
-# dipole correction. So we don't to include dipole corrections, because we
+# dipole correction. So we don't want to include dipole corrections, because we
 # assume that our simulation data adequately represents a 2d-periodic system.
-# For Systems that are not 2d-periodic, one should set the ``is_3d`` argument to
+# For systems that are not 2d-periodic, one should set the ``is_3d`` argument to
 # ``True`` to include the dipole correction (see :ref:`dielectric-explanations`
 # or the section on boundary conditions down below).
 #
@@ -86,7 +86,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 # To this end we call the member function
 # :meth:`run <maicos.modules.dielectricplanar.DielectricPlanar.run>`.
 # We may set the ``verbose`` keyword to ``True`` to get additional information
-# such a a progress bar.
+# like a progress bar.
 #
 # Here you also have the chance to set ``start`` and ``stop`` keywords to
 # specify which frames the analysis should start at and where to end.
@@ -95,7 +95,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 analysis_obj.run(step=5)
 
 # %%
-# Here, we use ``step = 5`` to run a fast analysis. You may reducing the
+# Here we use ``step = 5`` to run a fast analysis. You may reduce the
 # ``step`` parameter to gain a higher accuracy.
 # Note that the analysis issues a warning concerning the correlation time of
 # the trajectory, which is automatically calculated as an indication of how far
@@ -106,7 +106,7 @@ analysis_obj.run(step=5)
 #
 # Hence, we will ignore the warning for the purpose of this example. Now we are
 # ready to plot the results. MAICoS provides the outcome of the calculation as
-# sub-attributes of ``results`` attribute of the analysis object.
+# sub-attributes of the ``results`` attribute of the analysis object.
 # The results object contains several attributes that can be accessed
 # directly. For example, the bin positions are stored in the ``bin_pos``
 # attribute, the parallel and perpendicular dielectric profiles in
@@ -140,7 +140,7 @@ ax[0].axhline(1 / 71 - 1, color='black', linestyle='dashed')
 ax[1].axhline(71 - 1, color='black', linestyle='dashed')
 
 fig.tight_layout()
-fig.show()
+plt.show()
 
 # %%
 # A few notes on the results:
@@ -162,7 +162,7 @@ fig.show()
 # Here we only note that the ``is_3d`` flag has to be chosen carefully,
 # depending on if one simulated a truly 3d periodic system or a 2d
 # periodic one. Seldomly, vacuum boundary conditions might have been used
-# for Ewald summations, instead of the more common tin-foil boundary
+# for Ewald summations instead of the more common tin-foil boundary
 # conditions. In this case, the ``vac`` flag should be set to ``True``.
 
 # %%
@@ -212,7 +212,7 @@ u.trajectory.add_transformations(shift_tip4p_lammps)
 # %%
 # Preliminary Output
 # ------------------
-# As the dielectric analysis usually is run for long trajectories, analysis can
+# As the dielectric analysis is usually run for long trajectories, analysis can
 # take a while. Hence, it is useful to get some preliminary output to see how
 # the analysis is progressing. Use the ``concfreq`` keyword to specify how often
 # the analysis should output the current results into data files on the disk.

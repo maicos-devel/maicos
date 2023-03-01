@@ -50,6 +50,7 @@ cache:
   before_script:
     - export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
     - export HOMEBREW_NO_INSTALL_CLEANUP=1
+    - brew unlink python@3.9
     - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
     - python -m pip install -U tox
