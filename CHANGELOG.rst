@@ -19,6 +19,7 @@ Simon Gravelle, Philip Loche
 - More consistent molecule wrapping (!230)
 - Added missing AnalysisBase parameters to modules (!231)
 - created dark and light images and logo (!229)
+- Add explicit `stacklevel` arguments to warnings in the library (!236)
 
 v0.7.2 (2023/01/09)
 -------------------

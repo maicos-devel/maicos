@@ -47,7 +47,8 @@ def correlation_analysis(timeseries):
         return -1
     elif len(timeseries) <= 4:
         warnings.warn("Your trajectory is too short to estimate a correlation "
-                      "time. Use the calculated error estimates with caution.")
+                      "time. Use the calculated error estimates with caution.",
+                      stacklevel=2)
         return -1
 
     corrtime = correlation_time(timeseries)
@@ -56,14 +57,16 @@ def correlation_analysis(timeseries):
         warnings.warn(
             "Your trajectory does not provide sufficient statistics to "
             "estimate a correlation time. Use the calculated error estimates "
-            "with caution.")
+            "with caution.",
+            stacklevel=2)
     if corrtime > 0.5:
         warnings.warn(
             "Your data seems to be correlated with a correlation time which is "
             f"{corrtime + 1:.2f} times larger than your step size. "
             "Consider increasing your step size by a factor of "
             f"{int(np.ceil(2 * corrtime + 1)):d} to get a reasonable error "
-            "estimate.")
+            "estimate.",
+            stacklevel=2)
     return corrtime
 
 
@@ -401,7 +404,7 @@ def charge_neutral(filter):
                             warnings.warn("At least one AtomGroup has free "
                                           "charges. Analysis for systems "
                                           "with free charges could lead to "
-                                          "severe artifacts!")
+                                          "severe artifacts!", stacklevel=1)
 
                     if not np.allclose(group.universe.atoms.total_charge(), 0,
                                        atol=1E-4):
