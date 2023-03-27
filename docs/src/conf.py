@@ -26,13 +26,14 @@ version = importlib.import_module('maicos').__version__
 
 # Add any Sphinx extension module names here, as strings.
 extensions = [
-    'sphinx.ext.autodoc', # import the modules you are documenting
-    "sphinx_gallery.gen_gallery", # Generate rst and notebooks files from python files
-    'sphinx.ext.viewcode', # tries to find the source files where the objects are contained
-    'sphinx.ext.intersphinx', # generate links to the documentation of objects in external projects
-    'sphinx.ext.mathjax', # Render math via JavaScript
-    'sphinx.ext.napoleon', # Support for NumPy and Google style docstrings
-    'sphinxcontrib.bibtex', # Cite references using a bibtex file
+    "sphinx.ext.autodoc",  # import the modules you are documenting
+    "sphinx_gallery.gen_gallery",  # Generate rst and notebooks files from python files
+    "sphinx.ext.viewcode",  # tries to find the source files where the objects are contained
+    "sphinx.ext.intersphinx",  # generate links to the documentation of objects in external projects
+    "sphinx.ext.mathjax",  # Render math via JavaScript
+    "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
+    "sphinxcontrib.bibtex",  # Cite references using a bibtex file
+    "sphinx_toggleprompt",  # button to examples to toggle prompts
 ]
 
 # The path to the bibtex file
@@ -123,9 +124,9 @@ html_theme_options = {
 
 # font-awesome logos
 html_css_files = [
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css',  # noqa: E501
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css',  # noqa: E501
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css',  # noqa: E501
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",  # noqa: E501
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",  # noqa: E501
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",  # noqa: E501
 ]
 
 # -- Options for HTMLHelp output ---------------------------------------------

@@ -95,6 +95,7 @@ docs = [
     "sphinx",
     "sphinx-gallery",
     "sphinxcontrib-bibtex",
+    "sphinx-toggleprompt",
 ]
 
 [project.scripts]
