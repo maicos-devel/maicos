@@ -221,13 +221,13 @@ def new_mean(old_mean, data, length):
     However this requires one to keep all data points on hand until the
     end of the calculation.
 
-    >>> np.mean([1,3,5,7])
+    >>> np.mean([1, 3, 5, 7])
     4.0
 
     Alternatively, one can update an existing mean, this requires only
     knowledge of the total number of samples.
 
-    >>> maicos.utils.new_mean(np.mean([1, 3, 5]), 7, 4)
+    >>> new_mean(np.mean([1, 3, 5]), data=7, length=4)
     4.0
     """
     return ((length - 1) * old_mean + data) / length
@@ -270,15 +270,19 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
 
     Examples
     --------
-    The data set ``[1,5,5,1]`` has a variance of ``4.0``
+    The data set ``[1, 5, 5, 1]`` has a variance of ``4.0``
 
-    >>> np.var([1,5,5,1])
+    >>> np.var([1, 5, 5, 1])
     4.0
 
     Knowing the total number of data points, this operation
     can be performed iteratively.
 
-    >>> maicos.utils.new_variance(np.var([1,5,5]), 1, 4)
+    >>> new_variance(old_variance=np.var([1, 5, 5]),
+    ...              old_mean=np.mean([1, 5, 5]),
+    ...              new_mean=np.mean([1, 5, 5, 1]),
+    ...              data=1,
+    ...              length=4)
     4.0
     """
     S_old = old_variance * (length - 1)
@@ -385,9 +389,9 @@ def symmetrize(m, axis=None, inplace=False):
     >>> A = np.arange(10).astype(float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
-    >>> maicos.utils.symmetrize(A)
+    >>> symmetrize(A)
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> maicos.utils.symmetrize(A, inplace=True)
+    >>> symmetrize(A, inplace=True)
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
     >>> A
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
@@ -398,37 +402,37 @@ def symmetrize(m, axis=None, inplace=False):
     >>> A = np.arange(20).astype(float).reshape(2,10).T
     >>> A
     array([[ 0., 10.],
-        [ 1., 11.],
-        [ 2., 12.],
-        [ 3., 13.],
-        [ 4., 14.],
-        [ 5., 15.],
-        [ 6., 16.],
-        [ 7., 17.],
-        [ 8., 18.],
-        [ 9., 19.]])
-    >>> maicos.utils.symmetrize(A)
+           [ 1., 11.],
+           [ 2., 12.],
+           [ 3., 13.],
+           [ 4., 14.],
+           [ 5., 15.],
+           [ 6., 16.],
+           [ 7., 17.],
+           [ 8., 18.],
+           [ 9., 19.]])
+    >>> symmetrize(A)
     array([[9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5],
-        [9.5, 9.5]])
-    >>> maicos.utils.symmetrize(A, axis=0)
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5],
+           [9.5, 9.5]])
+    >>> symmetrize(A, axis=0)
     array([[ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5],
-        [ 4.5, 14.5]])
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5],
+           [ 4.5, 14.5]])
     """
     if inplace:
         out = m
