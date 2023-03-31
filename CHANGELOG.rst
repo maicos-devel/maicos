@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Bump minimum version of ``tqdm`` to 4.60 (!238)
 - Add prompt toggle to examples (!236)
 - Added description to the ideal chemical potential how-to
 - Added quotation marks to command in tox.ini to account for spaces in paths
