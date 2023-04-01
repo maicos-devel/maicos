@@ -4,7 +4,7 @@ Installation
 ============
 
 Python3_ and a C-compiler are needed to build the
-underlying libraries. Install the package using 
+underlying libraries. Install the package using
 pip_ with:
 
 .. code-block:: bash
@@ -15,7 +15,7 @@ or using conda_:
 
 .. code-block:: bash
 
-    conda install -c conda-forge maicos 
+    conda install -c conda-forge maicos
 
 Alternatively, if you don't have special privileges, install
 the package using the ``--user`` flag:

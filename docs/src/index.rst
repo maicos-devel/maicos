@@ -37,18 +37,19 @@ steps involved in addressing key problems and use-cases in MAICoS.
 Reference guides
 ----------------
 
-The :ref:`userdoc-references` section is for MAICoS intermediate and advanced users,
-it contains technical references and parameter list for each MAICoS modules
-(:ref:`userdoc-how-to`) as well as the APIs. It describes the various functionalities
-provided by MAICoS. You can always refer to this section to learn more about
-classes, functions, modules, and other aspects of MAICoS machinery you may come across.
+The :ref:`userdoc-references` section is for MAICoS intermediate and advanced
+users, it contains technical references and parameter list for each MAICoS
+modules (:ref:`userdoc-how-to`) as well as the APIs. It describes the various
+functionalities provided by MAICoS. You can always refer to this section to
+learn more about classes, functions, modules, and other aspects of MAICoS
+machinery you may come across.
 
 Explanations
 ------------
 
-The :ref:`userdoc-explanations` section discusses key topics and concepts at a fairly high level
-and provides explanations to expand your knowledge of MAICoS. It
-requires at least basic to intermediate knowledge of MAICoS.
+The :ref:`userdoc-explanations` section discusses key topics and concepts at a
+fairly high level and provides explanations to expand your knowledge of MAICoS.
+It requires at least basic to intermediate knowledge of MAICoS.
 
 Developer documentation
 -----------------------

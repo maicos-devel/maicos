@@ -1,6 +1,6 @@
 # CNT-water data
 
-A carbon nanodube with radius 16 Å filled with 810 water molecules. 
+A carbon nanodube with radius 16 Å filled with 810 water molecules.
 The LAMMPS script is available here_.
 
 .. list-table::
@@ -9,7 +9,7 @@ The LAMMPS script is available here_.
 
    * - Property
      - Value
-     
+
    * - Code
      - LAMMPS
    * - Ensemble
@@ -26,5 +26,5 @@ The LAMMPS script is available here_.
      - 6x6x2.2 nm**3
    * - Others
      - ref-T = 300 K
-     
+
 .. _`here`: https://github.com/simongravelle/lammps-input-files/tree/main/interfaces/water-in-cnt

@@ -33,7 +33,7 @@ Structure
 Most of the content of the documentation is written in ``.rst`` files
 located within ``docs/src/``. The content in the :ref:`userdoc-references`
 section is directly generated from the documentation string of the source
-code located in ``src/maicos`` thanks to `Sphinx`_ and `Autodoc`_. 
+code located in ``src/maicos`` thanks to `Sphinx`_ and `Autodoc`_.
 
 After creating a new module, add it to the documentation by modifying
 the `toctree` in the ``docs/src/references/modules/index.rst`` file,

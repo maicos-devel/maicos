@@ -3,7 +3,7 @@
 Reference guides
 ----------------
 
-The reference guides contain details for all the analysis modules. 
+The reference guides contain details for all the analysis modules.
 The API documentation gives details on how the
 calculators and additional functions can be used from each language.
 

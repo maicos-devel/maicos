@@ -14,17 +14,18 @@ case can be written as (in SI units)
    \mathbf{D} = \varepsilon_0 \varepsilon \mathbf{E}
 
 where :math:`\varepsilon_0` is
-the vacuum permittivity, and :math:`\varepsilon` is the dielectric constant 
-of the insulating medium. 
+the vacuum permittivity, and :math:`\varepsilon` is the dielectric constant
+of the insulating medium.
 
 One can relate the dielectric constant of a material to the fluctuations of the
-dipole moment of a sub-sample even without any perturbation by an external field.
-Relations of this sort have been known since the 1930s and follow from the
-fluctuation-dissipation theory :footcite:p:`kirkwoodDielectricPolarizationPolar1939`.
-Depending on the boundary conditions, this equation takes different forms,
-however, the most common boundary conditions of molecular dynamics simulations
-are tin-foil boundary conditions in conjunction with an Ewald-summation type
-approach. In this case, we get for a bulk material
+dipole moment of a sub-sample even without any perturbation by an external
+field. Relations of this sort have been known since the 1930s and follow from
+the fluctuation-dissipation theory
+:footcite:p:`kirkwoodDielectricPolarizationPolar1939`. Depending on the
+boundary conditions, this equation takes different forms, however, the most
+common boundary conditions of molecular dynamics simulations are tin-foil
+boundary conditions in conjunction with an Ewald-summation type approach. In
+this case, we get for a bulk material
 
 .. math::
    \varepsilon = 1 + \frac{\langle M^2 \rangle - \langle M \rangle^2}
@@ -54,31 +55,29 @@ Dielectric Response of Fluids at Interfaces and in Confinement
 
 Electrostatic Theory
 --------------------
-The relationship between the electric field and the dielectric response shown 
-above is only valid for isotropic homogeneous systems, where the properties of the
-material are the same throughout.
-However, there is also a need for calculating the dielectric response of
-anistropic inhomogeneous systems. For instance, fluids confined in a porous
-material are of great importance for many technological processes, such as
-energy storage devices like batteries and capacitors.
-In these devices, a nano-porous electrode is used to increase the surface area
-and improve the capacity of the device.
-Another common example are catalysts, where an increased surface area is used
-to increase the rate of a chemical reaction, and thus porous catalysts are often
-utilized.
+The relationship between the electric field and the dielectric response shown
+above is only valid for isotropic homogeneous systems, where the properties of
+the material are the same throughout. However, there is also a need for
+calculating the dielectric response of anistropic inhomogeneous systems. For
+instance, fluids confined in a porous material are of great importance for many
+technological processes, such as energy storage devices like batteries and
+capacitors. In these devices, a nano-porous electrode is used to increase the
+surface area and improve the capacity of the device. Another common example are
+catalysts, where an increased surface area is used to increase the rate of a
+chemical reaction, and thus porous catalysts are often utilized.
 
-The presence of interfaces alters the dielectric response of the fluid in two ways.
-First, the response is not isotropic anymore, but depends on
-the orientation of the electric field.
-Second, the response varies with the distance from the surface of the porous
-material, i.e., it becomes inhomogeneous.
+The presence of interfaces alters the dielectric response of the fluid in two
+ways. First, the response is not isotropic anymore, but depends on
+the orientation of the electric field. Second, the response varies with the
+distance from the surface of the porous material, i.e., it becomes
+inhomogeneous.
 
 In the following discussion, we will focus on pores with planar symmetry, also
-known as "slit pores" and implemented in 
+known as "slit pores" and implemented in
 :class:`maicos.modules.dielectricplanar.DielectricPlanar`.
 However, similar concepts apply to other types of pore
-geometries, such as ones with cylindrical or spherical symmetries implemented 
-in :class:`maicos.modules.dielectriccylinder.DielectricCylinder` and 
+geometries, such as ones with cylindrical or spherical symmetries implemented
+in :class:`maicos.modules.dielectriccylinder.DielectricCylinder` and
 :class:`maicos.modules.dielectricsphere.DielectricSphere`.
 
 Without loss of generality, we will assume that the pore
@@ -91,14 +90,14 @@ be written as :footcite:p:`bonthuisProfileStaticPermittivity2012`
    D(\mathbf{r}) = \varepsilon_0 \int_V \mathrm{d}^3 r'
                 \varepsilon(\mathbf{r}, \mathbf{r}') E(\mathbf{r}')
 
-where :math:`\varepsilon(\mathbf{r}, \mathbf{r}')` is the dielectric tensor, which
-describes how the dielectric response of the fluid at position :math:`\mathbf{r}`
-is affected by the electric field :math:`E(\mathbf{r}')` throughout the volume
-:math:`V` of the fluid. The convolution integral accounts for the non-local
-influences of the fluid response at other locations.
+where :math:`\varepsilon(\mathbf{r}, \mathbf{r}')` is the dielectric tensor,
+which describes how the dielectric response of the fluid at position
+:math:`\mathbf{r}` is affected by the electric field :math:`E(\mathbf{r}')`
+throughout the volume :math:`V` of the fluid. The convolution integral accounts
+for the non-local influences of the fluid response at other locations.
 
-In planar symmetry, we can simplify the above expression further, because the Maxwell
-relations give
+In planar symmetry, we can simplify the above expression further, because the
+Maxwell relations give
 
 .. math::
      \nabla \times \mathbf{E} = 0
@@ -137,7 +136,7 @@ to derive the perpendicular dielectric profile.
     means that no ions can be included in simulations. This is a common pitfall
     and leads to a wrong analysis.
 
-The above equation gives us the important relation of 
+The above equation gives us the important relation of
 :math:`\partial_z \mathbf{D}_z = 0`, which
 implies that the perpendicular components of the displacement field do not
 vary with :math:`z`. Thus, if we start with the inverse dielectric response,
@@ -180,7 +179,7 @@ One can then show
 dielectric response formalism is given by
 
 .. math::
-     \epsilon_\parallel(z) = 1 + \frac{\langle m_\parallel(z) M_\parallel \rangle 
+     \epsilon_\parallel(z) = 1 + \frac{\langle m_\parallel(z) M_\parallel \rangle
                             - \langle m_\parallel (z) \rangle \langle M \rangle}
                             {\epsilon_0 k_\mathrm{B}T}
 
@@ -194,17 +193,17 @@ for the **parallel** dielectric profile, and
 for the **inverse** perpendicular dielectric profile.
 
 Note that we still need to define how to calculate :math:`m_\parallel(z)`
-and :math:`m_\perp(z)`. 
+and :math:`m_\perp(z)`.
 For the perpendicular polarization density, we have
 :footcite:p:`bonthuisProfileStaticPermittivity2012`
 
 .. math::
      m_\perp (z) = - \int^z _0 \mathrm{d}z' \rho(z').
 
-For the parallel case, we have to derive the lateral component of the polarization
-density as a function of the coordinate :math:`z`.
-This can be done by introducing multiple
-virtual cuts perpendicular to any lateral axis, such as the :math:`x` or :math:`y`
+For the parallel case, we have to derive the lateral component of the
+polarization density as a function of the coordinate :math:`z`.
+This can be done by introducing multiple virtual cuts perpendicular to any
+lateral axis, such as the :math:`x` or :math:`y`
 axis :footcite:p:`bonthuisProfileStaticPermittivity2012`
 :footcite:p:`schlaichWaterDielectricEffects2016`.
 During this step one has to take care to only cut molecules along this
@@ -225,13 +224,12 @@ Boundary Conditions
 The above equations for :math:`\varepsilon _\parallel (z)` and
 :math:`\varepsilon _\perp^{-1} (z)` are derived under 2d periodicity.
 In simulations, this entails using periodic boundary conditions only in
-the :math:`x` and :math:`y` directions.
-In most of the typically employed simulation codes, electrostatics are calculated using a
-Ewald-summation type approach.
-This includes direct Ewald sums or the faster meshed Ewald sums
-(such as P3M, and PME).
-However, in their usual formulation these codes calculate 3d-periodic
-systems and thus do not meet the assumptions of the derivation shown above.
+the :math:`x` and :math:`y` directions. In most of the typically employed
+simulation codes, electrostatics are calculated using a Ewald-summation type
+approach. This includes direct Ewald sums or the faster meshed Ewald sums (such
+as P3M, and PME). However, in their usual formulation these codes calculate
+3d-periodic systems and thus do not meet the assumptions of the derivation
+shown above.
 
 In order to use the above, one can use the 2d Ewald sum or corrections
 thereof, such as the correction of Yeh and Berkovitz
@@ -248,8 +246,8 @@ one gets
 :footcite:p:`schlaichWaterDielectricEffects2016`
 
 .. math::
-         \epsilon_\perp^{-1} (z) = 1 - \frac{\langle m_\perp(z) M_\perp\rangle 
-         - \langle m_\perp(z)\rangle \langle M_\perp \rangle}{\epsilon_0 
+         \epsilon_\perp^{-1} (z) = 1 - \frac{\langle m_\perp(z) M_\perp\rangle
+         - \langle m_\perp(z)\rangle \langle M_\perp \rangle}{\epsilon_0
          k_{\text{B}}T + C_\perp/V},
 
 where :math:`C_\perp = \int \mathrm{d} m_\perp(z)`.
@@ -260,22 +258,21 @@ for vacuum boundary conditions at infinity, which some simulation codes
 also provide.
 
 .. note::
-    The above equation reduces to the correct 2d periodic system if one includes
-    an explicit vacuum layer in the :math:`z` direction of infinite (sufficiently
-    large) size, such that the influence between periodic images over the
-    :math:`z` direction can be approximated as a dipole interaction.
+    The above equation reduces to the correct 2d periodic system if one
+    includes an explicit vacuum layer in the :math:`z` direction of infinite
+    (sufficiently large) size, such that the influence between periodic images
+    over the :math:`z` direction can be approximated as a dipole interaction.
     This approach is analogous to the Yeh and Berkovitz correction
     :footcite:p:`yehEwaldSummationSystems1999` and
-    may be used to calculate the dielectric profiles for physical systems with 2d-
-    symmetry when corrections are not available.
-    In these situations, we recommend to use a padding vacuum layer such that the
-    system is 3x the physical system size in :math:`z` direction.
+    may be used to calculate the dielectric profiles for physical systems with
+    2d-symmetry when corrections are not available. In these situations, we
+    recommend to use a padding vacuum layer such that the system is 3x the
+    physical system size in :math:`z` direction.
 
-    However, there are systems which truly are 3d-periodic, such as stacks of 
-    lipid membranes.
-    In these cases, one has to also use the above formula which includes the dipole
-    corrections, but only simulate the physical system, without a padding vacuum
-    layer.
+    However, there are systems which truly are 3d-periodic, such as stacks of
+    lipid membranes. In these cases, one has to also use the above formula
+    which includes the dipole corrections, but only simulate the physical
+    system, without a padding vacuum layer.
 
 These boundary conditions can be specified using the parameters
 ``is_3d``. If a simulation used vacuum boundary conditions at infinity, one
