@@ -14,10 +14,10 @@ including LAMMPS, GROMACS, CHARMM or NAMD data. MAICoS is open source
 and is released under the GNU general public license v3.0.
 
 MAICoS is a tool for beginners of molecular simulations with no prior Python
-experience. For these users MAICoS provides a descriptive command line interface.
-Also experienced users can use the Python API for their day to day analysis or
-use the provided infrastructure to build their own analysis for interfacial
-and confined systems.
+experience. For these users MAICoS provides a descriptive command line
+interface. Also experienced users can use the Python API for their day to
+day analysis or use the provided infrastructure to build their own
+analysis for interfacial and confined systems.
 
 Keep up to date with MAICoS news by following us on Twitter_.
 If you find an issue, you can report it on Gitlab_.
@@ -41,13 +41,13 @@ package. In a Python environment, type:
 
 .. code-block:: python
 
-	import MDAnalysis as mda
-	import maicos
+  import MDAnalysis as mda
+  import maicos
 
-	u = mda.Universe('conf.gro', 'traj.trr')
-	dplan = maicos.DensityPlanar(u.atoms).run()
+  u = mda.Universe('conf.gro', 'traj.trr')
+  dplan = maicos.DensityPlanar(u.atoms).run()
 
-The density profile can be accessed from ``dplan.results.profile`` and 
+The density profile can be accessed from ``dplan.results.profile`` and
 the position of the bins from ``dplan.results.bin_pos``.
 
 .. _`GROMACS` : https://www.gromacs.org/
@@ -74,12 +74,12 @@ Install maicos using `pip`_ with:
     pip3 install maicos
 
 Alternatively, if you don't have special privileges, install
-the package only for the current using the ``--user`` flag. 
+the package only for the current using the ``--user`` flag.
 Or using conda_ with:
 
 .. code-block:: bash
 
-    conda install -c conda-forge maicos 
+    conda install -c conda-forge maicos
 
 .. _`pip`: https://pypi.org/project/maicos/
 .. _`conda`: https://anaconda.org/conda-forge/maicos

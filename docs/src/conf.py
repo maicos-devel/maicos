@@ -1,40 +1,49 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Configuration file for the Sphinx documentation builder.
+# Copyright (c) 2022 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# This file does only contain a selection of the most common options. For a
-# full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Configuration file for the Sphinx documentation builder.
+
+This file does only contain a selection of the most common options. For a
+full list see the documentation:
+http://www.sphinx-doc.org/en/master/config
+"""
 
 # -- Path setup --------------------------------------------------------------
 
-import importlib
-# To link modules with autodoc
 import os
 import sys
+from datetime import datetime
+
+import maicos
 
 
 sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
-project = 'MAICoS'
-copyright = 'All source code is available under the GNU General Public License v3.0'
-author = importlib.import_module('maicos').__authors__
-version = importlib.import_module('maicos').__version__
+project = "MAICoS"
+author = maicos.__authors__
+version = maicos.__version__
+copyright = f"{datetime.now().date().year}, {author}"
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings.
 extensions = [
     "sphinx.ext.autodoc",  # import the modules you are documenting
-    "sphinx_gallery.gen_gallery",  # Generate rst and notebooks files from python files
-    "sphinx.ext.viewcode",  # tries to find the source files where the objects are contained
-    "sphinx.ext.intersphinx",  # generate links to the documentation of objects in external projects
+    "sphinx_gallery.gen_gallery",  # Generate examples from python files
+    "sphinx.ext.viewcode",  # link to source files from docs
+    "sphinx.ext.intersphinx",  # generate links to in external projects
     "sphinx.ext.mathjax",  # Render math via JavaScript
     "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
     "sphinxcontrib.bibtex",  # Cite references using a bibtex file
     "sphinx_toggleprompt",  # button to examples to toggle prompts
-]
+    ]
 
 # The path to the bibtex file
 bibtex_bibfiles = ['../static/refs.bib']
@@ -43,20 +52,20 @@ bibtex_reference_style = 'author_year'
 
 sphinx_gallery_conf = {
     "filename_pattern": "/*",
-    "ignore_pattern": "maicos_custom_modules\.py",
+    "ignore_pattern": r"maicos_custom_modules\.py",
     "examples_dirs": ["../../examples"],
     "gallery_dirs": ["examples"],
     "min_reported_time": 60,
     # Make the code snippet for rascaline functions clickable
     "reference_url": {"maicos": None},
-}
+    }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-# note: do not add .ipynb when nbspinx is enabled, 
+# note: do not add .ipynb when nbspinx is enabled,
 # otherwise you get the "missing title" error
 source_suffix = ['.rst']
 
@@ -95,7 +104,7 @@ html_title = "    "
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+# html_static_path = ['_static']
 html_static_path = []
 
 # Custom sidebar templates, must be a dictionary that maps document names
@@ -108,8 +117,8 @@ html_static_path = []
 #
 # html_sidebars = {}
 
-#Controls whether the user can navigate the documentation 
-#using the keyboard’s left and right arrows. The default is False.
+# Controls whether the user can navigate the documentation
+# using the keyboard’s left and right arrows. The default is False.
 html_theme_options = {
     "navigation_with_keys": True,
     'footer_icons': [
@@ -118,16 +127,16 @@ html_theme_options = {
             'url': 'https://gitlab.com/maicos-devel/maicos',
             'html': '',
             'class': 'fa-brands fa-gitlab fa-2x',
-        },
-    ],
-}
+            },
+        ],
+    }
 
 # font-awesome logos
 html_css_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",  # noqa: E501
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",  # noqa: E501
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",  # noqa: E501
-]
+    ]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -153,7 +162,7 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
-}
+    }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
@@ -161,7 +170,7 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'MAICoS.tex', 'MAICoS Documentation',
      'see the file AUTHORS for the full list of names', 'manual'),
-]
+    ]
 
 
 # -- Options for manual page output ------------------------------------------
@@ -171,7 +180,7 @@ latex_documents = [
 man_pages = [
     (master_doc, 'maicos', 'MAICoS Documentation',
      [author], 1)
-]
+    ]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -183,7 +192,7 @@ texinfo_documents = [
     (master_doc, 'MAICoS', 'MAICoS Documentation',
      author, 'MAICoS', 'One line description of project.',
      'Miscellaneous'),
-]
+    ]
 
 
 # -- Options for Epub output -------------------------------------------------
@@ -214,4 +223,4 @@ intersphinx_mapping = {
     "MDAnalysis": ('https://docs.mdanalysis.org/stable/', None),
     "numpy": ('https://numpy.org/doc/stable/', None),
     "python": ('https://docs.python.org/3/', None),
-}
+    }

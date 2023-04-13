@@ -32,15 +32,15 @@ general aspects of each analysis, which will be discussed in detail below:
 1. **Atom Selection -**
    MAICoS builds on top of the MDAnalysis Universe and atom selection
    system, therefore all analysis modules work only on subsets
-   of the whole simulation. This allows investigating different species components
-   individually, for example splitting the contributions of solvent and solute to a single
-   observable. Moreover, many MAICoS analysis modules
+   of the whole simulation. This allows investigating different species
+   components individually, for example splitting the contributions of solvent
+   and solute to a single observable. Moreover, many MAICoS analysis modules
    are able to process several atom selections from
-   one simulation within one analysis run by providing a :class:`list` of atom selections.
-   This reduces I/O loads and operations
-   and gains a speed up for the analysis.
+   one simulation within one analysis run by providing a :class:`list` of atom
+   selections. This reduces I/O loads and operations and gains a speed up for
+   the analysis.
 
-2. **Translational coordinate transformations and unit cell wrapping -**
+1. **Translational coordinate transformations and unit cell wrapping -**
    MAICoS works with a reference structure denoted by `refgroup`
    which center of mass (com for short) serves as the coordinate origin for
    every analysis. MDAnalysis's cell dimension and coordinates range from
@@ -50,10 +50,10 @@ general aspects of each analysis, which will be discussed in detail below:
 
    Within each frame of the analysis, the `refgroup`'s com
    is translated to the origin and all coordinates are wrapped into the
-   primary unit cell. Additionally, it is possible to unwrap molecules afterwards
-   since some analysis require whole molecules (e.g. dielectric). With this
-   centering, the investigation of systems that translate over time is made possible,
-   such as for example soft interfaces or moving molecules.
+   primary unit cell. Additionally, it is possible to unwrap molecules
+   afterwards since some analysis require whole molecules (e.g. dielectric).
+   With this centering, the investigation of systems that translate over time
+   is made possible, such as for example soft interfaces or moving molecules.
    However, users are not forced to give a `refgroup`. If no such
    reference structure is given, MAICoS takes the frame specific center
    of the simulation cell as the origin.
@@ -63,26 +63,26 @@ general aspects of each analysis, which will be discussed in detail below:
    For example, a 1-dimensional planar analysis ranging from -2 (Å) to 0
    considers atoms on the left half space of the `refgroup`.
 
-3. **Trajectory iteration -**
-   Each module implements an initialization, a prepare, a single frame and a conclude
-   method. The `AnalysisBase` will perform an analysis that is based on these provided methods.
-   It is possible to provide an initial and final frame as well as a step size or
-   to analyse individual frames.
+2. **Trajectory iteration -**
+   Each module implements an initialization, a prepare, a single frame and a
+   conclude method. The `AnalysisBase` will perform an analysis that is based
+   on these provided methods. It is possible to provide an initial and final
+   frame as well as a step size or to analyse individual frames.
 
-4. **Time averaging of observables -**
+3. **Time averaging of observables -**
    For observables that have to be time-averaged,
    :class:`maicos.core.base.AnalysisBase` provides a frame dictionary.
-   Each key has to be updated within the (private) `_single_frame` method and the mean
-   and the variance of each observable will be provided within a ``mean`` and a ``var``
-   dictionary. Each key name within these two dictionaries is the same as within the
-   frame dictionary.
+   Each key has to be updated within the (private) `_single_frame` method and
+   the mean and the variance of each observable will be provided within a
+   ``mean`` and a ``var`` dictionary. Each key name within these two
+   dictionaries is the same as within the frame dictionary.
 
-5. **On-the-fly output -**
+4. **On-the-fly output -**
    MAICoS is able to update analysis results during the analysis. This can be
-   particularly useful for long analysis providing a way to check the correctness
-   of analysis parameters during the run.
+   particularly useful for long analysis providing a way to check the
+   correctness of analysis parameters during the run.
 
-6. **Correlation time estimation -**
+5. **Correlation time estimation -**
    For the calculation of the mean and the standard deviation, MAICoS assumes
    uncorrelated data. Since users may not know the correlation time within their
    simulation, MAICoS estimates correlation times and warns users if their
@@ -109,9 +109,9 @@ spatial boundaries, and of the spatial resolution of the analysis.
 
 A design concept of MAICoS for spatial analysis is that the user
 always provides the spatial resolution
-via the `bin_width` parameter rather than a number of bins. Therefore, the same analysis
-code is easily transferable to different simulation sizes without additional
-considerations about the spatial resolution.
+via the `bin_width` parameter rather than a number of bins. Therefore, the
+same analysis code is easily transferable to different simulation sizes
+without additional considerations about the spatial resolution.
 
 Based on the three geometric base classes, three corresponding
 high level classes are provided:

@@ -1,0 +1,5 @@
+furo
+sphinx
+sphinx-gallery
+sphinxcontrib-bibtex
+sphinx-toggleprompt

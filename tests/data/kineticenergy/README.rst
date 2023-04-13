@@ -8,7 +8,7 @@ A bulk water liquid sample made of 510 water molecules.
 
    * - Property
      - Value
-     
+
    * - Code
      - GROMACS
    * - Ensemble

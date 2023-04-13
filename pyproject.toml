@@ -75,28 +75,8 @@ discord = "https://discord.gg/mnrEQWVAed"
 twitter = "https://twitter.com/maicos_analysis"
 
 [project.optional-dependencies]
-dev = [
-    "cython",
-]
-tests = [
-    "coverage[toml]",
-    "hypothesis",
-    "MDAnalysisTests",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-docs = [
-    "furo",
-    "ipykernel",
-    "ipywidgets",
+examples = [
     "matplotlib",
-    "nbsphinx",
-    "nbval",
-    "sphinx",
-    "sphinx-gallery",
-    "sphinxcontrib-bibtex",
-    "sphinx-toggleprompt",
 ]
 
 [project.scripts]

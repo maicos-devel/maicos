@@ -1,7 +1,7 @@
 graft docs
 graft src
 
-# If you are encounting problems with .c file use
+# If you are encounter problems with .c file use
 # git update-index --assume-unchanged src/maicos/lib/*.c
 
 include *.rst
