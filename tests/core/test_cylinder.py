@@ -538,3 +538,9 @@ class TestProfileCylinderBase:
             weights=5 * np.ones(p.n_bins))
 
         assert_equal(hist, [0, 10, 0, 0, 10, 0, 0, 10, 0, 0])
+
+    def test_correlation_bin(self, params):
+        """Test that the 0th bin is taken for the analysis."""
+        profile = ProfileCylinderBase(**params).run(stop=1)
+        selected_bin = profile._single_frame()
+        assert selected_bin == profile._obs.profile[0, 0]

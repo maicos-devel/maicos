@@ -35,6 +35,9 @@ class DielectricCylinder(CylinderBase):
     center of mass of the refgroup, if provided. The axial direction is selected
     using the ``dim`` parameter.
 
+    For correlation analysis, the component along the :math:`z` axis is used.
+    ${CORRELATION_INFO}
+
     For usage please refer to :ref:`How-to: Dielectric
     constant<howto-dielectric>` and for details on the theory see
     :ref:`dielectric-explanations`.
@@ -165,6 +168,10 @@ class DielectricCylinder(CylinderBase):
         self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2]
                                ) / (2 * np.pi * self._obs.L)
         self._obs.mM_z = self._obs.m_z * self._obs.M_z
+
+        # Save the total dipole moment in z dierection for correlation
+        # analysis.
+        return self._obs.M_z
 
     def _conclude(self):
         super(DielectricCylinder, self)._conclude()

@@ -15,12 +15,14 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Add return values for correlation analysis to all base classes (!235)
 - Added more linting for rst files (!239)
 - Bump minimum version of ``tqdm`` to 4.60 (!238)
 - Add prompt toggle to examples (!236)
-- Added description to the ideal chemical potential how-to
+- Added description to the ideal chemical potential how-to (!232)
 - Added quotation marks to command in tox.ini to account for spaces in paths
-- Fixed some typos and made minor modifications to the documentation
+  (!232)
+- Fixed some typos and made minor modifications to the documentation (!232)
 - Cleanup .gitignore (!233)
 - More consistent molecule wrapping (!230)
 - Added missing AnalysisBase parameters to modules (!231)

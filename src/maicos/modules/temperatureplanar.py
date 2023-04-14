@@ -26,6 +26,8 @@ class TemperaturePlanar(ProfilePlanarBase):
     Therefore grouping per molecule, segment, residue, or fragment
     is not possible.
 
+    ${CORRELATION_INFO_PLANAR}
+
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}

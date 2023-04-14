@@ -24,6 +24,8 @@ class DensityPlanar(ProfilePlanarBase):
 
     ${DENSITY_DESCRIPTION}
 
+    ${CORRELATION_INFO_PLANAR}
+
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}

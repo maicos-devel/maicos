@@ -117,8 +117,13 @@ def scalar_prod_corr(a, b=None, subtract_mean=False):
     return corr
 
 
-def correlation_time(x_n, method='sokal', c=8, mintime=3):
+def correlation_time(x_n, method="sokal", c=8, mintime=3):
     r"""Compute the integrated correlation time of a timeseries.
+
+    The "sokal" method is based on
+    :footcite:t:`sokalLecture`.
+    The "chodera" method is based on
+    :footcite:t:`choderaWeightedHistogramAnalysis2007`.
 
     Parameters
     ----------
@@ -142,12 +147,17 @@ def correlation_time(x_n, method='sokal', c=8, mintime=3):
     ------
     ValueError
         If method is not one of 'Sokal' or 'Chodera'
+
+    References
+    ----------
+    .. footbibliography::
     """
     corr = correlation(x_n, subtract_mean=True)
 
     if method == 'sokal':
 
-        cutoff = tau = mintime
+        cutoff = mintime
+        tau = mintime
         for cutoff in range(mintime, len(x_n)):
             tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
                          * corr[1:cutoff] / corr[0])

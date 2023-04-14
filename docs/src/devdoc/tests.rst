@@ -29,6 +29,10 @@ specific functionalities, for example:
 ::
 
     tox -e lint  # code style
-    tox -e build  # packaging
+    tox -e py310-build-linux  # packaging
     tox -e docs  # only builds the documentation
-    tox -e tests  # testing
+    tox -e py310-tests  # testing
+
+Where the commands above assume that you are using Python 3.10 and Linux.
+For other Python versions i.e. 3.11 change to `py311`. For MacOs use
+`macos` and for Windows `windows`.

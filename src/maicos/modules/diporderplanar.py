@@ -27,6 +27,8 @@ class DiporderPlanar(ProfilePlanarBase):
     :math:`\cos(θ[z])`, the squared dipole
     orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.
 
+    ${CORRELATION_INFO_PLANAR}
+
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}

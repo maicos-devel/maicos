@@ -296,7 +296,16 @@ DOC_DICT = dict(
     PROFILE_CLASS_ATTRIBUTES="""results.profile : numpy.ndarray
         Calculated profile.
     results.dprofile : numpy.ndarray
-        Estimated profile's uncertainity."""
+        Estimated profile's uncertainity.""",
+    CORRELATION_INFO=r"""For further information on the correlation analysis
+    please refer to :class:`maicos.core.base.AnalysisBase` or the
+    :ref:`general-design` section.""",
+    CORRELATION_INFO_PLANAR=r"""For the correlation analysis the central bin of
+    the 0th's group profile calculated via :math:`n \backslash 2` is used.""",
+    CORRELATION_INFO_CYLINDER="""For the correlation analysis the 0th bin of
+    the 0th's group  profile is used.""",
+    CORRELATION_INFO_SPHERE="""For the correlation analysis the 0th bin of
+    the 0th's group profile is used.""",
     )
 
 # Inherit docstrings
@@ -345,6 +354,10 @@ DOC_DICT["PROFILE_CYLINDER_CLASS_ATTRIBUTES"] = \
 DOC_DICT["PROFILE_SPHERE_CLASS_ATTRIBUTES"] = \
     DOC_DICT["RADIAL_CLASS_ATTRIBUTES"] + "\n    " + \
     DOC_DICT["PROFILE_CLASS_ATTRIBUTES"]
+
+DOC_DICT["CORRELATION_INFO_PLANAR"] += " " + DOC_DICT["CORRELATION_INFO"]
+DOC_DICT["CORRELATION_INFO_CYLINDER"] += " " + DOC_DICT["CORRELATION_INFO"]
+DOC_DICT["CORRELATION_INFO_SPHERE"] += " " + DOC_DICT["CORRELATION_INFO"]
 
 
 def _render_docs(func: Callable, doc_dict: dict = DOC_DICT) -> Callable:
