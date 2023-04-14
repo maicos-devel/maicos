@@ -26,6 +26,8 @@ class VelocityCylinder(ProfileCylinderBase):
     Note that if the first one is employed for complex compounds, usually a
     contribution corresponding to the vorticity appears in the profile.
 
+    ${CORRELATION_INFO_CYLINDER}
+
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}

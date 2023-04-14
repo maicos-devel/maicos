@@ -35,6 +35,10 @@ class DielectricPlanar(PlanarBase):
     constant<howto-dielectric>` and for details on the theory see
     :ref:`dielectric-explanations`.
 
+    For correlation analysis, the norm of the parallel total dipole
+    moment is used.
+    ${CORRELATION_INFO}
+
     Also, please read and cite
     :footcite:t:`schlaichWaterDielectricEffects2016` and Refs.
     :footcite:p:`locheUniversalNonuniversalAspects2020`,
@@ -247,7 +251,9 @@ class DielectricPlanar(PlanarBase):
                 - self._obs.m_par[:, :, i] \
                 * bin_volume
 
-        return self._obs.M_par[0]
+        # Save norm of the total parallel dipole moment for
+        # correlation analysis.
+        return np.linalg.norm(self._obs.M_par)
 
     def _conclude(self):
         super(DielectricPlanar, self)._conclude()

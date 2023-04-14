@@ -158,6 +158,8 @@ class SphereBase(AnalysisBase):
 class ProfileSphereBase(SphereBase, ProfileBase):
     """Base class for computing radial profiles in a spherical geometry.
 
+    ${CORRELATION_INFO_SPHERE}
+
     Parameters
     ----------
     ${PROFILE_CLASS_PARAMETERS_PRIVATE}
@@ -211,6 +213,9 @@ class ProfileSphereBase(SphereBase, ProfileBase):
     def _single_frame(self):
         SphereBase._single_frame(self)
         ProfileBase._single_frame(self)
+
+        # Take the center bin of the zeroth group for correlation analysis.
+        return self._obs.profile[0, 0]
 
     def _conclude(self):
         SphereBase._conclude(self)

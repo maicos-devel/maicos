@@ -24,6 +24,8 @@ class DensityCylinder(ProfileCylinderBase):
 
     ${DENSITY_DESCRIPTION}
 
+    ${CORRELATION_INFO_CYLINDER}
+
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}

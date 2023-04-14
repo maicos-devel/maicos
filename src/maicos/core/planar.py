@@ -143,6 +143,8 @@ class PlanarBase(AnalysisBase):
 class ProfilePlanarBase(PlanarBase, ProfileBase):
     """Base class for computing profiles in a cartesian geometry.
 
+    ${CORRELATION_INFO_CYLINDER}
+
     Parameters
     ----------
     ${PROFILE_CLASS_PARAMETERS_PRIVATE}
@@ -206,6 +208,9 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
     def _single_frame(self):
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
+
+        # Take the center bin of the 0th group for correlation analysis.
+        return self._obs.profile[self.n_bins // 2, 0]
 
     def _conclude(self):
         PlanarBase._conclude(self)

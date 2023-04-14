@@ -526,3 +526,14 @@ class TestProfilePlanarBase:
         params.update(sym=True)
         with pytest.raises(ValueError, match="For symmetrization the"):
             ProfilePlanarBase(**params).run()
+
+    @pytest.mark.parametrize("n_bins", [1, 2, 3])
+    def test_correlation_bin(self, params, u, n_bins):
+        """Test that the center bin is taken for the analysis."""
+        L = u.dimensions[2]
+        params.update(bin_width=L / n_bins)
+
+        profile = ProfilePlanarBase(**params).run(stop=1)
+
+        selected_bin = profile._single_frame()
+        assert selected_bin == profile._obs.profile[n_bins // 2, 0]

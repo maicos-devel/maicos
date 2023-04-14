@@ -41,7 +41,8 @@ the :ref:`userdoc-how-to` section.
 
 To start, let us first import Matplotlib, MDAnalysis and MAICoS
 """
-
+# %%
+#
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 
@@ -49,6 +50,7 @@ import maicos
 
 
 # %%
+#
 # Load Simulation Data
 # ====================
 #
@@ -155,6 +157,38 @@ ax.set_xlabel(r"z coordinate ($\rm Å$)")
 ax.set_ylabel(r"density H2O ($\rm u \cdot Å^{-3}$)")
 
 fig.show()
+
+# %%
+#
+# Uncertainity estimates
+# ----------------------
+#
+# MAICoS estimates the uncertainity for each profile. This uncertainity is
+# stored inside the `dprofile` attribute.
+
+uncertainity = dplan.results.dprofile
+
+# Let us plot the results also showing the uncertainities
+
+fig, ax = plt.subplots()
+
+ax.errorbar(zcoor, dens[:, 0], 5 * uncertainity[:, 0])
+
+ax.set_xlabel(r"z coordinate ($\rm Å$)")
+ax.set_ylabel(r"density H2O ($\rm u \cdot Å^{-3}$)")
+
+fig.show()
+
+# %%
+#
+# For this example we scale the error by 5 to be visible in the plot.
+#
+# The uncertainity estimatation assumes that the trajectory data is
+# uncorraleted. If the correlation time is too high or not reasonably
+# computable a warning occurs that the uncertainity estimatation might be
+# unreasonable.
+
+maicos.DensityPlanar(group_H2O).run(start=10, stop=13, step=1)
 
 # %%
 #

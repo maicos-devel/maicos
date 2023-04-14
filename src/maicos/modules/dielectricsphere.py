@@ -38,7 +38,10 @@ class DielectricSphere(SphereBase):
     constant<howto-dielectric>` and for details on the theory see
     :ref:`dielectric-explanations`.
 
-    Also, please read andcite :footcite:p:`schaafDielectricResponseWater2015`.
+    For correlation analysis, the radial (:math:`r`) component is used.
+    ${CORRELATION_INFO}
+
+    Also, please read and cite :footcite:p:`schaafDielectricResponseWater2015`.
 
     Parameters
     ----------
@@ -117,6 +120,8 @@ class DielectricSphere(SphereBase):
         # Nomenclature consistent with the DielectricPlanar module.
         self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
+
+        return self._obs.M_r
 
     def _conclude(self):
         super(DielectricSphere, self)._conclude()

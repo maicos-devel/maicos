@@ -24,6 +24,8 @@ class DensitySphere(ProfileSphereBase):
 
     ${DENSITY_DESCRIPTION}
 
+    ${CORRELATION_INFO_SPHERE}
+
     Parameters
     ----------
     ${PROFILE_SPHERE_CLASS_PARAMETERS}

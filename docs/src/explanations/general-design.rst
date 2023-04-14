@@ -1,3 +1,5 @@
+.. _general-design:
+
 ==============
 General design
 ==============
@@ -84,12 +86,26 @@ general aspects of each analysis, which will be discussed in detail below:
 
 5. **Correlation time estimation -**
    For the calculation of the mean and the standard deviation, MAICoS assumes
-   uncorrelated data. Since users may not know the correlation time within their
-   simulation, MAICoS estimates correlation times and warns users if their
-   averages are obtained from correlated data. For dielectric analysis, MAICoS
-   uses the total dipole moment perpendicular to the direction of the analysis.
-   For other spatial-dependant analysis, the correlation time is estimated
-   from the central bin of the refgroup; in the center of the simulation cell.
+   uncorrelated data to compute reasonable error estimates. Since users
+   may not know the correlation time within their simulation, MAICoS estimates
+   correlation times for representative observables and warns users if their
+   averages are obtained from correlated data.
+   The correlation analysis gets handled by
+   :class:`maicos.core.base.AnalysisBase`
+   if the `single_frame` method of the used class returns a value to perform the
+   analysis on. You can find general info about which class uses which
+   observable for the analysis below, and more detailed information in the
+   :ref:`userdoc-references`. The correlation time gets calculated using the
+   :func:`correlation time function <maicos.lib.math.correlation_time>`.
+   The generation of warnings for the users gets handled by the
+   :func:`correlation analysis function<maicos.lib.util.correlation_analysis>`.
+
+   For dielectric analysis, MAICoS uses the total dipole moment parallel to the
+   direction of the analysis. For other spatial-dependant analysis, the
+   correlation time is estimated from the central bin of the refgroup; in the
+   center of the simulation cell. This translates to the middle bin of the
+   profile for planar analyses and the first bin for cylindrical or spherical
+   profiles.
 
 --------------------------
 Spatial Dependent Analysis

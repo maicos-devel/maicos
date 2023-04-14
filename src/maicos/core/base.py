@@ -48,6 +48,12 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     All results should be stored as attributes of the
     :class:`MDAnalysis.analysis.base.Results` container.
 
+    During the analysis, the correlation time of an observable can be
+    estimated to ensure that calculated errors are reasonable. For this, the
+    :meth:`_single_frame` method has to return a single :obj:`float`. For
+    details on the computation of the correlation and its further analysis
+    refer to :func:`maicos.lib.util.correlation_analysis`.
+
     Parameters
     ----------
     ${ATOMGROUPS_PARAMETER}
@@ -94,6 +100,9 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     sems : MDAnalysis.analysis.base.Results
         Standard errors of the mean of the observables.
         Keys are the same as :attr:`_obs`
+    corrtime : float
+        The correlation time of the analysed data. For details on how this is
+        calculated see :func:`maicos.lib.util.correlation_analysis`.
 
     Raises
     ------
