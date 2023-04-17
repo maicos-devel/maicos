@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -16,13 +16,15 @@ from maicos.core import AnalysisBase
 
 def main():
     """Execute main CLI entry point."""
-    cli(name="MAICoS",
+    cli(
+        name="MAICoS",
         module_list=["maicos"],
         base_class=AnalysisBase,
         version=__version__,
         description=__doc__,
-        ignore_warnings=True)
+        ignore_warnings=True,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

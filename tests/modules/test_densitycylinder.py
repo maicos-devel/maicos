@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
-"""Tests for the density cylinder module."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the density cylinder module."""
 import os
 import sys
 
@@ -36,10 +36,9 @@ class ReferenceAtomGroups:
 class TestDensityCylinder(ReferenceAtomGroups):
     """Tests for the DensityCylinder class."""
 
-    @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.561),
-                              ('number', 0.095),
-                              ('charge', 0.000609)))
+    @pytest.mark.parametrize(
+        "dens_type, mean", (("mass", 0.561), ("number", 0.095), ("charge", 0.000609))
+    )
     def test_actual_simulation(self, ag_single_frame, dens_type, mean):
         """
         Test DensityCylinder from a single frame.
@@ -47,25 +46,27 @@ class TestDensityCylinder(ReferenceAtomGroups):
         Import a single frame universe and measure the density.
         """
         dens = DensityCylinder(ag_single_frame, dens=dens_type).run()
-        assert_allclose(dens.results.profile.mean(), mean,
-                        atol=1e-4, rtol=1e-2)
+        assert_allclose(dens.results.profile.mean(), mean, atol=1e-4, rtol=1e-2)
 
     def test_regularly_spaced_molecule(self):
         """
         Test VelocityCylinder module using regularly spaced molecules.
 
-        Create a universe with 10 water molecules
-        along a circle of radius equal to 5 Angstroms.
+        Create a universe with 10 water molecules along a circle of radius equal to 5
+        Angstroms.
 
-        Call DensityCylinder module to measure the density,
-        using a bin width of 2, and a grouping per molecule.
+        Call DensityCylinder module to measure the density, using a bin width of 2, and
+        a grouping per molecule.
         """
         n_molecule = 10
         bin_width = 2
-        ag, volume_slices = circle_of_water_molecules(n_molecules=n_molecule,
-                                                      radius=5,
-                                                      bin_width=bin_width)
-        dens = DensityCylinder(ag, bin_width=bin_width,
-                               dens='number', refgroup=ag).run()
-        assert_allclose(dens.results.profile.T[0],
-                        np.array([0, 0, 3 * n_molecule, 0, 0]) / volume_slices)
+        ag, volume_slices = circle_of_water_molecules(
+            n_molecules=n_molecule, radius=5, bin_width=bin_width
+        )
+        dens = DensityCylinder(
+            ag, bin_width=bin_width, dens="number", refgroup=ag
+        ).run()
+        assert_allclose(
+            dens.results.profile.T[0],
+            np.array([0, 0, 3 * n_molecule, 0, 0]) / volume_slices,
+        )

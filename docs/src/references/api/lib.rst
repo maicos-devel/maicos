@@ -1,8 +1,7 @@
 .. _library_functions:
 
-=================
 Library functions
-=================
+#################
 
 .. automodule:: maicos.lib
 

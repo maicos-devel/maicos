@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2023 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 .. _usage-python:
 
@@ -101,10 +101,10 @@ print(f"Total simulation time is {total_time} ps.")
 # 3. the hydrogen atoms (of the water molecules),
 # 4. the Na and Cl atoms (of the wall):
 
-group_H2O = u.select_atoms('type OW HW')
-group_O = u.select_atoms('type OW')
-group_H = u.select_atoms('type HW')
-group_NaCl = u.select_atoms('type SOD CLA')
+group_H2O = u.select_atoms("type OW HW")
+group_O = u.select_atoms("type OW")
+group_H = u.select_atoms("type HW")
+group_NaCl = u.select_atoms("type SOD CLA")
 
 # %%
 #
@@ -204,9 +204,9 @@ maicos.DensityPlanar(group_H2O).run(start=10, stop=13, step=1)
 # * one for the oxygen atoms of the water molecules,
 # * one from the hydrogen atoms:
 
-dplan_smaller_bin = maicos.DensityPlanar([group_O, group_H],
-                                         bin_width=0.5,
-                                         unwrap=False).run()
+dplan_smaller_bin = maicos.DensityPlanar(
+    [group_O, group_H], bin_width=0.5, unwrap=False
+).run()
 
 zcoor_smaller_bin = dplan_smaller_bin.results.bin_pos
 dens_smaller_bin = dplan_smaller_bin.results.profile
@@ -258,10 +258,9 @@ help(maicos.DensityPlanar)
 # :math:`\mathrm{H_2O}`, but this time using the group ``group_H2O`` as a
 # reference for the center of mass:
 
-dplan_centered_H2O = maicos.DensityPlanar(group_H2O,
-                                          bin_width=0.5,
-                                          refgroup=group_H2O,
-                                          unwrap=False)
+dplan_centered_H2O = maicos.DensityPlanar(
+    group_H2O, bin_width=0.5, refgroup=group_H2O, unwrap=False
+)
 dplan_centered_H2O.run()
 zcoor_centered_H2O = dplan_centered_H2O.results.bin_pos
 dens_centered_H2O = dplan_centered_H2O.results.profile
@@ -272,10 +271,9 @@ dens_centered_H2O = dplan_centered_H2O.results.profile
 # but centered with respect to the center of mass of the :math:`\mathrm{H_2O}`
 # group:
 
-dplan_centered_NaCl = maicos.DensityPlanar(group_NaCl,
-                                           bin_width=0.5,
-                                           refgroup=group_H2O,
-                                           unwrap=False)
+dplan_centered_NaCl = maicos.DensityPlanar(
+    group_NaCl, bin_width=0.5, refgroup=group_H2O, unwrap=False
+)
 dplan_centered_NaCl.run()
 zcoor_centered_NaCl = dplan_centered_NaCl.results.bin_pos
 dens_centered_NaCl = dplan_centered_NaCl.results.profile
@@ -327,10 +325,7 @@ dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
 #
 # Let us call the velocity module:
 
-tplan = maicos.VelocityPlanar(group_H2O,
-                              bin_width=0.5,
-                              vdim=0,
-                              flux=False).run()
+tplan = maicos.VelocityPlanar(group_H2O, bin_width=0.5, vdim=0, flux=False).run()
 
 zcoor = tplan.results.bin_pos
 vel = tplan.results.profile
@@ -364,9 +359,9 @@ fig.show()
 # Let us call the :class:`maicos.modules.structure.DiporderPlanar` to extract
 # the average orientation of the water molecules:
 
-mydiporder = maicos.DiporderPlanar(group_H2O,
-                                   refgroup=group_H2O,
-                                   order_parameter="cos_theta").run()
+mydiporder = maicos.DiporderPlanar(
+    group_H2O, refgroup=group_H2O, order_parameter="cos_theta"
+).run()
 
 # %%
 #

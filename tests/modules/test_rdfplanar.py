@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -28,10 +28,24 @@ class TestRDFPlanar(object):
 
     def _molecule_positions(self):
         """Positions of 16 molecules in bcc configuration."""
-        positions = [[0, 0, 0], [10, 0, 0], [0, 10, 0], [10, 10, 0],
-                     [0, 0, 10], [10, 0, 10], [0, 10, 10], [10, 10, 10],
-                     [5, 5, 5], [15, 5, 5], [5, 15, 5], [5, 5, 15],
-                     [5, 15, 15], [15, 5, 15], [15, 15, 5], [15, 15, 15]]
+        positions = [
+            [0, 0, 0],
+            [10, 0, 0],
+            [0, 10, 0],
+            [10, 10, 0],
+            [0, 0, 10],
+            [10, 0, 10],
+            [0, 10, 10],
+            [10, 10, 10],
+            [5, 5, 5],
+            [15, 5, 5],
+            [5, 15, 5],
+            [5, 5, 15],
+            [5, 15, 15],
+            [15, 5, 15],
+            [15, 15, 5],
+            [15, 15, 15],
+        ]
         return positions
 
     @pytest.fixture()
@@ -39,8 +53,7 @@ class TestRDFPlanar(object):
         """Get a test universe with 16 water molecules bcc configuration."""
         fluid = []
         for _n in range(16):
-            fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO,
-                                      topology_format='itp'))
+            fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format="itp"))
 
         for molecule, position in zip(fluid, self._molecule_positions()):
             molecule.atoms.translate(position)
@@ -53,8 +66,15 @@ class TestRDFPlanar(object):
     def run_rdf(self, get_universe, **kwargs):
         """Calculate the water water RDF of evenly spaced water."""
         grp_water = get_universe.select_atoms("resname SOL")
-        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_bin_width=1,
-                              range=(7, 10), dzheight=6, bin_width=20, **kwargs)
+        rdfplanar = RDFPlanar(
+            grp_water,
+            grp_water,
+            rdf_bin_width=1,
+            range=(7, 10),
+            dzheight=6,
+            bin_width=20,
+            **kwargs,
+        )
         rdfplanar.run()
         return rdfplanar
 
@@ -64,8 +84,9 @@ class TestRDFPlanar(object):
         Additionally, set 'g1' and 'g2' to be different atomgroups.
         """
         grpO = get_universe.select_atoms("name OW")
-        rdfplanar = RDFPlanar(grpO[0:2], grpO, rdf_bin_width=1, range=(7, 10),
-                              dzheight=6, bin_width=25)
+        rdfplanar = RDFPlanar(
+            grpO[0:2], grpO, rdf_bin_width=1, range=(7, 10), dzheight=6, bin_width=25
+        )
         rdfplanar.run()
         return rdfplanar
 
@@ -111,9 +132,10 @@ class TestRDFPlanar(object):
     def test_single_atom_com(self, get_universe):
         """Test whether the com of single atoms is correct."""
         rdfplanar = self.run_rdf_OO(get_universe)
-        assert_equal(rdfplanar.g1.center_of_mass(
-                     compound=get_compound(rdfplanar.g1)),
-                     self._molecule_positions()[0:2])
+        assert_equal(
+            rdfplanar.g1.center_of_mass(compound=get_compound(rdfplanar.g1)),
+            self._molecule_positions()[0:2],
+        )
 
     def test_n_g1_total_OO(self, get_universe):
         """Test the number of g1 atoms for OO RDF."""
@@ -136,25 +158,30 @@ class TestRDFPlanar(object):
     def run_rdf_with_bin_method(self, get_universe, bin_method):
         """Run rdf with bin_method and zmax.
 
-        Because  0 < z < 10.1 com has 3 atom layers, but cog only 2
-        rdf counts differ between com and cog.
+        Because  0 < z < 10.1 com has 3 atom layers, but cog only 2 rdf counts differ
+        between com and cog.
         """
         grp_water = get_universe.select_atoms("resname SOL")
         z_dist_OH = 0.95 * np.sin(38 / 180 * np.pi)  # due to water geometry
-        rdfplanar = RDFPlanar(grp_water, grp_water, rdf_bin_width=1,
-                              range=(7, 10), dzheight=2,
-                              zmax=10 + z_dist_OH / 4, bin_width=20,
-                              bin_method=bin_method)
+        rdfplanar = RDFPlanar(
+            grp_water,
+            grp_water,
+            rdf_bin_width=1,
+            range=(7, 10),
+            dzheight=2,
+            zmax=10 + z_dist_OH / 4,
+            bin_width=20,
+            bin_method=bin_method,
+        )
         rdfplanar.run()
         return rdfplanar
 
-    @pytest.mark.parametrize("bin_method, count", [("com", 24),
-                                                   ("coc", 16),
-                                                   ("cog", 16)])
+    @pytest.mark.parametrize(
+        "bin_method, count", [("com", 24), ("coc", 16), ("cog", 16)]
+    )
     def test_bin_method(self, get_universe, bin_method, count):
         """Test bin_methods."""
-        rdfplanar = self.run_rdf_with_bin_method(
-            get_universe, bin_method=bin_method)
+        rdfplanar = self.run_rdf_with_bin_method(get_universe, bin_method=bin_method)
         assert_allclose(rdfplanar.means.count[0], [0, 0, count])
 
     def test_wrong_bin_method(self, get_universe):

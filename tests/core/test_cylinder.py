@@ -1,12 +1,12 @@
-"""Tests for the base modules."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-
+"""Tests for the base modules."""
 import inspect
 import logging
 import os
@@ -32,26 +32,30 @@ from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 class CylinderClass(CylinderBase):
     """Tests for the Planar Base class."""
 
-    def __init__(self,
-                 atomgroups,
-                 pos_arg,
-                 opt_arg="foo",
-                 dim=2,
-                 zmin=None,
-                 zmax=None,
-                 rmin=0,
-                 rmax=None,
-                 bin_width=1,
-                 **kwargs):
-        super(CylinderClass, self).__init__(atomgroups=atomgroups,
-                                            dim=dim,
-                                            zmin=zmin,
-                                            zmax=zmax,
-                                            rmin=rmin,
-                                            rmax=rmax,
-                                            bin_width=bin_width,
-                                            multi_group=True,
-                                            **kwargs)
+    def __init__(
+        self,
+        atomgroups,
+        pos_arg,
+        opt_arg="foo",
+        dim=2,
+        zmin=None,
+        zmax=None,
+        rmin=0,
+        rmax=None,
+        bin_width=1,
+        **kwargs,
+    ):
+        super(CylinderClass, self).__init__(
+            atomgroups=atomgroups,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            rmin=rmin,
+            rmax=rmax,
+            bin_width=bin_width,
+            multi_group=True,
+            **kwargs,
+        )
         self.pos_arg = pos_arg
         self.opt_arg = opt_arg
 
@@ -90,33 +94,32 @@ class TestCylinderBase(object):
 
     def test_wrong_rlims(self, ag):
         """Test wrong r limits."""
-        with pytest.raises(ValueError,
-                           match='can not be smaller'):
+        with pytest.raises(ValueError, match="can not be smaller"):
             cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmax=1, rmin=2)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize('bin_width', (0, -0.5, 'x'))
+    @pytest.mark.parametrize("bin_width", (0, -0.5, "x"))
     def test_wrong_bin_width(self, ag, bin_width):
         """Test bin_width error."""
-        with pytest.raises(ValueError,
-                           match=r'Binwidth must be a.* number.'):
-            cylinder_class_obj = CylinderClass(ag, pos_arg=42,
-                                               bin_width=bin_width)
+        with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
+            cylinder_class_obj = CylinderClass(ag, pos_arg=42, bin_width=bin_width)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize('bin_width', (1, 7.75, 125))
-    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize("bin_width", (1, 7.75, 125))
+    @pytest.mark.parametrize("dim", (0, 1, 2))
     def test_bin_width(self, ag, dim, bin_width):
         """Test bin_width."""
-        cylinder_class_obj = CylinderClass(ag,
-                                           pos_arg=42,
-                                           dim=dim,
-                                           bin_width=bin_width).run()
+        cylinder_class_obj = CylinderClass(
+            ag, pos_arg=42, dim=dim, bin_width=bin_width
+        ).run()
 
-        assert cylinder_class_obj.n_bins == \
-            int(np.ceil(cylinder_class_obj.means.R / bin_width))
-        assert cylinder_class_obj.means.bin_width \
+        assert cylinder_class_obj.n_bins == int(
+            np.ceil(cylinder_class_obj.means.R / bin_width)
+        )
+        assert (
+            cylinder_class_obj.means.bin_width
             == cylinder_class_obj.means.R / cylinder_class_obj.n_bins
+        )
 
     def bindwidth_neg(self, ag):
         """Raise error for negative bin_width."""
@@ -149,10 +152,7 @@ class TestCylinderBase(object):
     def test_rmin(self, ag):
         """Test rmin."""
         bin_width = 2
-        cylinder_class_obj = CylinderClass(ag,
-                                           pos_arg=42,
-                                           rmin=2,
-                                           bin_width=bin_width)
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmin=2, bin_width=bin_width)
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.rmin == 2
@@ -166,10 +166,7 @@ class TestCylinderBase(object):
     def test_rmax(self, ag):
         """Test rmax."""
         bin_width = 2
-        cylinder_class_obj = CylinderClass(ag,
-                                           rmax=6,
-                                           pos_arg=42,
-                                           bin_width=bin_width)
+        cylinder_class_obj = CylinderClass(ag, rmax=6, pos_arg=42, bin_width=bin_width)
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.rmax == 6
@@ -191,11 +188,9 @@ class TestCylinderBase(object):
     def test_rmin_rmax(self, ag):
         """Test rmin rmax."""
         bin_width = 2
-        cylinder_class_obj = CylinderClass(ag,
-                                           rmin=10,
-                                           rmax=20,
-                                           pos_arg=42,
-                                           bin_width=bin_width)
+        cylinder_class_obj = CylinderClass(
+            ag, rmin=10, rmax=20, pos_arg=42, bin_width=bin_width
+        )
         cylinder_class_obj._prepare()
 
         assert cylinder_class_obj.n_bins == (20 - 10) / bin_width
@@ -206,17 +201,17 @@ class TestCylinderBase(object):
         with pytest.raises(ValueError, match="can not be smaller than"):
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize('dim', (0, 1, 2))
-    @pytest.mark.parametrize('bin_width_in', (0.1, .775))
+    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
     def test_bin_pos(self, ag, dim, bin_width_in):
         """Test bin positions."""
-        cylinder_class_obj = CylinderClass(ag, dim=dim,
-                                           bin_width=bin_width_in, pos_arg=42)
+        cylinder_class_obj = CylinderClass(
+            ag, dim=dim, bin_width=bin_width_in, pos_arg=42
+        )
         cylinder_class_obj.run(stop=5)
         rmax = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
 
-        bin_pos = np.linspace(
-            0, rmax, cylinder_class_obj.n_bins, endpoint=False)
+        bin_pos = np.linspace(0, rmax, cylinder_class_obj.n_bins, endpoint=False)
         bin_pos += cylinder_class_obj.means.bin_width / 2
 
         assert_allclose(cylinder_class_obj.results.bin_pos, bin_pos)
@@ -232,9 +227,7 @@ class TestCylinderBase(object):
         """Test correct area and volume of each bin."""
         cylinder_class_obj = CylinderClass(ag, bin_width=1, rmax=3, pos_arg=42)
         cylinder_class_obj.run(stop=5)
-        bin_area = np.pi * np.array([1**2 - 0**2,
-                                     2**2 - 1**2,
-                                     3**2 - 2**2])
+        bin_area = np.pi * np.array([1**2 - 0**2, 2**2 - 1**2, 3**2 - 2**2])
 
         assert_equal(cylinder_class_obj.means.bin_area, bin_area)
 
@@ -250,7 +243,7 @@ class TestCylinderBase(object):
         R = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
         assert cylinder_class_obj.means.R == R
 
-    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize("dim", (0, 1, 2))
     def test_compute_lab_frame_cylinder_default(self, ag, dim):
         """Test lab frame values with default values."""
         cls = CylinderClass(ag, pos_arg=42, dim=dim)
@@ -305,16 +298,14 @@ class TestCylinderBase(object):
         u = ag.universe
 
         cls._prepare()
-        assert_equal(cls.pos_cyl,
-                     cls.transform_positions(u.atoms.positions))
+        assert_equal(cls.pos_cyl, cls.transform_positions(u.atoms.positions))
 
         # Test if _single_frame updates the positions.
         cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()
-        assert_equal(cls.pos_cyl,
-                     cls.transform_positions(u.atoms.positions))
+        assert_equal(cls.pos_cyl, cls.transform_positions(u.atoms.positions))
 
 
 class TestCylinderBaseChilds:
@@ -328,19 +319,17 @@ class TestCylinderBaseChilds:
 
     members = []
     for _, member in inspect.getmembers(maicos):
-        if inspect.isclass(member) and issubclass(member, CylinderBase) \
-                and member is not CylinderBase:
+        if (
+            inspect.isclass(member)
+            and issubclass(member, CylinderBase)
+            and member is not CylinderBase
+        ):
             members.append(member)
 
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(dim=2,
-                      zmin=None,
-                      zmax=None,
-                      rmin=0,
-                      rmax=None,
-                      bin_width=1)
+        params = dict(dim=2, zmin=None, zmax=None, rmin=0, rmax=None, bin_width=1)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = CylinderBase(ag_single_frame, **params).run()
 
@@ -370,11 +359,13 @@ class TestProfileCylinderBase:
         n_atoms = 125
         n_frames = 4_000
 
-        universe = mda.Universe.empty(n_atoms=n_atoms,
-                                      n_residues=n_atoms,
-                                      n_segments=n_atoms,
-                                      atom_resindex=np.arange(n_atoms),
-                                      residue_segindex=np.arange(n_atoms))
+        universe = mda.Universe.empty(
+            n_atoms=n_atoms,
+            n_residues=n_atoms,
+            n_segments=n_atoms,
+            atom_resindex=np.arange(n_atoms),
+            residue_segindex=np.arange(n_atoms),
+        )
 
         for attr in ["charges", "masses"]:
             universe.add_TopologyAttr(attr, values=np.ones(n_atoms))
@@ -392,9 +383,9 @@ class TestProfileCylinderBase:
         coords[:, :, 0] = r_coords * np.cos(phi_coords) + 1
         coords[:, :, 1] = r_coords * np.sin(phi_coords) + 1
 
-        universe.trajectory = get_reader_for(coords)(coords,
-                                                     order='fac',
-                                                     n_atoms=n_atoms)
+        universe.trajectory = get_reader_for(coords)(
+            coords, order="fac", n_atoms=n_atoms
+        )
 
         for ts in universe.trajectory:
             ts.dimensions = np.array([2, 2, 2, 90, 90, 90])
@@ -408,11 +399,13 @@ class TestProfileCylinderBase:
         The first atom of each dimer is in the center of the cylinder the
         second is further out on the x axis.
         """
-        universe = mda.Universe.empty(n_atoms=4,
-                                      n_residues=2,
-                                      n_segments=2,
-                                      atom_resindex=[0, 0, 1, 1],
-                                      residue_segindex=[0, 1])
+        universe = mda.Universe.empty(
+            n_atoms=4,
+            n_residues=2,
+            n_segments=2,
+            atom_resindex=[0, 0, 1, 1],
+            residue_segindex=[0, 1],
+        )
 
         universe.add_TopologyAttr("masses", [1, 0, 1, 0])
         universe.add_TopologyAttr("charges", [1, -1, -1, 1])
@@ -420,12 +413,11 @@ class TestProfileCylinderBase:
         universe.add_TopologyAttr("resids", [0, 1])
         universe.add_TopologyAttr("molnums", [0, 1])
 
-        positions = np.array([[2, 2, 0], [5, 2, 0],
-                              [2, 2, 0], [1, 2, 0]])
+        positions = np.array([[2, 2, 0], [5, 2, 0], [2, 2, 0], [1, 2, 0]])
 
-        universe.trajectory = get_reader_for(positions)(positions,
-                                                        order='fac',
-                                                        n_atoms=4)
+        universe.trajectory = get_reader_for(positions)(
+            positions, order="fac", n_atoms=4
+        )
 
         for ts in universe.trajectory:
             ts.dimensions = np.array([4, 4, 1, 90, 90, 90])
@@ -439,21 +431,23 @@ class TestProfileCylinderBase:
     @pytest.fixture()
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(weighting_function=self.weights,
-                 atomgroups=u.atoms,
-                 normalization="number",
-                 dim=2,
-                 zmin=None,
-                 zmax=None,
-                 rmin=0,
-                 rmax=None,
-                 bin_width=0.1,
-                 refgroup=None,
-                 grouping="atoms",
-                 unwrap=False,
-                 bin_method="com",
-                 concfreq=0,
-                 output="profile.dat")
+        p = dict(
+            weighting_function=self.weights,
+            atomgroups=u.atoms,
+            normalization="number",
+            dim=2,
+            zmin=None,
+            zmax=None,
+            rmin=0,
+            rmax=None,
+            bin_width=0.1,
+            refgroup=None,
+            grouping="atoms",
+            unwrap=False,
+            bin_method="com",
+            concfreq=0,
+            output="profile.dat",
+        )
         return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
@@ -487,14 +481,17 @@ class TestProfileCylinderBase:
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
 
-    @pytest.mark.parametrize("grouping", ["atoms", "segments", "residues",
-                                          "molecules", "fragments"])
+    @pytest.mark.parametrize(
+        "grouping", ["atoms", "segments", "residues", "molecules", "fragments"]
+    )
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      normalization="None",
-                      grouping=grouping)
+        params.update(
+            atomgroups=u_dimers.atoms,
+            bin_width=1,
+            normalization="None",
+            grouping=grouping,
+        )
         profile = ProfileCylinderBase(**params).run()
         actual = profile.results.profile.flatten()
 
@@ -505,17 +502,18 @@ class TestProfileCylinderBase:
 
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("bin_method, desired",
-                             [("cog", [1, 1]),
-                              ("com", [2, 0]),
-                              ("coc", [1, 1])])
+    @pytest.mark.parametrize(
+        "bin_method, desired", [("cog", [1, 1]), ("com", [2, 0]), ("coc", [1, 1])]
+    )
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      bin_method=bin_method,
-                      normalization="none",
-                      grouping="molecules")
+        params.update(
+            atomgroups=u_dimers.atoms,
+            bin_width=1,
+            bin_method=bin_method,
+            normalization="none",
+            grouping="molecules",
+        )
         profile = ProfileCylinderBase(**params).run()
         actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
@@ -525,7 +523,8 @@ class TestProfileCylinderBase:
         p = ProfileCylinderBase(**params)
         p._prepare()
         hist = p._compute_histogram(
-            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None)
+            np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None
+        )
 
         assert_equal(hist, [0, 2, 0, 0, 2, 0, 0, 2, 0, 0])
 
@@ -535,7 +534,8 @@ class TestProfileCylinderBase:
         p._prepare()
         hist = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
-            weights=5 * np.ones(p.n_bins))
+            weights=5 * np.ones(p.n_bins),
+        )
 
         assert_equal(hist, [0, 10, 0, 0, 10, 0, 0, 10, 0, 0])
 

@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
-"""Create a mda analysis universe with few molecules."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""Create a mda analysis universe with few molecules."""
 import os
 import sys
 
@@ -18,19 +18,19 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
-def line_of_water_molecules(n_molecules=1, angle_deg=0,
-                            axis_rotation=(0, 1, 0), myvel=(0, 0, 0)):
+def line_of_water_molecules(
+    n_molecules=1, angle_deg=0, axis_rotation=(0, 1, 0), myvel=(0, 0, 0)
+):
     """
     Create a MDAnalysis universe with regularly spaced molecules.
 
-    The molecules are placed along a line, have an orientation
-    controlled by `angle_deg` and `axis_rotation`. All the molecules
-    have the same velocities `myvel`.
+    The molecules are placed along a line, have an orientation controlled by `angle_deg`
+    and `axis_rotation`. All the molecules have the same velocities `myvel`.
     """
     # import molecule topology
     fluid = []
     for _n in range(n_molecules):
-        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
+        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format="itp"))
 
     # define evenly spaced positions along a line
     positions = []
@@ -64,14 +64,19 @@ def line_of_water_molecules(n_molecules=1, angle_deg=0,
     return u.select_atoms("name OW HW1 HW2")
 
 
-def circle_of_water_molecules(n_molecules=10, angle_deg=0,
-                              axis_rotation=(0, 1, 0), myvel=(0, 0, 0),
-                              radius=5, bin_width=1):
+def circle_of_water_molecules(
+    n_molecules=10,
+    angle_deg=0,
+    axis_rotation=(0, 1, 0),
+    myvel=(0, 0, 0),
+    radius=5,
+    bin_width=1,
+):
     """
     Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
 
-    Molecules are placed on a circle of radius `radius` around the box center.
-    The box dimensions are set to 20x20x20. The radius must be smaller than 10!
+    Molecules are placed on a circle of radius `radius` around the box center. The box
+    dimensions are set to 20x20x20. The radius must be smaller than 10!
     """
     if radius > 10:
         raise ValueError("radius has to be smaller than 10")
@@ -79,7 +84,7 @@ def circle_of_water_molecules(n_molecules=10, angle_deg=0,
     # import molecule topology
     fluid = []
     for _n in range(n_molecules):
-        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp'))
+        fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format="itp"))
 
     # define evenly spaced positions along a circle
     positions = []
@@ -121,6 +126,6 @@ def circle_of_water_molecules(n_molecules=10, angle_deg=0,
     L = zmax - zmin
     n_bins = np.int32((rmax - rmin) / bin_width)
     bin_edges = np.linspace(rmin, rmax, n_bins + 1)
-    bin_area = np.pi * np.diff(bin_edges ** 2)
+    bin_area = np.pi * np.diff(bin_edges**2)
     volume = bin_area * L
     return u.select_atoms("name OW HW1 HW2"), volume

@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -55,30 +55,34 @@ class TestDipoleAngle(ReferenceAtomGroups):
             saved_data = np.loadtxt("dipangle.dat")
             assert_allclose(saved_data[1], -0.0821, rtol=1e-3)
 
-    @pytest.mark.parametrize('angle', (0, 30, 60, 90, 180, 272.15))
+    @pytest.mark.parametrize("angle", (0, 30, 60, 90, 180, 272.15))
     def test_orientation_single_molecule_cos(self, angle):
-        """
-        Test DipoleAngle module on a single molecule.
+        """Test DipoleAngle module on a single molecule.
 
-        Create a universe with one single water molecule
-        with a given orientation 'angle' (in degree).
+        Create a universe with one single water molecule with a given orientation
+        'angle' (in degree).
 
         The expected result is cos(angle).
         """
         ag = line_of_water_molecules(angle_deg=angle)
-        assert_almost_equal(DipoleAngle(ag).run().results.cos_theta_i,
-                            np.cos(np.radians(angle)), decimal=3)
+        assert_almost_equal(
+            DipoleAngle(ag).run().results.cos_theta_i,
+            np.cos(np.radians(angle)),
+            decimal=3,
+        )
 
-    @pytest.mark.parametrize('angle', (0, 30, 60, 90, 180, 272.15))
+    @pytest.mark.parametrize("angle", (0, 30, 60, 90, 180, 272.15))
     def test_orientation_single_molecule_cos2(self, angle):
-        """
-        Test DipoleAngle module on a single molecule.
+        """Test DipoleAngle module on a single molecule.
 
-        Create a universe with one single water molecule
-        with a given orientation 'angle' (in degree).
+        Create a universe with one single water molecule with a given orientation
+        'angle' (in degree).
 
         The expected result is cos(angle)**2.
         """
         ag = line_of_water_molecules(angle_deg=angle)
-        assert_almost_equal(DipoleAngle(ag).run().results.cos_theta_ii,
-                            np.cos(np.radians(angle))**2, decimal=3)
+        assert_almost_equal(
+            DipoleAngle(ag).run().results.cos_theta_ii,
+            np.cos(np.radians(angle)) ** 2,
+            decimal=3,
+        )

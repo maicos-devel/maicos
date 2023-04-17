@@ -6,8 +6,8 @@ The rules for MAICoS' CHANGELOG file:
 - entries are sorted newest-first.
 - summarize sets of changes (don't reproduce every git log comment here).
 - don't ever delete anything.
-- keep the format consistent (79 char width, Y/M/D date format) and do not
-  use tabs but use spaces for formatting
+- keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
+  use spaces for formatting
 
 .. inclusion-marker-changelog-start
 
@@ -15,13 +15,13 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Use ``black`` formatter and `88` chars/line for the code and rst files (!240)
 - Add return values for correlation analysis to all base classes (!235)
 - Added more linting for rst files (!239)
 - Bump minimum version of ``tqdm`` to 4.60 (!238)
 - Add prompt toggle to examples (!236)
 - Added description to the ideal chemical potential how-to (!232)
-- Added quotation marks to command in tox.ini to account for spaces in paths
-  (!232)
+- Added quotation marks to command in tox.ini to account for spaces in paths (!232)
 - Fixed some typos and made minor modifications to the documentation (!232)
 - Cleanup .gitignore (!233)
 - More consistent molecule wrapping (!230)
@@ -35,8 +35,8 @@ v0.7.2 (2023/01/09)
 Philip Loche, Henrik Jaeger
 
 - Remove superfluous group wise wrapping (!225)
-- Clarify unclear definition in Dieletric modules that could lead to wrong
-  results (!228)
+- Clarify unclear definition in Dieletric modules that could lead to wrong results
+  (!228)
 - Fixed windows string manipulation in test CI (!227)
 - Added coverage posting on GitLab (!226)
 - Corrected wrong comparison in correlation analysis and added tests
@@ -52,21 +52,20 @@ Henrik Jaeger
 
 v0.7 (2022/12/27)
 -----------------
-Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer,
-Alexander Schlaich, Philipp Staerk
+Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer, Alexander
+Schlaich, Philipp Staerk
 
 - Added MacOS pipeline, fixed wheels (!218)
 - Fix CHANGELOG testing (!220)
 - Added dielectric how-to (!208)
-- Raise an error if ``unwrap=False`` and ``refgroup != None`` in dielectric
-  modules (!215).
+- Raise an error if ``unwrap=False`` and ``refgroup != None`` in dielectric modules
+  (!215).
 - Fix velocity profiles (!211)
 - Added the Theory to the Dielectric docs (!201)
 - Add a logger info for citations (!205)
 - Rename Diporder to DiporderPlanar (!202)
-- Change default behavior of DielectricPlanar: assume slab geometry by default
-  (removing the ``xy`` flag and instead introduce ``is_3d`` for 3d-periodic
-  systems) (!202)
+- Change default behavior of DielectricPlanar: assume slab geometry by default (removing
+  the ``xy`` flag and instead introduce ``is_3d`` for 3d-periodic systems) (!202)
 - Rename ``profile_mean`` to ``profile`` (!202)
 - Major improvements on the documentation (!202)
 - Add a check if the CHANGELOG.rst has been updated (!198)
@@ -104,8 +103,8 @@ Alexander Schlaich, Philipp Staerk
 - ``get_compound``: option for returning indices of topology attributes
 - Added Tutorial for non-spatial analysis module (!170)
 - Check atomgroups if they contain any atoms (!172)
-- New core attributes: ``bin_edges``, ``bin_area``, ``bin_volume``, ``bin_pos``
-  & ``bin_width`` (!167)
+- New core attributes: ``bin_edges``, ``bin_area``, ``bin_volume``, ``bin_pos`` &
+  ``bin_width`` (!167)
 - Use ``frame`` dict in ``structure.py`` (!169)
 - Fix box dimensions for cylindrical boundaries (!168)
 - ``rmax`` for cylindrical systems now uses correct dimensions
@@ -126,8 +125,8 @@ Henrik Jaeger
 
 v0.6 (2022/09/01)
 -----------------
-Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger,
-Alexander Schlaich, Maximilian Becker, Kira Fischer
+Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger, Alexander Schlaich,
+Maximilian Becker, Kira Fischer
 
 - Write total epsilon as defined in paper (!155)
 - Introduce generic header (!149)
@@ -187,22 +186,21 @@ Philip Loche, Srihas Velpuri, Simon Gravelle
 - Corrected README for pypi (!83)
 - Use Results class for attributes and improved docs (!81)
 - Bump minimum Python version to 3.7 (!80)
-- Remove spaghetti code in ``__main__.py`` and introduce ``mdacli`` as
-  cli server library. (!80)
-- Remove ``SingleGroupAnalysisBase`` and ``MultiGroupAnalysisBase`` classes in
-  favour of a unified ``AnalysisBase`` class (!80)
+- Remove spaghetti code in ``__main__.py`` and introduce ``mdacli`` as cli server
+  library. (!80)
+- Remove ``SingleGroupAnalysisBase`` and ``MultiGroupAnalysisBase`` classes in favour of
+  a unified ``AnalysisBase`` class (!80)
 - Change ``planar_base`` decorator to a ``PlanarBase`` class (!80)
-- Rename modules to be consistent with PEP8
-  (``density_planar`` -> ``DensityPlanar``) (!80)
+- Rename modules to be consistent with PEP8 (``density_planar`` -> ``DensityPlanar``)
+  (!80)
 - Use Numpy's docstyle for doc formatting (!80)
 - Use Python's powerful logger library instead of bare ``print`` (!80)
 - Use Python 3.6 string formatting (!80)
-- Remove ``_calculate_results`` methods. This method is covered by the
-  ``_conclude`` method. (!80)
+- Remove ``_calculate_results`` methods. This method is covered by the ``_conclude``
+  method. (!80)
 - Make results saving a public function (save) (!80)
 - Added docstring Decorator for ``PlanarDocstring`` and ``verbose`` option (!80)
-- Use ``MDAnalysis``'s' ``center_of_mass`` function for center of
-  mass shifting (!80)
+- Use ``MDAnalysis``'s' ``center_of_mass`` function for center of mass shifting (!80)
 
 v0.4.1 (2021/12/17)
 -------------------
@@ -213,14 +211,14 @@ Philip Loche
 v0.4 (2021/12/13)
 -----------------
 
-Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger,
-Srihas Velpuri, Maximilian Becker
+Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger, Srihas Velpuri, Maximilian
+Becker
 
 - Restructure docs and build docs for develop and release version
 - Include README files into sphinx doc
 - Add tutorial for density_cylinder module
-- Add ``planar_base`` decorator unifying the syntax for planar analysis modules
-  as ``denisty_planar``, ``epsilon_planar`` and ``diporder`` (!48)
+- Add ``planar_base`` decorator unifying the syntax for planar analysis modules as
+  ``denisty_planar``, ``epsilon_planar`` and ``diporder`` (!48)
 - Corrected time_series module and created a test for it
 - Added support for Python 3.9
 - Created sphinx documentation
@@ -231,8 +229,8 @@ Srihas Velpuri, Maximilian Becker
 - Add docs for timeseries modulees (!72)
 - Fixed diporder does not compute the right quantities (#55, !75)
 - Added support of calculating the chemical potentials for multiple atomgroups.
-- Changed the codes behaviour of calculating the chemical potential if
-  atomgroups contain multiple residues.
+- Changed the codes behaviour of calculating the chemical potential if atomgroups
+  contain multiple residues.
 
 v0.3 (2020/03/03)
 -----------------

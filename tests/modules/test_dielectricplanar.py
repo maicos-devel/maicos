@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -25,17 +25,15 @@ from data import (  # noqa: E402
     WATER_2F_TRR,
     WATER_TPR,
     WATER_TRR,
-    )
+)
 
 
 def dipoles(positions, orientations):
-    """Atomgroup consisting of defined dipoles."""
-    """
-    Create MDA universe with dipole molecules
-    inside a 10 Å x 10 Å x 10 Å box cubic box.
-    """
+    """Atomgroup consisting of defined dipoles.
 
-    template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format='itp')
+    Create MDA universe with dipole molecules inside a 10 Å x 10 Å x 10 Å box cubic box.
+    """
+    template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
 
     dipoles = []
     for position, orientation in zip(positions, orientations):
@@ -59,37 +57,34 @@ def dipoles(positions, orientations):
 
 
 class TestDielectricPlanar(object):
-    """Tests for the DielectricPlanar class."""
-
-    """
+    """Tests for the DielectricPlanar class.
 
     Number of times DielectricPlanar broke: ||||
 
     If you are reading this, most likely you are investigating a bug in the
-    DielectricPlanar class. To calculate the local electric permittivity in a
-    system, the module needs two quantities: the total dipole moment and the
-    local dipole moment density.
+    DielectricPlanar class. To calculate the local electric permittivity in a system,
+    the module needs two quantities: the total dipole moment and the local dipole moment
+    density.
 
-    The total dipole moment is the sum of the charges times the positions of the
-    atoms. It is checked first in every test case, so make sure this is correct.
+    The total dipole moment is the sum of the charges times the positions of the atoms.
+    It is checked first in every test case, so make sure this is correct.
 
-    The local dipole moment density is determined by the virtual cutting method.
-    In short, charges are tallied in bins according to their positions and the
-    resulting histogram is integrated.
-    (see Schlaich et al, Phys. Rev. Lett. 117, 048001 and its SI for more info.)
+    The local dipole moment density is determined by the virtual cutting method. In
+    short, charges are tallied in bins according to their positions and the resulting
+    histogram is integrated. (see Schlaich et al, Phys. Rev. Lett. 117, 048001 and its
+    SI for more info.)
 
-    The correctness of the local dipole moment density is checked by integrating
-    it and comparing it to the total dipole moment (which should be equal). Some
-    things that broke this method in the past where:
-        - Incorrect treatment of the charges at the box edges. Molecules have to
-          be unwrapped to keep the system charge neutral overall. Charges that
-          cross over the box limits in the lateral direction are capped (i.e.
-          shifted) to the box edge so they will land in the first/last bin when
-          doing the charge histograms.
-        - For the parallel component, the positions of charges in the normal
-          direction are shifted to the center of charge of the molecule they
-          belong to. If something goes wrong here and charges are shifted out
-          of the box, they are no longer counted in the histogram.
+    The correctness of the local dipole moment density is checked by integrating it and
+    comparing it to the total dipole moment (which should be equal). Some things that
+    broke this method in the past where:
+        - Incorrect treatment of the charges at the box edges. Molecules have to be
+          unwrapped to keep the system charge neutral overall. Charges that cross over
+          the box limits in the lateral direction are capped (i.e. shifted) to the box
+          edge so they will land in the first/last bin when doing the charge histograms.
+        - For the parallel component, the positions of charges in the normal direction
+          are shifted to the center of charge of the molecule they belong to. If
+          something goes wrong here and charges are shifted out of the box, they are no
+          longer counted in the histogram.
     """
 
     @pytest.fixture()
@@ -104,26 +99,28 @@ class TestDielectricPlanar(object):
         u = mda.Universe(WATER_TPR, WATER_2F_TRR)
         return u.atoms
 
-    @pytest.mark.parametrize('orientation, M_par, M_perp', (
-        ([0, 0, 1], [0, 0], 1),
-        ([1, 0, 0], [1, 0], 0),
-        ([0, 1, 0], [0, 1], 0),
-        ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
-        )
+    @pytest.mark.parametrize(
+        "orientation, M_par, M_perp",
+        (
+            ([0, 0, 1], [0, 0], 1),
+            ([1, 0, 0], [1, 0], 0),
+            ([0, 1, 0], [0, 1], 0),
+            ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),
+        ),
+    )
     def test_single_dipole_orientations(self, orientation, M_par, M_perp):
-        """Test the dipole density with a single dipole."""
+        """Test the dipole density with a single dipole.
+
+        This test places a single dipole (two unit charges separated by a 1 Å bond) with
+        dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
+
+        The dipole is oriented in a given direction and the computed total dipole moment
+        of the system is checked against the expected value.
+
+        To check if the virtual cutting method produces the right results, the local
+        dipole moment density is integrated over the entire system and checked against
+        total dipole moment.
         """
-        This test places a single dipole (two unit charges separated by a 1 Å
-        bond) with dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
-
-        The dipole is oriented in a given direction and the computed total
-        dipole moment of the system is checked against the expected value.
-
-        To check if the virtual cutting method produces the right results,
-        the local dipole moment density is integrated over the entire system
-        and checked against total dipole moment.
-        """
-
         dipole = dipoles([[5, 5, 5]], [orientation])
         # very fine binning to get the correct value for the dipole
         eps = DielectricPlanar(dipole, bin_width=0.01, vcutwidth=0.01)
@@ -134,42 +131,46 @@ class TestDielectricPlanar(object):
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
-        assert_allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume,
-                        M_par, rtol=0.1)
-        assert_allclose(np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume,
-                        M_perp, rtol=0.1)
-
-    @pytest.mark.parametrize('selection', (1, 2))
-    @pytest.mark.parametrize('orientation, M_par, M_perp', (
-        ([0, 0, 1], [0, 0], 1),
-        ([1, 0, 0], [1, 0], 0),
-        ([0, 1, 0], [0, 1], 0),
-        ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),)
+        assert_allclose(
+            np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume, M_par, rtol=0.1
         )
-    def test_multiple_dipole_orientations(self, selection,
-                                          orientation, M_par, M_perp):
-        """Test the dipole moment density with multiple dipoles."""
-        """
-        This test places a grid of 5x5x5 dipoles (two unit charges separated by
-        a 1 Å bond) with dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
+        assert_allclose(
+            np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume, M_perp, rtol=0.1
+        )
 
-        The dipoles are oriented in a given direction and the computed total
-        dipole moment of the system is checked against the expected value.
+    @pytest.mark.parametrize("selection", (1, 2))
+    @pytest.mark.parametrize(
+        "orientation, M_par, M_perp",
+        (
+            ([0, 0, 1], [0, 0], 1),
+            ([1, 0, 0], [1, 0], 0),
+            ([0, 1, 0], [0, 1], 0),
+            ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),
+        ),
+    )
+    def test_multiple_dipole_orientations(self, selection, orientation, M_par, M_perp):
+        """Test the dipole moment density with multiple dipoles.
 
-        To check if the virtual cutting method produces the right results,
-        the local dipole moment density is integrated over the entire system
-        and checked against total dipole moment.
+        This test places a grid of 5x5x5 dipoles (two unit charges separated by a 1 Å
+        bond) with dipole moment 1 eÅ in a box of size 10 Å x 10 Å x 10 Å.
 
-        This test is a variation of `test_single_dipole_orientations` to catch
-        problems with system scaling of shifting that are not catched by the
-        single dipole test. For example if some positions of charges are
-        erroneously shifted out of the system.
+        The dipoles are oriented in a given direction and the computed total dipole
+        moment of the system is checked against the expected value.
+
+        To check if the virtual cutting method produces the right results, the local
+        dipole moment density is integrated over the entire system and checked against
+        total dipole moment.
+
+        This test is a variation of `test_single_dipole_orientations` to catch problems
+        with system scaling of shifting that are not catched by the single dipole test.
+        For example if some positions of charges are erroneously shifted out of the
+        system.
 
         See https://gitlab.com/maicos-devel/maicos/-/issues/83 for more infos.
         """
-        xx, yy, zz = np.meshgrid(np.arange(0, 10, 2) + 1,
-                                 np.arange(0, 10, 2) + 1,
-                                 np.arange(0, 10, 2) + 1)
+        xx, yy, zz = np.meshgrid(
+            np.arange(0, 10, 2) + 1, np.arange(0, 10, 2) + 1, np.arange(0, 10, 2) + 1
+        )
 
         pos = np.array([xx.flatten(), yy.flatten(), zz.flatten()]).T.tolist()
         n_dipoles = len(pos)
@@ -183,31 +184,32 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(dipole[:n], bin_width=0.01, vcutwidth=0.01)
         eps.run()
         # Check the total dipole moment of the system
-        assert_allclose(eps._obs.M_par, np.multiply(M_par, n_dipoles),
-                        rtol=0.1)
-        assert_allclose(eps._obs.M_perp, np.multiply(M_perp, n_dipoles),
-                        rtol=0.1)
+        assert_allclose(eps._obs.M_par, np.multiply(M_par, n_dipoles), rtol=0.1)
+        assert_allclose(eps._obs.M_perp, np.multiply(M_perp, n_dipoles), rtol=0.1)
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
-        assert_allclose(np.sum(eps._obs.m_par[:, :, 0], axis=0)
-                        * bin_volume, np.multiply(M_par,
-                                                  n_dipoles / selection),
-                        rtol=0.1)
-        assert_allclose(np.sum(eps._obs.m_perp[:, 0], axis=0)
-                        * bin_volume, np.multiply(M_perp,
-                                                  n_dipoles / selection),
-                        rtol=0.1)
+        assert_allclose(
+            np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume,
+            np.multiply(M_par, n_dipoles / selection),
+            rtol=0.1,
+        )
+        assert_allclose(
+            np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume,
+            np.multiply(M_perp, n_dipoles / selection),
+            rtol=0.1,
+        )
 
     def test_epsilon(self, ag_two_frames):
         """Test that epsilon is constructed correctly from covariances."""
         eps = DielectricPlanar(ag_two_frames).run()
 
         cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
-        assert_equal(eps.results.eps_perp, - eps.results.pref * cov_perp)
+        assert_equal(eps.results.eps_perp, -eps.results.pref * cov_perp)
 
-        cov_par = 0.5 * (eps.means.mM_par[:, 0]
-                         - np.dot(eps.means.m_par[:, :, 0], eps.means.M_par))
+        cov_par = 0.5 * (
+            eps.means.mM_par[:, 0] - np.dot(eps.means.m_par[:, :, 0], eps.means.M_par)
+        )
 
         assert_equal(eps.results.eps_par[:, 0], eps.results.pref * cov_par)
 
@@ -259,17 +261,23 @@ class TestDielectricPlanar(object):
 
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""
-        eps_sym = DielectricPlanar(
-            [ag_two_frames, ag_two_frames[:-30]], sym=True).run()
-        eps = DielectricPlanar(
-            [ag_two_frames, ag_two_frames[:-30]], sym=False).run()
+        eps_sym = DielectricPlanar([ag_two_frames, ag_two_frames[:-30]], sym=True).run()
+        eps = DielectricPlanar([ag_two_frames, ag_two_frames[:-30]], sym=False).run()
 
         # Check that the z column is not changed
         assert_equal(eps.results.bin_pos, eps_sym.results.bin_pos)
 
         # Check that the all eps components are symmetric
-        for d in ["eps_perp", "deps_perp", "eps_perp_self", "eps_perp_coll",
-                  "eps_par", "deps_par", "eps_par_self", "eps_par_coll"]:
+        for d in [
+            "eps_perp",
+            "deps_perp",
+            "eps_perp_self",
+            "eps_perp_coll",
+            "eps_par",
+            "deps_par",
+            "eps_par_self",
+            "eps_par_coll",
+        ]:
             A = (eps.results[d] + eps.results[d][::-1]) / 2
 
             assert_equal(A, eps_sym.results[d])

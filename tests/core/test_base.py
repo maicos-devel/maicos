@@ -1,11 +1,12 @@
-"""Tests for the base modules."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the base modules."""
 import inspect
 import logging
 import os
@@ -69,8 +70,8 @@ class Frame_types(AnalysisBase):
 class Conclude(AnalysisBase):
     """Class to test the _conclude method.
 
-    A new file with a file name of the current analysis frame number
-    is created every time the `_conclude` method is called.
+    A new file with a file name of the current analysis frame number is created every
+    time the `_conclude` method is called.
     """
 
     def _prepare(self):
@@ -84,7 +85,7 @@ class Conclude(AnalysisBase):
 
     def save(self):
         """Save a file named after the current number of frames."""
-        open(f'out_{self._index}', 'w').close()
+        open(f"out_{self._index}", "w").close()
 
 
 class Test_AnalysisBase(object):
@@ -118,17 +119,16 @@ class Test_AnalysisBase(object):
 
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
-        with pytest.raises(ValueError,
-                           match='not contain any atoms.'):
+        with pytest.raises(ValueError, match="not contain any atoms."):
             class_obj = AnalysisBase(ag.select_atoms("name foo"))
             class_obj._prepare()
 
     def test_empty_atomgroups(self, ag):
         """Test behaviour for empty atomgroups."""
-        with pytest.raises(ValueError,
-                           match='not contain any atoms.'):
-            class_obj = AnalysisBase([ag, ag.select_atoms("name foo")],
-                                     multi_group=True)
+        with pytest.raises(ValueError, match="not contain any atoms."):
+            class_obj = AnalysisBase(
+                [ag, ag.select_atoms("name foo")], multi_group=True
+            )
             class_obj._prepare()
 
     def test_multigroups(self, ag):
@@ -149,8 +149,7 @@ class Test_AnalysisBase(object):
         ana.run()
 
         assert_allclose(ana.means.observable, np.mean(ana.series))
-        assert_allclose(ana.sems.observable,
-                        np.std(ana.series) / np.sqrt(ana.n_frames))
+        assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
 
     def test_output_message(self, ag, tmpdir):
         """Test the output message of modules."""
@@ -162,13 +161,13 @@ class Test_AnalysisBase(object):
 
         with tmpdir.as_cwd():
             # Simple check if a single message gets written to the output file
-            ana.savetxt('foo', data, columns=['First', 'Second'])
-            assert ana.OUTPUT in open('foo.dat').read()
+            ana.savetxt("foo", data, columns=["First", "Second"])
+            assert ana.OUTPUT in open("foo.dat").read()
 
             # More elaborate check to find out if output messages of subclasses
             # get written to the file in the right order.
-            sub_ana.savetxt('foo2', data, columns=['First', 'Second'])
-            foo = open('foo2.dat', 'r').readlines()
+            sub_ana.savetxt("foo2", data, columns=["First", "Second"])
+            foo = open("foo2.dat", "r").readlines()
             for i, line in enumerate(foo):
                 if ana.OUTPUT in line:
                     assert sub_ana.OUTPUT in foo[i + 1]
@@ -177,10 +176,10 @@ class Test_AnalysisBase(object):
                 # Fail if the loop finished without finding the first
                 raise AssertionError()
 
-    @pytest.mark.parametrize('concfreq, files',
-                             [(0, []),
-                              (40, ['out_40', 'out_80', 'out_101']),
-                              (100, ['out_100', 'out_101'])])
+    @pytest.mark.parametrize(
+        "concfreq, files",
+        [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
+    )
     def test_conclude_multi_frame(self, ag, tmpdir, concfreq, files):
         """Test the conclude and save methods for multi frame trajectories."""
         with tmpdir.as_cwd():
@@ -203,10 +202,8 @@ class Test_AnalysisBase(object):
             # ones have been written
             assert len(files) == len(os.listdir(tmpdir))
 
-    @pytest.mark.parametrize('concfreq, file', [(0, []),
-                                                (50, ['out_1'])])
-    def test_conclude_single_frame(self, ag_single_frame,
-                                   tmpdir, concfreq, file):
+    @pytest.mark.parametrize("concfreq, file", [(0, []), (50, ["out_1"])])
+    def test_conclude_single_frame(self, ag_single_frame, tmpdir, concfreq, file):
         """Test the conclude and save methods for single frame trajectories."""
         with tmpdir.as_cwd():
             conclude = Conclude(ag_single_frame, concfreq=concfreq)
@@ -225,23 +222,21 @@ class Test_AnalysisBase(object):
     def test_refgroup(self, ag, indices):
         """Test refgroup.
 
-        We test a single atom, a broken water molecule and a
-        whole water molecule. The broken molecule requires the unwrap
-        option to be set Otherwise, the broken water's center of mass
-        is not correct. See next test below.
+        We test a single atom, a broken water molecule and a whole water molecule. The
+        broken molecule requires the unwrap option to be set Otherwise, the broken
+        water's center of mass is not correct. See next test below.
         """
         refgroup = ag.atoms[indices]
         class_obj = Conclude(ag, refgroup=refgroup, unwrap=True)
         class_obj.run(stop=1)
 
-        assert_allclose(refgroup.center_of_mass(),
-                        ag.universe.dimensions[:3] / 2,
-                        rtol=1e-01)
+        assert_allclose(
+            refgroup.center_of_mass(), ag.universe.dimensions[:3] / 2, rtol=1e-01
+        )
 
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""
-        with pytest.raises(ValueError,
-                           match='not contain any atoms.'):
+        with pytest.raises(ValueError, match="not contain any atoms."):
             class_obj = AnalysisBase(ag, refgroup=empty_ag)
             class_obj._prepare()
 
@@ -258,9 +253,9 @@ class Test_AnalysisBase(object):
         """Unwrap test for multi_group."""
         Conclude((ag[:10], ag[10:]), unwrap=True, multi_group=True).run(stop=1)
 
-    @pytest.mark.parametrize('data, result', [([1, 2], 1.5),
-                                              ([float(1), float(2)], 1.5),
-                                              ([[1], [2]], 1.5)])
+    @pytest.mark.parametrize(
+        "data, result", [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)]
+    )
     def test_frame_dict_types(self, ag, data, result):
         """Check supported types for the frame Dict."""
         class_obj = Frame_types(ag)
@@ -268,12 +263,12 @@ class Test_AnalysisBase(object):
         class_obj.run(stop=2)
         assert class_obj.means.observable == result
 
-    @pytest.mark.parametrize('data,', [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
+    @pytest.mark.parametrize("data,", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
     def test_frame_dict_wrong_types(self, ag, data):
         """Check that unsupported types for the frame Dict throw an error."""
         class_obj = Frame_types(ag)
         class_obj.data = data
-        error_msg = 'Obervable observable has uncompatible type.'
+        error_msg = "Obervable observable has uncompatible type."
         with pytest.raises(TypeError, match=error_msg):
             class_obj.run(stop=2)
 
@@ -307,46 +302,53 @@ class Test_AnalysisBase(object):
     def test_jitter(self, ag_single_frame):
         """Test the jitter option.
 
-        Call the DensityPlanar module with a jitter of 0.01,
-        and make sure that the density profile has no peak
-        at a position of 100 (which would be the case without jitter).
+        Call the DensityPlanar module with a jitter of 0.01, and make sure that the
+        density profile has no peak at a position of 100 (which would be the case
+        without jitter).
         """
-        dens = DensityPlanar(ag_single_frame,
-                             bin_width=1e-4, jitter=0.01).run()
-        hist, _, = np.histogram(np.diff(dens.results.bin_pos[
-            np.where(dens.results.profile.T[0])]),
-            bins=1000, range=(0, 0.1))
+        dens = DensityPlanar(ag_single_frame, bin_width=1e-4, jitter=0.01).run()
+        (
+            hist,
+            _,
+        ) = np.histogram(
+            np.diff(dens.results.bin_pos[np.where(dens.results.profile.T[0])]),
+            bins=1000,
+            range=(0, 0.1),
+        )
         assert find_peaks(hist)[0][0] < 100
 
 
 class Test_ProfileBase:
     """Test class for the ProfileBase Class.
 
-    The single_frame is for now extensivley tested in the child
-    `ProfilePlanarBase`, `ProfileCylinderBase` and `ProfileSphereBase` for
-    simple physical system.
+    The single_frame is for now extensivley tested in the child `ProfilePlanarBase`,
+    `ProfileCylinderBase` and `ProfileSphereBase` for simple physical system.
     """
 
     @pytest.fixture()
     def u(self):
         """Simple empty Universe."""
-        universe = mda.Universe.empty(n_atoms=10,
-                                      n_residues=10,
-                                      n_segments=10,
-                                      atom_resindex=np.arange(10),
-                                      residue_segindex=np.arange(10))
+        universe = mda.Universe.empty(
+            n_atoms=10,
+            n_residues=10,
+            n_segments=10,
+            atom_resindex=np.arange(10),
+            residue_segindex=np.arange(10),
+        )
 
         return universe
 
     @pytest.fixture()
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        p = dict(weighting_function=lambda x, grouping, a=1: a * x,
-                 atomgroups=[u.atoms],
-                 normalization="number",
-                 grouping="atoms",
-                 bin_method="com",
-                 output="profile.dat")
+        p = dict(
+            weighting_function=lambda x, grouping, a=1: a * x,
+            atomgroups=[u.atoms],
+            normalization="number",
+            grouping="atoms",
+            bin_method="com",
+            output="profile.dat",
+        )
         return p
 
     def test_wrong_normalization(self, params):
@@ -373,8 +375,7 @@ class Test_ProfileBase:
         params.update(f_kwargs={"a": 2})
         profile_scaled = ProfileBase(**params)
 
-        assert 2 * profile.weighting_function(1) == \
-            profile_scaled.weighting_function(1)
+        assert 2 * profile.weighting_function(1) == profile_scaled.weighting_function(1)
 
     def test_output_name(self, params, tmpdir):
         """Test output name of save method."""
@@ -400,33 +401,22 @@ class Test_ProfileBase:
         profile._index = 0
 
         with tmpdir.as_cwd():
-
             profile.save()
             res_dens = np.loadtxt(profile.output)
 
-        assert_allclose(profile.results.bin_pos,
-                        res_dens[:, 0],
-                        rtol=2)
+        assert_allclose(profile.results.bin_pos, res_dens[:, 0], rtol=2)
 
-        assert_allclose(profile.results.profile[:, 0],
-                        res_dens[:, 1],
-                        rtol=2)
+        assert_allclose(profile.results.profile[:, 0], res_dens[:, 1], rtol=2)
 
-        assert_allclose(profile.results.dprofile[:, 0],
-                        res_dens[:, 2],
-                        rtol=2)
+        assert_allclose(profile.results.dprofile[:, 0], res_dens[:, 2], rtol=2)
 
 
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["multi_group",
-                          "atomgroups",
-                          "atomgroup",
-                          "wrap_compound"]
+    ignored_parameters = ["multi_group", "atomgroups", "atomgroup", "wrap_compound"]
 
-    @pytest.mark.parametrize("Member",
-                             find_cls_members(AnalysisBase, ["maicos"]))
+    @pytest.mark.parametrize("Member", find_cls_members(AnalysisBase, ["maicos"]))
     def test_parameters(self, Member):
         """Test if AnalysisBase paramaters exist in all modules."""
         base_sig = inspect.signature(AnalysisBase)

@@ -15,3 +15,6 @@ profiling:
   critical_files_paths:
     - src/maicos/core/*
     - src/maicos/lib/*
+
+ignore:
+  - "src/maicos/_version.py"

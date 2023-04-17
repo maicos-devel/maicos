@@ -1,9 +1,9 @@
 Some conventions
 ----------------
 
-The base units of MAICoS are consistent with those of `MDAnalysis`_.
-Keeping inputs and outputs consistent with this set of units reduces ambiguity,
-so we encourage everyone to use them exclusively.
+The base units of MAICoS are consistent with those of `MDAnalysis`_. Keeping inputs and
+outputs consistent with this set of units reduces ambiguity, so we encourage everyone to
+use them exclusively.
 
 .. _`MDAnalysis` : https://docs.mdanalysis.org/stable/documentation_pages/units.html
 

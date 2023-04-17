@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -19,7 +19,7 @@ from numpy.testing import (
     assert_almost_equal,
     assert_equal,
     assert_raises,
-    )
+)
 
 from maicos import KineticEnergy
 
@@ -47,11 +47,10 @@ class TestKineticEnergy(ReferenceAtomGroups):
         assert_allclose(ke.results.trans, 1905.26, rtol=1e-2)
 
     def test_ke_trans_trajectory_save(self, ag, tmpdir):
-        """
-        Test translational kinetic energy.
+        """Test translational kinetic energy.
 
-        Save the result in a text file, and assert that the
-        results printed in the file is correct.
+        Save the result in a text file, and assert that the results printed in the file
+        is correct.
         """
         with tmpdir.as_cwd():
             ke = KineticEnergy(ag, refpoint="COM").run(stop=1)
@@ -76,16 +75,15 @@ class TestKineticEnergy(ReferenceAtomGroups):
         ke = KineticEnergy(ag, refpoint="COC").run(stop=1)
         assert_almost_equal(ke.results.rot, 584.17, decimal=1)
 
-    @pytest.mark.parametrize('vel', (0, 1, 2))
+    @pytest.mark.parametrize("vel", (0, 1, 2))
     def test_ke_single_molecule(self, vel):
-        """
-        Test KineticEnergy module using a single molecule.
+        """Test KineticEnergy module using a single molecule.
 
-        Create a universe with one single water molecule
-        with a given velocity of vel along z.
+        Create a universe with one single water molecule with a given velocity of vel
+        along z.
 
-        The expected result corresponds to the 0.5*m*v**2 (in kJ/mol)
-        where m is the mass of a single water molecule.
+        The expected result corresponds to the 0.5*m*v**2 (in kJ/mol) where m is the
+        mass of a single water molecule.
         """
         ag = line_of_water_molecules(n_molecules=1, myvel=np.array([0, 0, vel]))
         vol = np.prod(ag.dimensions[:3])

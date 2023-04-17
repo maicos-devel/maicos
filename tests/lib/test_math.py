@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -34,31 +34,120 @@ class Test_sfactor(object):
     @pytest.fixture()
     def qS(self):
         """Define q and S."""
-        q = np.array([
-            0.25, 0.25, 0.25, 0.36, 0.36, 0.36, 0.44, 0.51, 0.51, 0.51, 0.56,
-            0.56, 0.56, 0.56, 0.56, 0.56, 0.62, 0.62, 0.62, 0.71, 0.71, 0.71,
-            0.76, 0.76, 0.76, 0.76, 0.76, 0.76, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8,
-            0.84, 0.84, 0.84, 0.88, 0.91, 0.91, 0.91, 0.91, 0.91, 0.91, 0.95,
-            0.95, 0.95, 0.95, 0.95, 0.95
-            ])
+        q = np.array(
+            [
+                0.25,
+                0.25,
+                0.25,
+                0.36,
+                0.36,
+                0.36,
+                0.44,
+                0.51,
+                0.51,
+                0.51,
+                0.56,
+                0.56,
+                0.56,
+                0.56,
+                0.56,
+                0.56,
+                0.62,
+                0.62,
+                0.62,
+                0.71,
+                0.71,
+                0.71,
+                0.76,
+                0.76,
+                0.76,
+                0.76,
+                0.76,
+                0.76,
+                0.8,
+                0.8,
+                0.8,
+                0.8,
+                0.8,
+                0.8,
+                0.84,
+                0.84,
+                0.84,
+                0.88,
+                0.91,
+                0.91,
+                0.91,
+                0.91,
+                0.91,
+                0.91,
+                0.95,
+                0.95,
+                0.95,
+                0.95,
+                0.95,
+                0.95,
+            ]
+        )
 
-        S = np.array([
-            1.86430e+02, 6.91000e+00, 8.35300e+02, 5.06760e+02, 1.92540e+02,
-            1.57790e+02, 9.96500e+01, 5.87470e+02, 7.88630e+02, 5.18170e+02,
-            4.58650e+02, 1.69000e+00, 3.99910e+02, 6.10340e+02, 1.21359e+03,
-            4.11800e+01, 9.31980e+02, 6.29120e+02, 9.88500e+01, 3.15220e+02,
-            1.00840e+02, 1.19420e+02, 2.13180e+02, 4.61770e+02, 3.99640e+02,
-            8.03880e+02, 1.74830e+02, 3.20900e+01, 1.99190e+02, 4.24690e+02,
-            1.73552e+03, 1.37732e+03, 1.25050e+02, 2.61750e+02, 4.29610e+02,
-            2.09000e+01, 2.71450e+02, 4.22340e+02, 1.07590e+02, 3.79520e+02,
-            6.69000e+00, 5.35330e+02, 1.09210e+02, 6.69970e+02, 1.25354e+03,
-            3.94200e+02, 1.96100e+02, 1.39890e+02, 8.79600e+01, 4.17020e+02
-            ])
+        S = np.array(
+            [
+                1.86430e02,
+                6.91000e00,
+                8.35300e02,
+                5.06760e02,
+                1.92540e02,
+                1.57790e02,
+                9.96500e01,
+                5.87470e02,
+                7.88630e02,
+                5.18170e02,
+                4.58650e02,
+                1.69000e00,
+                3.99910e02,
+                6.10340e02,
+                1.21359e03,
+                4.11800e01,
+                9.31980e02,
+                6.29120e02,
+                9.88500e01,
+                3.15220e02,
+                1.00840e02,
+                1.19420e02,
+                2.13180e02,
+                4.61770e02,
+                3.99640e02,
+                8.03880e02,
+                1.74830e02,
+                3.20900e01,
+                1.99190e02,
+                4.24690e02,
+                1.73552e03,
+                1.37732e03,
+                1.25050e02,
+                2.61750e02,
+                4.29610e02,
+                2.09000e01,
+                2.71450e02,
+                4.22340e02,
+                1.07590e02,
+                3.79520e02,
+                6.69000e00,
+                5.35330e02,
+                1.09210e02,
+                6.69970e02,
+                1.25354e03,
+                3.94200e02,
+                1.96100e02,
+                1.39890e02,
+                8.79600e01,
+                4.17020e02,
+            ]
+        )
 
         return q, S
 
-    @pytest.mark.parametrize('startq', (0, 0.05))
-    @pytest.mark.parametrize('endq', (0.075, 0.1))
+    @pytest.mark.parametrize("startq", (0, 0.05))
+    @pytest.mark.parametrize("endq", (0.075, 0.1))
     def test_sfactor(self, ag, qS, startq, endq):
         """Test sfactor."""
         q, S = maicos.lib.math.compute_structure_factor(
@@ -67,7 +156,8 @@ class Test_sfactor(object):
             startq,
             endq,
             0,  # mintheta
-            np.pi)  # maxtheta
+            np.pi,
+        )  # maxtheta
 
         q = q.flatten()
         S = S.flatten()
@@ -97,7 +187,8 @@ class Test_sfactor(object):
             0,  # startq
             0.5,  # endq
             np.pi / 4,  # mintheta
-            np.pi / 2)  # maxtheta
+            np.pi / 2,
+        )  # maxtheta
 
         q = q.flatten()
         S = S.flatten()
@@ -110,13 +201,12 @@ class Test_sfactor(object):
         q = q[sorted_ind]
         S = S[sorted_ind]
 
-        assert_almost_equal(q,
-                            np.array([0.25, 0.25, 0.36, 0.36, 0.36, 0.44]),
-                            decimal=2)
-        assert_almost_equal(S,
-                            np.array(
-                                [6.91, 835.3, 192.54, 157.79, 506.76, 99.65]),
-                            decimal=2)
+        assert_almost_equal(
+            q, np.array([0.25, 0.25, 0.36, 0.36, 0.36, 0.44]), decimal=2
+        )
+        assert_almost_equal(
+            S, np.array([6.91, 835.3, 192.54, 157.79, 506.76, 99.65]), decimal=2
+        )
 
 
 def generate_correlated_data(T, repeat, seed=0):
@@ -140,9 +230,9 @@ def generate_correlated_data(T, repeat, seed=0):
 def minimum_image_distance(a, b, L):
     """Return the minimum image distance of two vectors.
 
-    L is the size of the periodic box. This method should only be
-    used for testing against code where one does not want or is
-    not able to use the MDanalysis methods (i.e. 1D distances).
+    L is the size of the periodic box. This method should only be used for testing
+    against code where one does not want or is not able to use the MDanalysis methods
+    (i.e. 1D distances).
     """
     a, b, L = np.array(a), np.array(b), np.array(L)
 
@@ -209,35 +299,47 @@ def test_symmetrize_inplace():
 
 
 @pytest.mark.parametrize(
-    ('vector1, vector2, subtract_mean, result'),
+    ("vector1, vector2, subtract_mean, result"),
     (
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         None, False, 2184.21),
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
-         False, 5868.42),
-        (np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
-         np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
-         True, 0.0),
-
+        (
+            np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+            None,
+            False,
+            2184.21,
         ),
-    )
+        (
+            np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+            np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+            False,
+            5868.42,
+        ),
+        (
+            np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
+            np.vstack((np.linspace(10, 30, 20), np.linspace(30, 50, 20))),
+            True,
+            0.0,
+        ),
+    ),
+)
 def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
-    utils_run = maicos.lib.math.scalar_prod_corr(
-        vector1, vector2, subtract_mean)
+    utils_run = maicos.lib.math.scalar_prod_corr(vector1, vector2, subtract_mean)
     assert_almost_equal(np.mean(utils_run), result, decimal=2)
 
 
 @pytest.mark.parametrize(
-    ('vector1, vector2, subtract_mean, result'),
+    ("vector1, vector2, subtract_mean, result"),
     (
         (np.linspace(0, 20, 50), None, False, 78.23),
-        (np.linspace(0, 20, 50), np.linspace(0, 20, 50)
-         * np.linspace(0, 20, 50), False, 1294.73),
-        (np.linspace(0, 20, 50), None, True, -21.76),
+        (
+            np.linspace(0, 20, 50),
+            np.linspace(0, 20, 50) * np.linspace(0, 20, 50),
+            False,
+            1294.73,
         ),
-    )
+        (np.linspace(0, 20, 50), None, True, -21.76),
+    ),
+)
 def test_corr(vector1, vector2, subtract_mean, result):
     """Tests for correlation."""
     utils_run = maicos.lib.math.correlation(vector1, vector2, subtract_mean)
@@ -245,34 +347,63 @@ def test_corr(vector1, vector2, subtract_mean, result):
 
 
 @pytest.mark.parametrize(
-    ('vector1, vector2, subtract_mean, result'),
+    ("vector1, vector2, subtract_mean, result"),
     (
-        (2 * generate_correlated_data(int(1E7), 5) + 2,
-         None, True, np.mean(4 * (1 - np.arange(0, 6) / 5))),
-        (2 * generate_correlated_data(int(1E7), 5) + 2,
-         None, False, np.mean(4 * (1 - np.arange(0, 6) / 5) + 4)),
+        (
+            2 * generate_correlated_data(int(1e7), 5) + 2,
+            None,
+            True,
+            np.mean(4 * (1 - np.arange(0, 6) / 5)),
         ),
-    )
+        (
+            2 * generate_correlated_data(int(1e7), 5) + 2,
+            None,
+            False,
+            np.mean(4 * (1 - np.arange(0, 6) / 5) + 4),
+        ),
+    ),
+)
 def test_corr2(vector1, vector2, subtract_mean, result):
     """Tests for correlation function."""
-    utils_run = np.mean(maicos.lib.math.correlation(vector1, vector2,
-                                                    subtract_mean)[:6])
+    utils_run = np.mean(
+        maicos.lib.math.correlation(vector1, vector2, subtract_mean)[:6]
+    )
     assert_almost_equal(utils_run, result, decimal=2)
 
 
 @pytest.mark.parametrize(
-    ('vector, method, c, mintime, result'),
+    ("vector, method, c, mintime, result"),
     (
-        (generate_correlated_data(int(1E6), 5), 'sokal', 8, 3,
-         np.sum(1 - np.arange(1, 5) / 5)),
-        (generate_correlated_data(int(1E6), 10), 'sokal', 8, 3,
-         np.sum(1 - np.arange(1, 10) / 10)),
-        (generate_correlated_data(int(1E6), 5), 'chodera', 8, 3,
-         np.sum(1 - np.arange(1, 5) / 5)),
-        (generate_correlated_data(int(1E6), 10), 'chodera', 8, 3,
-         np.sum(1 - np.arange(1, 10) / 10)),
+        (
+            generate_correlated_data(int(1e6), 5),
+            "sokal",
+            8,
+            3,
+            np.sum(1 - np.arange(1, 5) / 5),
         ),
-    )
+        (
+            generate_correlated_data(int(1e6), 10),
+            "sokal",
+            8,
+            3,
+            np.sum(1 - np.arange(1, 10) / 10),
+        ),
+        (
+            generate_correlated_data(int(1e6), 5),
+            "chodera",
+            8,
+            3,
+            np.sum(1 - np.arange(1, 5) / 5),
+        ),
+        (
+            generate_correlated_data(int(1e6), 10),
+            "chodera",
+            8,
+            3,
+            np.sum(1 - np.arange(1, 10) / 10),
+        ),
+    ),
+)
 def test_correlation_time(vector, method, c, mintime, result):
     """Tests for correlation_time."""
     utils_run = maicos.lib.math.correlation_time(vector, method, c, mintime)
@@ -283,7 +414,8 @@ def test_correlation_time_wrong_method():
     """Tests for correlation_time with wrong method."""
     with pytest.raises(ValueError):
         maicos.lib.math.correlation_time(
-            generate_correlated_data(int(1E3), 5), 'wrong', 8, 3)
+            generate_correlated_data(int(1e3), 5), "wrong", 8, 3
+        )
 
 
 def test_new_mean():
@@ -308,21 +440,21 @@ def test_new_variance():
         old_mean = mean
         mean = maicos.lib.math.new_mean(mean, value, i)
         var = maicos.lib.math.new_variance(var, old_mean, mean, value, i)
-    assert_almost_equal(var, np.std(series)**2, decimal=6)
+    assert_almost_equal(var, np.std(series) ** 2, decimal=6)
 
 
-@pytest.mark.parametrize('dim', (0, 1, 2))
-@pytest.mark.parametrize('weight', ('mass', 'none'))
+@pytest.mark.parametrize("dim", (0, 1, 2))
+@pytest.mark.parametrize("weight", ("mass", "none"))
 def test_center_cluster(dim, weight):
     """Tests for pbc com."""
     e_z = np.isin([0, 1, 2], dim)
 
     dimensions = [20, 30, 100, 90, 90, 90]
 
-    water1 = mda.Universe(SPCE_ITP, SPCE_GRO, topology_format='itp')
-    if weight == 'mass':
+    water1 = mda.Universe(SPCE_ITP, SPCE_GRO, topology_format="itp")
+    if weight == "mass":
         water1.atoms.translate(-water1.atoms.center_of_mass())
-    elif weight == 'none':
+    elif weight == "none":
         water1.atoms.translate(-water1.atoms.center_of_geometry())
 
     water2 = water1.copy()
@@ -333,25 +465,29 @@ def test_center_cluster(dim, weight):
     water = mda.Merge(water1.atoms, water2.atoms)
     water.dimensions = dimensions
 
-    if weight == 'mass':
+    if weight == "mass":
         ref_weight = water.atoms.masses
-    elif weight == 'none':
+    elif weight == "none":
         ref_weight = np.ones_like(water.atoms.masses)
 
     for z in np.linspace(0, dimensions[dim], 10):
         water_shifted = water.copy()
         water_shifted.atoms.translate(e_z * z)
         water_shifted.atoms.wrap()
-        com = maicos.lib.math.center_cluster(water_shifted.atoms,
-                                             ref_weight)[dim]
-        assert_almost_equal(minimum_image_distance(com, z, dimensions[dim]),
-                            0, decimal=5)
+        com = maicos.lib.math.center_cluster(water_shifted.atoms, ref_weight)[dim]
+        assert_almost_equal(
+            minimum_image_distance(com, z, dimensions[dim]), 0, decimal=5
+        )
 
 
-@pytest.mark.parametrize('vec1, vec2, box, length',
-                         [([0, 0, 0], [1, 1, 1], [10, 10, 10], np.sqrt(3)),
-                          ([0, 0, 0], [9, 9, 9], [10, 10, 10], np.sqrt(3)),
-                          ([0, 0, 0], [9, 19, 29], [10, 20, 30], np.sqrt(3))])
+@pytest.mark.parametrize(
+    "vec1, vec2, box, length",
+    [
+        ([0, 0, 0], [1, 1, 1], [10, 10, 10], np.sqrt(3)),
+        ([0, 0, 0], [9, 9, 9], [10, 10, 10], np.sqrt(3)),
+        ([0, 0, 0], [9, 19, 29], [10, 20, 30], np.sqrt(3)),
+    ],
+)
 def test_minimal_image(vec1, vec2, box, length):
     """Tests the minimal image function used in other tests."""
     assert minimum_image_distance(vec1, vec2, box) == length

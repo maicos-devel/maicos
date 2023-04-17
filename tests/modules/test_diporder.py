@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -66,37 +66,37 @@ class TestDiporderPlanar(ReferenceAtomGroups):
         res[2]["cos_2_theta"] = [2.72e-1, 3.45e-1, 3.41e-1, 3.12e-1, 2.62e-1]
         return res
 
-    @pytest.mark.parametrize('order_parameter',
-                             ['P0', 'cos_theta', 'cos_2_theta'])
-    @pytest.mark.parametrize('dim', [0, 1, 2])
-    def test_DiporderPlanar_trajectory(self, ag_single_frame, dim,
-                                       order_parameter,
-                                       result_dict):
+    @pytest.mark.parametrize("order_parameter", ["P0", "cos_theta", "cos_2_theta"])
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    def test_DiporderPlanar_trajectory(
+        self, ag_single_frame, dim, order_parameter, result_dict
+    ):
         """Test DiporderPlanar in x,y,z direction."""
-        dip = DiporderPlanar(ag_single_frame,
-                             bin_width=5,
-                             dim=dim,
-                             refgroup=ag_single_frame,
-                             order_parameter=order_parameter).run()
-        assert_allclose(dip.results.profile.flatten(),
-                        result_dict[dim][order_parameter],
-                        rtol=1e-2)
+        dip = DiporderPlanar(
+            ag_single_frame,
+            bin_width=5,
+            dim=dim,
+            refgroup=ag_single_frame,
+            order_parameter=order_parameter,
+        ).run()
+        assert_allclose(
+            dip.results.profile.flatten(), result_dict[dim][order_parameter], rtol=1e-2
+        )
 
-    @pytest.mark.parametrize('order_parameter, output',
-                             [('P0', 0), ('cos_theta', 1), ('cos_2_theta', 1)])
+    @pytest.mark.parametrize(
+        "order_parameter, output", [("P0", 0), ("cos_theta", 1), ("cos_2_theta", 1)]
+    )
     def test_DiporderPlanar_3_water_0(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 0."""
         ag = line_of_water_molecules(n_molecules=3, angle_deg=0)
-        dip = DiporderPlanar(ag, bin_width=10,
-                             order_parameter=order_parameter).run()
-        assert_allclose(np.mean(dip.results.profile.flatten()),
-                        output, atol=1e-3)
+        dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
+        assert_allclose(np.mean(dip.results.profile.flatten()), output, atol=1e-3)
 
-    @pytest.mark.parametrize('order_parameter, output',
-                             [('P0', 0), ('cos_theta', 0), ('cos_2_theta', 0)])
+    @pytest.mark.parametrize(
+        "order_parameter, output", [("P0", 0), ("cos_theta", 0), ("cos_2_theta", 0)]
+    )
     def test_DiporderPlanar_3_water_90(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 90."""
         ag = line_of_water_molecules(n_molecules=3, angle_deg=90)
-        dip = DiporderPlanar(ag, bin_width=10,
-                             order_parameter=order_parameter).run()
+        dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
         assert_allclose(dip.results.profile.mean(), output, atol=1e-6)

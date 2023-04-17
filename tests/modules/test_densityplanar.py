@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -28,7 +28,7 @@ from data import (  # noqa: E402
     WATER_GRO,
     WATER_TPR,
     WATER_TRR,
-    )
+)
 
 
 class ReferenceAtomGroups:
@@ -50,34 +50,35 @@ class ReferenceAtomGroups:
     def multiple_ags(self):
         """Import MDA universe, multiple ags."""
         u = mda.Universe(TPR, TRR)
-        return [u.select_atoms("resname SOL"),
-                u.select_atoms("resname MET")]
+        return [u.select_atoms("resname SOL"), u.select_atoms("resname MET")]
 
     @pytest.fixture()
     def multiple_ags_mu(self):
         """Import MDA universe, multiple ags mu."""
         u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
-        return [u.select_atoms("resname SOL"),
-                u.select_atoms("resname NA"),
-                u.select_atoms("resname CL")]
+        return [
+            u.select_atoms("resname SOL"),
+            u.select_atoms("resname NA"),
+            u.select_atoms("resname CL"),
+        ]
 
     @pytest.fixture()
     def mica_water(self):
         """Import MDA universe, water components of a slab system."""
         u = mda.Universe(MICA_TPR, MICA_XTC)
-        return u.select_atoms('resname SOL')
+        return u.select_atoms("resname SOL")
 
     @pytest.fixture()
     def mica_surface(self):
         """Import MDA universe, surface component of a slab system."""
         u = mda.Universe(MICA_TPR, MICA_XTC)
-        return u.select_atoms('resname SURF')
+        return u.select_atoms("resname SURF")
 
     @pytest.fixture()
     def ag_no_masses(self):
         """Atom group with no mass."""
         u = mda.Universe(WATER_TPR, WATER_TRR)
-        u.del_TopologyAttr('masses')
+        u.del_TopologyAttr("masses")
         return u.atoms
 
     @pytest.fixture()
@@ -96,25 +97,28 @@ class ReferenceAtomGroups:
 class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the DensityPlanar class."""
 
-    @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', [3.893e-1, 1.53800e-3]),
-                              ('number', [8.6453e-2, 2.02710e-4]),
-                              ('charge', [1.070817e-20, 1.9499e-06])))
+    @pytest.mark.parametrize(
+        "dens_type, mean",
+        (
+            ("mass", [3.893e-1, 1.53800e-3]),
+            ("number", [8.6453e-2, 2.02710e-4]),
+            ("charge", [1.070817e-20, 1.9499e-06]),
+        ),
+    )
     def test_multiple(self, multiple_ags, dens_type, mean):
         """Test multiple."""
         dens = DensityPlanar(multiple_ags, dens=dens_type).run()
         print(dens.results.profile.mean(axis=0))
         assert_allclose(dens.results.profile.mean(axis=0), mean, rtol=1e-3)
 
-    @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.588), ('number', 0.097),
-                              ('charge', 0)))
-    @pytest.mark.parametrize('dim', (0, 1, 2))
+    @pytest.mark.parametrize(
+        "dens_type, mean", (("mass", 0.588), ("number", 0.097), ("charge", 0))
+    )
+    @pytest.mark.parametrize("dim", (0, 1, 2))
     def test_dens(self, ag, dens_type, mean, dim):
         """Test density."""
         dens = DensityPlanar(ag, dens=dens_type, dim=dim).run()
-        assert_allclose(dens.results.profile.mean(), mean,
-                        rtol=1e-1, atol=1e-8)
+        assert_allclose(dens.results.profile.mean(), mean, rtol=1e-1, atol=1e-8)
 
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
@@ -131,8 +135,7 @@ class TestDensityPlanar(ReferenceAtomGroups):
 
     def test_comshift_z2(self, mica_water):
         """Test comshift with an additional shift by z/2."""
-        mica_water.atoms.translate(
-            (0, 0, mica_water.universe.dimensions[2] / 2))
+        mica_water.atoms.translate((0, 0, mica_water.universe.dimensions[2] / 2))
         dens = DensityPlanar(mica_water, refgroup=mica_water).run()
         assert_allclose(dens.results.profile[20], 0.56, rtol=1e-1)
 

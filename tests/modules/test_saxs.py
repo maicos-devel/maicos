@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
-"""Tests for the SAXS modules."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the SAXS modules."""
 import os
 import sys
 
@@ -41,8 +41,7 @@ class TestSaxs(ReferenceAtomGroups):
         return u.atoms
 
     def test_one_frame(sef, ag_single_frame):
-        """
-        Test Saxs on one frame.
+        """Test Saxs on one frame.
 
         Test if the division by the number of frames is correct.
         """
@@ -60,4 +59,4 @@ class TestSaxs(ReferenceAtomGroups):
     def test_nobindata(self, ag_single_frame):
         """Test when nobindata is True."""
         saxs = Saxs(ag_single_frame, nobin=True).run()
-        assert_equal(type(saxs.q_factor).__name__ == 'ndarray', True)
+        assert_equal(type(saxs.q_factor).__name__ == "ndarray", True)
