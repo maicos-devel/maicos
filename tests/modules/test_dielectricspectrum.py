@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -76,10 +76,9 @@ class TestDielectricSpectrum(object):
             ds.run()
 
             V = 1559814.4
-            nu = [0., 0.2, 0.5, 0.7, 1.]
-            susc = [27.5 + 0.j, 2.9 + 22.3j, -5.0 + 3.6j,
-                    -0.5 + 10.7j, -16.8 + 3.5j]
-            dsusc = [3.4 + 0.j, 0.4 + 2.9j, 1.0 + 0.5j, 0.3 + 1.5j, 2.0 + 0.6j]
+            nu = [0.0, 0.2, 0.5, 0.7, 1.0]
+            susc = [27.5 + 0.0j, 2.9 + 22.3j, -5.0 + 3.6j, -0.5 + 10.7j, -16.8 + 3.5j]
+            dsusc = [3.4 + 0.0j, 0.4 + 2.9j, 1.0 + 0.5j, 0.3 + 1.5j, 2.0 + 0.6j]
 
             assert_allclose(ds.V, V, rtol=1e-1)
             assert_allclose(ds.results.nu, nu, rtol=1)

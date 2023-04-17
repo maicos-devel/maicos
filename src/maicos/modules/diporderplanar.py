@@ -22,10 +22,9 @@ logger = logging.getLogger(__name__)
 class DiporderPlanar(ProfilePlanarBase):
     r"""Dipolar order parameters.
 
-    Calculations include the projected dipole density
-    :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation
-    :math:`\cos(θ[z])`, the squared dipole
-    orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.
+    Calculations include the projected dipole density :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the
+    dipole orientation :math:`\cos(θ[z])`, the squared dipole orientation
+    :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.
 
     ${CORRELATION_INFO_PLANAR}
 
@@ -40,22 +39,23 @@ class DiporderPlanar(ProfilePlanarBase):
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
     """
 
-    def __init__(self,
-                 atomgroups,
-                 dim=2,
-                 zmin=None,
-                 zmax=None,
-                 bin_width=1,
-                 refgroup=None,
-                 sym=False,
-                 grouping="residues",
-                 unwrap=True,
-                 bin_method="com",
-                 output="diporder_planar.dat",
-                 concfreq=0,
-                 order_parameter="P0",
-                 jitter=0.0):
-
+    def __init__(
+        self,
+        atomgroups,
+        dim=2,
+        zmin=None,
+        zmax=None,
+        bin_width=1,
+        refgroup=None,
+        sym=False,
+        grouping="residues",
+        unwrap=True,
+        bin_method="com",
+        output="diporder_planar.dat",
+        concfreq=0,
+        order_parameter="P0",
+        jitter=0.0,
+    ):
         if order_parameter == "P0":
             normalization = "volume"
         else:
@@ -77,4 +77,5 @@ class DiporderPlanar(ProfilePlanarBase):
             bin_method=bin_method,
             output=output,
             concfreq=concfreq,
-            jitter=jitter)
+            jitter=jitter,
+        )

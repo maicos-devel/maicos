@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -30,11 +30,10 @@ class TestDensitySphere(object):
         u = mda.Universe(WATER_TPR, WATER_TRR)
         return u.atoms
 
-    @pytest.mark.parametrize('dens_type, mean',
-                             (('mass', 0.555), ('number', 0.093),
-                              ('charge', 2e-4)))
+    @pytest.mark.parametrize(
+        "dens_type, mean", (("mass", 0.555), ("number", 0.093), ("charge", 2e-4))
+    )
     def test_dens(self, ag, dens_type, mean):
         """Test density."""
         dens = DensitySphere(ag, dens=dens_type).run()
-        assert_allclose(dens.results.profile.mean(), mean,
-                        atol=1e-4, rtol=1e-2)
+        assert_allclose(dens.results.profile.mean(), mean, atol=1e-4, rtol=1e-2)

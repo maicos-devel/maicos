@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -30,8 +30,7 @@ def test_density_weights_mass():
     assert_allclose(weights, u.atoms.masses)
 
 
-@pytest.mark.parametrize("compound", ["residues", "segments", "molecules",
-                                      "fragments"])
+@pytest.mark.parametrize("compound", ["residues", "segments", "molecules", "fragments"])
 def test_density_weights_mass_grouping(compound):
     """Test mass weights with grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
@@ -46,8 +45,7 @@ def test_density_weights_charge():
     assert_equal(weights, u.atoms.charges)
 
 
-@pytest.mark.parametrize("compound", ["residues", "segments", "molecules",
-                                      "fragments"])
+@pytest.mark.parametrize("compound", ["residues", "segments", "molecules", "fragments"])
 def test_density_weights_charge_grouping(compound):
     """Test charge weights with grouping."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
@@ -66,8 +64,7 @@ def test_density_weights_number(compound):
 def test_density_weights_number_molecules():
     """Test number weights for grouping with respect to molecules."""
     u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(
-        u.atoms, "molecules", "number")
+    weights = maicos.lib.weights.density_weights(u.atoms, "molecules", "number")
     assert_equal(weights, np.ones(len(np.unique(u.atoms.molnums))))
 
 
@@ -78,10 +75,7 @@ def test_density_weights_error():
         maicos.lib.weights.density_weights(u.atoms, "atoms", "foo")
 
 
-@pytest.mark.parametrize("grouping", ('residues',
-                                      'segments',
-                                      'molecules',
-                                      'fragments'))
+@pytest.mark.parametrize("grouping", ("residues", "segments", "molecules", "fragments"))
 def test_tempetaure_weights_grouping(grouping):
     """Test when grouping != atoms."""
     u = mda.Universe(WATER_TPR, WATER_TRR)

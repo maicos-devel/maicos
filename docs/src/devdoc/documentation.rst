@@ -4,10 +4,9 @@ Contributing to the documentation
 Local documentation
 -------------------
 
-The documentation of MAICoS is written in reStructuredText (rst)
-and uses `Sphinx`_ documentation generator. In order to modify the
-documentation, first create a local version on your machine.
-Go to the `MAICoS develop project`_ page and hit the ``Fork``
+The documentation of MAICoS is written in reStructuredText (rst) and uses `Sphinx`_
+documentation generator. In order to modify the documentation, first create a local
+version on your machine. Go to the `MAICoS develop project`_ page and hit the ``Fork``
 button, then clone your forked branch to your machine:
 
 .. code-block:: bash
@@ -20,8 +19,8 @@ Then, build the documentation from the ``maicos/docs`` folder:
 
     tox -e docs
 
-Then, visualize the local documentation
-with your favorite internet explorer (here Mozilla Firefox is used)
+Then, visualize the local documentation with your favorite internet explorer (here
+Mozilla Firefox is used)
 
 .. code-block:: bash
 
@@ -30,14 +29,14 @@ with your favorite internet explorer (here Mozilla Firefox is used)
 Structure
 ---------
 
-Most of the content of the documentation is written in ``.rst`` files
-located within ``docs/src/``. The content in the :ref:`userdoc-references`
-section is directly generated from the documentation string of the source
-code located in ``src/maicos`` thanks to `Sphinx`_ and `Autodoc`_.
+Most of the content of the documentation is written in ``.rst`` files located within
+``docs/src/``. The content in the :ref:`userdoc-references` section is directly
+generated from the documentation string of the source code located in ``src/maicos``
+thanks to `Sphinx`_ and `Autodoc`_.
 
-After creating a new module, add it to the documentation by modifying
-the `toctree` in the ``docs/src/references/modules/index.rst`` file,
-and adding a new .rst file with the following format:
+After creating a new module, add it to the documentation by modifying the `toctree` in
+the ``docs/src/references/modules/index.rst`` file, and adding a new .rst file with the
+following format:
 
 .. code-block:: bash
 
@@ -53,9 +52,8 @@ and adding a new .rst file with the following format:
         :undoc-members:
         :show-inheritance:
 
-Note that all files located within ``docs/src/examples``
-are generated from the Python scrips located
-in ``examples`` using `Sphinx-Gallery`_.
+Note that all files located within ``docs/src/examples`` are generated from the Python
+scrips located in ``examples`` using `Sphinx-Gallery`_.
 
 .. _`Sphinx` : https://www.sphinx-doc.org/en/master/
 .. _`Sphinx-Gallery` : https://sphinx-gallery.github.io/stable/index.html

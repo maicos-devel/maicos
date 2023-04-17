@@ -1,11 +1,12 @@
-"""Tests for the base modules."""
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
+"""Tests for the base modules."""
 
 import inspect
 import logging
@@ -32,20 +33,24 @@ from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 class SphereClass(SphereBase):
     """Tests for the Planar Base class."""
 
-    def __init__(self,
-                 atomgroups,
-                 pos_arg,
-                 opt_arg="foo",
-                 rmin=0,
-                 rmax=None,
-                 bin_width=1,
-                 **kwargs):
-        super(SphereClass, self).__init__(atomgroups=atomgroups,
-                                          rmin=rmin,
-                                          rmax=rmax,
-                                          bin_width=bin_width,
-                                          multi_group=True,
-                                          **kwargs)
+    def __init__(
+        self,
+        atomgroups,
+        pos_arg,
+        opt_arg="foo",
+        rmin=0,
+        rmax=None,
+        bin_width=1,
+        **kwargs,
+    ):
+        super(SphereClass, self).__init__(
+            atomgroups=atomgroups,
+            rmin=rmin,
+            rmax=rmax,
+            bin_width=bin_width,
+            multi_group=True,
+            **kwargs,
+        )
         self.pos_arg = pos_arg
         self.opt_arg = opt_arg
 
@@ -84,31 +89,29 @@ class TestSphereBase(object):
 
     def test_wrong_rlims(self, ag):
         """Test wrong r limits."""
-        with pytest.raises(ValueError,
-                           match='can not be smaller'):
+        with pytest.raises(ValueError, match="can not be smaller"):
             sphere_class_obj = SphereClass(ag, pos_arg=42, rmax=1, rmin=2)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('bin_width', (0, -0.5, 'x'))
+    @pytest.mark.parametrize("bin_width", (0, -0.5, "x"))
     def test_wrong_bin_width(self, ag, bin_width):
         """Test bin_width error."""
-        with pytest.raises(ValueError,
-                           match=r'Binwidth must be a.* number.'):
-            sphere_class_obj = SphereClass(ag, pos_arg=42,
-                                           bin_width=bin_width)
+        with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
+            sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('bin_width', (1, 7.75, 125))
+    @pytest.mark.parametrize("bin_width", (1, 7.75, 125))
     def test_bin_width(self, ag, bin_width):
         """Test bin_width."""
-        sphere_class_obj = SphereClass(ag,
-                                       pos_arg=42,
-                                       bin_width=bin_width).run()
+        sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width).run()
 
-        assert sphere_class_obj.n_bins == \
-            int(np.ceil(sphere_class_obj.means.R / bin_width))
-        assert sphere_class_obj.means.bin_width \
+        assert sphere_class_obj.n_bins == int(
+            np.ceil(sphere_class_obj.means.R / bin_width)
+        )
+        assert (
+            sphere_class_obj.means.bin_width
             == sphere_class_obj.means.R / sphere_class_obj.n_bins
+        )
 
     def bindwidth_neg(self, ag):
         """Raise error for negative bin_width."""
@@ -141,10 +144,7 @@ class TestSphereBase(object):
     def test_rmin(self, ag):
         """Test rmin."""
         bin_width = 2
-        sphere_class_obj = SphereClass(ag,
-                                       pos_arg=42,
-                                       rmin=2,
-                                       bin_width=bin_width)
+        sphere_class_obj = SphereClass(ag, pos_arg=42, rmin=2, bin_width=bin_width)
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.rmin == 2
@@ -158,10 +158,7 @@ class TestSphereBase(object):
     def test_rmax(self, ag):
         """Test rmax."""
         bin_width = 2
-        sphere_class_obj = SphereClass(ag,
-                                       rmax=6,
-                                       pos_arg=42,
-                                       bin_width=bin_width)
+        sphere_class_obj = SphereClass(ag, rmax=6, pos_arg=42, bin_width=bin_width)
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.rmax == 6
@@ -176,11 +173,9 @@ class TestSphereBase(object):
     def test_rmin_rmax(self, ag):
         """Test rmin rmax."""
         bin_width = 2
-        sphere_class_obj = SphereClass(ag,
-                                       rmin=10,
-                                       rmax=20,
-                                       pos_arg=42,
-                                       bin_width=bin_width)
+        sphere_class_obj = SphereClass(
+            ag, rmin=10, rmax=20, pos_arg=42, bin_width=bin_width
+        )
         sphere_class_obj._prepare()
 
         assert sphere_class_obj.n_bins == (20 - 10) / bin_width
@@ -191,7 +186,7 @@ class TestSphereBase(object):
         with pytest.raises(ValueError, match="can not be smaller than"):
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize('bin_width_in', (0.1, .775))
+    @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
     def test_results_bin_pos(self, ag, bin_width_in):
         """Test bin positions."""
         sphere_class_obj = SphereClass(ag, bin_width=bin_width_in, pos_arg=42)
@@ -199,8 +194,7 @@ class TestSphereBase(object):
 
         rmax = ag.universe.dimensions.min() / 2
 
-        bin_pos = np.linspace(
-            0, rmax, sphere_class_obj.n_bins, endpoint=False)
+        bin_pos = np.linspace(0, rmax, sphere_class_obj.n_bins, endpoint=False)
         bin_pos += sphere_class_obj.means.bin_width / 2
 
         assert_allclose(sphere_class_obj.results.bin_pos, bin_pos)
@@ -209,9 +203,12 @@ class TestSphereBase(object):
         """Test correct volume of ach bin."""
         sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
         sphere_class_obj.run(stop=5)
-        bin_volume = 4 * np.pi * np.array([1**3 - 0**3,
-                                           2**3 - 1**3,
-                                           3**3 - 2**3]) / 3
+        bin_volume = (
+            4
+            * np.pi
+            * np.array([1**3 - 0**3, 2**3 - 1**3, 3**3 - 2**3])
+            / 3
+        )
 
         assert_allclose(sphere_class_obj.means.bin_volume, bin_volume)
 
@@ -291,16 +288,14 @@ class TestSphereBase(object):
         u = ag.universe
 
         cls._prepare()
-        assert_equal(cls.pos_sph,
-                     cls.transform_positions(u.atoms.positions))
+        assert_equal(cls.pos_sph, cls.transform_positions(u.atoms.positions))
 
         # Test if _single_frame updates the positions.
         cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()
-        assert_equal(cls.pos_sph,
-                     cls.transform_positions(u.atoms.positions))
+        assert_equal(cls.pos_sph, cls.transform_positions(u.atoms.positions))
 
 
 class TestSphereBaseChilds:
@@ -314,16 +309,17 @@ class TestSphereBaseChilds:
 
     members = []
     for _, member in inspect.getmembers(maicos):
-        if inspect.isclass(member) and issubclass(member, SphereBase) \
-                and member is not SphereBase:
+        if (
+            inspect.isclass(member)
+            and issubclass(member, SphereBase)
+            and member is not SphereBase
+        ):
             members.append(member)
 
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(rmin=0,
-                      rmax=None,
-                      bin_width=1)
+        params = dict(rmin=0, rmax=None, bin_width=1)
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = SphereBase(ag_single_frame, **params).run()
 
@@ -349,11 +345,13 @@ class TestProfileSphereBase:
         n_atoms = 125
         n_frames = 4_000
 
-        universe = mda.Universe.empty(n_atoms=n_atoms,
-                                      n_residues=n_atoms,
-                                      n_segments=n_atoms,
-                                      atom_resindex=np.arange(n_atoms),
-                                      residue_segindex=np.arange(n_atoms))
+        universe = mda.Universe.empty(
+            n_atoms=n_atoms,
+            n_residues=n_atoms,
+            n_segments=n_atoms,
+            atom_resindex=np.arange(n_atoms),
+            residue_segindex=np.arange(n_atoms),
+        )
 
         for attr in ["charges", "masses"]:
             universe.add_TopologyAttr(attr, values=np.ones(n_atoms))
@@ -375,9 +373,9 @@ class TestProfileSphereBase:
 
         coords += 1
 
-        universe.trajectory = get_reader_for(coords)(coords,
-                                                     order='fac',
-                                                     n_atoms=n_atoms)
+        universe.trajectory = get_reader_for(coords)(
+            coords, order="fac", n_atoms=n_atoms
+        )
 
         for ts in universe.trajectory:
             ts.dimensions = np.array([2, 2, 2, 90, 90, 90])
@@ -387,11 +385,13 @@ class TestProfileSphereBase:
     @pytest.fixture()
     def u_dimers(self):
         """Generate a universe containing two dimers with a dipole moment."""
-        universe = mda.Universe.empty(n_atoms=4,
-                                      n_residues=2,
-                                      n_segments=2,
-                                      atom_resindex=[0, 0, 1, 1],
-                                      residue_segindex=[0, 1])
+        universe = mda.Universe.empty(
+            n_atoms=4,
+            n_residues=2,
+            n_segments=2,
+            atom_resindex=[0, 0, 1, 1],
+            residue_segindex=[0, 1],
+        )
 
         universe.add_TopologyAttr("masses", [1, 0, 0, 1])
         universe.add_TopologyAttr("charges", [1, -1, -1, 1])
@@ -399,12 +399,11 @@ class TestProfileSphereBase:
         universe.add_TopologyAttr("resids", [0, 1])
         universe.add_TopologyAttr("molnums", [0, 1])
 
-        positions = np.array([[1, 1, 1], [1, 1, -1],
-                              [1, 1, 1], [1, 1, 3]])
+        positions = np.array([[1, 1, 1], [1, 1, -1], [1, 1, 1], [1, 1, 3]])
 
-        universe.trajectory = get_reader_for(positions)(positions,
-                                                        order='fac',
-                                                        n_atoms=4)
+        universe.trajectory = get_reader_for(positions)(
+            positions, order="fac", n_atoms=4
+        )
 
         for ts in universe.trajectory:
             ts.dimensions = np.array([2, 2, 2, 90, 90, 90])
@@ -418,18 +417,20 @@ class TestProfileSphereBase:
     @pytest.fixture()
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(weighting_function=self.weights,
-                 atomgroups=u.atoms,
-                 normalization="number",
-                 rmin=0,
-                 rmax=None,
-                 bin_width=0.1,
-                 refgroup=None,
-                 grouping="atoms",
-                 unwrap=False,
-                 bin_method="com",
-                 concfreq=0,
-                 output="profile.dat")
+        p = dict(
+            weighting_function=self.weights,
+            atomgroups=u.atoms,
+            normalization="number",
+            rmin=0,
+            rmax=None,
+            bin_width=0.1,
+            refgroup=None,
+            grouping="atoms",
+            unwrap=False,
+            bin_method="com",
+            concfreq=0,
+            output="profile.dat",
+        )
         return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
@@ -459,15 +460,18 @@ class TestProfileSphereBase:
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
 
-    @pytest.mark.parametrize("grouping", ["atoms", "segments", "residues",
-                                          "molecules", "fragments"])
+    @pytest.mark.parametrize(
+        "grouping", ["atoms", "segments", "residues", "molecules", "fragments"]
+    )
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      rmax=2,
-                      normalization="None",
-                      grouping=grouping)
+        params.update(
+            atomgroups=u_dimers.atoms,
+            bin_width=1,
+            rmax=2,
+            normalization="None",
+            grouping=grouping,
+        )
         profile = ProfileSphereBase(**params).run()
         actual = profile.results.profile.flatten()
 
@@ -478,32 +482,35 @@ class TestProfileSphereBase:
 
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("bin_method, desired",
-                             [("cog", [np.nan, 1]),
-                              ("com", [1, np.nan]),
-                              ("coc", [np.nan, 1])])
+    @pytest.mark.parametrize(
+        "bin_method, desired",
+        [("cog", [np.nan, 1]), ("com", [1, np.nan]), ("coc", [np.nan, 1])],
+    )
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      rmax=2,
-                      bin_method=bin_method,
-                      grouping="molecules")
+        params.update(
+            atomgroups=u_dimers.atoms,
+            bin_width=1,
+            rmax=2,
+            bin_method=bin_method,
+            grouping="molecules",
+        )
         profile = ProfileSphereBase(**params).run()
         actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("unwrap, desired",
-                             [(False, [2, 0]), (True, [2, 0])])
+    @pytest.mark.parametrize("unwrap, desired", [(False, [2, 0]), (True, [2, 0])])
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
-        params.update(atomgroups=u_dimers.atoms,
-                      bin_width=1,
-                      rmax=2,
-                      unwrap=unwrap,
-                      bin_method='com',
-                      normalization="none",
-                      grouping="molecules")
+        params.update(
+            atomgroups=u_dimers.atoms,
+            bin_width=1,
+            rmax=2,
+            unwrap=unwrap,
+            bin_method="com",
+            normalization="none",
+            grouping="molecules",
+        )
 
         profile = ProfileSphereBase(**params).run()
         actual = profile.results.profile.flatten()
@@ -514,7 +521,8 @@ class TestProfileSphereBase:
         p = ProfileSphereBase(**params)
         p._prepare()
         hist = p._compute_histogram(
-            np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins), weights=None)
+            np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins), weights=None
+        )
 
         assert_equal(hist, [1, 1, 0, 1, 0, 1, 0, 1, 0, 1])
 
@@ -524,7 +532,8 @@ class TestProfileSphereBase:
         p._prepare()
         hist = p._compute_histogram(
             np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins),
-            weights=5 * np.ones(p.n_bins))
+            weights=5 * np.ones(p.n_bins),
+        )
 
         assert_equal(hist, [5, 5, 0, 5, 0, 5, 0, 5, 0, 5])
 

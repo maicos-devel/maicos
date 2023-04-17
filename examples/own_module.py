@@ -1,22 +1,22 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
-# (see the file AUTHORS for the full list of names)
+# Copyright (c) 2023 Authors and contributors
+# (see the AUTHORS.rst file for the full list of names)
 #
-# Released under the GNU Public Licence, v2 or any higher version
-# SPDX-License-Identifier: GPL-2.0-or-later
+# Released under the GNU Public Licence, v3 or any higher version
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 Writing your own analysis module
 ================================
 
-To write your own analysis module you can use the example given below.
-As with all MAICoS modules, this inherits from the
-:class:`maicos.core.base.AnalysisBase` class.
+To write your own analysis module you can use the example given below. As with all
+MAICoS modules, this inherits from the :class:`maicos.core.base.AnalysisBase` class.
 
-The example will calculate the average box volume and stores the result
-within the result object of the class.
+The example will calculate the average box volume and stores the result within the
+result object of the class.
 """
+# %%
 
 import logging
 
@@ -27,17 +27,14 @@ from maicos.lib.util import render_docs
 
 
 # %%
-#
 # Creating a logger makes debugging easier.
 
 logger = logging.getLogger(__name__)
 
 # %%
-#
-# In the following the example of an analysis class. To to the simular
-# structure of all MAICoS modules we render the paramaters using
-# the :func:`maicos.lib.util.render_docs` decorator. The decorator will
-# replace for keywors like `${ATOMGROUP_PARAMETER}` or
+# In the following the example of an analysis class. To to the simular structure of all
+# MAICoS modules we render the paramaters using the :func:`maicos.lib.util.render_docs`
+# decorator. The decorator will replace for keywors like `${ATOMGROUP_PARAMETER}` or
 # `${BASE_CLASS_PARAMETERS}` with the actual docstring as defined in
 # :attr:`maicos.lib.util.DOC_DICT`.
 
@@ -61,19 +58,23 @@ class AnalysisExample(AnalysisBase):
         averaged box volume (Å³)
     """
 
-    def __init__(self,
-                 atomgroup,
-                 unwrap=False,
-                 refgroup=None,
-                 jitter=0.0,
-                 concfreq=0,
-                 temperature=300,
-                 output="outfile.dat"):
-        super().__init__(atomgroup,
-                         refgroup=refgroup,
-                         unwrap=unwrap,
-                         jitter=jitter,
-                         concfreq=concfreq)
+    def __init__(
+        self,
+        atomgroup,
+        unwrap=False,
+        refgroup=None,
+        jitter=0.0,
+        concfreq=0,
+        temperature=300,
+        output="outfile.dat",
+    ):
+        super().__init__(
+            atomgroup,
+            refgroup=refgroup,
+            unwrap=unwrap,
+            jitter=jitter,
+            concfreq=concfreq,
+        )
 
         self.temperature = temperature
         self.output = output
@@ -105,31 +106,31 @@ class AnalysisExample(AnalysisBase):
         Called at the end of the run() method to finish everything up.
         """
         self.results.volume = self.volume / self.n_frames
-        logger.info("Average volume of the simulation box "
-                    f"{self.results.volume:.2f} Å³")
+        logger.info(
+            "Average volume of the simulation box " f"{self.results.volume:.2f} Å³"
+        )
 
     def save(self):
         """Save results to a file.
 
         Called at the end of the run() method after _conclude.
         """
-        self.savetxt(self.output,
-                     np.array([self.results.volume]),
-                     columns='volume / Å³')
+        self.savetxt(
+            self.output, np.array([self.results.volume]), columns="volume / Å³"
+        )
+
 
 # %%
-#
 # Now run your new module like all the other modules.
 #
 # Using your modules from the command line
 # ----------------------------------------
 #
-# To add your custom module to the MAICoS CLI first
-# create a ``.maicos`` folder in your home directory.
-# Afterwards, copy your analysis module file to this folder. MAICoS will detect
-# all modules within the ``.maicos`` folder based on a
-# ``maicos_custom_modules.py`` file. Create this file based on the example below
-# and adjust the name of your module accordingly.
+# To add your custom module to the MAICoS CLI first create a ``.maicos`` folder in your
+# home directory. Afterwards, copy your analysis module file to this folder. MAICoS will
+# detect all modules within the ``.maicos`` folder based on a
+# ``maicos_custom_modules.py`` file. Create this file based on the example below and
+# adjust the name of your module accordingly.
 #
 # .. literalinclude:: ../../../examples/maicos_custom_modules.py
 #    :language: python

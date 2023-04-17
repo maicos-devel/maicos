@@ -3,8 +3,7 @@
 Getting started
 ===============
 
-This sections describes MAICoS, how to install it,
-and its most basic commands.
+This sections describes MAICoS, how to install it, and its most basic commands.
 
 .. toctree::
     :maxdepth: 0

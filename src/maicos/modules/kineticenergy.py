@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -18,13 +18,12 @@ from ..lib.util import get_compound, render_docs
 class KineticEnergy(AnalysisBase):
     """Kinetic energy timeseries.
 
-    The kinetic energy function computes the translational and
-    rotational kinetic energy with respect to molecular center
-    (center of mass, center of charge) of a molecular dynamics
-    simulation trajectory.
+    The kinetic energy function computes the translational and rotational kinetic energy
+    with respect to molecular center (center of mass, center of charge) of a molecular
+    dynamics simulation trajectory.
 
-    The analysis can be applied to study the dynamics of water
-    molecules during an excitation pulse. For more details read
+    The analysis can be applied to study the dynamics of water molecules during an
+    excitation pulse. For more details read
     :footcite:t:`elgabartyEnergyTransferHydrogen2020`.
 
     Parameters
@@ -32,8 +31,8 @@ class KineticEnergy(AnalysisBase):
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     refpoint : str
-        reference point for molecular center: center of
-        mass (``com``) or center of charge (``coc``).
+        reference point for molecular center: center of mass (``com``) or center of
+        charge (``coc``).
     output : str
         Output filename.
 
@@ -51,19 +50,23 @@ class KineticEnergy(AnalysisBase):
     .. footbibliography::
     """
 
-    def __init__(self,
-                 atomgroup,
-                 unwrap=False,
-                 refgroup=None,
-                 jitter=0.0,
-                 concfreq=0,
-                 output="ke.dat",
-                 refpoint="COM"):
-        super(KineticEnergy, self).__init__(atomgroup,
-                                            unwrap=unwrap,
-                                            refgroup=refgroup,
-                                            jitter=jitter,
-                                            concfreq=concfreq)
+    def __init__(
+        self,
+        atomgroup,
+        unwrap=False,
+        refgroup=None,
+        jitter=0.0,
+        concfreq=0,
+        output="ke.dat",
+        refpoint="COM",
+    ):
+        super(KineticEnergy, self).__init__(
+            atomgroup,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            concfreq=concfreq,
+        )
         self.output = output
         self.refpoint = refpoint.lower()
 
@@ -71,15 +74,15 @@ class KineticEnergy(AnalysisBase):
         """Set things up before the analysis loop begins."""
         if self.refpoint not in ["com", "coc"]:
             raise ValueError(
-                "Invalid choice for dens: '{}' (choose "
-                "from 'com' or " "'coc')".format(self.refpoint))
+                f"Invalid choice for dens: {self.refpoint} (choose from 'com' or 'coc')"
+            )
 
         self.masses = self.atomgroup.atoms.accumulate(
-            self.atomgroup.atoms.masses,
-            compound=get_compound(self.atomgroup))
-        self.abscharges = self.atomgroup.atoms.accumulate(np.abs(
-            self.atomgroup.atoms.charges),
-            compound=get_compound(self.atomgroup))
+            self.atomgroup.atoms.masses, compound=get_compound(self.atomgroup)
+        )
+        self.abscharges = self.atomgroup.atoms.accumulate(
+            np.abs(self.atomgroup.atoms.charges), compound=get_compound(self.atomgroup)
+        )
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
 
@@ -89,24 +92,29 @@ class KineticEnergy(AnalysisBase):
     def _single_frame(self):
         self.E_kin[self._frame_index] = np.dot(
             self.atomgroup.masses,
-            np.linalg.norm(self.atomgroup.velocities, axis=1)**2)
+            np.linalg.norm(self.atomgroup.velocities, axis=1) ** 2,
+        )
 
         if self.refpoint == "com":
-            massvel = self.atomgroup.velocities * \
-                self.atomgroup.masses[:, np.newaxis]
+            massvel = self.atomgroup.velocities * self.atomgroup.masses[:, np.newaxis]
             v = self.atomgroup.accumulate(
-                massvel, compound=get_compound(self.atomgroup))
+                massvel, compound=get_compound(self.atomgroup)
+            )
             v /= self.masses[:, np.newaxis]
 
         elif self.refpoint == "coc":
-            abschargevel = self.atomgroup.velocities * \
-                np.abs(self.atomgroup.charges)[:, np.newaxis]
+            abschargevel = (
+                self.atomgroup.velocities
+                * np.abs(self.atomgroup.charges)[:, np.newaxis]
+            )
             v = self.atomgroup.accumulate(
-                abschargevel, compound=get_compound(self.atomgroup))
+                abschargevel, compound=get_compound(self.atomgroup)
+            )
             v /= self.abscharges[:, np.newaxis]
 
-        self.E_center[self._frame_index] = np.dot(self.masses,
-                                                  np.linalg.norm(v, axis=1)**2)
+        self.E_center[self._frame_index] = np.dot(
+            self.masses, np.linalg.norm(v, axis=1) ** 2
+        )
 
     def _conclude(self):
         self.results.t = self.times
@@ -115,10 +123,8 @@ class KineticEnergy(AnalysisBase):
 
     def save(self):
         """Save result."""
-        self.savetxt(self.output,
-                     np.vstack([
-                         self.results.t, self.results.trans,
-                         self.results.rot
-                         ]).T,
-                     columns=["t", "E_kin^trans [kJ/mol]",
-                              "E_kin^rot [kJ/mol]"])
+        self.savetxt(
+            self.output,
+            np.vstack([self.results.t, self.results.trans, self.results.rot]).T,
+            columns=["t", "E_kin^trans [kJ/mol]", "E_kin^rot [kJ/mol]"],
+        )

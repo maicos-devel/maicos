@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -50,8 +50,9 @@ def density_weights(atomgroup, grouping, dens):
         else:
             return atomgroup.total_charge(compound=grouping)
     else:
-        raise ValueError(f"`{dens}` not supported. "
-                         "Use `mass`, `number` or `charge`.")
+        raise ValueError(
+            f"`{dens}` not supported. " "Use `mass`, `number` or `charge`."
+        )
 
 
 def temperature_weights(ag, grouping):
@@ -75,13 +76,14 @@ def temperature_weights(ag, grouping):
         Currently only works for `grouping='atoms'`
     """
     if grouping != "atoms":
-        raise NotImplementedError(f"Temperature calculations of {grouping!r}"
-                                  "is not supported. Use 'atoms' "
-                                  "instead.'")
+        raise NotImplementedError(
+            f"Temperature calculations of {grouping!r} is not supported. Use 'atoms' "
+            "instead.'"
+        )
 
     # ((1 u * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-    return (ag.velocities ** 2).sum(axis=1) * ag.atoms.masses / 2 * prefac
+    return (ag.velocities**2).sum(axis=1) * ag.atoms.masses / 2 * prefac
 
 
 def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
@@ -107,8 +109,7 @@ def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
         raise ValueError("Atoms do not have an orientation.")
 
     chargepos = atomgroup.positions * atomgroup.charges[:, np.newaxis]
-    dipoles = atomgroup.accumulate(chargepos,
-                                   compound=get_compound(atomgroup))
+    dipoles = atomgroup.accumulate(chargepos, compound=get_compound(atomgroup))
 
     # unit normal vector
     unit = np.zeros(3)
@@ -117,14 +118,14 @@ def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
     if order_parameter == "P0":
         weights = np.dot(dipoles, unit)
     elif order_parameter in ["cos_theta", "cos_2_theta"]:
-        weights = np.dot(dipoles
-                         / np.linalg.norm(dipoles, axis=1)[:, np.newaxis],
-                         unit)
+        weights = np.dot(dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis], unit)
         if order_parameter == "cos_2_theta":
             weights *= weights
     else:
-        raise ValueError(f"{order_parameter!r} not supported. "
-                         "Use 'P0', 'cos_theta' or 'cos_2_theta'.")
+        raise ValueError(
+            f"{order_parameter!r} not supported. "
+            "Use 'P0', 'cos_theta' or 'cos_2_theta'."
+        )
 
     return weights
 
@@ -132,9 +133,8 @@ def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
 def velocity_weights(atomgroup, grouping, vdim, flux):
     """Weights for velocity calculations.
 
-    The function either normalises by the number of compounds
-    (to get the velocity) or does not normalise to get the flux
-    (flux = velocity x number of compounds).
+    The function either normalises by the number of compounds (to get the velocity) or
+    does not normalise to get the flux (flux = velocity x number of compounds).
 
     Parameters
     ----------
@@ -158,9 +158,11 @@ def velocity_weights(atomgroup, grouping, vdim, flux):
         vels = atom_vels
     else:
         mass_vels = atomgroup.atoms.accumulate(
-            atom_vels * atomgroup.atoms.masses, compound=grouping)
+            atom_vels * atomgroup.atoms.masses, compound=grouping
+        )
         group_mass = atomgroup.atoms.accumulate(
-            atomgroup.atoms.masses, compound=grouping)
+            atomgroup.atoms.masses, compound=grouping
+        )
         vels = mass_vels / group_mass
 
     return vels

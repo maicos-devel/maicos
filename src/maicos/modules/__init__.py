@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -26,19 +26,19 @@ from .velocityplanar import VelocityPlanar
 
 
 __all__ = [
-    'DensityCylinder',
-    'DensityPlanar',
-    'DensitySphere',
-    'DielectricCylinder',
-    'DielectricPlanar',
-    'DielectricSpectrum',
-    'DielectricSphere',
-    'DipoleAngle',
-    'DiporderPlanar',
-    'KineticEnergy',
-    'RDFPlanar',
-    'Saxs',
-    'TemperaturePlanar',
-    'VelocityCylinder',
-    'VelocityPlanar'
-    ]
+    "DensityCylinder",
+    "DensityPlanar",
+    "DensitySphere",
+    "DielectricCylinder",
+    "DielectricPlanar",
+    "DielectricSpectrum",
+    "DielectricSphere",
+    "DipoleAngle",
+    "DiporderPlanar",
+    "KineticEnergy",
+    "RDFPlanar",
+    "Saxs",
+    "TemperaturePlanar",
+    "VelocityCylinder",
+    "VelocityPlanar",
+]

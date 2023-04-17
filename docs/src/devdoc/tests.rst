@@ -1,12 +1,11 @@
 Testing
 =======
 
-Whenever you add a new feature to the code you should also add a test case.
-Further test cases are also useful if a bug is fixed or you consider something
-to be worthwhile. Follow the philosophy - the more the better!
+Whenever you add a new feature to the code you should also add a test case. Further test
+cases are also useful if a bug is fixed or you consider something to be worthwhile.
+Follow the philosophy - the more the better!
 
-Continuous Integration pipeline is based on Tox_.
-So you need to install `tox` first::
+Continuous Integration pipeline is based on Tox_. So you need to install `tox` first::
 
     pip install tox
     # or
@@ -20,11 +19,11 @@ You can run all tests by:
 
     tox
 
-These are exactly the same tests that will be performed online in our
-GitLab CI workflows.
+These are exactly the same tests that will be performed online in our GitLab CI
+workflows.
 
-Also, you can run individual environments if you wish to test only
-specific functionalities, for example:
+Also, you can run individual environments if you wish to test only specific
+functionalities, for example:
 
 ::
 
@@ -33,6 +32,12 @@ specific functionalities, for example:
     tox -e docs  # only builds the documentation
     tox -e py310-tests  # testing
 
-Where the commands above assume that you are using Python 3.10 and Linux.
-For other Python versions i.e. 3.11 change to `py311`. For MacOs use
-`macos` and for Windows `windows`.
+Where the commands above assume that you are using Python 3.10 and Linux. For other
+Python versions i.e. 3.11 change to `py311`. For MacOs use `macos` and for Windows
+`windows`.
+
+You can also use ``tox -e format`` to use tox to do actual formatting instead of just
+testing it. Also, you may want to setup your editor to automatically apply the `black
+<https://black.readthedocs.io/en/stable/>`_ code formatter when saving your files, there
+are plugins to do this with `all major editors
+<https://black.readthedocs.io/en/stable/editor_integration.html>`_.

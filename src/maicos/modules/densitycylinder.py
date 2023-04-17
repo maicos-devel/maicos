@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -37,23 +37,24 @@ class DensityCylinder(ProfileCylinderBase):
     ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
     """
 
-    def __init__(self,
-                 atomgroups,
-                 dens="mass",
-                 dim=2,
-                 zmin=None,
-                 zmax=None,
-                 bin_width=1,
-                 rmin=0,
-                 rmax=None,
-                 refgroup=None,
-                 grouping="atoms",
-                 unwrap=True,
-                 bin_method="com",
-                 output="density.dat",
-                 concfreq=0,
-                 jitter=0.0):
-
+    def __init__(
+        self,
+        atomgroups,
+        dens="mass",
+        dim=2,
+        zmin=None,
+        zmax=None,
+        bin_width=1,
+        rmin=0,
+        rmax=None,
+        refgroup=None,
+        grouping="atoms",
+        unwrap=True,
+        bin_method="com",
+        output="density.dat",
+        concfreq=0,
+        jitter=0.0,
+    ):
         super(DensityCylinder, self).__init__(
             weighting_function=density_weights,
             f_kwargs={"dens": dens},
@@ -71,4 +72,5 @@ class DensityCylinder(ProfileCylinderBase):
             bin_method=bin_method,
             output=output,
             concfreq=concfreq,
-            jitter=jitter)
+            jitter=jitter,
+        )

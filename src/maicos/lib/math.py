@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -21,9 +21,8 @@ dt_dk_tolerance = 1e-8
 def FT(t, x, indvar=True):
     """Discrete fast fourier transform.
 
-    Takes the time series and the function as arguments.
-    By default, returns the FT and the frequency:
-    setting indvar=False means the function returns only the FT.
+    Takes the time series and the function as arguments. By default, returns the FT and
+    the frequency: setting indvar=False means the function returns only the FT.
     """
     a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
@@ -44,9 +43,9 @@ def FT(t, x, indvar=True):
 def iFT(k, xf, indvar=True):
     """Inverse discrete fast fourier transform.
 
-    Takes the frequency series and the function as arguments.
-    By default, returns the iFT and the time series:\
-    setting indvar=False means the function returns only the iFT.
+    Takes the frequency series and the function as arguments. By default, returns the
+    iFT and the time series. Setting indvar=False means the function returns only the
+    iFT.
     """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
     if (abs((k[1:] - k[:-1] - dk)) > dt_dk_tolerance).any():
@@ -55,9 +54,9 @@ def iFT(k, xf, indvar=True):
     x = np.fft.ifftshift(np.fft.ifft(xf))
     t = np.fft.ifftshift(np.fft.fftfreq(N, d=dk)) * 2 * np.pi
     if N % 2 == 0:
-        x2 = x * np.exp(-1j * t * N * dk / 2.) * N * dk / (2 * np.pi)
+        x2 = x * np.exp(-1j * t * N * dk / 2.0) * N * dk / (2 * np.pi)
     else:
-        x2 = x * np.exp(-1j * t * (N - 1) * dk / 2.) * N * dk / (2 * np.pi)
+        x2 = x * np.exp(-1j * t * (N - 1) * dk / 2.0) * N * dk / (2 * np.pi)
     if indvar:
         return t, x2
     else:
@@ -73,27 +72,29 @@ def correlation(a, b=None, subtract_mean=False):
     the input data.
     """
     meana = int(subtract_mean) * np.mean(
-        a)  # essentially an if statement for subtracting mean
-    a2 = np.append(a - meana,
-                   np.zeros(2**int(np.ceil((np.log(len(a)) / np.log(2))))
-                            - len(a)))  # round up to a power of 2
-    data_a = np.append(a2,
-                       np.zeros(len(a2)))  # pad with an equal number of zeros
+        a
+    )  # essentially an if statement for subtracting mean
+    a2 = np.append(
+        a - meana, np.zeros(2 ** int(np.ceil((np.log(len(a)) / np.log(2)))) - len(a))
+    )  # round up to a power of 2
+    data_a = np.append(a2, np.zeros(len(a2)))  # pad with an equal number of zeros
     fra = np.fft.fft(data_a)  # FT the data
     if b is None:
-        sf = np.conj(
-            fra
-            ) * fra  # take the conj and multiply pointwise if autocorrelation
+        sf = (
+            np.conj(fra) * fra
+        )  # take the conj and multiply pointwise if autocorrelation
     else:
         meanb = int(subtract_mean) * np.mean(b)
         b2 = np.append(
             b - meanb,
-            np.zeros(2**int(np.ceil((np.log(len(b)) / np.log(2)))) - len(b)))
+            np.zeros(2 ** int(np.ceil((np.log(len(b)) / np.log(2)))) - len(b)),
+        )
         data_b = np.append(b2, np.zeros(len(b2)))
         frb = np.fft.fft(data_b)
         sf = np.conj(fra) * frb
-    cor = np.real(np.fft.ifft(sf)[:len(a)]) / np.array(range(
-        len(a), 0, -1))  # inverse FFT and normalization
+    cor = np.real(np.fft.ifft(sf)[: len(a)]) / np.array(
+        range(len(a), 0, -1)
+    )  # inverse FFT and normalization
     return cor
 
 
@@ -154,27 +155,26 @@ def correlation_time(x_n, method="sokal", c=8, mintime=3):
     """
     corr = correlation(x_n, subtract_mean=True)
 
-    if method == 'sokal':
-
+    if method == "sokal":
         cutoff = mintime
         tau = mintime
         for cutoff in range(mintime, len(x_n)):
-            tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
-                         * corr[1:cutoff] / corr[0])
+            tau = np.sum(
+                (1 - np.arange(1, cutoff) / len(x_n)) * corr[1:cutoff] / corr[0]
+            )
             if cutoff > tau * c:
                 break
 
             if cutoff > len(x_n) / 3:
                 return -1
 
-    elif method == 'chodera':
-
+    elif method == "chodera":
         cutoff = max(mintime, np.min(np.argwhere(corr < 0)))
-        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n))
-                     * corr[1:cutoff] / corr[0])
+        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n)) * corr[1:cutoff] / corr[0])
     else:
-        raise ValueError(f"Unknown method: {method}. "
-                         "Chose either 'sokal' or 'chodera'.")
+        raise ValueError(
+            f"Unknown method: {method}. " "Chose either 'sokal' or 'chodera'."
+        )
     return tau
 
 
@@ -288,11 +288,13 @@ def new_variance(old_variance, old_mean, new_mean, data, length):
     Knowing the total number of data points, this operation
     can be performed iteratively.
 
-    >>> new_variance(old_variance=np.var([1, 5, 5]),
-    ...              old_mean=np.mean([1, 5, 5]),
-    ...              new_mean=np.mean([1, 5, 5, 1]),
-    ...              data=1,
-    ...              length=4)
+    >>> new_variance(
+    ...     old_variance=np.var([1, 5, 5]),
+    ...     old_mean=np.mean([1, 5, 5]),
+    ...     new_mean=np.mean([1, 5, 5, 1]),
+    ...     data=1,
+    ...     length=4,
+    ... )
     4.0
     """
     S_old = old_variance * (length - 1)
@@ -360,8 +362,8 @@ def center_cluster(ag, weights):
        +-----------+
     """
     theta = (ag.positions / ag.universe.dimensions[:3]) * 2 * np.pi
-    xi = ((np.cos(theta) * weights[:, None]).sum(axis=0) / weights.sum())
-    zeta = ((np.sin(theta) * weights[:, None]).sum(axis=0) / weights.sum())
+    xi = (np.cos(theta) * weights[:, None]).sum(axis=0) / weights.sum()
+    zeta = (np.sin(theta) * weights[:, None]).sum(axis=0) / weights.sum()
     theta_com = np.arctan2(-zeta, -xi) + np.pi
     return theta_com / (2 * np.pi) * ag.universe.dimensions[:3]
 
@@ -409,7 +411,7 @@ def symmetrize(m, axis=None, inplace=False):
     It also works for arrays with more than 1 dimensions in a
     general dimension.
 
-    >>> A = np.arange(20).astype(float).reshape(2,10).T
+    >>> A = np.arange(20).astype(float).reshape(2, 10).T
     >>> A
     array([[ 0., 10.],
            [ 1., 11.],
@@ -465,27 +467,23 @@ def compute_form_factor(q, atom_type):
     if element == "CH1":
         form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
     elif element == "CH2":
-        form_factor = compute_form_factor(
-            q, "C") + 2 * compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "C") + 2 * compute_form_factor(q, "H")
     elif element == "CH3":
-        form_factor = compute_form_factor(
-            q, "C") + 3 * compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "C") + 3 * compute_form_factor(q, "H")
     elif element == "CH4":
-        form_factor = compute_form_factor(
-            q, "C") + 4 * compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "C") + 4 * compute_form_factor(q, "H")
     elif element == "NH1":
         form_factor = compute_form_factor(q, "N") + compute_form_factor(q, "H")
     elif element == "NH2":
-        form_factor = compute_form_factor(
-            q, "N") + 2 * compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "N") + 2 * compute_form_factor(q, "H")
     elif element == "NH3":
-        form_factor = compute_form_factor(
-            q, "N") + 3 * compute_form_factor(q, "H")
+        form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
     else:
         form_factor = tables.CM_parameters[element].c
-        q2 = (q / (4 * np.pi))**2
+        q2 = (q / (4 * np.pi)) ** 2
         for i in range(4):
-            form_factor += tables.CM_parameters[element].a[i] * \
-                np.exp(-tables.CM_parameters[element].b[i] * q2)
+            form_factor += tables.CM_parameters[element].a[i] * np.exp(
+                -tables.CM_parameters[element].b[i] * q2
+            )
 
     return form_factor

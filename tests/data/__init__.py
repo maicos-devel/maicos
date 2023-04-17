@@ -14,8 +14,9 @@ from pkg_resources import resource_filename
 # bulk water
 WATER_GRO = resource_filename(__name__, "../../docs/static/water/water.gro")
 WATER_TRR = resource_filename(__name__, "../../docs/static/water/water.trr")
-WATER_2F_TRR = \
-    resource_filename(__name__, "../../docs/static/water/water_two_frames.trr")
+WATER_2F_TRR = resource_filename(
+    __name__, "../../docs/static/water/water_two_frames.trr"
+)
 WATER_TPR = resource_filename(__name__, "../../docs/static/water/water.tpr")
 
 # air-water interface
@@ -36,8 +37,8 @@ MICA_TPR = resource_filename(__name__, "mica/mica.tpr")
 MICA_GRO = resource_filename(__name__, "mica/mica.gro")
 
 LAMMPS10WATER = resource_filename(__name__, "lammps10water.data")
-SPCE_ITP = resource_filename(__name__, 'spce.itp')
-SPCE_GRO = resource_filename(__name__, 'spce.gro')
+SPCE_ITP = resource_filename(__name__, "spce.itp")
+SPCE_GRO = resource_filename(__name__, "spce.gro")
 
-DIPOLE_ITP = resource_filename(__name__, 'dipole.itp')
-DIPOLE_GRO = resource_filename(__name__, 'dipole.gro')
+DIPOLE_ITP = resource_filename(__name__, "dipole.itp")
+DIPOLE_GRO = resource_filename(__name__, "dipole.gro")
