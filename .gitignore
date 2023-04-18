@@ -12,6 +12,7 @@ _cutil.c
 .coverage.*
 .coverage
 coverage.xml
+report.xml
 
 # Ignore build and cache folders
 __pycache__/
