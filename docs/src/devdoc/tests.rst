@@ -20,7 +20,12 @@ You can run all tests by:
     tox
 
 These are exactly the same tests that will be performed online in our GitLab CI
-workflows.
+workflows. You can run only a subset of the tests with ``tox -e tests --
+<test/file.py>``, replacing ``<test/file.py>`` with the path to the files you want to
+test, e.g. ``tox -e tests -- tests/test_main.py`` for testing only the main functions.
+For more details take a look at the `usage and invocation
+<https://docs.pytest.org/en/latest/usage.html#usage-and-invocations>` page of the pytest
+documentation.
 
 Also, you can run individual environments if you wish to test only specific
 functionalities, for example:
