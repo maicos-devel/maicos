@@ -60,7 +60,7 @@ class KineticEnergy(AnalysisBase):
         output="ke.dat",
         refpoint="COM",
     ):
-        super(KineticEnergy, self).__init__(
+        super().__init__(
             atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,

@@ -58,7 +58,7 @@ class SphereBase(AnalysisBase):
     """
 
     def __init__(self, atomgroups, rmin, rmax, bin_width, **kwargs):
-        super(SphereBase, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
 
         self.rmin = rmin
         self._rmax = rmax
@@ -144,7 +144,7 @@ class SphereBase(AnalysisBase):
 
     def _conclude(self):
         """Results calculations for the sphercial analysis."""
-        super(SphereBase, self)._conclude()
+        super()._conclude()
         self.results.bin_pos = self.means.bin_pos
 
 

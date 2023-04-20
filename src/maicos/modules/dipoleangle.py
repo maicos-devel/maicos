@@ -62,7 +62,7 @@ class DipoleAngle(AnalysisBase):
         jitter=0.0,
     ):
         self.wrap_compound = get_compound(atomgroup)
-        super(DipoleAngle, self).__init__(
+        super().__init__(
             atomgroup,
             refgroup=refgroup,
             unwrap=unwrap,

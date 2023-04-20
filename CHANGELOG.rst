@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Remove Python 2.x leftover of specific ``super()`` call (!243)
 - Use Gitlab for showing coverage and unit test reports (!241)
 - Use ``black`` formatter and `88` chars/line for the code and rst files (!240)
 - Add return values for correlation analysis to all base classes (!235)

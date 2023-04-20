@@ -59,7 +59,7 @@ class PlanarBase(AnalysisBase):
     """
 
     def __init__(self, atomgroups, dim, zmin, zmax, bin_width, **kwargs):
-        super(PlanarBase, self).__init__(atomgroups=atomgroups, **kwargs)
+        super().__init__(atomgroups=atomgroups, **kwargs)
 
         if dim not in [0, 1, 2]:
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")

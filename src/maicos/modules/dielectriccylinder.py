@@ -87,7 +87,7 @@ class DielectricCylinder(CylinderBase):
     ):
         self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
-        super(DielectricCylinder, self).__init__(
+        super().__init__(
             atomgroup,
             concfreq=concfreq,
             jitter=jitter,
@@ -107,10 +107,10 @@ class DielectricCylinder(CylinderBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self):
-        super(DielectricCylinder, self)._prepare()
+        super()._prepare()
 
     def _single_frame(self):
-        super(DielectricCylinder, self)._single_frame()
+        super()._single_frame()
 
         # Use polarization density (for radial component)
         # ========================================================
@@ -183,7 +183,7 @@ class DielectricCylinder(CylinderBase):
         return self._obs.M_z
 
     def _conclude(self):
-        super(DielectricCylinder, self)._conclude()
+        super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0
         pref /= scipy.constants.Boltzmann * self.temperature

@@ -43,7 +43,7 @@ class SphereClass(SphereBase):
         bin_width=1,
         **kwargs,
     ):
-        super(SphereClass, self).__init__(
+        super().__init__(
             atomgroups=atomgroups,
             rmin=rmin,
             rmax=rmax,
@@ -55,15 +55,15 @@ class SphereClass(SphereBase):
         self.opt_arg = opt_arg
 
     def _prepare(self):
-        super(SphereClass, self)._prepare()
+        super()._prepare()
         self.prepared = True
 
     def _single_frame(self):
-        super(SphereClass, self)._single_frame()
+        super()._single_frame()
         self.ran = True
 
     def _conclude(self):
-        super(SphereClass, self)._conclude()
+        super()._conclude()
         self.calculated_results = True
 
 

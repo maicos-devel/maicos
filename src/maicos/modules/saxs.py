@@ -81,7 +81,7 @@ class Saxs(AnalysisBase):
         maxtheta=180,
         output="sq.dat",
     ):
-        super(Saxs, self).__init__(
+        super().__init__(
             atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,

@@ -91,7 +91,7 @@ class DielectricSpectrum(AnalysisBase):
         jitter=0.0,
     ):
         wrap_compound = get_compound(atomgroup)
-        super(DielectricSpectrum, self).__init__(
+        super().__init__(
             atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,

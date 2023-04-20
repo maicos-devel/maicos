@@ -93,7 +93,7 @@ class RDFPlanar(PlanarBase):
         bin_width=1,
     ):
         self.comp_1 = get_compound(g1)
-        super(RDFPlanar, self).__init__(
+        super().__init__(
             atomgroups=g1,
             refgroup=refgroup,
             unwrap=unwrap,
@@ -120,7 +120,7 @@ class RDFPlanar(PlanarBase):
         self.comp_2 = get_compound(self.g2)
 
     def _prepare(self):
-        super(RDFPlanar, self)._prepare()
+        super()._prepare()
         logger.info("Compute radial distribution function.")
 
         half_of_box_size = min(self.box_center)
@@ -161,7 +161,7 @@ class RDFPlanar(PlanarBase):
         self._maxrange = self.range[1]
 
     def _single_frame(self):
-        super(RDFPlanar, self)._single_frame()
+        super()._single_frame()
         self._obs.n_g1 = np.zeros((self.n_bins, 1))
         self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
 
@@ -236,7 +236,7 @@ class RDFPlanar(PlanarBase):
             )[0]
 
     def _conclude(self):
-        super(RDFPlanar, self)._conclude()
+        super()._conclude()
 
         # Normalise rdf using the volumes of a ring with height dz.
         ring_volumes = (

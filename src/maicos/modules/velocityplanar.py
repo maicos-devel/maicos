@@ -66,7 +66,7 @@ class VelocityPlanar(ProfilePlanarBase):
         else:
             normalization = "number"
 
-        super(VelocityPlanar, self).__init__(
+        super().__init__(
             weighting_function=velocity_weights,
             f_kwargs={"vdim": vdim, "flux": flux},
             normalization=normalization,

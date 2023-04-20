@@ -75,7 +75,7 @@ class DielectricSphere(SphereBase):
     ):
         self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
-        super(DielectricSphere, self).__init__(
+        super().__init__(
             atomgroup,
             concfreq=concfreq,
             jitter=jitter,
@@ -91,10 +91,10 @@ class DielectricSphere(SphereBase):
         self.temperature = temperature
 
     def _prepare(self):
-        super(DielectricSphere, self)._prepare()
+        super()._prepare()
 
     def _single_frame(self):
-        super(DielectricSphere, self)._single_frame()
+        super()._single_frame()
         rbins = np.digitize(self.pos_sph[:, 0], self._obs.bin_edges[1:-1])
         curQ_rad = np.bincount(
             rbins[self.atomgroup.ix],
@@ -132,7 +132,7 @@ class DielectricSphere(SphereBase):
         return self._obs.M_r
 
     def _conclude(self):
-        super(DielectricSphere, self)._conclude()
+        super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0
         pref /= scipy.constants.Boltzmann * self.temperature

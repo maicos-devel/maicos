@@ -61,7 +61,7 @@ class DiporderPlanar(ProfilePlanarBase):
         else:
             normalization = "number"
 
-        super(DiporderPlanar, self).__init__(
+        super().__init__(
             weighting_function=diporder_planar_weights,
             f_kwargs={"dim": dim, "order_parameter": order_parameter},
             normalization=normalization,

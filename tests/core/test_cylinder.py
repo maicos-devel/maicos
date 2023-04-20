@@ -45,7 +45,7 @@ class CylinderClass(CylinderBase):
         bin_width=1,
         **kwargs,
     ):
-        super(CylinderClass, self).__init__(
+        super().__init__(
             atomgroups=atomgroups,
             dim=dim,
             zmin=zmin,
@@ -60,15 +60,15 @@ class CylinderClass(CylinderBase):
         self.opt_arg = opt_arg
 
     def _prepare(self):
-        super(CylinderClass, self)._prepare()
+        super()._prepare()
         self.prepared = True
 
     def _single_frame(self):
-        super(CylinderClass, self)._single_frame()
+        super()._single_frame()
         self.ran = True
 
     def _conclude(self):
-        super(CylinderClass, self)._conclude()
+        super()._conclude()
         self.calculated_results = True
 
 
