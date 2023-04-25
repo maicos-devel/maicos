@@ -110,7 +110,7 @@ class DielectricPlanar(PlanarBase):
         else:  # Get wrap_compound based on fist atom group only
             wrap_compound = get_compound(atomgroups[0])
 
-        super(DielectricPlanar, self).__init__(
+        super().__init__(
             atomgroups=atomgroups,
             dim=dim,
             zmin=zmin,
@@ -132,7 +132,7 @@ class DielectricPlanar(PlanarBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self):
-        super(DielectricPlanar, self)._prepare()
+        super()._prepare()
 
         self.comp = []
         self.inverse_ix = []
@@ -144,7 +144,7 @@ class DielectricPlanar(PlanarBase):
             self.inverse_ix.append(inverse_ix)
 
     def _single_frame(self):
-        super(DielectricPlanar, self)._single_frame()
+        super()._single_frame()
 
         # precalculate total polarization of the box
         self._obs.M = np.dot(
@@ -241,7 +241,7 @@ class DielectricPlanar(PlanarBase):
         return np.linalg.norm(self._obs.M_par)
 
     def _conclude(self):
-        super(DielectricPlanar, self)._conclude()
+        super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0
         pref /= scipy.constants.Boltzmann * self.temperature

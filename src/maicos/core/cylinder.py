@@ -57,7 +57,7 @@ class CylinderBase(PlanarBase):
     """
 
     def __init__(self, atomgroups, rmin, rmax, **kwargs):
-        super(CylinderBase, self).__init__(atomgroups, **kwargs)
+        super().__init__(atomgroups, **kwargs)
 
         self.rmin = rmin
         self._rmax = rmax
@@ -74,7 +74,7 @@ class CylinderBase(PlanarBase):
 
     def _prepare(self):
         """Prepare the cylinder analysis."""
-        super(CylinderBase, self)._prepare()
+        super()._prepare()
 
         self._compute_lab_frame_cylinder()
 
@@ -127,7 +127,7 @@ class CylinderBase(PlanarBase):
 
     def _single_frame(self):
         """Single frame for the cylinder analysis."""
-        super(CylinderBase, self)._single_frame()
+        super()._single_frame()
         self._compute_lab_frame_cylinder()
         self._obs.R = self.rmax - self.rmin
 
@@ -142,7 +142,7 @@ class CylinderBase(PlanarBase):
 
     def _conclude(self):
         """Results calculations for the cylinder analysis."""
-        super(CylinderBase, self)._conclude()
+        super()._conclude()
         self.results.bin_pos = self.means.bin_pos
 
 

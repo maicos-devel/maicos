@@ -55,7 +55,7 @@ class DensityCylinder(ProfileCylinderBase):
         concfreq=0,
         jitter=0.0,
     ):
-        super(DensityCylinder, self).__init__(
+        super().__init__(
             weighting_function=density_weights,
             f_kwargs={"dens": dens},
             normalization="volume",

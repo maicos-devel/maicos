@@ -55,7 +55,7 @@ class TemperaturePlanar(ProfilePlanarBase):
         if grouping != "atoms":
             raise ValueError("Invalid choice of grouping, must use atoms")
 
-        super(TemperaturePlanar, self).__init__(
+        super().__init__(
             weighting_function=temperature_weights,
             normalization="number",
             atomgroups=atomgroups,

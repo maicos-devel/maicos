@@ -180,7 +180,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
             raise ValueError("The provided `refgroup` does not contain " "any atoms.")
 
-        super(AnalysisBase, self).__init__(trajectory=self._trajectory)
+        super().__init__(trajectory=self._trajectory)
 
     @property
     def box_center(self):

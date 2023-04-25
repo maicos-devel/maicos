@@ -44,7 +44,7 @@ class PlanarClass(PlanarBase):
         refgroup=None,
         **kwargs,
     ):
-        super(PlanarClass, self).__init__(
+        super().__init__(
             atomgroups=atomgroups,
             dim=dim,
             zmin=zmin,
@@ -58,15 +58,15 @@ class PlanarClass(PlanarBase):
         self.opt_arg = opt_arg
 
     def _prepare(self):
-        super(PlanarClass, self)._prepare()
+        super()._prepare()
         self.prepared = True
 
     def _single_frame(self):
-        super(PlanarClass, self)._single_frame()
+        super()._single_frame()
         self.ran = True
 
     def _conclude(self):
-        super(PlanarClass, self)._conclude()
+        super()._conclude()
         self.calculated_results = True
 
 
