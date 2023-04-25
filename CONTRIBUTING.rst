@@ -2,9 +2,11 @@ Getting involved
 ----------------
 
 Contribution via merge requests are always welcome. Source code is available from
-GitLab_. Before submitting a merge request, please open an issue to discuss your
-changes. Use only the `main` branch for submitting your requests.
+`GitLab`_. Before submitting a merge request, please read the `developer documentation`_
+and open an issue to discuss your changes. Use only the `main` branch for submitting
+your requests.
 
+.. _`developer documentation` : https://maicos-devel.gitlab.io/maicos/devdoc
 .. _`GitLab` : https://gitlab.com/maicos-devel/maicos/
 
 By contributing to MAICoS, you accept and agree to the following terms and conditions

@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Add link to developer documentation in ``CONTRIBUTING.rst`` (!244)
 - Remove Python 2.x leftover of specific ``super()`` call (!243)
 - Use Gitlab for showing coverage and unit test reports (!241)
 - Use ``black`` formatter and `88` chars/line for the code and rst files (!240)
