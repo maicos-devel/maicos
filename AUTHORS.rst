@@ -4,21 +4,27 @@
 Maintainers
 -----------
 
-- Philip Loche
+- `Philip Loche`_
 - Henrik Jaeger
-- Alexander Schlaich
+- `Alexander Schlaich`_
+
+.. _Philip Loche: https://people.epfl.ch/philip.loche
+.. _Alexander Schlaich:  https://www.simtech.uni-stuttgart.de/exc/people/Schlaich-00004/
 
 Developers
 ----------
 
 - Maximilian Becker
-- Simon Gravelle
+- `Simon Gravelle`_
 - Philipp Stärk
 - Srihas Velpuri
+
+.. _Simon Gravelle: https://simongravelle.github.io/
 
 Contributors
 ------------
 
+- Adyant Agrawal
 - Shane Carlson
 - Kira Fischer
 - Julian Kappler

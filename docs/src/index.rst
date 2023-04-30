@@ -62,3 +62,4 @@ MAICoS.
    references/index
    explanations/index
    devdoc/index
+   contributors
