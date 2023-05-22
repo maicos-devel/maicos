@@ -63,21 +63,16 @@ ReadTheDocs_.
 Installation
 ============
 
-Install maicos using `pip`_ with:
+Install MAICoS using `pip`_ with::
 
-.. code-block:: bash
+    pip install maicos
 
-    pip3 install maicos
-
-Alternatively, if you do not have special privileges, install the package only for the
-current using the ``--user`` flag. Or using conda_ with:
-
-.. code-block:: bash
+or using conda_ with::
 
     conda install -c conda-forge maicos
 
-.. _`pip`: https://pypi.org/project/maicos/
-.. _`conda`: https://anaconda.org/conda-forge/maicos
+.. _`pip`: https://pip.pypa.io
+.. _`conda`: https://www.anaconda.com
 
 .. inclusion-readme-installation-end
 

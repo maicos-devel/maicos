@@ -4,16 +4,9 @@ Contributing to the documentation
 Local documentation
 -------------------
 
-The documentation of MAICoS is written in reStructuredText (rst) and uses `Sphinx`_
-documentation generator. In order to modify the documentation, first create a local
-version on your machine. Go to the `MAICoS develop project`_ page and hit the ``Fork``
-button, then clone your forked branch to your machine:
-
-.. code-block:: bash
-
-    git clone git@gitlab.com:your-user-name/maicos.git
-
-Then, build the documentation from the ``maicos/docs`` folder:
+The documentation of MAICoS is written in reStructuredText (rst) and uses the
+`Sphinx`_ documentation generator. You can build the documentation from the
+``maicos/docs`` folder:
 
 .. code-block:: bash
 
@@ -57,5 +50,4 @@ scrips located in ``examples`` using `Sphinx-Gallery`_.
 
 .. _`Sphinx` : https://www.sphinx-doc.org/en/master/
 .. _`Sphinx-Gallery` : https://sphinx-gallery.github.io/stable/index.html
-.. _`MAICoS develop project` : https://gitlab.com/maicos-devel/maicos
 .. _`Autodoc` : https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
