@@ -3,7 +3,7 @@
 DensityCylinder
 ###############
 
-.. autoclass:: maicos.modules.densitycylinder.DensityCylinder
+.. autoclass:: maicos.DensityCylinder
     :members:
     :undoc-members:
     :show-inheritance:

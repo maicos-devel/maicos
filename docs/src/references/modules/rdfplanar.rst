@@ -3,7 +3,7 @@
 RDFPlanar
 #########
 
-.. autoclass:: maicos.modules.rdfplanar.RDFPlanar
+.. autoclass:: maicos.RDFPlanar
     :members:
     :undoc-members:
     :show-inheritance:

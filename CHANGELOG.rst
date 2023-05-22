@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Fix links to own classes in examples (!247)
 - Update install instructions for users and devs (!246)
 - Show authors on website (!245)
 - Add link to developer documentation in ``CONTRIBUTING.rst`` (!244)

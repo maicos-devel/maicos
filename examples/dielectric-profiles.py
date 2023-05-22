@@ -49,7 +49,7 @@ u = mda.Universe("graphene_water.tpr", "graphene_water.xtc")
 
 # %%
 # This universe object can then be passed to the dielectric profile analysis object,
-# documented in :class:`maicos.modules.dielectricplanar.DielectricPlanar`. It expects
+# documented in :class:`maicos.DielectricPlanar`. It expects
 # you to pass the atom groups you want to perform the analysis for. In our example, we
 # have graphene walls and SPC/E water confined between them, where we are interested in
 # the dielectric behavior of the fluid. Thus, we will first select the water as an
@@ -78,7 +78,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 # %%
 # This creates the analysis object, but does not yet perform the analysis. To this end
 # we call the member function :meth:`run
-# <maicos.modules.dielectricplanar.DielectricPlanar.run>`. We may set the ``verbose``
+# <maicos.DielectricPlanar.run>`. We may set the ``verbose``
 # keyword to ``True`` to get additional information like a progress bar.
 #
 # Here you also have the chance to set ``start`` and ``stop`` keywords to specify which
@@ -102,7 +102,7 @@ analysis_obj.run(step=5)
 # attributes that can be accessed directly. For example, the bin positions are stored in
 # the ``bin_pos`` attribute, the parallel and perpendicular dielectric profiles in the
 # ``eps_par`` and ``eps_perp`` attributes respectively. (See
-# :class:`maicos.modules.dielectricplanar.DielectricPlanar` for a full list of
+# :class:`maicos.DielectricPlanar` for a full list of
 # attributes.)
 #
 # For this example, we plot both profiles using matplotlib. Note that MAICoS always

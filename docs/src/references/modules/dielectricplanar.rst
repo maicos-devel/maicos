@@ -3,7 +3,7 @@
 DielectricPlanar
 ################
 
-.. autoclass:: maicos.modules.dielectricplanar.DielectricPlanar
+.. autoclass:: maicos.DielectricPlanar
     :members:
     :undoc-members:
     :show-inheritance:

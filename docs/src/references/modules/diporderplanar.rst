@@ -3,7 +3,7 @@
 DiporderPlanar
 ##############
 
-.. autoclass:: maicos.modules.diporderplanar.DiporderPlanar
+.. autoclass:: maicos.DiporderPlanar
     :members:
     :undoc-members:
     :show-inheritance:

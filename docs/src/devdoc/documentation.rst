@@ -31,7 +31,7 @@ After creating a new module, add it to the documentation by modifying the `toctr
 the ``docs/src/references/modules/index.rst`` file, and adding a new .rst file with the
 following format:
 
-.. code-block:: bash
+.. code-block:: rst
 
     .. _ModuleName:
 
@@ -40,7 +40,7 @@ following format:
 
     .. _label_module_name:
 
-    .. autoclass:: maicos.modules.modulename.ModuleName
+    .. autoclass:: maicos.ModuleName
         :members:
         :undoc-members:
         :show-inheritance:

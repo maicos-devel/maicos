@@ -5,7 +5,7 @@ DensityPlanar
 
 .. _label_density_planar:
 
-.. autoclass:: maicos.modules.densityplanar.DensityPlanar
+.. autoclass:: maicos.DensityPlanar
     :members:
     :undoc-members:
     :show-inheritance:

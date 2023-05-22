@@ -67,11 +67,10 @@ electric field. Second, the response varies with the distance from the surface o
 porous material, i.e., it becomes inhomogeneous.
 
 In the following discussion, we will focus on pores with planar symmetry, also known as
-"slit pores" and implemented in
-:class:`maicos.modules.dielectricplanar.DielectricPlanar`. However, similar concepts
-apply to other types of pore geometries, such as ones with cylindrical or spherical
-symmetries implemented in :class:`maicos.modules.dielectriccylinder.DielectricCylinder`
-and :class:`maicos.modules.dielectricsphere.DielectricSphere`.
+"slit pores" and implemented in :class:`maicos.DielectricPlanar`. However, similar
+concepts apply to other types of pore geometries, such as ones with cylindrical or
+spherical symmetries implemented in :class:`maicos.DielectricCylinder` and
+:class:`maicos.DielectricSphere`.
 
 Without loss of generality, we will assume that the pore is aligned along the
 :math:`z`-axis.
