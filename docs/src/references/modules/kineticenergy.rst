@@ -3,7 +3,7 @@
 KineticEnergy
 #############
 
-.. autoclass:: maicos.modules.kineticenergy.KineticEnergy
+.. autoclass:: maicos.KineticEnergy
     :members:
     :undoc-members:
     :show-inheritance:

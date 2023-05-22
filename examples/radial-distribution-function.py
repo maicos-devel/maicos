@@ -12,14 +12,12 @@ Radial distribution function
 """
 
 # %%
-#
 # list prerequisite and Initialisation
 
 # import warnings
 # warnings.filterwarnings("ignore")
 
 # %%
-#
 # and import MAICoS, NumPy, MDAnalysis, and PyPlot:
 
 
@@ -30,7 +28,6 @@ Radial distribution function
 # from matplotlib.ticker import AutoMinorLocator
 
 # %%
-#
 # Let us set a few parameters for plotting purpose:
 
 
@@ -48,7 +45,6 @@ Radial distribution function
 # })
 
 # %%
-#
 # Define the path to the XXX data folder of MAICoS (the path may be different,
 # depending on where your jupyter notebook or python script is located):
 
@@ -60,8 +56,7 @@ Radial distribution function
 # [Insert image system here]
 
 # %%
-#
-# ## Create a MDAnalysis universe
+# Create an MDAnalysis universe
 
 
 # u = mda.Universe(datapath+'topol.tpr',
@@ -69,11 +64,9 @@ Radial distribution function
 # group_H2O = u.select_atoms('type OW HW')
 
 # %%
-#
 # Extract XXX using MAICoS
 
 # %%
-#
 # By default the bin_width is 1 Å, the unit is atomic mass per Ångstrom$^3$
 # ($\text{u}/\text{Å}^3$),
 # and the axis is $z$.

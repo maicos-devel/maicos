@@ -54,7 +54,7 @@ thermal De-Broglie wavelength, i.e. the mean De-Broglie wavelength at temperatur
 :math:`T`. Furthermore, :math:`m` is the mass of the particles and :math:`\rho` is the
 mean density of the system. The mean density can be calculated with MAICoS by using the
 Density modules. We will exemplify this in the following example using the
-:class:`maicos.modules.dielectricplanar.DensityPlanar` module.
+:class:`maicos.DensityPlanar` module.
 
 First we'll import every module we need.
 """
@@ -129,7 +129,7 @@ def dmu(rho, drho, T):
 # potential and its error for an example trajectory called `water`, whose data can be
 # downloaded from :download:`topology <../../static/water/water.tpr>` and
 # :download:`trajectory <../../static/water/water.trr>`. To calculate the mean density
-# we use the module :class:`maicos.modules.dielectricplanar.DensityPlanar` of MAICoS.
+# we use the module :class:`maicos.DensityPlanar` of MAICoS.
 # This example uses a temperature of :math:`300 \: \rm K` and a mass of :math:`18 \: \rm
 # u`.
 

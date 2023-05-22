@@ -3,7 +3,7 @@
 VelocityCylinder
 ################
 
-.. autoclass:: maicos.modules.velocitycylinder.VelocityCylinder
+.. autoclass:: maicos.VelocityCylinder
     :members:
     :undoc-members:
     :show-inheritance:

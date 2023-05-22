@@ -3,7 +3,7 @@
 DielectricCylinder
 ##################
 
-.. autoclass:: maicos.modules.dielectriccylinder.DielectricCylinder
+.. autoclass:: maicos.DielectricCylinder
     :members:
     :undoc-members:
     :show-inheritance:

@@ -19,6 +19,7 @@ the :download:`trajectory <../../static//water/water.trr>` files of the water sy
 First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:
 """
 # %%
+
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 
@@ -45,7 +46,7 @@ group_H = u.select_atoms("type H*")
 # Extract small angle x-ray scattering (SAXS) intensities
 # -------------------------------------------------------
 #
-# Let us use the :class:`maicos.saxs` class of MAICoS and apply it to all atoms in the
+# Let us use the :class:`maicos.Saxs` class of MAICoS and apply it to all atoms in the
 # system:
 
 saxs = maicos.Saxs(u.atoms).run(stop=30)

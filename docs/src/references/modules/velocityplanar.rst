@@ -3,7 +3,7 @@
 VelocityPlanar
 ##############
 
-.. autoclass:: maicos.modules.velocityplanar.VelocityPlanar
+.. autoclass:: maicos.VelocityPlanar
     :members:
     :undoc-members:
     :show-inheritance:

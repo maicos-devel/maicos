@@ -57,6 +57,8 @@ sphinx_gallery_conf = {
     "min_reported_time": 60,
     # Make the code snippet for rascaline functions clickable
     "reference_url": {"maicos": None},
+    # Make sure inheritance points to the actual/child classes and not the base classes.
+    "prefer_full_module": ["maicos.*"],
 }
 
 # Add any paths that contain templates here, relative to this directory.

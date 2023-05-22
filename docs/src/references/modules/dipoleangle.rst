@@ -3,7 +3,7 @@
 DipoleAngle
 ###########
 
-.. autoclass:: maicos.modules.dipoleangle.DipoleAngle
+.. autoclass:: maicos.DipoleAngle
     :members:
     :undoc-members:
     :show-inheritance:

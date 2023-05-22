@@ -3,7 +3,7 @@
 DielectricSphere
 ##################
 
-.. autoclass:: maicos.modules.dielectricsphere.DielectricSphere
+.. autoclass:: maicos.DielectricSphere
     :members:
     :undoc-members:
     :show-inheritance:

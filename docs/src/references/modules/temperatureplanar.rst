@@ -3,7 +3,7 @@
 TemperaturePlanar
 #################
 
-.. autoclass:: maicos.modules.temperatureplanar.TemperaturePlanar
+.. autoclass:: maicos.TemperaturePlanar
     :members:
     :undoc-members:
     :show-inheritance:

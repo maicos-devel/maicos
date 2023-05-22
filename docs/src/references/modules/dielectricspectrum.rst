@@ -3,7 +3,7 @@
 DielectricSpectrum
 ##################
 
-.. autoclass:: maicos.modules.dielectricspectrum.DielectricSpectrum
+.. autoclass:: maicos.DielectricSpectrum
     :members:
     :undoc-members:
     :show-inheritance:
