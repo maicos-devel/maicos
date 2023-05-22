@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Update install instructions for users and devs (!246)
 - Show authors on website (!245)
 - Add link to developer documentation in ``CONTRIBUTING.rst`` (!244)
 - Remove Python 2.x leftover of specific ``super()`` call (!243)

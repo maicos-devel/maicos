@@ -14,6 +14,38 @@ for your present and future contributions submitted to MAICoS. Except for the li
 granted herein to MAICoS and recipients of software distributed by MAICoS, you reserve
 all right, title, and interest in and to your contributions.
 
+Getting started
+---------------
+
+To help with developing start by installing the development dependencies. Our continuous
+integration pipeline is based on Tox_. So you need to install ``tox`` first
+
+.. code-block:: bash
+
+    pip install tox
+    # or
+    conda install tox-c conda-forge
+
+Then go to the `MAICoS develop project`_ page, hit the ``Fork`` button and clone your
+forked branch to your machine. 
+
+.. code-block:: bash
+
+  git clone git@gitlab.com:your-user-name/maicos.git
+
+Now you have a local version on your machine which you can install by
+
+.. code-block:: bash
+
+  cd maicos
+  pip install -e .
+
+This install the package in development mode, making it importable globally and allowing
+you to edit the code and directly use the updated version.
+
+.. _Tox: https://tox.readthedocs.io/en/latest/
+.. _`MAICoS develop project` : https://gitlab.com/maicos-devel/maicos
+
 Code of Conduct
 ---------------
 
