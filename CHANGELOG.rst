@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Add tables to documentation pages (!249)
 - Fix links to own classes in examples (!247)
 - Update install instructions for users and devs (!246)
 - Show authors on website (!245)

@@ -13,3 +13,4 @@ Library functions
    math
    util
    weights
+   tables
