@@ -42,11 +42,11 @@ cache:
     - python -m pip install -U tox
 
 .macos:
-  image: macos-11-xcode-12
+  image: macos-12-xcode-13
   variables:
     OS_NAME: "macos"
   tags:
-    - shared-macos-amd64
+    - saas-macos-medium-m1
   before_script:
     - export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
     - export HOMEBREW_NO_INSTALL_CLEANUP=1
