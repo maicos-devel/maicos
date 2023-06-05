@@ -8,13 +8,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Weight functions used for spatial binned analysis modules."""
 
+import MDAnalysis as mda
 import numpy as np
 from scipy import constants
 
 from .util import get_compound
 
 
-def density_weights(atomgroup, grouping, dens):
+def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.ndarray:
     """Weights for density calculations.
 
     Parameters
@@ -22,7 +23,7 @@ def density_weights(atomgroup, grouping, dens):
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
     grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
-        constituent to group weights with respect to
+        constituent to group weights with respect to.
     dens : str, {'mass', 'number', 'charge'}
         type of density weight
 
@@ -30,7 +31,18 @@ def density_weights(atomgroup, grouping, dens):
     -------
     numpy.ndarray
         1D array of calculated weights. The length depends on the grouping.
+
+    Raises
+    ------
+    ValueError
+        if grouping or dens parameter is not supported.
     """
+    if grouping not in ["atoms", "residues", "segments", "molecules", "fragments"]:
+        raise ValueError(
+            f"`{grouping}` grouping is not supported. "
+            "Use `atoms`, `residues`, `segments`, `molecules` or `fragments`."
+        )
+
     if dens == "number":
         # There exist no properrty like n_molecules
         if grouping == "molecules":
@@ -51,11 +63,12 @@ def density_weights(atomgroup, grouping, dens):
             return atomgroup.total_charge(compound=grouping)
     else:
         raise ValueError(
-            f"`{dens}` not supported. " "Use `mass`, `number` or `charge`."
+            f"`{dens}` density type is not supported. "
+            "Use `mass`, `number` or `charge`."
         )
 
 
-def temperature_weights(ag, grouping):
+def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     """Weights for temperature calculations.
 
     Parameters
@@ -83,10 +96,12 @@ def temperature_weights(ag, grouping):
 
     # ((1 u * Å^2) / (ps^2)) / Boltzmann constant
     prefac = constants.atomic_mass * 1e4 / constants.Boltzmann
-    return (ag.velocities**2).sum(axis=1) * ag.atoms.masses / 2 * prefac
+    return (atomgroup.velocities**2).sum(axis=1) * atomgroup.atoms.masses / 2 * prefac
 
 
-def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
+def diporder_planar_weights(
+    atomgroup: mda.AtomGroup, grouping: str, dim: int, order_parameter: str
+) -> np.ndarray:
     """Weights for DiporderPlanar calculations.
 
     Parameters
@@ -130,11 +145,10 @@ def diporder_planar_weights(atomgroup, grouping, dim, order_parameter):
     return weights
 
 
-def velocity_weights(atomgroup, grouping, vdim, flux):
+def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.ndarray:
     """Weights for velocity calculations.
 
-    The function either normalises by the number of compounds (to get the velocity) or
-    does not normalise to get the flux (flux = velocity x number of compounds).
+    The function normalises by the number of compounds.
 
     Parameters
     ----------
@@ -144,8 +158,6 @@ def velocity_weights(atomgroup, grouping, vdim, flux):
         constituent to group weights with respect to
     vdim : int, {0, 1, 2}
         direction of the velocity taken for the weights
-    flux : bool
-        convert velocities into a flux
 
     Returns
     -------

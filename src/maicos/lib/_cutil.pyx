@@ -41,6 +41,11 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
         Maximal angle (°) between the q vectors and the z-axis.
+
+    Returns
+    -------
+    tuple(numpy.ndarray, numpy.ndarray)
+        The q values and the corresponding structure factor.
     """
 
     assert(boxdimensions.shape[0]==3)

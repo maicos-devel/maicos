@@ -69,7 +69,7 @@ class VelocityCylinder(ProfileCylinderBase):
 
         super(VelocityCylinder, self).__init__(
             weighting_function=velocity_weights,
-            f_kwargs={"vdim": vdim, "flux": flux},
+            f_kwargs={"vdim": vdim},
             normalization=normalization,
             atomgroups=atomgroups,
             dim=dim,
