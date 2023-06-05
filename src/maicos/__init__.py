@@ -19,6 +19,7 @@ from .modules import __all__
 try:
     sys.path.append(os.path.join(os.path.expanduser("~"), ".maicos/"))
     from maicos_custom_modules import *
+    from maicos_custom_modules import custom_modules
 
     __all__ += custom_modules
 except ImportError:

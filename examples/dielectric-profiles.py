@@ -62,9 +62,9 @@ u = mda.Universe("graphene_water.tpr", "graphene_water.xtc")
 # The simulation trajectory that we provide was simulated using Yeh-Berkowitz dipole
 # correction. So we don't want to include dipole corrections, because we assume that our
 # simulation data adequately represents a 2d-periodic system. For systems that are not
-# 2d-periodic, one should set the ``is_3d`` argument to ``True`` to include the dipole
-# correction (see :ref:`dielectric-explanations` or the section on boundary conditions
-# down below).
+# 2d-periodic, one should set the ``is_3d`` argument to :obj:`True` to include the
+# dipole correction (see :ref:`dielectric-explanations` or the section on boundary
+# conditions down below).
 #
 # Since we included a large vacuum region in our simulation that is not of interest for
 # the dielectric profile, we can set the ``refgroup`` to the group containing our water
@@ -79,7 +79,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 # This creates the analysis object, but does not yet perform the analysis. To this end
 # we call the member function :meth:`run
 # <maicos.DielectricPlanar.run>`. We may set the ``verbose``
-# keyword to ``True`` to get additional information like a progress bar.
+# keyword to :obj:`True` to get additional information like a progress bar.
 #
 # Here you also have the chance to set ``start`` and ``stop`` keywords to specify which
 # frames the analysis should start at and where to end. One can also specify a ``step``
@@ -152,7 +152,7 @@ plt.show()
 # depending on if one simulated a truly 3d periodic system or a 2d periodic one.
 # Seldomly, vacuum boundary conditions might have been used for Ewald summations instead
 # of the more common tin-foil boundary conditions. In this case, the ``vac`` flag should
-# be set to ``True``.
+# be set to :obj:`True`.
 #
 # TIP4P Water and Molecules with Virtual Sites
 # --------------------------------------------

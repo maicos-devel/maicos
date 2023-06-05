@@ -7,14 +7,14 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Small helper and utilities functions that don't fit anywhere else."""
-
 import functools
 import logging
 import os
 import sys
 import warnings
-from typing import Callable
+from typing import Callable, Tuple, Union
 
+import MDAnalysis as mda
 import numpy as np
 from scipy.signal import find_peaks
 
@@ -24,7 +24,7 @@ from maicos.lib.math import correlation_time
 logger = logging.getLogger(__name__)
 
 
-def correlation_analysis(timeseries):
+def correlation_analysis(timeseries: np.ndarray) -> float:
     """Timeseries correlation analysis.
 
     Analyses a timeseries for correlation and prints a warning if the correlation time
@@ -37,7 +37,7 @@ def correlation_analysis(timeseries):
 
     Returns
     -------
-    corrtime: np.float64
+    corrtime: float
         Estimated correlation time of `timeseries`.
     """
     if np.any(np.isnan(timeseries)):
@@ -72,7 +72,9 @@ def correlation_analysis(timeseries):
     return corrtime
 
 
-def get_compound(atomgroup, return_index=False):
+def get_compound(
+    atomgroup: mda.AtomGroup, return_index: bool = False
+) -> Union[str, Tuple[str, np.ndarray]]:
     """Returns the highest order topology attribute.
 
     The order is "molecules", "fragments", "residues". If the topology contains none of
@@ -84,14 +86,15 @@ def get_compound(atomgroup, return_index=False):
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    return_index : bool, optional
-        If True, also return the indices the corresponding topology attribute.
+    return_index : bool
+        If :obj:`True`, also return the indices the corresponding topology attribute.
+        Default is :obj:`False`.
 
     Returns
     -------
-    compound: string
+    compound : str
         Name of the topology attribute.
-    index: ndarray, optional
+    index : numpy.ndarray
         The indices of the topology attribute.
 
     Raises
@@ -118,19 +121,35 @@ def get_compound(atomgroup, return_index=False):
         return compound
 
 
-def get_cli_input():
-    """Return a proper formatted string of the command line input."""
+def get_cli_input() -> str:
+    """Return a proper formatted string of the command line input.
+
+    Returns
+    -------
+    str
+        A string representing the command line input in a proper format.
+    """
     program_name = os.path.basename(sys.argv[0])
     # Add additional quotes for connected arguments.
     arguments = ['"{}"'.format(arg) if " " in arg else arg for arg in sys.argv[1:]]
     return "{} {}".format(program_name, " ".join(arguments))
 
 
-def atomgroup_header(AtomGroup):
+def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
     """Return a string containing infos about the AtomGroup.
 
     Infos include the total number of atoms, the including residues and the number of
     residues. Useful for writing output file headers.
+
+    Parameters
+    ----------
+    AtomGroup : MDAnalysis.core.groups.AtomGroup
+        The AtomGroup object containing the atoms.
+
+    Returns
+    -------
+    str
+        A string containing the AtomGroup information.
     """
     if not hasattr(AtomGroup, "types"):
         logger.warning(
@@ -142,10 +161,25 @@ def atomgroup_header(AtomGroup):
     return " & ".join("{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
 
 
-def bin(a, bins):
+def bin(a: np.ndarray, bins: np.ndarray) -> np.ndarray:
     """Average array values in bins for easier plotting.
 
-    Note: "bins" array should contain the INDEX (integer) where that bin begins
+    Parameters
+    ----------
+    a : numpy.ndarray
+        The input array to be averaged.
+    bins : numpy.ndarray
+        The array containing the indices where each bin begins.
+
+    Returns
+    -------
+    numpy.ndarray
+        The averaged array values.
+
+    Notes
+    -----
+    The "bins" array should contain the INDEX (integer) where each bin begins.
+
     """
     if np.iscomplex(a).any():
         avg = np.zeros(len(bins), dtype=complex)  # average of data
@@ -185,8 +219,8 @@ DOC_DICT = dict(
         a list of :class:`~MDAnalysis.core.groups.AtomGroup` objects for which the
         calculations are performed.""",
     BASE_CLASS_PARAMETERS="""unwrap : bool
-        When ``True``, molecules that are broken due to the periodic boundary conditions
-        are made whole.
+        When :obj:`True`, molecules that are broken due to the periodic boundary
+        conditions are made whole.
 
         If the input contains molecules that are already whole, speed up the calculation
         by disabling unwrap. To do so, use the flag ``-no-unwrap`` when using MAICoS
@@ -395,7 +429,7 @@ def render_docs(func: Callable) -> Callable:
     return _render_docs(func, doc_dict=DOC_DICT)
 
 
-def charge_neutral(filter):
+def charge_neutral(filter: str) -> Callable:
     """Raise a Warning when AtomGroup is not charge neutral.
 
     Class Decorator to raise an Error/Warning when AtomGroup in an AnalysisBase class is
@@ -406,7 +440,7 @@ def charge_neutral(filter):
     Parameters
     ----------
     filter : str
-        Filter type to control warning filter Common values are: "error" or "default"
+        Filter type to control warning filter. Common values are: "error" or "default"
         See `warnings.simplefilter` for more options.
     """
 
@@ -469,19 +503,21 @@ def unwrap_refgroup(original_class):
     return original_class
 
 
-def trajectory_precision(trajectory, dim=2):
+def trajectory_precision(
+    trajectory: mda.coordinates.base.ReaderBase, dim: int = 2
+) -> np.ndarray:
     """Detect the precision of a trajectory.
 
     Parameters
     ----------
-    trajectory : MDAnalysis trajectory
+    trajectory : MDAnalysis.coordinates.base.ReaderBase
         Trajectory from which the precision is detected.
-    dim : int, optional
-        Dimension along which the precision is detected.
+    dim : int
+        Dimension along which the precision is detected. Default is 2.
 
     Returns
     -------
-    precision : array
+    precision : numpy.ndarray
         Precision of each frame of the trajectory.
 
         If the trajectory has a high precision, its resolution will not be detected, and
@@ -528,7 +564,7 @@ DOI_LIST = {
 }
 
 
-def citation_reminder(*dois):
+def citation_reminder(*dois: str) -> str:
     """Prints citations in order to remind users to give due credit.
 
     Parameters

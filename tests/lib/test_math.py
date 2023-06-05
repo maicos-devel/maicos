@@ -252,7 +252,7 @@ def test_iFT():
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
     t, sin_FT = maicos.lib.math.FT(x, sin)
-    x_new, sin_new = maicos.lib.math.iFT(t, sin_FT)
+    sin_new = maicos.lib.math.iFT(t, sin_FT, indvar=False)
     assert_almost_equal(sin, sin_new.real, decimal=1)
 
 
