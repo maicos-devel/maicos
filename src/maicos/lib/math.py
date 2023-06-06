@@ -7,7 +7,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper functions for mathematical and physical operations."""
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import MDAnalysis as mda
 import numpy as np
@@ -136,7 +136,7 @@ def iFT(
 
 
 def correlation(
-    a: np.ndarray, b: Union[None, np.ndarray] = None, subtract_mean: bool = False
+    a: np.ndarray, b: Optional[np.ndarray] = None, subtract_mean: bool = False
 ) -> np.ndarray:
     """Calculate correlation or autocorrelation.
 
@@ -187,7 +187,7 @@ def correlation(
 
 
 def scalar_prod_corr(
-    a: np.ndarray, b: Union[None, np.ndarray] = None, subtract_mean: bool = False
+    a: np.ndarray, b: Optional[np.ndarray] = None, subtract_mean: bool = False
 ) -> np.ndarray:
     """Give the corr. function of the scalar product of two vector timeseries.
 

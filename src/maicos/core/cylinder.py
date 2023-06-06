@@ -7,9 +7,10 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for cylindrical analysis."""
-
 import logging
+from typing import Callable, Dict, List, Optional, Union
 
+import MDAnalysis as mda
 import numpy as np
 
 from ..lib.util import render_docs
@@ -56,7 +57,13 @@ class CylinderBase(PlanarBase):
         index of the bin.
     """
 
-    def __init__(self, atomgroups, rmin, rmax, **kwargs):
+    def __init__(
+        self,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        rmin: float,
+        rmax: float,
+        **kwargs,
+    ):
         super().__init__(atomgroups, **kwargs)
 
         self.rmin = rmin
@@ -93,7 +100,7 @@ class CylinderBase(PlanarBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-    def transform_positions(self, positions):
+    def transform_positions(self, positions: np.ndarray):
         """Transform positions into cylinder coordinates.
 
         The origin of th coordinate system is at :attr:`AnalysisBase.box_center`. And
@@ -164,13 +171,13 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
 
     def __init__(
         self,
-        weighting_function,
-        normalization,
-        atomgroups,
-        grouping,
-        bin_method,
-        output,
-        f_kwargs=None,
+        weighting_function: Callable,
+        normalization: str,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        grouping: str,
+        bin_method: str,
+        output: str,
+        f_kwargs: Optional[Dict] = None,
         **kwargs,
     ):
         CylinderBase.__init__(
@@ -202,7 +209,9 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
             f"{'XYZ'[self.dim]}-axes."
         )
 
-    def _compute_histogram(self, positions, weights):
+    def _compute_histogram(
+        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         positions = self.transform_positions(positions)
         # Use the 2D histogram function to perform the selection in the z dimension.
         hist, _, _ = np.histogram2d(

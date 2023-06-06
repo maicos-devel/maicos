@@ -7,9 +7,10 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for spherical analysis."""
-
 import logging
+from typing import Callable, Dict, List, Optional, Union
 
+import MDAnalysis as mda
 import numpy as np
 
 from ..lib.util import render_docs
@@ -49,15 +50,22 @@ class SphereBase(AnalysisBase):
         Edges of the bins (in Å) in the current frame.
     _obs.bin_area : numpy.ndarray, (n_bins)
         Surface area (in Å^2) of the sphere of each bin with radius `bin_pos` in the
-        current frame. Calculated via :math:`4 \pi r_i^2 ` where `i` is the index of the
-        bin.
+        current frame. Calculated via :math:`4 \pi r_i^2` where :math:`i` is the index
+        of the bin.
     results.bin_volume : numpy.ndarray, (n_bins)
         volume of a spherical shell of each bins (in Å^3) of the current frame.
-        Calculated via :math:`\left 4\pi/3(r_{i+1}^3 - r_i^3 \right)` where `i` is the
+        Calculated via :math:`4\pi/3 \left(r_{i+1}^3 - r_i^3 \right)` where `i` is the
         index of the bin.
     """
 
-    def __init__(self, atomgroups, rmin, rmax, bin_width, **kwargs):
+    def __init__(
+        self,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        rmin: float,
+        rmax: float,
+        bin_width: float,
+        **kwargs,
+    ):
         super().__init__(atomgroups, **kwargs)
 
         self.rmin = rmin
@@ -93,7 +101,7 @@ class SphereBase(AnalysisBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-    def transform_positions(self, positions):
+    def transform_positions(self, positions: np.ndarray):
         """Transform positions into spherical coordinates.
 
         The origin of th coordinate system is at :attr:`AnalysisBase.box_center`.
@@ -166,13 +174,13 @@ class ProfileSphereBase(SphereBase, ProfileBase):
 
     def __init__(
         self,
-        weighting_function,
-        normalization,
-        atomgroups,
-        grouping,
-        bin_method,
-        output,
-        f_kwargs=None,
+        weighting_function: Callable,
+        normalization: str,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        grouping: str,
+        bin_method: str,
+        output: str,
+        f_kwargs: Optional[Dict] = None,
         **kwargs,
     ):
         SphereBase.__init__(
@@ -201,7 +209,9 @@ class ProfileSphereBase(SphereBase, ProfileBase):
 
         logger.info(f"Computing {self.grouping} radial profile.")
 
-    def _compute_histogram(self, positions, weights):
+    def _compute_histogram(
+        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         positions = self.transform_positions(positions)[:, 0]
         hist, _ = np.histogram(
             positions, bins=self.n_bins, range=(self.rmin, self.rmax), weights=weights

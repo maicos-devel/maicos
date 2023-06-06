@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Add typehints for core classes (!251)
 - Update documentation with parameters, returns and examples for library functions
 - Update CI to use latest MacOS (!250)
 - Add tables to documentation pages (!249)
