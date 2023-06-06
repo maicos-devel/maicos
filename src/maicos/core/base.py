@@ -19,6 +19,7 @@ import numpy as np
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
+from typing_extensions import Self
 
 from .._version import get_versions
 from ..lib.math import center_cluster, new_mean, new_variance
@@ -185,7 +186,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         super().__init__(trajectory=self._trajectory)
 
     @property
-    def box_center(self):
+    def box_center(self) -> np.ndarray:
         """Center of the simulation cell."""
         return self._universe.dimensions[:3] / 2
 
@@ -208,6 +209,10 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             number of frames to skip between each analysed frame
         verbose : bool
             Turn on verbosity
+
+        Returns
+        -------
+        Self object
         """
         logger.info("Choosing frames to analyze")
         # if verbose unchanged, use class default

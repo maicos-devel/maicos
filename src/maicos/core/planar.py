@@ -82,7 +82,7 @@ class PlanarBase(AnalysisBase):
         self._bin_width = bin_width
 
     @property
-    def odims(self):
+    def odims(self) -> np.ndarray:
         """Other dimensions perpendicular to dim i.e. (0,2) if dim = 1."""
         return np.roll(np.arange(3), -self.dim)[1:]
 
@@ -218,7 +218,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self):
+    def _single_frame(self) -> Optional[None]:
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 
