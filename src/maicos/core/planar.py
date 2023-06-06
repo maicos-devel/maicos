@@ -7,9 +7,10 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for planar analysis."""
-
 import logging
+from typing import Callable, Dict, List, Optional, Union
 
+import MDAnalysis as mda
 import numpy as np
 
 from ..lib.math import symmetrize
@@ -58,7 +59,15 @@ class PlanarBase(AnalysisBase):
         Volume of an cuboid of each bin (in Å^3) in the current frame.
     """
 
-    def __init__(self, atomgroups, dim, zmin, zmax, bin_width, **kwargs):
+    def __init__(
+        self,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int,
+        zmin: float,
+        zmax: float,
+        bin_width: float,
+        **kwargs,
+    ):
         super().__init__(atomgroups=atomgroups, **kwargs)
 
         if dim not in [0, 1, 2]:
@@ -154,14 +163,14 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     def __init__(
         self,
-        weighting_function,
-        normalization,
-        atomgroups,
-        sym,
-        grouping,
-        bin_method,
-        output,
-        f_kwargs=None,
+        weighting_function: Callable,
+        normalization: str,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        sym: bool,
+        grouping: str,
+        bin_method: str,
+        output: str,
+        f_kwargs: Optional[Dict] = None,
         **kwargs,
     ):
         PlanarBase.__init__(
@@ -199,7 +208,9 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
             f"Computing {self.grouping} profile along " f"{'XYZ'[self.dim]}-axes."
         )
 
-    def _compute_histogram(self, positions, weights):
+    def _compute_histogram(
+        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         positions = positions[:, self.dim]
         hist, _ = np.histogram(
             positions, bins=self.n_bins, range=(self.zmin, self.zmax), weights=weights
