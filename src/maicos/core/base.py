@@ -196,7 +196,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         stop: Optional[int] = None,
         step: Optional[int] = None,
         verbose: Optional[bool] = None,
-    ):
+    ) -> Self:
         """Iterate over the trajectory.
 
         Parameters
