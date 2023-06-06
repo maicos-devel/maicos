@@ -146,7 +146,7 @@ class DielectricPlanar(PlanarBase):
             self.comp.append(comp)
             self.inverse_ix.append(inverse_ix)
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         super()._single_frame()
 
         # precalculate total polarization of the box

@@ -218,7 +218,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self) -> Optional[None]:
+    def _single_frame(self) -> float:
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 

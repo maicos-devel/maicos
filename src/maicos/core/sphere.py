@@ -219,7 +219,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self) -> Optional[float]:
+    def _single_frame(self) -> float:
         SphereBase._single_frame(self)
         ProfileBase._single_frame(self)
 

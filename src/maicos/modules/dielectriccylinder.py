@@ -112,7 +112,7 @@ class DielectricCylinder(CylinderBase):
     def _prepare(self):
         super()._prepare()
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         super()._single_frame()
 
         # Use polarization density (for radial component)

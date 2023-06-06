@@ -96,7 +96,7 @@ class DielectricSphere(SphereBase):
     def _prepare(self):
         super()._prepare()
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         super()._single_frame()
         rbins = np.digitize(self.pos_sph[:, 0], self._obs.bin_edges[1:-1])
         curQ_rad = np.bincount(

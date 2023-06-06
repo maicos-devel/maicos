@@ -227,7 +227,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self) -> Optional[None]:
+    def _single_frame(self) -> float:
         CylinderBase._single_frame(self)
         ProfileBase._single_frame(self)
 
