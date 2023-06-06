@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Only test minimum and maximum Python version in CI (!252)
 - Add typehints for core classes (!251)
 - Update documentation with parameters, returns and examples for library functions
 - Update CI to use latest MacOS (!250)

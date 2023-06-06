@@ -28,7 +28,7 @@ cache:
 .supported_python_versions:
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.8', '3.9', '3.10', '3.11']
+      - PYTHON_VERSION: ['3.8', '3.11']
 
 .windows:
   variables:
