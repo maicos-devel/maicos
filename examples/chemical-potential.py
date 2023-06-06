@@ -74,7 +74,7 @@ import maicos
 # input instead of the Volume.
 
 
-def mu(rho: np.ndarray, T: np.ndarray, m: np.ndarray) -> np.ndarray:
+def mu(rho: np.ndarray, T: float, m: float) -> np.ndarray:
     """Calculate the chemical potential.
 
     The chemical potential is calculated from the density: mu = R T log(rho. / m)
@@ -111,7 +111,7 @@ def mu(rho: np.ndarray, T: np.ndarray, m: np.ndarray) -> np.ndarray:
 # The implemented function looks like this.
 
 
-def dmu(rho: np.ndarray, drho: np.ndarray, T: np.ndarray) -> np.ndarray:
+def dmu(rho: np.ndarray, drho: np.ndarray, T: float) -> np.ndarray:
     """Calculate the error of the chemical potential.
 
     The error is calculated from the density using propagation of uncertainty.

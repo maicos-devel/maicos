@@ -212,7 +212,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         Returns
         -------
-        Self object
+        self : object
+            analysis object
         """
         logger.info("Choosing frames to analyze")
         # if verbose unchanged, use class default
