@@ -62,7 +62,7 @@ class SphereBase(AnalysisBase):
         self,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
         rmin: float,
-        rmax: float,
+        rmax: Union[None, float],
         bin_width: float,
         **kwargs,
     ):

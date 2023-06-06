@@ -12,7 +12,7 @@ import logging
 import os
 import sys
 import warnings
-from typing import Callable, Tuple, Union
+from typing import Callable
 
 import MDAnalysis as mda
 import numpy as np
@@ -72,30 +72,21 @@ def correlation_analysis(timeseries: np.ndarray) -> float:
     return corrtime
 
 
-def get_compound(
-    atomgroup: mda.AtomGroup, return_index: bool = False
-) -> Union[str, Tuple[str, np.ndarray]]:
+def get_compound(atomgroup: mda.AtomGroup) -> str:
     """Returns the highest order topology attribute.
 
     The order is "molecules", "fragments", "residues". If the topology contains none of
-    those attributes, an AttributeError is raised. Optionally, the indices of the
-    attribute as given by `molnums`, `fragindices` or `resindices` respectively are also
-    returned.
+    those attributes, an AttributeError is raised.
 
     Parameters
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    return_index : bool
-        If :obj:`True`, also return the indices the corresponding topology attribute.
-        Default is :obj:`False`.
 
     Returns
     -------
-    compound : str
+    str
         Name of the topology attribute.
-    index : numpy.ndarray
-        The indices of the topology attribute.
 
     Raises
     ------
@@ -103,22 +94,15 @@ def get_compound(
         `atomgroup` is missing any connection information"
     """
     if hasattr(atomgroup, "molnums"):
-        compound = "molecules"
-        indices = atomgroup.atoms.molnums
+        return "molecules"
     elif hasattr(atomgroup, "fragments"):
         logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
-        compound = "fragments"
-        indices = atomgroup.atoms.fragindices
+        return "fragments"
     elif hasattr(atomgroup, "residues"):
         logger.info("Cannot use 'fragments'. Falling back to 'residues'")
-        compound = "residues"
-        indices = atomgroup.atoms.resindices
+        return "residues"
     else:
         raise AttributeError("Missing any connection information in `atomgroup`.")
-    if return_index:
-        return compound, indices
-    else:
-        return compound
 
 
 def get_cli_input() -> str:

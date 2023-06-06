@@ -9,7 +9,9 @@
 """Module for computing dielectric spectra for bulk systems."""
 
 import logging
+from typing import Optional
 
+import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
@@ -77,18 +79,18 @@ class DielectricSpectrum(AnalysisBase):
     # TODO: merge with molecular version?
     def __init__(
         self,
-        atomgroup,
-        refgroup=None,
-        unwrap=True,
-        concfreq=0,
-        temperature=300,
-        output_prefix="",
-        segs=20,
-        df=None,
-        bins=200,
-        binafter=20,
-        nobin=False,
-        jitter=0.0,
+        atomgroup: mda.AtomGroup,
+        refgroup: Optional[mda.AtomGroup] = None,
+        unwrap: bool = True,
+        concfreq: float = 0,
+        temperature: float = 300,
+        output_prefix: str = "",
+        segs: int = 20,
+        df: Optional[float] = None,
+        bins: int = 200,
+        binafter: float = 20,
+        nobin: bool = False,
+        jitter: float = 0.0,
     ):
         wrap_compound = get_compound(atomgroup)
         super().__init__(

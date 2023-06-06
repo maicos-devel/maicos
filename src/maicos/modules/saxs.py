@@ -9,6 +9,7 @@
 r"""Module for computing Small Angle X-Ray scattering intensities."""
 
 import logging
+from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -68,18 +69,18 @@ class Saxs(AnalysisBase):
 
     def __init__(
         self,
-        atomgroup,
-        refgroup=None,
-        unwrap=False,
-        jitter=0.0,
-        concfreq=0,
-        nobin=False,
-        startq=0,
-        endq=6,
-        dq=0.005,
-        mintheta=0,
-        maxtheta=180,
-        output="sq.dat",
+        atomgroup: mda.AtomGroup,
+        refgroup: Optional[mda.AtomGroup] = None,
+        unwrap: bool = False,
+        jitter: float = 0.0,
+        concfreq: float = 0,
+        nobin: bool = False,
+        startq: float = 0,
+        endq: float = 6,
+        dq: float = 0.005,
+        mintheta: float = 0,
+        maxtheta: float = 180,
+        output: str = "sq.dat",
     ):
         super().__init__(
             atomgroup,

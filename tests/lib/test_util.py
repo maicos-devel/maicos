@@ -27,28 +27,23 @@ from data import WATER_GRO, WATER_TPR  # noqa: E402
 
 
 @pytest.mark.parametrize(
-    "u, compound, index",
+    "u, compound",
     (
-        (UnWrapUniverse(), "molecules", "molnums"),
+        (UnWrapUniverse(), "molecules"),
         (
             UnWrapUniverse(have_molnums=False, have_bonds=True),
             "fragments",
-            "fragindices",
         ),
         (
             UnWrapUniverse(have_molnums=False, have_bonds=False),
             "residues",
-            "resindices",
         ),
     ),
 )
-def test_get_compound(u, compound, index):
+def test_get_compound(u, compound):
     """Tests check compound."""
     comp = maicos.lib.util.get_compound(u.atoms)
     assert compound == comp
-    comp, ix = maicos.lib.util.get_compound(u.atoms, return_index=True)
-    assert compound == comp
-    assert_equal(ix, getattr(u.atoms, index))
 
 
 def test_get_cli_input():

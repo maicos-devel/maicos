@@ -9,7 +9,9 @@
 """Module for computing planar dielectric profiles."""
 
 import logging
+from typing import List, Optional, Union
 
+import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
@@ -89,21 +91,21 @@ class DielectricPlanar(PlanarBase):
 
     def __init__(
         self,
-        atomgroups,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=0.5,
-        refgroup=None,
-        is_3d=False,
-        sym=False,
-        vac=False,
-        unwrap=True,
-        temperature=300,
-        output_prefix="eps",
-        concfreq=0,
-        jitter=0.0,
-        vcutwidth=0.1,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: float = 0.5,
+        refgroup: Optional[mda.AtomGroup] = None,
+        is_3d: bool = False,
+        sym: bool = False,
+        vac: bool = False,
+        unwrap: bool = True,
+        temperature: float = 300,
+        output_prefix: str = "eps",
+        concfreq: float = 0,
+        jitter: float = 0.0,
+        vcutwidth: float = 0.1,
     ):
         if type(atomgroups) not in (list, tuple):
             wrap_compound = get_compound(atomgroups)
@@ -138,7 +140,8 @@ class DielectricPlanar(PlanarBase):
         self.inverse_ix = []
 
         for sel in self.atomgroups:
-            comp, ix = get_compound(sel.atoms, return_index=True)
+            comp = get_compound(sel.atoms)
+            ix = sel.atoms._get_compound_indices(comp)
             _, inverse_ix = np.unique(ix, return_inverse=True)
             self.comp.append(comp)
             self.inverse_ix.append(inverse_ix)

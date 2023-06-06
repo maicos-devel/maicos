@@ -9,7 +9,9 @@
 """Module for calculating spherical dielectric profiles."""
 
 import logging
+from typing import Optional
 
+import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
@@ -62,18 +64,19 @@ class DielectricSphere(SphereBase):
 
     def __init__(
         self,
-        atomgroup,
-        bin_width=0.1,
-        temperature=300,
-        output_prefix="eps_sph",
-        refgroup=None,
-        concfreq=0,
-        jitter=0.0,
-        rmin=0,
-        rmax=None,
-        unwrap=True,
+        atomgroup: mda.AtomGroup,
+        bin_width: float = 0.1,
+        temperature: float = 300,
+        output_prefix: str = "eps_sph",
+        refgroup: Optional[mda.AtomGroup] = None,
+        concfreq: float = 0,
+        jitter: float = 0.0,
+        rmin: float = 0,
+        rmax: Optional[float] = None,
+        unwrap: bool = True,
     ):
-        self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
+        self.comp = get_compound(atomgroup.atoms)
+        ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
         super().__init__(
             atomgroup,

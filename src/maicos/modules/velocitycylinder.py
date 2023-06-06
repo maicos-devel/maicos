@@ -8,6 +8,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing cylindrical velocity profiles."""
 
+from typing import List, Optional, Union
+
+import MDAnalysis as mda
+
 from ..core import ProfileCylinderBase
 from ..lib.util import render_docs
 from ..lib.weights import velocity_weights
@@ -43,22 +47,22 @@ class VelocityCylinder(ProfileCylinderBase):
 
     def __init__(
         self,
-        atomgroups,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=1,
-        rmin=0,
-        rmax=None,
-        refgroup=None,
-        grouping="atoms",
-        unwrap=True,
-        bin_method="com",
-        output="velocity.dat",
-        concfreq=0,
-        jitter=0.0,
-        vdim=0,
-        flux=False,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: int = 1,
+        rmin: float = 0,
+        rmax: Optional[float] = None,
+        refgroup: Optional[mda.AtomGroup] = None,
+        grouping: str = "atoms",
+        unwrap: bool = True,
+        bin_method: str = "com",
+        output: str = "velocity.dat",
+        concfreq: float = 0,
+        jitter: float = 0.0,
+        vdim: int = 0,
+        flux: bool = False,
     ):
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")

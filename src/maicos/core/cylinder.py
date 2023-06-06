@@ -61,7 +61,7 @@ class CylinderBase(PlanarBase):
         self,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
         rmin: float,
-        rmax: float,
+        rmax: Union[None, float],
         **kwargs,
     ):
         super().__init__(atomgroups, **kwargs)

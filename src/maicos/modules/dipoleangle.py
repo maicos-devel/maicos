@@ -8,6 +8,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing dipole angle timeseries."""
 
+from typing import Optional
+
+import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
@@ -53,13 +56,13 @@ class DipoleAngle(AnalysisBase):
 
     def __init__(
         self,
-        atomgroup,
-        refgroup=None,
-        unwrap=False,
-        concfreq=0,
-        dim=2,
-        output="dipangle.dat",
-        jitter=0.0,
+        atomgroup: mda.AtomGroup,
+        refgroup: Optional[mda.AtomGroup] = None,
+        unwrap: bool = False,
+        concfreq: float = 0,
+        dim: int = 2,
+        output: str = "dipangle.dat",
+        jitter: float = 0.0,
     ):
         self.wrap_compound = get_compound(atomgroup)
         super().__init__(

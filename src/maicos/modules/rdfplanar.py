@@ -9,7 +9,9 @@
 r"""Module for computing 2D radial distribution functions."""
 
 import logging
+from typing import Optional, Tuple
 
+import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
 
@@ -75,22 +77,22 @@ class RDFPlanar(PlanarBase):
 
     def __init__(
         self,
-        g1,
-        g2=None,
-        rdf_bin_width=0.3,
-        dzheight=0.1,
-        range=(0.0, None),
-        bin_method="com",
-        output="rdf.dat",
+        g1: mda.AtomGroup,
+        g2: Optional[mda.AtomGroup] = None,
+        rdf_bin_width: float = 0.3,
+        dzheight: float = 0.1,
+        range: Tuple[float, Optional[float]] = (0.0, None),
+        bin_method: str = "com",
+        output: str = "rdf.dat",
         # Planar base arguments
-        refgroup=None,
-        unwrap=False,
-        concfreq=0,
-        jitter=0.0,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=1,
+        refgroup: Optional[mda.AtomGroup] = None,
+        unwrap: bool = False,
+        concfreq: float = 0,
+        jitter: float = 0.0,
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: float = 1,
     ):
         self.comp_1 = get_compound(g1)
         super().__init__(
