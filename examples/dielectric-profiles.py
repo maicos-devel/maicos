@@ -171,7 +171,9 @@ plt.show()
 # model.
 
 
-def transform_lammps_tip4p(oxygen_index_array, distance):
+def transform_lammps_tip4p(
+    oxygen_index_array: np.ndarray, distance: float
+) -> mda.coordinates.timestep.Timestep:
     """Creates a transformation function where for lammps tip4p molecukes.
 
     oxygen_index_array is the array of indices where ``atom.type == oxygen_type``.

@@ -101,7 +101,7 @@ class SphereBase(AnalysisBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-    def transform_positions(self, positions: np.ndarray):
+    def transform_positions(self, positions: np.ndarray) -> np.ndarray:
         """Transform positions into spherical coordinates.
 
         The origin of th coordinate system is at :attr:`AnalysisBase.box_center`.
@@ -219,7 +219,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         SphereBase._single_frame(self)
         ProfileBase._single_frame(self)
 

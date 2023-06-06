@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter
 
+- Add typehints for examples (!255)
 - Add typehints for modules (!253)
 - Only test minimum and maximum Python version in CI (!252)
 - Add typehints for core classes (!251)

@@ -19,7 +19,9 @@ result object of the class.
 # %%
 
 import logging
+from typing import Optional
 
+import MDAnalysis as mda
 import numpy as np
 
 from maicos.core import AnalysisBase
@@ -60,13 +62,13 @@ class AnalysisExample(AnalysisBase):
 
     def __init__(
         self,
-        atomgroup,
-        unwrap=False,
-        refgroup=None,
-        jitter=0.0,
-        concfreq=0,
-        temperature=300,
-        output="outfile.dat",
+        atomgroup: mda.AtomGroup,
+        unwrap: bool = False,
+        refgroup: Optional[mda.AtomGroup] = None,
+        jitter: float = 0.0,
+        concfreq: float = 0,
+        temperature: float = 300,
+        output: str = "outfile.dat",
     ):
         super().__init__(
             atomgroup,

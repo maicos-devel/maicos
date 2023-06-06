@@ -100,7 +100,7 @@ class CylinderBase(PlanarBase):
         except TypeError:
             raise ValueError("Binwidth must be a number.")
 
-    def transform_positions(self, positions: np.ndarray):
+    def transform_positions(self, positions: np.ndarray) -> np.ndarray:
         """Transform positions into cylinder coordinates.
 
         The origin of th coordinate system is at :attr:`AnalysisBase.box_center`. And
@@ -227,7 +227,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
 
         return hist
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         CylinderBase._single_frame(self)
         ProfileBase._single_frame(self)
 
