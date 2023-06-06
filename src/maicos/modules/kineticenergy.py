@@ -8,6 +8,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing kinetic energy timeseries."""
 
+from typing import Optional
+
+import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
@@ -52,13 +55,13 @@ class KineticEnergy(AnalysisBase):
 
     def __init__(
         self,
-        atomgroup,
-        unwrap=False,
-        refgroup=None,
-        jitter=0.0,
-        concfreq=0,
-        output="ke.dat",
-        refpoint="COM",
+        atomgroup: mda.AtomGroup,
+        unwrap: bool = False,
+        refgroup: Optional[mda.AtomGroup] = None,
+        jitter: float = 0.0,
+        concfreq: float = 0,
+        output: str = "ke.dat",
+        refpoint: str = "COM",
     ):
         super().__init__(
             atomgroup,

@@ -9,7 +9,9 @@
 """Module for computing cylindrical dielectric profiles."""
 
 import logging
+from typing import Optional
 
+import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
@@ -69,23 +71,24 @@ class DielectricCylinder(CylinderBase):
 
     def __init__(
         self,
-        atomgroup,
-        bin_width=0.1,
-        temperature=300,
-        single=False,
-        output_prefix="eps_cyl",
-        refgroup=None,
-        concfreq=0,
-        jitter=0.0,
-        dim=2,
-        rmin=0,
-        rmax=None,
-        zmin=None,
-        zmax=None,
-        vcutwidth=0.1,
-        unwrap=True,
+        atomgroup: mda.AtomGroup,
+        bin_width: float = 0.1,
+        temperature: float = 300,
+        single: bool = False,
+        output_prefix: str = "eps_cyl",
+        refgroup: Optional[mda.AtomGroup] = None,
+        concfreq: float = 0,
+        jitter: float = 0.0,
+        dim: int = 2,
+        rmin: float = 0,
+        rmax: Optional[float] = None,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        vcutwidth: float = 0.1,
+        unwrap: bool = True,
     ):
-        self.comp, ix = get_compound(atomgroup.atoms, return_index=True)
+        self.comp = get_compound(atomgroup.atoms)
+        ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
         super().__init__(
             atomgroup,

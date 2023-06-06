@@ -8,6 +8,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar velocity profiles."""
 
+from typing import List, Optional, Union
+
+import MDAnalysis as mda
+
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import velocity_weights
@@ -43,21 +47,21 @@ class VelocityPlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=1,
-        refgroup=None,
-        sym=False,
-        grouping="atoms",
-        unwrap=True,
-        bin_method="com",
-        output="velocity.dat",
-        concfreq=0,
-        vdim=0,
-        flux=False,
-        jitter=0.0,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: int = 1,
+        refgroup: Optional[mda.AtomGroup] = None,
+        sym: bool = False,
+        grouping: str = "atoms",
+        unwrap: bool = True,
+        bin_method: str = "com",
+        output: str = "velocity.dat",
+        concfreq: float = 0,
+        vdim: int = 0,
+        flux: bool = False,
+        jitter: float = 0.0,
     ):
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")

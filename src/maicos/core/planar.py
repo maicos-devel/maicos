@@ -63,8 +63,8 @@ class PlanarBase(AnalysisBase):
         self,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
         dim: int,
-        zmin: float,
-        zmax: float,
+        zmin: Union[None, float],
+        zmax: Union[None, float],
         bin_width: float,
         **kwargs,
     ):

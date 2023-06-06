@@ -9,6 +9,9 @@
 """Module for computing planar temperature profiles."""
 
 import logging
+from typing import List, Optional, Union
+
+import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
@@ -38,19 +41,19 @@ class TemperaturePlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=1,
-        refgroup=None,
-        sym=False,
-        grouping="atoms",
-        unwrap=True,
-        bin_method="com",
-        output="temperature.dat",
-        concfreq=0,
-        jitter=0.0,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: float = 1,
+        refgroup: Optional[mda.AtomGroup] = None,
+        sym: bool = False,
+        grouping: str = "atoms",
+        unwrap: bool = True,
+        bin_method: str = "com",
+        output: str = "temperature.dat",
+        concfreq: float = 0,
+        jitter: float = 0.0,
     ):
         if grouping != "atoms":
             raise ValueError("Invalid choice of grouping, must use atoms")

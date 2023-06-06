@@ -9,6 +9,9 @@
 r"""Module for computing dipolar order parameters."""
 
 import logging
+from typing import List, Optional, Union
+
+import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
@@ -41,20 +44,20 @@ class DiporderPlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups,
-        dim=2,
-        zmin=None,
-        zmax=None,
-        bin_width=1,
-        refgroup=None,
-        sym=False,
-        grouping="residues",
-        unwrap=True,
-        bin_method="com",
-        output="diporder_planar.dat",
-        concfreq=0,
-        order_parameter="P0",
-        jitter=0.0,
+        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        dim: int = 2,
+        zmin: Optional[float] = None,
+        zmax: Optional[float] = None,
+        bin_width: float = 1,
+        refgroup: Optional[mda.AtomGroup] = None,
+        sym: bool = False,
+        grouping: str = "residues",
+        unwrap: bool = True,
+        bin_method: str = "com",
+        output: str = "diporder_planar.dat",
+        concfreq: float = 0,
+        order_parameter: str = "P0",
+        jitter: float = 0.0,
     ):
         if order_parameter == "P0":
             normalization = "volume"
