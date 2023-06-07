@@ -13,6 +13,7 @@ from typing import Callable, Dict, List, Optional, Union
 import MDAnalysis as mda
 import numpy as np
 
+from ..lib.math import transform_sphere
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
@@ -80,7 +81,9 @@ class SphereBase(AnalysisBase):
             self.rmax = self._rmax
 
         # Transform into spherical coordinates
-        self.pos_sph = self.transform_positions(self._universe.atoms.positions)
+        self.pos_sph = transform_sphere(
+            self._universe.atoms.positions, origin=self.box_center
+        )
 
     def _prepare(self):
         """Prepare the spherical analysis."""
@@ -100,41 +103,6 @@ class SphereBase(AnalysisBase):
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
             raise ValueError("Binwidth must be a number.")
-
-    def transform_positions(self, positions: np.ndarray) -> np.ndarray:
-        """Transform positions into spherical coordinates.
-
-        The origin of th coordinate system is at :attr:`AnalysisBase.box_center`.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            Cartesian coordinates (x,y,z)
-
-        Returns
-        -------
-        trans_positions : numpy.ndarray
-            Positions in spherical coordinates (r, phi, theta)
-        """
-        trans_positions = np.zeros(positions.shape)
-
-        # shift origin to box center
-        pos_xyz_center = positions - self.box_center
-
-        # r component
-        trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
-
-        # phi component
-        np.arctan2(
-            pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1]
-        )
-
-        # theta component
-        np.arccos(
-            pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2]
-        )
-
-        return trans_positions
 
     def _single_frame(self):
         """Single frame for the sphercial analysis."""
@@ -212,7 +180,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
     def _compute_histogram(
         self, positions: np.ndarray, weights: Optional[np.ndarray] = None
     ) -> np.ndarray:
-        positions = self.transform_positions(positions)[:, 0]
+        positions = transform_sphere(positions, origin=self.box_center)[:, 0]
         hist, _ = np.histogram(
             positions, bins=self.n_bins, range=(self.rmin, self.rmax), weights=weights
         )

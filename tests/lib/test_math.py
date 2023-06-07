@@ -13,7 +13,7 @@ import sys
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 import maicos.lib.math
 
@@ -491,3 +491,66 @@ def test_center_cluster(dim, weight):
 def test_minimal_image(vec1, vec2, box, length):
     """Tests the minimal image function used in other tests."""
     assert minimum_image_distance(vec1, vec2, box) == length
+
+
+def test_transform_sphere():
+    """Test spherical transformation of positions."""
+    u = mda.Universe.empty(n_atoms=4, trajectory=True)
+
+    # Manipulate universe
+    u.dimensions = np.array([2, 2, 2, 90, 90, 90])
+
+    sel = u.atoms[:4]
+
+    # Put one atom at each quadrant on different z positions
+    sel[0].position = np.array([0, 0, 1])
+    sel[1].position = np.array([0, 2, 1])
+    sel[2].position = np.array([2, 2, 1])
+    sel[3].position = np.array([2, 0, 1])
+
+    pos_sph = maicos.lib.math.transform_sphere(
+        u.atoms.positions, origin=u.dimensions[:3] / 2
+    )
+
+    assert_allclose(pos_sph[:, 0], np.sqrt(2))
+
+    # phi component
+    assert_allclose(pos_sph[0, 1], np.arctan(1) - np.pi)
+    assert_allclose(pos_sph[1, 1], np.arctan(-1) + np.pi)
+    assert_allclose(pos_sph[2, 1], np.arctan(1))
+    assert_allclose(pos_sph[3, 1], np.arctan(-1))
+
+    # theta component
+    assert_allclose(pos_sph[:, 2], np.arccos(0))
+
+
+def test_transform_cylinder():
+    """Test cylinder transformation of positions."""
+    u = mda.Universe.empty(4, trajectory=True)
+
+    # Manipulate universe
+    u.dimensions = np.array([2, 2, 2, 90, 90, 90])
+
+    sel = u.atoms
+
+    # Put one atom at each quadrant on different z positions
+    sel[0].position = np.array([0, 0, 1])
+    sel[1].position = np.array([0, 2, 2])
+    sel[2].position = np.array([2, 2, 3])
+    sel[3].position = np.array([2, 0, 4])
+
+    pos_cyl = maicos.lib.math.transform_cylinder(
+        sel.positions, origin=u.dimensions[:3] / 2, dim=2
+    )
+
+    # r component
+    assert_allclose(pos_cyl[:, 0], np.sqrt(2))
+
+    # phi component
+    assert_allclose(pos_cyl[0, 1], np.arctan(1) - np.pi)
+    assert_allclose(pos_cyl[1, 1], np.arctan(-1))
+    assert_allclose(pos_cyl[2, 1], np.arctan(1))
+    assert_allclose(pos_cyl[3, 1], np.arctan(-1) + np.pi)
+
+    # z component
+    assert_equal(pos_cyl[:, 2], sel.positions[:, 2])

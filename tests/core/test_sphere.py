@@ -22,6 +22,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos
 from maicos.core import ProfileSphereBase, SphereBase
+from maicos.lib.math import transform_sphere
 from maicos.lib.weights import density_weights
 
 
@@ -240,7 +241,8 @@ class TestSphereBase(object):
         cls = SphereClass(ag, pos_arg=42)
         cls._compute_lab_frame_sphere()
 
-        assert_equal(cls.pos_sph, cls.transform_positions(ag.positions))
+        assert_equal(cls.pos_sph, transform_sphere(ag.positions, origin=cls.box_center))
+
         assert cls.rmax == ag.universe.dimensions.min() / 2
 
     @pytest.mark.parametrize("rmax", (1, 2, 4.5))
@@ -251,36 +253,6 @@ class TestSphereBase(object):
 
         assert p_obj.rmax == rmax
 
-    def test_transform_positions(self, ag):
-        """Test spherical transformation of positions."""
-        u = ag.universe
-
-        # Manipulate universe
-        u.dimensions = np.array([2, 2, 2, 90, 90, 90])
-
-        sel = u.atoms[:4]
-
-        # Put one atom at each quadrant on different z positions
-        sel[0].position = np.array([0, 0, 1])
-        sel[1].position = np.array([0, 2, 1])
-        sel[2].position = np.array([2, 2, 1])
-        sel[3].position = np.array([2, 0, 1])
-
-        cls = SphereClass(sel, pos_arg=42)
-        cls._prepare()
-        pos_sph = cls.transform_positions(sel.positions)
-
-        assert_allclose(pos_sph[:, 0], np.sqrt(2))
-
-        # phi component
-        assert_allclose(pos_sph[0, 1], np.arctan(1) - np.pi)
-        assert_allclose(pos_sph[1, 1], np.arctan(-1) + np.pi)
-        assert_allclose(pos_sph[2, 1], np.arctan(1))
-        assert_allclose(pos_sph[3, 1], np.arctan(-1))
-
-        # theta component
-        assert_allclose(pos_sph[:, 2], np.arccos(0))
-
     def test_transformed_positions(self, ag):
         """Test that all universe coordinates are transformed."""
         cls = SphereClass(ag, pos_arg=42)
@@ -288,14 +260,18 @@ class TestSphereBase(object):
         u = ag.universe
 
         cls._prepare()
-        assert_equal(cls.pos_sph, cls.transform_positions(u.atoms.positions))
+        assert_equal(
+            cls.pos_sph, transform_sphere(u.atoms.positions, origin=cls.box_center)
+        )
 
         # Test if _single_frame updates the positions.
         cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()
-        assert_equal(cls.pos_sph, cls.transform_positions(u.atoms.positions))
+        assert_equal(
+            cls.pos_sph, transform_sphere(u.atoms.positions, origin=cls.box_center)
+        )
 
 
 class TestSphereBaseChilds:
