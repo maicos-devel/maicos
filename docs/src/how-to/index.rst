@@ -13,3 +13,4 @@ section.
     ../examples/saxs
     ../examples/chemical-potential
     ../examples/dielectric-profiles
+    ../examples/radial-distribution-function
