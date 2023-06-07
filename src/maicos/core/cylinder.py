@@ -13,6 +13,7 @@ from typing import Callable, Dict, List, Optional, Union
 import MDAnalysis as mda
 import numpy as np
 
+from ..lib.math import transform_cylinder
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import PlanarBase
@@ -77,7 +78,9 @@ class CylinderBase(PlanarBase):
             self.rmax = self._rmax
 
         # Transform into cylinder coordinates
-        self.pos_cyl = self.transform_positions(self._universe.atoms.positions)
+        self.pos_cyl = transform_cylinder(
+            self._universe.atoms.positions, origin=self.box_center, dim=self.dim
+        )
 
     def _prepare(self):
         """Prepare the cylinder analysis."""
@@ -99,38 +102,6 @@ class CylinderBase(PlanarBase):
                 raise ValueError("Binwidth must be a positive number.")
         except TypeError:
             raise ValueError("Binwidth must be a number.")
-
-    def transform_positions(self, positions: np.ndarray) -> np.ndarray:
-        """Transform positions into cylinder coordinates.
-
-        The origin of th coordinate system is at :attr:`AnalysisBase.box_center`. And
-        the direction of the cylinder defined by :attr:`self.dim`.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            Cartesian coordinates (x,y,z)
-
-        Returns
-        -------
-        trans_positions : numpy.ndarray
-            Positions in cylinder coordinates (r, phi, z)
-        """
-        trans_positions = np.zeros(positions.shape)
-
-        # shift origin to box center
-        pos_xyz_center = positions - self.box_center
-
-        # r component
-        trans_positions[:, 0] = np.linalg.norm(pos_xyz_center[:, self.odims], axis=1)
-
-        # phi component
-        np.arctan2(*pos_xyz_center[:, self.odims].T, out=trans_positions[:, 1])
-
-        # z component
-        trans_positions[:, 2] = np.copy(positions[:, self.dim])
-
-        return trans_positions
 
     def _single_frame(self):
         """Single frame for the cylinder analysis."""
@@ -212,7 +183,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
     def _compute_histogram(
         self, positions: np.ndarray, weights: Optional[np.ndarray] = None
     ) -> np.ndarray:
-        positions = self.transform_positions(positions)
+        positions = transform_cylinder(positions, self.box_center, self.dim)
         # Use the 2D histogram function to perform the selection in the z dimension.
         hist, _, _ = np.histogram2d(
             positions[:, 0],

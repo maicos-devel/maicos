@@ -21,6 +21,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos
 from maicos.core import CylinderBase, ProfileCylinderBase
+from maicos.lib.math import transform_cylinder
 from maicos.lib.weights import density_weights
 
 
@@ -249,7 +250,10 @@ class TestCylinderBase(object):
         cls = CylinderClass(ag, pos_arg=42, dim=dim)
         cls._compute_lab_frame_cylinder()
 
-        assert_equal(cls.pos_cyl, cls.transform_positions(ag.positions))
+        assert_equal(
+            cls.pos_cyl,
+            transform_cylinder(ag.positions, origin=cls.box_center, dim=cls.dim),
+        )
         assert cls.rmax == ag.universe.dimensions[cls.odims].min() / 2
 
     @pytest.mark.parametrize("rmax", (1, 2, 4.5))
@@ -260,37 +264,6 @@ class TestCylinderBase(object):
 
         assert p_obj.rmax == rmax
 
-    def test_transform_positions(self, ag):
-        """Test cylinder transformation of positions."""
-        u = ag.universe
-
-        # Manipulate universe
-        u.dimensions = np.array([2, 2, 2, 90, 90, 90])
-
-        sel = u.atoms[:4]
-
-        # Put one atom at each quadrant on different z positions
-        sel[0].position = np.array([0, 0, 1])
-        sel[1].position = np.array([0, 2, 2])
-        sel[2].position = np.array([2, 2, 3])
-        sel[3].position = np.array([2, 0, 4])
-
-        cls = CylinderClass(sel, pos_arg=42)
-        cls._prepare()
-        pos_cyl = cls.transform_positions(sel.positions)
-
-        # r component
-        assert_allclose(pos_cyl[:, 0], np.sqrt(2))
-
-        # phi component
-        assert_allclose(pos_cyl[0, 1], np.arctan(1) - np.pi)
-        assert_allclose(pos_cyl[1, 1], np.arctan(-1))
-        assert_allclose(pos_cyl[2, 1], np.arctan(1))
-        assert_allclose(pos_cyl[3, 1], np.arctan(-1) + np.pi)
-
-        # z component
-        assert_equal(pos_cyl[:, 2], sel.positions[:, 2])
-
     def test_transformed_positions(self, ag):
         """Test that all universe coordinates are transformed."""
         cls = CylinderClass(ag, pos_arg=42)
@@ -298,14 +271,20 @@ class TestCylinderBase(object):
         u = ag.universe
 
         cls._prepare()
-        assert_equal(cls.pos_cyl, cls.transform_positions(u.atoms.positions))
+        assert_equal(
+            cls.pos_cyl,
+            transform_cylinder(u.atoms.positions, origin=cls.box_center, dim=cls.dim),
+        )
 
         # Test if _single_frame updates the positions.
         cls._obs = Results()
         u.trajectory[10]
 
         cls._single_frame()
-        assert_equal(cls.pos_cyl, cls.transform_positions(u.atoms.positions))
+        assert_equal(
+            cls.pos_cyl,
+            transform_cylinder(u.atoms.positions, origin=cls.box_center, dim=cls.dim),
+        )
 
 
 class TestCylinderBaseChilds:

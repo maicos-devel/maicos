@@ -614,3 +614,80 @@ def compute_form_factor(q: float, atom_type: str) -> float:
             )
 
     return form_factor
+
+
+def transform_cylinder(
+    positions: np.ndarray, origin: np.ndarray, dim: int
+) -> np.ndarray:
+    """Transform positions into cylinder coordinates.
+
+    The origin of th coordinate system is at `origin`, the direction of the cylinder is
+    defined by `dim`.
+
+    Parameters
+    ----------
+    positions : numpy.ndarray
+        Cartesian coordinates (x,y,z)
+
+    origin : numpy.ndarray
+        Origin of the new cylindrical coordinate system. (x,y,z)
+
+    dim : int
+        Dimension of the cylinder axis (0=x, 1=y, 2=z)
+
+    Returns
+    -------
+    trans_positions : numpy.ndarray
+        Positions in cylinder coordinates (r, phi, z)
+    """
+    trans_positions = np.zeros(positions.shape)
+
+    odims = np.roll(np.arange(3), -dim)[1:]
+
+    # shift origin to box center
+    pos_xyz_center = positions - origin
+
+    # r component
+    trans_positions[:, 0] = np.linalg.norm(pos_xyz_center[:, odims], axis=1)
+
+    # phi component
+    np.arctan2(*pos_xyz_center[:, odims].T, out=trans_positions[:, 1])
+
+    # z component
+    trans_positions[:, 2] = np.copy(positions[:, dim])
+
+    return trans_positions
+
+
+def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
+    """Transform positions into spherical coordinates.
+
+    The origin of the new coordinate system is at `origin`.
+
+    Parameters
+    ----------
+    positions : numpy.ndarray
+        Cartesian coordinates (x,y,z)
+
+    origin : numpy.ndarray
+        Origin of the new spherical coordinate system. (x,y,z)
+
+    Returns
+    -------
+    trans_positions : numpy.ndarray
+        Positions in spherical coordinates (r, phi, theta)
+    """
+    trans_positions = np.zeros(positions.shape)
+
+    # shift origin to box center
+    # positions -= origin
+    pos_xyz_center = positions - origin
+
+    # r component
+    trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
+    # phi component
+    np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
+    # theta component
+    np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
+
+    return trans_positions
