@@ -110,6 +110,9 @@ class DielectricCylinder(CylinderBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self):
+        # Print Philip Loche citation
+        logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
+
         super()._prepare()
 
     def _single_frame(self) -> float:
@@ -223,9 +226,6 @@ class DielectricCylinder(CylinderBase):
         self.results.deps_r = (
             2 * np.pi * self._obs.L * pref * self.results.bin_pos * dcov_r
         )
-
-        # Print Philip Loche citation
-        logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 
     def save(self):
         """Save result."""
