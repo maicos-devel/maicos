@@ -25,7 +25,7 @@ from data import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR  # noqa
 class TestDielectricCylinder(object):
     """Tests for the DielectricCylinder class.
 
-    Number of times DielectricCylinder broke: |
+    Number of times DielectricCylinder broke: ||
 
     If you are reading this, most likely you are investigating a bug in the
     DielectricCylinder class.
@@ -47,9 +47,10 @@ class TestDielectricCylinder(object):
           system. For the M integral, we just perform the same calculation as the module
           and check the result.
 
-          For the axial direction, we also check that M (The one from the code, not the
-          dipole density) is:
-              M = int r * m(r) dr / (2  * pi * L)
+          For the axial direction, we also check that M (The one from the code,
+          not the dipole density) is:
+              M = (2  * pi * L) int r * m(r) dr
+
     """
 
     @pytest.fixture()
@@ -164,7 +165,7 @@ class TestDielectricCylinder(object):
         assert_allclose(
             np.sum(eps._obs.bin_volume * eps._obs.m_z), 4 / selection, rtol=0.1
         )
-        assert_allclose(eps._obs.M_z, 4 / (2 * np.pi * 10), rtol=0.1)
+        assert_allclose(eps._obs.M_z, 4, rtol=0.1)
         # Check that the radial dipole moment is zero. (Should be due to
         # geometry)
         assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.1)
@@ -193,4 +194,4 @@ class TestDielectricCylinder(object):
         """Test for single line 1D case."""
         eps = DielectricCylinder(ag, single=True, bin_width=0.5)
         eps.run()
-        assert_allclose(np.mean(eps.results.eps_z), 0.5618, rtol=1e-1)
+        assert_allclose(np.mean(eps.results.eps_z), 89.850, rtol=1e-1)
