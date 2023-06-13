@@ -71,6 +71,7 @@ v0.7 (2022/12/27)
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer, Alexander
 Schlaich, Philipp Staerk
 
+- Make sure citation are only printed once (!260)
 - Added MacOS pipeline, fixed wheels (!218)
 - Fix CHANGELOG testing (!220)
 - Added dielectric how-to (!208)

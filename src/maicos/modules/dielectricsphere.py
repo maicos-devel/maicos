@@ -94,6 +94,9 @@ class DielectricSphere(SphereBase):
         self.temperature = temperature
 
     def _prepare(self):
+        # Print the Christian Schaaf citation
+        logger.info(citation_reminder("10.1103/PhysRevE.92.032718"))
+
         super()._prepare()
 
     def _single_frame(self) -> float:
@@ -154,9 +157,6 @@ class DielectricSphere(SphereBase):
             4 * np.pi * self.results.bin_pos**2 * pref * cov_rad
         )
         self.results.deps_rad = 4 * np.pi * self.results.bin_pos**2 * pref * dcov_rad
-
-        # Print the Christian Schaaf citation
-        logger.info(citation_reminder("10.1103/PhysRevE.92.032718"))
 
     def save(self):
         """Save result."""

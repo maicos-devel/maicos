@@ -134,6 +134,9 @@ class DielectricPlanar(PlanarBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self):
+        # Print Alex Schlaich citation
+        logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
+
         super()._prepare()
 
         self.comp = []
@@ -340,9 +343,6 @@ class DielectricPlanar(PlanarBase):
             symmetrize(self.results.deps_par, axis=0, inplace=True)
             symmetrize(self.results.eps_par_self, axis=0, inplace=True)
             symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
-
-        # Print Alex Schlaich citation
-        logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 
     def save(self):
         """Save results."""

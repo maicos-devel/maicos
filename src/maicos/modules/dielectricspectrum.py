@@ -110,6 +110,9 @@ class DielectricSpectrum(AnalysisBase):
         self.nobin = nobin
 
     def _prepare(self):
+        # Print the Shane Carlson citation
+        logger.info(citation_reminder("10.1021/acs.jpca.0c04063"))
+
         if len(self.output_prefix) > 0:
             self.output_prefix += "_"
 
@@ -247,9 +250,6 @@ class DielectricSpectrum(AnalysisBase):
         logger.info(
             f"Not binning data: there are " f"{len(self.results.susc)} datapoints"
         )
-
-        # Print the Shane Carlson citation
-        logger.info(citation_reminder("10.1021/acs.jpca.0c04063"))
 
     def save(self):
         """Save result."""
