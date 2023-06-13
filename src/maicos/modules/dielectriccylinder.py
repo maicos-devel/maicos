@@ -180,9 +180,9 @@ class DielectricCylinder(CylinderBase):
 
         curqz = np.cumsum(curQz, axis=0) / (self._obs.bin_area)[np.newaxis, :]
         self._obs.m_z = -curqz.mean(axis=0)
-        self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2]) / (
-            2 * np.pi * self._obs.L
-        )
+        # This is the systems dipole moment in z-direction and
+        # not the radial integral of the dipole density.
+        self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2])
         self._obs.mM_z = self._obs.m_z * self._obs.M_z
 
         # Save the total dipole moment in z dierection for correlation analysis.
@@ -197,6 +197,9 @@ class DielectricCylinder(CylinderBase):
         pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
 
         if not self.single:
+            # A factor of 2 pi L cancels out in the final expression because here M_z is
+            # the total dipole moment in z-direction, not the radial integral of the
+            # dipole density. M_z = 2 pi L \int_0^R dr r m(r)
             cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
             cov_r = self.means.mM_r - self.means.m_r * self.means.M_r
 
