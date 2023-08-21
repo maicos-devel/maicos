@@ -385,7 +385,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             f"Command line:"
             f"    {get_cli_input()}\n"
             f"Module input:"
-            f"    {module_name}{inspect.signature(self.__init__)}"
+            f"    {module_name}{inspect.signature(self.__init__)}"  # type: ignore
             f".run({inspect.signature(self.run)})\n\n"
             f"Statistics over {self._index} frames\n\n"
             f"Considered atomgroups:\n"
