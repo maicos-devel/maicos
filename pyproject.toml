@@ -3,18 +3,15 @@
 # https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = [
     "cython>=0.28",
-    # lowest NumPy we can use for a given Python,
-    # except for more exotic platform (Mac Arm flavors)
-    # aarch64, AIX, s390x all support < 1.20 so we can safely pin to this
-    "numpy==1.20.0; python_version=='3.8' and (platform_machine!='arm64' or platform_system!='Darwin')",
-    "numpy==1.20.0; python_version=='3.9' and (platform_machine!='arm64' or platform_system!='Darwin')",
-    # arm64 on darwin for py3.8+ requires numpy >=1.21.0
-    "numpy==1.21.0; python_version=='3.8' and platform_machine=='arm64' and platform_system=='Darwin'",
-    "numpy==1.21.0; python_version=='3.9' and platform_machine=='arm64' and platform_system=='Darwin'",
-    # As per https://github.com/scipy/oldest-supported-numpy/blob/main/setup.cfg
-    # safest to build at 1.21.6 for all platforms
-    "numpy==1.21.6; python_version=='3.10' and platform_python_implementation != 'PyPy'",
+    # numpy requirements taken from scipy
+    # default numpy requirements
+    "numpy==1.22.4; python_version<='3.10' and platform_python_implementation != 'PyPy'",
     "numpy==1.23.2; python_version=='3.11' and platform_python_implementation != 'PyPy'",
+    # For Python versions which aren't yet officially supported, we specify an
+    # unpinned NumPy which allows source distributions to be used and allows
+    # wheels to be used as soon as they become available.
+    "numpy>=1.26.0b1; python_version>='3.12'",
+    "numpy; python_version>='3.9' and platform_python_implementation=='PyPy'",
     "setuptools>=43.0.0",
     "setuptools-git-versioning<2",
     "versioneer[toml]",
@@ -31,7 +28,7 @@ maintainers = [
     {name = "Alexander Schlaich"}
 ]
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["Science", "Molecular Dynamics", "Confined Systems", "MDAnalysis"]
 license = {text = "GPL-3.0-or-later"}
 classifiers = [
@@ -44,7 +41,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -58,8 +54,8 @@ classifiers = [
 ]
 dependencies = [
     "mdacli>=0.1.12",
-    "MDAnalysis>=2.2.0",
-    "numpy>=1.20.0",
+    "MDAnalysis>=2.5.0",
+    "numpy>=1.22.3",
     "scipy>=1.0.0",
     "tqdm>=4.60.0",
     "typing_extensions",

@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk
 
+- Bump minimum Python version to 3.9 (!264)
 - Fix dipole calculation in ``DielectricCylinder`` (!258)
 - Add example for RDFPlanar (!256)
 - Move geometry transformations to ``lib.math`` (!257)
