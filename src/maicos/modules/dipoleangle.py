@@ -91,8 +91,7 @@ class DipoleAngle(AnalysisBase):
         # make broken molecules whole again!
         self.atomgroup.unwrap(compound="molecules")
 
-        chargepos = self.atomgroup.positions * self.atomgroup.charges[:, np.newaxis]
-        dipoles = self.atomgroup.accumulate(chargepos, compound=self.wrap_compound)
+        dipoles = self.atomgroup.dipole_vector(compound=self.wrap_compound)
 
         cos_theta = np.dot(dipoles, self.unit) / np.linalg.norm(dipoles, axis=1)
         matrix = np.outer(cos_theta, cos_theta)

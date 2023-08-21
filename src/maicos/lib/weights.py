@@ -123,8 +123,7 @@ def diporder_planar_weights(
     if grouping == "atoms":
         raise ValueError("Atoms do not have an orientation.")
 
-    chargepos = atomgroup.positions * atomgroup.charges[:, np.newaxis]
-    dipoles = atomgroup.accumulate(chargepos, compound=get_compound(atomgroup))
+    dipoles = atomgroup.dipole_vector(compound=get_compound(atomgroup))
 
     # unit normal vector
     unit = np.zeros(3)
