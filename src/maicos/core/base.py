@@ -355,6 +355,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
           - atomgroups that were analyzed
           - output messages from modules and base classes (if they exist)
         """
+        # This method breaks if fname is a Path object. We therefore convert it to a str
+        fname = str(fname)
         # Get the required information first
         current_time = datetime.now().strftime("%a, %b %d %Y at %H:%M:%S ")
         module_name = self.__class__.__name__
