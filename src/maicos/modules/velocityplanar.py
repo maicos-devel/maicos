@@ -63,6 +63,7 @@ class VelocityPlanar(ProfilePlanarBase):
         flux: bool = False,
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
         if flux:

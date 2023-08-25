@@ -64,6 +64,7 @@ class DipoleAngle(AnalysisBase):
         output: str = "dipangle.dat",
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         self.wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,

@@ -75,6 +75,7 @@ class DielectricSphere(SphereBase):
         rmax: Optional[float] = None,
         unwrap: bool = True,
     ):
+        self._locals = locals()
         self.comp = get_compound(atomgroup.atoms)
         ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
