@@ -62,6 +62,7 @@ class DensityPlanar(ProfilePlanarBase):
         concfreq: float = 0,
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         super().__init__(
             weighting_function=density_weights,
             f_kwargs={"dens": dens},

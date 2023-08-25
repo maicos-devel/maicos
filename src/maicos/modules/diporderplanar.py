@@ -59,6 +59,7 @@ class DiporderPlanar(ProfilePlanarBase):
         order_parameter: str = "P0",
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         if order_parameter == "P0":
             normalization = "volume"
         else:

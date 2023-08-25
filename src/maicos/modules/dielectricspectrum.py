@@ -92,6 +92,7 @@ class DielectricSpectrum(AnalysisBase):
         nobin: bool = False,
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,

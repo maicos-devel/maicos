@@ -107,6 +107,7 @@ class DielectricPlanar(PlanarBase):
         jitter: float = 0.0,
         vcutwidth: float = 0.1,
     ):
+        self._locals = locals()
         if type(atomgroups) not in (list, tuple):
             wrap_compound = get_compound(atomgroups)
         else:  # Get wrap_compound based on fist atom group only

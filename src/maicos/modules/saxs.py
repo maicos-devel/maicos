@@ -82,6 +82,7 @@ class Saxs(AnalysisBase):
         maxtheta: float = 180,
         output: str = "sq.dat",
     ):
+        self._locals = locals()
         super().__init__(
             atomgroup,
             unwrap=unwrap,

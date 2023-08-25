@@ -63,6 +63,7 @@ class KineticEnergy(AnalysisBase):
         output: str = "ke.dat",
         refpoint: str = "COM",
     ):
+        self._locals = locals()
         super().__init__(
             atomgroup,
             unwrap=unwrap,

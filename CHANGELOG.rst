@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk
 
+- Fix reproducibility information in output (!263)
 - Make savetxt work with Pathlib objects (!267)
 - Update versionner to 0.29 (!266)
 - Use ``dipole_vector`` methods from MDAnalysis (!265)

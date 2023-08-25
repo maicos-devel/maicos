@@ -55,6 +55,7 @@ class TemperaturePlanar(ProfilePlanarBase):
         concfreq: float = 0,
         jitter: float = 0.0,
     ):
+        self._locals = locals()
         if grouping != "atoms":
             raise ValueError("Invalid choice of grouping, must use atoms")
 

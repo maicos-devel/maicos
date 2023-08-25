@@ -94,6 +94,7 @@ class RDFPlanar(PlanarBase):
         zmax: Optional[float] = None,
         bin_width: float = 1,
     ):
+        self._locals = locals()
         self.comp_1 = get_compound(g1)
         super().__init__(
             atomgroups=g1,

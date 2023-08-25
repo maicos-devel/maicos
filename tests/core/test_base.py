@@ -41,6 +41,18 @@ class SubOutput(Output):
     OUTPUT = "This is another output message from an inheriting class."
 
 
+class FileModuleInput(AnalysisBase):
+    """Class creating an output file to check the module input reporting."""
+
+    def _single_frame(self):
+        # Do nothing, but the run() methods needs to be called
+        pass
+
+    def __init__(self, atomgroups, test_input="some_default", refgroup=None):
+        self._locals = locals()
+        super().__init__(atomgroups, refgroup=refgroup)
+
+
 class Series(AnalysisBase):
     """Class creating a random time series to check observables."""
 
@@ -175,6 +187,46 @@ class Test_AnalysisBase(object):
             else:
                 # Fail if the loop finished without finding the first
                 raise AssertionError()
+
+    def test_module_input(self, ag, tmpdir):
+        """Test the module input reporting."""
+        with tmpdir.as_cwd():
+            # Test if the module name is written correctly
+            ana = FileModuleInput(ag)
+            ana.run()
+            ana.savetxt("test.dat", np.random.rand(10, 2))
+            assert "Module input:    FileModuleInput(" in open("test.dat").read()
+
+            # Test if the refgroup name is written correctly
+            ana = FileModuleInput(ag, refgroup=ag)
+            ana.run()
+            ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
+            assert "refgroup=<AtomGroup>" in open("test_refgroup.dat").read()
+            assert "atomgroups=<AtomGroup>" in open("test_refgroup.dat").read()
+
+            # Test if the default value of the test_input parameter is written
+            ana = FileModuleInput(ag)
+            ana.run()
+            ana.savetxt("test_default.dat", np.random.rand(10, 2))
+            assert "test_input='some_default'" in open("test_default.dat").read()
+            assert "refgroup=None" in open("test_default.dat").read()
+            assert (
+                ".run(start=None, stop=None, step=None, verbose=None)"
+                in open("test_default.dat").read()
+            )
+
+            # Test if the set test_input parameter is written correctly
+            ana = FileModuleInput(ag, test_input="some_other_value")
+            ana.run()
+            ana.savetxt("test_nondefault.dat", np.random.rand(10, 2))
+            assert "test_input='some_other_value'" in open("test_nondefault.dat").read()
+
+            ana.run(step=2, stop=7, start=5, verbose=True)
+            ana.savetxt("test_run.dat", np.random.rand(10, 2))
+            assert (
+                ".run(start=5, stop=7, step=2, verbose=True)"
+                in open("test_run.dat").read()
+            )
 
     @pytest.mark.parametrize(
         "concfreq, files",
