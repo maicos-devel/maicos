@@ -26,6 +26,7 @@ from ..lib.math import center_cluster, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
+    get_center,
     get_cli_input,
     render_docs,
 )
@@ -482,27 +483,20 @@ class ProfileBase:
         normalizations = ["none", "volume", "number"]
         if self.normalization not in normalizations:
             raise ValueError(
-                f"`{self.normalization}` not supported. "
+                f"Normalization {self.normalization!r} not supported. "
                 f"Use {', '.join(normalizations)}."
             )
 
         groupings = ["atoms", "segments", "residues", "molecules", "fragments"]
         if self.grouping not in groupings:
             raise ValueError(
-                f"`{self.grouping}` is not a valid option for "
+                f"{self.grouping!r} is not a valid option for "
                 f"grouping. Use {', '.join(groupings)}."
             )
 
         # If unwrap has not been set we define it here
         if not hasattr(self, "unwrap"):
             self.unwrap = True
-
-        bin_methods = ["cog", "com", "coc"]
-        if self.bin_method not in bin_methods:
-            raise ValueError(
-                f"`{self.bin_method}` is an unknown binning "
-                f"method. Use {', '.join(bin_methods)}."
-            )
 
         if self.normalization == "number":
             self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
@@ -532,13 +526,9 @@ class ProfileBase:
             if self.grouping == "atoms":
                 positions = selection.atoms.positions
             else:
-                kwargs = dict(compound=self.grouping)
-                if self.bin_method == "cog":
-                    positions = selection.atoms.center_of_geometry(**kwargs)
-                elif self.bin_method == "com":
-                    positions = selection.atoms.center_of_mass(**kwargs)
-                elif self.bin_method == "coc":
-                    positions = selection.atoms.center_of_charge(**kwargs)
+                positions = get_center(
+                    selection.atoms, bin_method=self.bin_method, compound=self.grouping
+                )
 
             weights = self.weighting_function(selection)
             profile = self._compute_histogram(positions, weights)

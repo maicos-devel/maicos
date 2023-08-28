@@ -6,15 +6,15 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Module for computing planar dipolar order parameters."""
+r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
 from typing import List, Optional, Union
 
 import MDAnalysis as mda
 
-from ..core import ProfilePlanarBase
-from ..lib.util import render_docs, unit_vectors_planar
+from ..core import ProfileCylinderBase
+from ..lib.util import render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
 
 
@@ -22,23 +22,23 @@ logger = logging.getLogger(__name__)
 
 
 @render_docs
-class DiporderPlanar(ProfilePlanarBase):
-    r"""Cartesian dipolar order parameters.
+class DiporderCylinder(ProfileCylinderBase):
+    r"""Cylindrical dipolar order parameters.
 
     ${DIPORDER_DESCRIPTION}
 
-    ${CORRELATION_INFO_PLANAR}
+    ${CORRELATION_INFO_CYLINDER}
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    pdim : {0, 1, 2}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    pdim : {"r", "z"}
         direction of the projection
     ${ORDER_PARAMETER_PARAMETER}
 
     Attributes
     ----------
-    ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
     """
 
     def __init__(
@@ -48,26 +48,30 @@ class DiporderPlanar(ProfilePlanarBase):
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
         bin_width: float = 1,
+        rmin: float = 0,
+        rmax: Optional[float] = None,
         refgroup: Optional[mda.AtomGroup] = None,
-        sym: bool = False,
         grouping: str = "residues",
         unwrap: bool = True,
         bin_method: str = "com",
-        output: str = "diporder_planar.dat",
+        output: str = "diporder_cylinder.dat",
         concfreq: float = 0,
-        pdim: int = 2,
+        pdim: str = "r",
         order_parameter: str = "P0",
         jitter: float = 0.0,
     ):
-        self._locals = locals()
         if order_parameter == "P0":
             normalization = "volume"
         else:
             normalization = "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
-            return unit_vectors_planar(
-                atomgroup=atomgroup, grouping=grouping, pdim=pdim
+            return unit_vectors_cylinder(
+                atomgroup=atomgroup,
+                grouping=grouping,
+                bin_method=bin_method,
+                dim=dim,
+                pdim=pdim,
             )
 
         super().__init__(
@@ -82,8 +86,9 @@ class DiporderPlanar(ProfilePlanarBase):
             zmin=zmin,
             zmax=zmax,
             bin_width=bin_width,
+            rmin=rmin,
+            rmax=rmax,
             refgroup=refgroup,
-            sym=sym,
             grouping=grouping,
             unwrap=unwrap,
             bin_method=bin_method,

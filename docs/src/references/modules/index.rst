@@ -23,7 +23,9 @@ Discord_.
    dielectricspectrum
    dielectricsphere
    dipoleangle
+   dipordercylinder
    diporderplanar
+   dipordersphere
    kineticenergy
    rdfplanar
    saxs

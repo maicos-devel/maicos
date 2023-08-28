@@ -16,10 +16,11 @@ import pytest
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.weights
+from maicos.lib.util import unit_vectors_planar
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from data import WATER_TPR, WATER_TRR  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP, WATER_TPR, WATER_TRR  # noqa: E402
 
 
 def test_density_weights_mass():
@@ -81,3 +82,103 @@ def test_tempetaure_weights_grouping(grouping):
     u = mda.Universe(WATER_TPR, WATER_TRR)
     with pytest.raises(NotImplementedError):
         maicos.lib.weights.temperature_weights(u.atoms, grouping)
+
+
+class Testdiporder_weights:
+    """Test the dipolar weights "base" function.
+
+    In details tests are designed to check if the scalar product in performed
+    correctly.
+    """
+
+    @pytest.fixture
+    def atomgroup(self):
+        """Atomgroup containing a single water molecule poiting in z-direction."""
+        return mda.Universe(SPCE_ITP, SPCE_GRO).atoms
+
+    @pytest.mark.parametrize("pdim, P0", [(0, 0), (1, 0), (2, 0.491608)])
+    def test_P0(self, atomgroup, pdim, P0):
+        """Test calculation of the projection of the dipole moment."""
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
+
+        diporder_weights = maicos.lib.weights.diporder_weights(
+            atomgroup=atomgroup,
+            grouping="fragments",
+            order_parameter="P0",
+            get_unit_vectors=get_unit_vectors,
+        )
+
+        assert_allclose(diporder_weights, np.array([P0]))
+
+    @pytest.mark.parametrize("pdim, cos_theta", [(0, 0), (1, 0), (2, 1)])
+    def test_cos_theta(self, atomgroup, pdim, cos_theta):
+        """Test calculation of the cos of the dipole moment and a unit vector."""
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
+
+        diporder_weights = maicos.lib.weights.diporder_weights(
+            atomgroup=atomgroup,
+            grouping="fragments",
+            order_parameter="cos_theta",
+            get_unit_vectors=get_unit_vectors,
+        )
+
+        assert_allclose(diporder_weights, np.array([cos_theta]))
+
+    def test_cos_2_theta(self, atomgroup):
+        """Test that cos_2_theta is the squared of cos_theta."""
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup, grouping, pdim=0)
+
+        kwargs_weights = {
+            "atomgroup": atomgroup,
+            "grouping": "fragments",
+            "get_unit_vectors": get_unit_vectors,
+        }
+
+        assert_equal(
+            maicos.lib.weights.diporder_weights(
+                order_parameter="cos_theta", **kwargs_weights
+            )
+            ** 2,
+            maicos.lib.weights.diporder_weights(
+                order_parameter="cos_2_theta", **kwargs_weights
+            ),
+        )
+
+    def test_wrong_unit_vector_shape(self, atomgroup):
+        """Test raise for a wrong shape of provided unit vector."""
+
+        def get_unit_vectors(atomgroup, grouping):
+            return np.zeros([10, 4])
+
+        match = (
+            r"Returned unit vectors have shape \(10, 4\). But only shape \(3,\) or "
+            r"\(1, 3\) is allowed."
+        )
+
+        with pytest.raises(ValueError, match=match):
+            maicos.lib.weights.diporder_weights(
+                atomgroup=atomgroup,
+                grouping="fragments",
+                order_parameter="cos_theta",
+                get_unit_vectors=get_unit_vectors,
+            )
+
+    def test_wrong_grouping(self, atomgroup):
+        """Test error raise for wrong grouping."""
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup, grouping, pdim=0)
+
+        with pytest.raises(ValueError, match="'foo' not supported."):
+            maicos.lib.weights.diporder_weights(
+                atomgroup=atomgroup,
+                grouping="fragments",
+                order_parameter="foo",
+                get_unit_vectors=get_unit_vectors,
+            )

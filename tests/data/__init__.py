@@ -37,8 +37,11 @@ MICA_TPR = resource_filename(__name__, "mica/mica.tpr")
 MICA_GRO = resource_filename(__name__, "mica/mica.gro")
 
 LAMMPS10WATER = resource_filename(__name__, "lammps10water.data")
+
+# An SPC/E water molecule pointing in z-direction
 SPCE_ITP = resource_filename(__name__, "spce.itp")
 SPCE_GRO = resource_filename(__name__, "spce.gro")
 
+# Dipole made of two atoms pointing in the x-direction
 DIPOLE_ITP = resource_filename(__name__, "dipole.itp")
 DIPOLE_GRO = resource_filename(__name__, "dipole.gro")

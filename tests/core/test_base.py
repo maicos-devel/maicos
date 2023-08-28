@@ -405,20 +405,14 @@ class Test_ProfileBase:
 
     def test_wrong_normalization(self, params):
         """Test a wrong normalization string."""
-        with pytest.raises(ValueError, match="`foo` not supported"):
+        with pytest.raises(ValueError, match="'foo' not supported"):
             params.update(normalization="foo")
             ProfileBase(**params)._prepare()
 
     def test_wrong_grouping(self, params):
         """Test a wrong grouping."""
-        with pytest.raises(ValueError, match="`foo` is not a valid option"):
+        with pytest.raises(ValueError, match="'foo' is not a valid option"):
             params.update(grouping="foo")
-            ProfileBase(**params)._prepare()
-
-    def test_bin_method(self, params):
-        """Test a wrong bin_method."""
-        with pytest.raises(ValueError, match="`foo` is an unknown binning"):
-            params.update(bin_method="foo")
             ProfileBase(**params)._prepare()
 
     def test_f_kwargs(self, params):

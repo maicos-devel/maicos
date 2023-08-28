@@ -236,7 +236,7 @@ def correlation_time(
     ----------
     x_n : numpy.ndarray
         timeseries
-    method : str, {"sokal", "chodera"}
+    method : {"sokal", "chodera"}
         Method to choose integration cutoff. Default is "sokal".
     c : float
         cut-off factor for calculation of correlation time :math:`\tau` for the Sokal
@@ -628,12 +628,10 @@ def transform_cylinder(
     ----------
     positions : numpy.ndarray
         Cartesian coordinates (x,y,z)
-
     origin : numpy.ndarray
-        Origin of the new cylindrical coordinate system. (x,y,z)
-
+        Origin of the new cylindrical coordinate system (x,y,z).
     dim : int
-        Dimension of the cylinder axis (0=x, 1=y, 2=z)
+        Direction of the cylinder axis (0=x, 1=y, 2=z).
 
     Returns
     -------
@@ -668,9 +666,8 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     ----------
     positions : numpy.ndarray
         Cartesian coordinates (x,y,z)
-
     origin : numpy.ndarray
-        Origin of the new spherical coordinate system. (x,y,z)
+        Origin of the new spherical coordinate system (x,y,z).
 
     Returns
     -------
