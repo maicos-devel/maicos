@@ -16,6 +16,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 import maicos.lib.math
+import maicos.lib.util
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))

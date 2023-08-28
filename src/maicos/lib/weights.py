@@ -12,7 +12,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy import constants
 
-from .util import get_compound
+from .util import Unit_vector, render_docs
 
 
 def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.ndarray:
@@ -22,9 +22,9 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
         constituent to group weights with respect to.
-    dens : str, {'mass', 'number', 'charge'}
+    dens : {'mass', 'number', 'charge'}
         type of density weight
 
     Returns
@@ -39,7 +39,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     """
     if grouping not in ["atoms", "residues", "segments", "molecules", "fragments"]:
         raise ValueError(
-            f"`{grouping}` grouping is not supported. "
+            f"{grouping!r} grouping is not supported. "
             "Use `atoms`, `residues`, `segments`, `molecules` or `fragments`."
         )
 
@@ -63,7 +63,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
             return atomgroup.total_charge(compound=grouping)
     else:
         raise ValueError(
-            f"`{dens}` density type is not supported. "
+            f"{dens!r} density type is not supported. "
             "Use `mass`, `number` or `charge`."
         )
 
@@ -75,7 +75,7 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
         constituent to group weights with respect to
 
     Returns
@@ -99,40 +99,47 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     return (atomgroup.velocities**2).sum(axis=1) * atomgroup.atoms.masses / 2 * prefac
 
 
-def diporder_planar_weights(
-    atomgroup: mda.AtomGroup, grouping: str, dim: int, order_parameter: str
+@render_docs
+def diporder_weights(
+    atomgroup: mda.AtomGroup,
+    grouping: str,
+    order_parameter: str,
+    get_unit_vectors: Unit_vector,
 ) -> np.ndarray:
-    """Weights for DiporderPlanar calculations.
+    """Weights for general diporder calculations.
 
     Parameters
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {'residues', 'segments', 'molecules', 'fragments'}
         constituent to group weights with respect to
-    dim : {0, 1, 2}
-        direction of the projection
-    order_parameter : str, {'P0', 'cos_theta', 'cos_2_theta'}
-        type of weight to be calculated
-
-    Returns
-    -------
-    numpy.ndarray
-        1D array of calculated weights. The length depends on the grouping.
+    ${ORDER_PARAMETER_PARAMETER}
+    get_unit_vectors : Callable
+        Callable that returns unit vectors on which the projection is performed.
+        Returned unit_vectors can either be of shape (3,) or of shape (n, 3). For a
+        shape of (3,) the same unit vector is used for all calculations.
     """
-    if grouping == "atoms":
-        raise ValueError("Atoms do not have an orientation.")
+    dipoles = atomgroup.dipole_vector(compound=grouping)
 
-    dipoles = atomgroup.dipole_vector(compound=get_compound(atomgroup))
+    unit_vectors = get_unit_vectors(atomgroup=atomgroup, grouping=grouping)
 
-    # unit normal vector
-    unit = np.zeros(3)
-    unit[dim] += 1
+    # Extend unit_vectors to be of the same length as of dipoles
+    if unit_vectors.shape == (3,):
+        np.tile(unit_vectors, len(dipoles)).reshape(len(dipoles), 3)
+    elif not unit_vectors.shape == (len(dipoles), 3):
+        raise ValueError(
+            f"Returned unit vectors have shape {unit_vectors.shape}. But only shape "
+            f"(3,) or {(len(dipoles), 3)} is allowed."
+        )
 
     if order_parameter == "P0":
-        weights = np.dot(dipoles, unit)
+        weights = np.sum(dipoles * unit_vectors, axis=1)
     elif order_parameter in ["cos_theta", "cos_2_theta"]:
-        weights = np.dot(dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis], unit)
+        weights = np.sum(
+            dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis] * unit_vectors,
+            axis=1,
+        )
         if order_parameter == "cos_2_theta":
             weights *= weights
     else:
@@ -153,9 +160,9 @@ def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.n
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for weight calculation
-    grouping : str, {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
         constituent to group weights with respect to
-    vdim : int, {0, 1, 2}
+    vdim : {0, 1, 2}
         direction of the velocity taken for the weights
 
     Returns

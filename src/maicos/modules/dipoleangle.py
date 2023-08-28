@@ -14,7 +14,8 @@ import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
-from ..lib.util import get_compound, render_docs
+from ..lib.util import get_compound, render_docs, unit_vectors_planar
+from ..lib.weights import diporder_weights
 
 
 @render_docs
@@ -29,8 +30,8 @@ class DipoleAngle(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
-    dim : int
-        Reference vector for angle (``x=0``, ``y=1``, ``z=2``).
+    pdim : int, {0, 1, 2}
+        direction of the projection
     output : str
        Prefix for output filenames.
     concfreq : int
@@ -60,7 +61,7 @@ class DipoleAngle(AnalysisBase):
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
         concfreq: float = 0,
-        dim: int = 2,
+        pdim: int = 2,
         output: str = "dipangle.dat",
         jitter: float = 0.0,
     ):
@@ -74,27 +75,30 @@ class DipoleAngle(AnalysisBase):
             wrap_compound=self.wrap_compound,
             jitter=jitter,
         )
-        self.dim = dim
+        self.pdim = pdim
         self.output = output
 
     def _prepare(self):
         self.n_residues = self.atomgroup.residues.n_residues
 
-        # unit normal vector
-        self.unit = np.zeros(3)
-        self.unit[self.dim] += 1
+        def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
+            return unit_vectors_planar(
+                atomgroup=atomgroup, grouping=grouping, pdim=self.pdim
+            )
+
+        self.get_unit_vectors = get_unit_vectors
 
         self.cos_theta_i = np.empty(self.n_frames)
         self.cos_theta_ii = np.empty(self.n_frames)
         self.cos_theta_ij = np.empty(self.n_frames)
 
     def _single_frame(self):
-        # make broken molecules whole again!
-        self.atomgroup.unwrap(compound="molecules")
-
-        dipoles = self.atomgroup.dipole_vector(compound=self.wrap_compound)
-
-        cos_theta = np.dot(dipoles, self.unit) / np.linalg.norm(dipoles, axis=1)
+        cos_theta = diporder_weights(
+            self.atomgroup,
+            grouping=self.wrap_compound,
+            order_parameter="cos_theta",
+            get_unit_vectors=self.get_unit_vectors,
+        )
         matrix = np.outer(cos_theta, cos_theta)
 
         trace = matrix.trace()

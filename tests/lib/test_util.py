@@ -16,7 +16,7 @@ import MDAnalysis as mda
 import numpy as np
 import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
-from numpy.testing import assert_equal
+from numpy.testing import assert_almost_equal, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
@@ -24,6 +24,7 @@ from maicos.core.base import AnalysisBase
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data import WATER_GRO, WATER_TPR  # noqa: E402
+from modules.create_mda_universe import circle_of_water_molecules  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -277,3 +278,132 @@ class TestCorrelationAnalysis(object):
                 np.nan * np.arange(10)
             )
         assert returned_corrtime == -1
+
+
+class Testget_center:
+    """Test the `get_center` function."""
+
+    compounds = ["group", "segments", "residues", "molecules", "fragments"]
+
+    @pytest.fixture
+    def ag(self):
+        """An AtomGroup made from water molecules."""
+        return mda.Universe(WATER_TPR, WATER_GRO)
+
+    @pytest.mark.parametrize("compound", compounds)
+    def cog(self, ag, compound):
+        """Test same center of geometry."""
+        assert_equal(
+            maicos.lib.util.get_center(
+                atomgroup=ag, bin_method="cog", compound=compound
+            ),
+            ag.center_of_geometry(compound=compound),
+        )
+
+    @pytest.mark.parametrize("compound", compounds)
+    def com(self, ag, compound):
+        """Test same center of mass."""
+        assert_equal(
+            maicos.lib.util.get_center(
+                atomgroup=ag, bin_method="com", compound=compound
+            ),
+            ag.center_of_mass(compound=compound),
+        )
+
+    @pytest.mark.parametrize("compound", compounds)
+    def coc(self, ag, compound):
+        """Test same center of charge."""
+        assert_equal(
+            maicos.lib.util.get_center(
+                atomgroup=ag, bin_method="cog", compound=compound
+            ),
+            ag.center_of_charge(compound=compound),
+        )
+
+    def test_get_center_unknown(self):
+        """Test a wrong bin_method."""
+        with pytest.raises(ValueError, match="'foo' is an unknown binning"):
+            maicos.lib.util.get_center(atomgroup=None, bin_method="foo", compound=None)
+
+
+class TestUnitVectors:
+    """Test the `unit_vectors` functions."""
+
+    @pytest.mark.parametrize("pdim", [0, 1, 2])
+    def test_unit_vectors_planar(self, pdim):
+        """Test calculation of planar unit vectors."""
+        unit_vectors = np.zeros(3)
+        unit_vectors[pdim] += 1
+
+        assert_equal(
+            maicos.lib.util.unit_vectors_planar(
+                atomgroup=None, grouping=None, pdim=pdim
+            ),
+            unit_vectors,
+        )
+
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    def test_unit_vectors_cylinder_r(self, dim):
+        """Test calculation of cylindrical unit vectors in the radial direction."""
+        ag, _ = circle_of_water_molecules(4, 90, radius=5)
+
+        unit_vectors = maicos.lib.util.unit_vectors_cylinder(
+            atomgroup=ag, grouping="residues", bin_method="com", dim=dim, pdim="r"
+        )
+
+        # Test that the length of the vectors is 1.
+        assert_almost_equal(
+            np.linalg.norm(unit_vectors, axis=1), np.ones(len(unit_vectors))
+        )
+
+        transform = maicos.lib.util.get_center(
+            atomgroup=ag, bin_method="com", compound="residues"
+        )
+
+        transform -= ag.universe.dimensions[:3] / 2
+
+        # set z direction to zero. r in cylindrical coordinates contains only x and y.
+        transform[:, dim] = 0
+        transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
+
+        assert_almost_equal(transform, unit_vectors)
+
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    def test_unit_vectors_cylinder_z(self, dim):
+        """Test calculation of cylindrical unit vectors in the axial direction."""
+        ag, _ = circle_of_water_molecules(4, 90, radius=5)
+
+        unit_vectors = maicos.lib.util.unit_vectors_cylinder(
+            atomgroup=ag, grouping="residues", bin_method="com", dim=dim, pdim="z"
+        )
+
+        test_unit_vectors = np.zeros(3)
+        test_unit_vectors[dim] += 1
+
+        assert_equal(
+            test_unit_vectors,
+            unit_vectors,
+        )
+
+    def test_unit_vectors_sphere(self):
+        """Test calculation of spherical unit vectors."""
+        ag, _ = circle_of_water_molecules(4, 90, radius=5)
+
+        unit_vectors = maicos.lib.util.unit_vectors_sphere(
+            atomgroup=ag, grouping="residues", bin_method="com"
+        )
+
+        # Test that the length of the vectors is 1.
+        assert_almost_equal(
+            np.linalg.norm(unit_vectors, axis=1), np.ones(len(unit_vectors))
+        )
+
+        transform = maicos.lib.util.get_center(
+            atomgroup=ag, bin_method="com", compound="residues"
+        )
+
+        # shift origin to box center and afterwards normalize
+        transform -= ag.universe.dimensions[:3] / 2
+        transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
+
+        assert_almost_equal(transform, unit_vectors)

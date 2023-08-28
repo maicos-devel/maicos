@@ -109,7 +109,11 @@ Currently, MAICoS supports the following analysis modules:
    * - Saxs
      - Compute small angle X-Ray scattering intensities (SAXS)
    * - DiporderPlanar
-     - Compute dipolar order parameters
+     - Compute planar dipolar order parameters
+   * - DiporderCylinder
+     - Compute cylindrical dipolar order parameters
+   * - DiporderSphere
+     - Compute spherical dipolar order parameters
    * - RDFPlanar
      - Compute slab-wise planar 2D radial distribution functions
    * - DipoleAngle

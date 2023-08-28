@@ -71,11 +71,12 @@ class TestDiporderPlanar(ReferenceAtomGroups):
     def test_DiporderPlanar_trajectory(
         self, ag_single_frame, dim, order_parameter, result_dict
     ):
-        """Test DiporderPlanar in x,y,z direction."""
+        """Regression test for DiporderPlanar in x,y,z direction."""
         dip = DiporderPlanar(
             ag_single_frame,
             bin_width=5,
             dim=dim,
+            pdim=dim,
             refgroup=ag_single_frame,
             order_parameter=order_parameter,
         ).run()

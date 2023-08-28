@@ -12,7 +12,7 @@ import logging
 import os
 import sys
 import warnings
-from typing import Callable
+from typing import Callable, Protocol
 
 import MDAnalysis as mda
 import numpy as np
@@ -196,6 +196,9 @@ DOC_DICT = dict(
     Trajectories containing already whole molecules can be run with ``unwrap=False`` to
     gain a speedup. For grouping with respect to atoms, the `unwrap` option is always
     ignored.""",
+    DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
+    :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
+    dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
     ATOMGROUP_PARAMETER="""atomgroup : AtomGroup
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
         performed.""",
@@ -251,8 +254,8 @@ DOC_DICT = dict(
         each bin.
     f_kwargs : dict
         Additional parameters for `function`""",
-    PLANAR_CLASS_PARAMETERS="""dim : int
-        Dimension for binning (``x=0``, ``y=1``, ``z=2``).
+    PLANAR_CLASS_PARAMETERS="""dim : {0, 1, 2}
+        Dimension for binning.
     zmin : float
         Minimal coordinate for evaluation (in Å) with respect to the center of mass of
         the refgroup.
@@ -279,6 +282,8 @@ DOC_DICT = dict(
     SYM_PARAMETER="""sym : bool
         Symmetrize the profile. Only works in combination with
         ``refgroup``.""",
+    ORDER_PARAMETER_PARAMETER="""order_parameter : {"P0", "cos_theta", "cos_2_theta"}
+        order parameter to be calculated""",
     PROFILE_CLASS_PARAMETERS="""grouping : str {``'atoms'``, ``'residues'``, ``'segments'``, ``'molecules'``, ``'fragments'``}"""  # noqa
     """
           Atom grouping for the calculations of profiles.
@@ -287,7 +292,7 @@ DOC_DICT = dict(
           ``grouping='atoms'``) or the center of mass of the specified grouping unit (in
           the case where ``grouping='residues'``, ``'segments'``, ``'molecules'`` or
           ``'fragments'``).
-    bin_method : str {``'cog'``, ``'com'``, ``'coc'``}
+    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
         Method for the position binning.
 
         The possible options are center of geometry (``cog``), center of mass (``com``),
@@ -577,3 +582,165 @@ def citation_reminder(*dois: str) -> str:
         cite += "\n".join(lines)
 
     return cite
+
+
+def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.ndarray:
+    """Center attribute for an :class:`MDAnalysis.core.groups.AtomGroup`.
+
+    This function acts as a wrapper for the
+    :meth:`MDAnalysis.core.groups.AtomGroup.center` method, providing a more
+    user-friendly interface by automatically determining the appropriate weights based
+    on the chosen binning method.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        AtomGroup for which the center needs to be calculated.
+    bin_method : {'cog', 'com', 'coc'}
+        The binning method to be used for center calculation. Can be one of the
+        following: ``'cog'`` for the center of Geometry, ``'com'`` for the center of
+        mass or ``'coc'`` for the center of charge.
+    compound : {'group', 'segments', 'residues', 'molecules', 'fragments'}
+        The compound to be used in the center calculation. For example, 'residue',
+        'segment', etc.
+
+    Returns
+    -------
+    np.ndarray
+        The coordinates of the calculated center.
+
+    Raises
+    ------
+    ValueError
+        If the provided ``bin_method`` is not one of ``'cog'``, ``'com'``, or ``'coc'``.
+    """
+    if bin_method == "cog":
+        weights = None
+    elif bin_method == "com":
+        weights = atomgroup.masses
+    elif bin_method == "coc":
+        weights = atomgroup.charges.__abs__()
+    else:
+        raise ValueError(
+            f"{bin_method!r} is an unknown binning "
+            f"method. Use 'cog', 'com' or 'coc'."
+        )
+
+    return atomgroup.center(weights=weights, compound=compound)
+
+
+def unit_vectors_planar(
+    atomgroup: mda.AtomGroup, grouping: str, pdim: int
+) -> np.ndarray:
+    """Calculate unit vectors in planar geometry.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for which the unit vectors will be calculated.
+    grouping : {'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    pdim : {0, 1, 2}
+        direction of the projection
+
+    Returns
+    -------
+    numpy.ndarray
+        the unit vector
+    """
+    unit_vectors = np.zeros(3)
+    unit_vectors[pdim] += 1
+
+    return unit_vectors
+
+
+def unit_vectors_cylinder(
+    atomgroup: mda.AtomGroup,
+    grouping: str,
+    bin_method: str,
+    dim: int,
+    pdim: str,
+) -> np.ndarray:
+    """Calculate cylindrical unit vectors in cartesian coordinates.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for which the unit vectors will be calculated.
+    grouping : {'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
+        type of the center calculations
+    dim : {0, 1, 2}
+        Direction of the cylinder axis (0=x, 1=y, 2=z).
+    pdim : {'r', 'z'}
+        direction of the projection
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of the calculated unit vectors with shape (3,) for `pdim='z'` and shape
+        (3,n) for `pdim='r'`. The length of `n` depends on the grouping.
+    """
+    # We do NOT transform ``unit_vectors`` into cylindrical coordinates, because all
+    # scalar products in ``dipolar_weights`` will be performed cartesian coordinates!
+    if pdim == "r":
+        unit_vectors = get_center(
+            atomgroup=atomgroup, bin_method=bin_method, compound=grouping
+        )
+
+        unit_vectors -= atomgroup.universe.dimensions[:3] / 2
+
+        # set z direction to zero. r in cylindrical coordinates contains only x and y.
+        unit_vectors[:, dim] = 0
+        unit_vectors /= np.linalg.norm(unit_vectors, axis=1)[:, np.newaxis]
+    elif pdim == "z":
+        unit_vectors = np.zeros(3)
+        unit_vectors[dim] += 1
+    else:
+        raise ValueError(
+            f"{pdim!r} is an unknown direction for the projection. Use 'r' or 'z'."
+        )
+
+    return unit_vectors
+
+
+def unit_vectors_sphere(
+    atomgroup: mda.AtomGroup, grouping: str, bin_method: str
+) -> np.ndarray:
+    """Calculate spherical unit vectors in cartesian coordinates.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        atomgroup taken for which the unit vectors will be calculated.
+    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+        constituent to group weights with respect to
+    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
+        type of the center calculations
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of the calculated unit vectors with shape (3,n). The length of `n`
+        depends on the grouping.
+    """
+    # We do NOT transform ``unit_vectors`` into spherical coordinates, because all
+    # scalar products in ``dipolar_weights`` will be performed cartesian coordinates!
+    unit_vectors = get_center(
+        atomgroup=atomgroup, bin_method=bin_method, compound=grouping
+    )
+
+    # shift origin to box center and afterwards normalize
+    unit_vectors -= atomgroup.universe.dimensions[:3] / 2
+    unit_vectors /= np.linalg.norm(unit_vectors, axis=1)[:, np.newaxis]
+
+    return unit_vectors
+
+
+class Unit_vector(Protocol):
+    """Protocol class for unit vector methods type hints."""
+
+    def __call__(self, atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
+        """Call for type hints."""
+        ...
