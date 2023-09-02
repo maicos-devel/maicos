@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk
+Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Add module for calculating radial distribution functions in cylinders (!242)
 - Add modules for calculating cylindrical and spherical dipolar order parameters (!259)
 - Fix reproducibility information in output (!263)
 - Make savetxt work with Pathlib objects (!267)

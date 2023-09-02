@@ -19,13 +19,14 @@ from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
 def line_of_water_molecules(
-    n_molecules=1, angle_deg=0, axis_rotation=(0, 1, 0), myvel=(0, 0, 0)
+    n_molecules=1, distance=10, angle_deg=0, axis_rotation=(0, 1, 0), myvel=(0, 0, 0)
 ):
     """
-    Create a MDAnalysis universe with regularly spaced molecules.
+    Create an MDAnalysis universe with regularly spaced molecules.
 
-    The molecules are placed along a line, have an orientation controlled by `angle_deg`
-    and `axis_rotation`. All the molecules have the same velocities `myvel`.
+    The molecules are placed along a line `distance` apart, have an orientation
+    controlled by `angle_deg` and `axis_rotation`. All the molecules have the same
+    velocities `myvel`.
     """
     # import molecule topology
     fluid = []
@@ -35,7 +36,7 @@ def line_of_water_molecules(
     # define evenly spaced positions along a line
     positions = []
     for _n in range(n_molecules):
-        positions.append((0, 0, 10 * (1 * _n)))
+        positions.append((0, 0, distance * (1 * _n)))
 
     # set the orientation of the molecules
     rotations = []
@@ -52,7 +53,7 @@ def line_of_water_molecules(
 
     # set the universe's dimension
     _dimensions = fluid[0].dimensions
-    _dimensions[2] *= n_molecules
+    _dimensions[2] = distance * n_molecules
     u.dimensions = _dimensions
 
     # set residue ids
