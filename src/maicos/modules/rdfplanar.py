@@ -9,14 +9,14 @@
 r"""Module for computing 2D radial distribution functions."""
 
 import logging
-from typing import Optional, Tuple
+from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
 
 from ..core import PlanarBase
-from ..lib.util import get_compound, render_docs
+from ..lib.util import get_center, get_compound, render_docs
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class RDFPlanar(PlanarBase):
     r"""Slab-wise planar 2D radial distribution functions.
 
-    The radial distribution function :math:`g_\mathrm{2d}(r)` describes the spatial
+    The radial distribution function :math:`g_\mathrm{2D}(r)` describes the spatial
     correlation between atoms in :math:`g1` and atoms in :math:`g2`. The 2D RDF can be
     used in systems that are inhomogeneous along one axis, and homogeneous in a plane.
     It gives the average number density of :math:`g2` as a function of lateral distance
@@ -36,7 +36,7 @@ class RDFPlanar(PlanarBase):
 
     .. math::
 
-     g_\mathrm{2d}(r) =
+     g_\mathrm{2D}(r) =
      \frac{1}{N_{g1}2 \Delta z} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
      \delta(r - r_{ij}) \cdot \left( \theta \left(|z_{ij}| + {\Delta z}
      \right) - \theta \left( |z_{ij}| - {\Delta z} \right) \right) .
@@ -57,8 +57,10 @@ class RDFPlanar(PlanarBase):
         Binwidth of bins in the histogram of the RDF (Å).
     dzheight : float
         dz height of a RDF slab (Å).
-    range: (float, float)
-        the minimum and maximum pairwise distance between 'g1' and 'g2' (Å).
+    dmin : float
+        the minimum pairwise distance between 'g1' and 'g2' (Å).
+    dmax : float
+        the maximum pairwise distance between 'g1' and 'g2' (Å).
     bin_method : str
         Method for position binning; possible options are center of geometry (``cog``),
         center of mass (``com``) or center of charge (``coc``).
@@ -81,7 +83,8 @@ class RDFPlanar(PlanarBase):
         g2: Optional[mda.AtomGroup] = None,
         rdf_bin_width: float = 0.3,
         dzheight: float = 0.1,
-        range: Tuple[float, Optional[float]] = (0.0, None),
+        dmin: float = 0.0,
+        dmax: Optional[float] = None,
         bin_method: str = "com",
         output: str = "rdf.dat",
         # Planar base arguments
@@ -114,7 +117,8 @@ class RDFPlanar(PlanarBase):
             self.g2 = g1
         else:
             self.g2 = g2
-        self.range = range
+        self.dmin = dmin
+        self.dmax = dmax
         self.rdf_bin_width = rdf_bin_width
         self.dzheight = dzheight
         self.output = output
@@ -127,12 +131,12 @@ class RDFPlanar(PlanarBase):
         logger.info("Compute radial distribution function.")
 
         half_of_box_size = min(self.box_center)
-        if self.range[1] is None:
-            self.range = (self.range[0], half_of_box_size)
+        if self.dmax is None:
+            self.dmax = min(self.box_center)
             logger.info(
                 "Setting maximum range of RDF to half the box size ({self.range[1]} Å)."
             )
-        elif self.range[1] > half_of_box_size:
+        elif self.dmax > min(self.box_center):
             raise ValueError(
                 "Range of RDF exceeds half of the box size. Set to smaller than "
                 f"{half_of_box_size} Å."
@@ -141,7 +145,7 @@ class RDFPlanar(PlanarBase):
         try:
             if self.rdf_bin_width > 0:
                 self.rdf_nbins = int(
-                    np.ceil((self.range[1] - self.range[0]) / self.rdf_bin_width)
+                    np.ceil((self.dmax - self.dmin) / self.rdf_bin_width)
                 )
             else:
                 raise ValueError("RDF bin_width must be a positive number.")
@@ -157,11 +161,13 @@ class RDFPlanar(PlanarBase):
         logger.info(f"Using {self.rdf_nbins} rdf bins.")
 
         # Empty histogram self.count to store the RDF.
-        self.edges = np.histogram([-1], bins=self.rdf_nbins, range=self.range)[1]
+        self.edges = np.histogram(
+            [-1], bins=self.rdf_nbins, range=(self.dmin, self.dmax)
+        )[1]
         self.results.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
 
         # Set the max range to filter the search radius.
-        self._maxrange = self.range[1]
+        self._maxrange = self.dmax
 
     def _single_frame(self):
         super()._single_frame()
@@ -170,15 +176,12 @@ class RDFPlanar(PlanarBase):
 
         bin_width = (self.zmax - self.zmin) / self.n_bins
 
-        if self.bin_method == "com":
-            g1_bin_positions = self.g1.center_of_mass(compound=self.comp_1)
-            g2_bin_positions = self.g2.center_of_mass(compound=self.comp_2)
-        elif self.bin_method == "coc":
-            g1_bin_positions = self.g1.center_of_charge(compound=self.comp_1)
-            g2_bin_positions = self.g2.center_of_charge(compound=self.comp_2)
-        elif self.bin_method == "cog":
-            g1_bin_positions = self.g1.center_of_geometry(compound=self.comp_1)
-            g2_bin_positions = self.g2.center_of_geometry(compound=self.comp_2)
+        g1_bin_positions = get_center(
+            atomgroup=self.g1, bin_method=self.bin_method, compound=self.comp_1
+        )
+        g2_bin_positions = get_center(
+            atomgroup=self.g2, bin_method=self.bin_method, compound=self.comp_2
+        )
 
         # Calculate planar rdf per bin by averaging over all atoms in one bin.
         for z_bin in range(0, self.n_bins):
@@ -235,7 +238,7 @@ class RDFPlanar(PlanarBase):
             relevant_xy_distances = xy_distances[mask_in_dz * mask_different_atoms]
             # Histogram the pairwise distances.
             self._obs.count[z_bin] = np.histogram(
-                relevant_xy_distances, bins=self.rdf_nbins, range=self.range
+                relevant_xy_distances, bins=self.rdf_nbins, range=(self.dmin, self.dmax)
             )[0]
 
     def _conclude(self):

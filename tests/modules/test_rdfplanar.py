@@ -70,7 +70,8 @@ class TestRDFPlanar(object):
             grp_water,
             grp_water,
             rdf_bin_width=1,
-            range=(7, 10),
+            dmin=7,
+            dmax=10,
             dzheight=6,
             bin_width=20,
             **kwargs,
@@ -85,7 +86,7 @@ class TestRDFPlanar(object):
         """
         grpO = get_universe.select_atoms("name OW")
         rdfplanar = RDFPlanar(
-            grpO[0:2], grpO, rdf_bin_width=1, range=(7, 10), dzheight=6, bin_width=25
+            grpO[0:2], grpO, rdf_bin_width=1, dmin=7, dmax=10, dzheight=6, bin_width=25
         )
         rdfplanar.run()
         return rdfplanar
@@ -100,7 +101,7 @@ class TestRDFPlanar(object):
         grp_water = get_universe.select_atoms("resname SOL")
         rdfplanar = RDFPlanar(grp_water)
         rdfplanar.run()
-        assert_equal(rdfplanar.range[1], 10)
+        assert_equal(rdfplanar.dmax, 10)
 
     def test_count(self, get_universe):
         """Test whether the RDF molecule counts in ring are correct."""
@@ -167,7 +168,8 @@ class TestRDFPlanar(object):
             grp_water,
             grp_water,
             rdf_bin_width=1,
-            range=(7, 10),
+            dmin=7,
+            dmax=10,
             dzheight=2,
             zmax=10 + z_dist_OH / 4,
             bin_width=20,
@@ -195,5 +197,5 @@ class TestRDFPlanar(object):
         rdfplanar = self.run_rdf(get_universe)
 
         with pytest.raises(ValueError, match="exceeds half of the box"):
-            rdfplanar.range = (0, L + 1e-3)
+            rdfplanar.dmax = L + 0.1
             rdfplanar.run()
