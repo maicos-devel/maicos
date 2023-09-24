@@ -66,7 +66,7 @@ class AnalysisExample(AnalysisBase):
         unwrap: bool = False,
         refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
-        concfreq: float = 0,
+        concfreq: int = 0,
         temperature: float = 300,
         output: str = "outfile.dat",
     ):

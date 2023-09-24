@@ -54,7 +54,7 @@ class DiporderPlanar(ProfilePlanarBase):
         unwrap: bool = True,
         bin_method: str = "com",
         output: str = "diporder_planar.dat",
-        concfreq: float = 0,
+        concfreq: int = 0,
         pdim: int = 2,
         order_parameter: str = "P0",
         jitter: float = 0.0,

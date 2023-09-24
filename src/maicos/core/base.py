@@ -120,7 +120,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         unwrap: bool = False,
         jitter: float = 0.0,
         wrap_compound: str = "atoms",
-        concfreq: float = 0,
+        concfreq: int = 0,
     ):
         if multi_group:
             if type(atomgroups) not in (list, tuple):

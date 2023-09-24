@@ -73,7 +73,7 @@ class Saxs(AnalysisBase):
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
         jitter: float = 0.0,
-        concfreq: float = 0,
+        concfreq: int = 0,
         nobin: bool = False,
         startq: float = 0,
         endq: float = 6,

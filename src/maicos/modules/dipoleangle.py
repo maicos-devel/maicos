@@ -60,7 +60,7 @@ class DipoleAngle(AnalysisBase):
         atomgroup: mda.AtomGroup,
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
-        concfreq: float = 0,
+        concfreq: int = 0,
         pdim: int = 2,
         output: str = "dipangle.dat",
         jitter: float = 0.0,

@@ -59,7 +59,7 @@ class KineticEnergy(AnalysisBase):
         unwrap: bool = False,
         refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
-        concfreq: float = 0,
+        concfreq: int = 0,
         output: str = "ke.dat",
         refpoint: str = "COM",
     ):

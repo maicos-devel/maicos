@@ -55,7 +55,7 @@ class DensityCylinder(ProfileCylinderBase):
         unwrap: bool = True,
         bin_method: str = "com",
         output: str = "density.dat",
-        concfreq: float = 0,
+        concfreq: int = 0,
         jitter: float = 0.0,
     ):
         self._locals = locals()

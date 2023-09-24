@@ -69,7 +69,7 @@ class DielectricSphere(SphereBase):
         temperature: float = 300,
         output_prefix: str = "eps_sph",
         refgroup: Optional[mda.AtomGroup] = None,
-        concfreq: float = 0,
+        concfreq: int = 0,
         jitter: float = 0.0,
         rmin: float = 0,
         rmax: Optional[float] = None,

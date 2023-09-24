@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Small corrections to the documentation and type hinting (!268)
 - Add module for calculating radial distribution functions in cylinders (!242)
 - Add modules for calculating cylindrical and spherical dipolar order parameters (!259)
 - Fix reproducibility information in output (!263)

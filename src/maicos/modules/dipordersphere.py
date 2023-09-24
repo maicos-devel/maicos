@@ -50,7 +50,7 @@ class DiporderSphere(ProfileSphereBase):
         unwrap: bool = True,
         bin_method: str = "com",
         output: str = "diporder_sphere.dat",
-        concfreq: float = 0,
+        concfreq: int = 0,
         order_parameter: str = "P0",
         jitter: float = 0.0,
     ):
