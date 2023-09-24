@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 class RDFCylinder(CylinderBase):
     r"""Cylindrical shell-wise 1D radial distribution functions.
 
-    The radial distribution function :math:`g_\mathrm{1D}(r)` describes the
+    The radial distribution function :math:`g_\mathrm{1d}(r)` describes the
     spatial correlation between atoms in :math:`g1` and atoms in :math:`g2`.
     The 2D RDF can be used in systems that are inhomogeneous along one axis, and
     homogeneous in a plane. It gives the average number density of :math:`g2` as

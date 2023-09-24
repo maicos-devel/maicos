@@ -82,7 +82,7 @@ class DielectricSpectrum(AnalysisBase):
         atomgroup: mda.AtomGroup,
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = True,
-        concfreq: float = 0,
+        concfreq: int = 0,
         temperature: float = 300,
         output_prefix: str = "",
         segs: int = 20,

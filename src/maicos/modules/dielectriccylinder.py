@@ -77,7 +77,7 @@ class DielectricCylinder(CylinderBase):
         single: bool = False,
         output_prefix: str = "eps_cyl",
         refgroup: Optional[mda.AtomGroup] = None,
-        concfreq: float = 0,
+        concfreq: int = 0,
         jitter: float = 0.0,
         dim: int = 2,
         rmin: float = 0,

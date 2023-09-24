@@ -25,7 +25,7 @@ def FT(
     t: np.ndarray, x: np.ndarray, indvar: bool = True
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
-    Discrete Fast Fourier Transform (FFT).
+    Discrete Fourier transformation using fast Fourier transformation (FFT).
 
     Parameters
     ----------
@@ -40,12 +40,12 @@ def FT(
     Returns
     -------
     tuple(numpy.ndarray, numpy.ndarray) or numpy.ndarray
-        If indvar is :obj:`True`, returns a tuple (k, xf2) where:
-            - k (numpy.ndarray): Frequency values corresponding to the FFT.
-            - xf2 (numpy.ndarray): FFT of the input function, scaled by the time range
-              and phase shifted.
+        If ``indvar`` is :obj:`True`, returns a tuple ``(k, xf2)`` where:
+            - ``k`` (numpy.ndarray): Frequency values corresponding to the FFT.
+            - ``xf2`` (numpy.ndarray): FFT of the input function, scaled by the time
+              range and phase shifted.
 
-        If indvar is :obj:`False`, returns the FFT (xf2) directly as a
+        If indvar is :obj:`False`, returns the FFT (``xf2``) directly as a
         :class:`numpy.ndarray`.
 
     Raises
@@ -89,7 +89,7 @@ def FT(
 def iFT(
     k: np.ndarray, xf: np.ndarray, indvar: bool = True
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-    """Inverse discrete fast fourier transform.
+    """Inverse Fourier transformation using fast Fourier transformation (FFT).
 
     Takes the frequency series and the function as arguments. By default, returns the
     iFT and the time series. Setting indvar=False means the function returns only the
@@ -118,7 +118,7 @@ def iFT(
 
     See Also
     --------
-    :func:`FT` : For the fourier transform.
+    :func:`FT` : For the Fourier transform.
     """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
     if (abs((k[1:] - k[:-1] - dk)) > dt_dk_tolerance).any():
@@ -435,11 +435,9 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
         The center with respect to the weights.
 
 
-    Without proper treatment of periodic boundrary conditions most algorithms will
-    result in wrong center of mass calculations where molecules or clusters of particles
-    are broken over the boundrary.
-
-    Example ::
+    Without proper treatment of periodic boundrary conditions (PBC) most algorithms will
+    result in wrong center calculations. As shown below without treating PBC the center
+    of mass is located in the center of the box ::
 
        +-----------+
        |           |
@@ -447,16 +445,12 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
        |           |
        +-----------+
 
-    Following
-
-    Linge Bai & David Breen (2008) Calculating Center of Mass in an Unbounded 2D
-    Environment, Journal of Graphics Tools, 13:4, 53-60, DOI:
-    10.1080/2151237X.2008.10129266
-
-    the coordinates of the particles are projected on a circle and weighted by their
-    mass in this two dimensional space. The center of mass is obtained by transforming
-    this point back to the corresponding point in the real system. This is done
-    seperately for each dimension.
+    However, the distance accross the box boundary is shorter and therefore the center
+    with PBC should be located somwhere else. The correct way to calculate the center is
+    described in :footcite:t:`bai_calculating_2008` where coordinates of the particles
+    are projected on a circle and weighted by their mass in this two dimensional space.
+    The center of mass is obtained by transforming this point back to the corresponding
+    point in the real system. This is done seperately for each dimension.
 
     Reasons for doing this include the analysis of clusters in periodic boundrary
     conditions and consistent center of mass calculation across box boundraries. This
@@ -464,7 +458,9 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 
        +-----------+
        |           |
-       x 1       2 | |           | +-----------+
+       x 1       2 |
+       |           |
+       +-----------+
     """
     theta = (ag.positions / ag.universe.dimensions[:3]) * 2 * np.pi
     xi = (np.cos(theta) * weights[:, None]).sum(axis=0) / weights.sum()
@@ -673,7 +669,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     Returns
     -------
     numpy.ndarray
-        Positions in spherical coordinates (r, phi, theta)
+        Positions in spherical coordinates (:math:`r`, phi, theta)
     """
     trans_positions = np.zeros(positions.shape)
 
@@ -727,7 +723,7 @@ def ellipT(m: np.ndarray) -> np.ndarray:
 def sa_cylider_intersect_circle(r: float, R: np.ndarray) -> np.ndarray:
     r"""Surface area of a cylinder of radius R inside a sphere of radius r.
 
-    For :math:`R>>r`, this is :math:`\pi \cdot r^2`.
+    For :math:`R \gg r`, this is :math:`\pi \cdot r^2`.
 
     Parameters
     ----------

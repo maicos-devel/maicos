@@ -90,7 +90,7 @@ class RDFPlanar(PlanarBase):
         # Planar base arguments
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
-        concfreq: float = 0,
+        concfreq: int = 0,
         jitter: float = 0.0,
         dim: int = 2,
         zmin: Optional[float] = None,

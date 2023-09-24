@@ -103,7 +103,7 @@ class DielectricPlanar(PlanarBase):
         unwrap: bool = True,
         temperature: float = 300,
         output_prefix: str = "eps",
-        concfreq: float = 0,
+        concfreq: int = 0,
         jitter: float = 0.0,
         vcutwidth: float = 0.1,
     ):
