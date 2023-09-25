@@ -690,8 +690,8 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
 def ellipT(m: np.ndarray) -> np.ndarray:
     r"""Elliptic integral of the first kind.
 
-    Returns complete elliptic integral if parameter m <= 1, otherwise returns the
-    incomplete elliptic integral up to the value for which the integral is real.
+    Returns complete elliptic integral if parameter :math:`m \leq 1`, otherwise returns
+    the incomplete elliptic integral up to the value for which the integral is real.
 
     Approximates the integral
 
@@ -699,7 +699,7 @@ def ellipT(m: np.ndarray) -> np.ndarray:
         E(m) = \int_0^\phi \sqrt{1 - m \sin^2 \vartheta } d\vartheta
 
     where :math:`\phi = \frac{\pi}{2}` for :math:`m \leq 1` and
-    :math:`\phi = \arcsin\left(\frac{1}{\sqrt{m}\right)` for :math:`m > 1`.
+    :math:`\phi = \arcsin\left(\frac{1}{\sqrt{m}}\right)` for :math:`m > 1`.
 
     Parameters
     ----------
