@@ -113,6 +113,12 @@ class DielectricPlanar(PlanarBase):
         else:  # Get wrap_compound based on fist atom group only
             wrap_compound = get_compound(atomgroups[0])
 
+        if zmin is not None or zmax is not None:
+            logger.warn(
+                "Setting `zmin` and `zmax` might cut off molecules. This will lead to "
+                "severe artifacts in the dielectric profiles."
+            )
+
         super().__init__(
             atomgroups=atomgroups,
             dim=dim,

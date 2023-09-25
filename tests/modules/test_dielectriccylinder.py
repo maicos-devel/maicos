@@ -195,3 +195,21 @@ class TestDielectricCylinder(object):
         eps = DielectricCylinder(ag, single=True, bin_width=0.5)
         eps.run()
         assert_allclose(np.mean(eps.results.eps_z), 89.850, rtol=1e-1)
+
+    def test_range_warning(self, caplog):
+        """Test for range warning."""
+        warning = "Setting `rmin` and `rmax` (as well as `zmin` and `zmax`)"
+        ag = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp").atoms
+        for i in range(16):
+            # Only warn if user sets the ranges
+            result = False if i == 0 else True
+            # Check all possible combinations of set ranges
+            bitmask = f"{i:04b}"
+            zmin = float(bitmask[0]) if bitmask[0] != "0" else None
+            zmax = float(bitmask[1]) if bitmask[1] != "0" else None
+            rmin = float(bitmask[2]) if bitmask[2] != "0" else 0
+            rmax = float(bitmask[3]) if bitmask[3] != "0" else None
+            DielectricCylinder(ag, zmin=zmin, zmax=zmax, rmin=rmin, rmax=rmax)
+            assert result == (
+                warning in "".join([rec.message for rec in caplog.records])
+            )

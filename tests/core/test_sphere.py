@@ -273,6 +273,15 @@ class TestSphereBase(object):
             cls.pos_sph, transform_sphere(u.atoms.positions, origin=cls.box_center)
         )
 
+    def test_range_warning(self, ag, caplog):
+        """Test warning if rmax is larger than the smallest box vector in odims."""
+        warning = "`rmax` is bigger than half the smallest box vector"
+        ana_obj = SphereBase(
+            ag.atoms, rmin=1, rmax=1.1 * ag.dimensions[:3].min() / 2, bin_width=1
+        )
+        ana_obj._compute_lab_frame_sphere()
+        assert warning in "".join([rec.message for rec in caplog.records])
+
 
 class TestSphereBaseChilds:
     """Tests for the CylindereBase child classes."""
