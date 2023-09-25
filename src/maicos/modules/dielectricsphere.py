@@ -79,6 +79,12 @@ class DielectricSphere(SphereBase):
         self.comp = get_compound(atomgroup.atoms)
         ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
+        if rmin != 0 or rmax is not None:
+            logger.warning(
+                "Setting `rmin` and `rmax` might cut off molecules. This will lead to "
+                "severe artifacts in the dielectric profiles."
+            )
+
         super().__init__(
             atomgroup,
             concfreq=concfreq,

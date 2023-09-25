@@ -281,3 +281,14 @@ class TestDielectricPlanar(object):
             A = (eps.results[d] + eps.results[d][::-1]) / 2
 
             assert_equal(A, eps_sym.results[d])
+
+    @pytest.mark.parametrize(
+        "zmin, zmax, result",
+        [(1, None, True), (None, 1, True), (1, 1, True), (None, None, False)],
+    )
+    def test_range_warning(self, caplog, zmin, zmax, result):
+        """Test for range warning."""
+        warning = "Setting `zmin` and `zmax` might cut off molecules."
+        ag = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp").atoms
+        DielectricPlanar(ag, zmin=zmin, zmax=zmax)
+        assert result == (warning in "".join([rec.message for rec in caplog.records]))

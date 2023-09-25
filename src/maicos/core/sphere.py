@@ -75,11 +75,17 @@ class SphereBase(AnalysisBase):
 
     def _compute_lab_frame_sphere(self):
         """Compute lab limit `rmax`."""
+        box_half = self._universe.dimensions[:3].min() / 2
         if self._rmax is None:
-            self.rmax = self._universe.dimensions[:3].min() / 2
-        else:
+            self.rmax = box_half
+        elif self._rmax <= box_half:
             self.rmax = self._rmax
-
+        else:
+            logger.warn(
+                f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
+                "in the radial direction. This will lead to artifacts at the edges."
+            )
+            self.rmax = self._rmax
         # Transform into spherical coordinates
         self.pos_sph = transform_sphere(
             self._universe.atoms.positions, origin=self.box_center

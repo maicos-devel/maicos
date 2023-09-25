@@ -148,3 +148,14 @@ class TestDielectricSphere(object):
             eps.run()
             eps.save()
             open("foo_rad.dat")
+
+    @pytest.mark.parametrize(
+        "rmin, rmax, result",
+        [(1, None, True), (0, 1, True), (1, 1, True), (0, None, False)],
+    )
+    def test_range_warning(self, caplog, rmin, rmax, result):
+        """Test for range warning."""
+        warning = "Setting `rmin` and `rmax` might cut off molecules."
+        ag = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp").atoms
+        DielectricSphere(ag, rmin=rmin, rmax=rmax)
+        assert result == (warning in "".join([rec.message for rec in caplog.records]))

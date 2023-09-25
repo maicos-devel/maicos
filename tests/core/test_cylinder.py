@@ -523,3 +523,18 @@ class TestProfileCylinderBase:
         profile = ProfileCylinderBase(**params).run(stop=1)
         selected_bin = profile._single_frame()
         assert selected_bin == profile._obs.profile[0, 0]
+
+    @pytest.mark.parametrize("dimension", [0, 1, 2])
+    def test_range_warning(self, u_dimers, params, caplog, dimension):
+        """Test warning if rmax is larger than the smallest box vector in odims."""
+        warning = "`rmax` is bigger than half the smallest box vector"
+        odims = np.roll(np.arange(3), -dimension)[1:]
+
+        params = dict(
+            dim=dimension, zmin=None, zmax=None, rmin=0, rmax=None, bin_width=1
+        )
+        params["atomgroups"] = u_dimers.atoms
+        params["rmax"] = 1.1 * u_dimers.dimensions[odims].min() / 2
+        ana_obj = CylinderBase(**params)
+        ana_obj._compute_lab_frame_cylinder()
+        assert warning in "".join([rec.message for rec in caplog.records])
