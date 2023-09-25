@@ -16,6 +16,7 @@ from typing import Callable, Dict, List, Optional, Union
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
 import numpy as np
+import pandas as pd
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -249,7 +250,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         module_has_save = callable(getattr(self.__class__, "save", None))
 
         timeseries = np.zeros(self.n_frames)
-
+        self.series = Results()
         for i, ts in enumerate(
             ProgressBar(
                 self._trajectory[self.start : self.stop : self.step], verbose=verbose
@@ -304,19 +305,29 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                         )
                         / self._index
                     )
+                    self.series[key][ts.frame] = self._obs[key]
             except AttributeError:
                 with logging_redirect_tqdm():
                     logger.info("Preparing error estimation.")
                 # the means and sems are not yet defined. We initialize the means with
                 # the data from the first frame and set the sems to zero (with the
                 # correct shape).
+                
                 self.means = self._obs.copy()
                 self.sems = Results()
                 for key in self._obs.keys():
                     if type(self._obs[key]) not in compatible_types:
                         raise TypeError(f"Obervable {key} has uncompatible type.")
                     self.sems[key] = np.zeros(np.shape(self._obs[key]))
+                    data = np.empty((self.n_frames,) + np.shape(self._obs[key]))
+                    data[:] = np.nan
 
+                    self.series[key] = pd.Series(
+                        data=[i for i in data],
+                        index=range(self.start, self.stop, self.step),
+                        dtype=self._obs[key].dtype,
+                    )
+                    self.series[key][ts.frame] = self._obs[key]
             if (
                 self.concfreq
                 and self._index % self.concfreq == 0
@@ -325,7 +336,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 self._conclude()
                 if module_has_save:
                     self.save()
-
+        for key in self.series.keys():
+            self.series[key].to_pickle(f"{key}_{self.start}_{self.stop}_{self.step}.pickle",)
         logger.info("Finishing up")
 
         self.corrtime = correlation_analysis(timeseries)
