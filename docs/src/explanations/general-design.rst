@@ -11,7 +11,7 @@ Foundation
 .. The UML class diagram was generated from
 .. https://lucid.app/lucidchart/07b20a01-4e5b-4b0e-9b3d-c8665c55b02e/edit?invitationId=inv_872a7691-41fd-4ecb-b0f1-6e1e2df1db5e&page=HWEp-vi-RSFO#
 
-.. image:: ../../static/maicos_core_design.svg
+.. image:: ../../static/maicos-design.svg
    :alt: UML chart of the MAICoS core classes
 
 MAICoS analysis modules are built on top of stacked :ref:`core_classes` as shown in the
