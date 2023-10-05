@@ -54,6 +54,27 @@ def test_get_cli_input():
         assert maicos.lib.util.get_cli_input() == 'maicos foo "foo bar"'
 
 
+def test_banner():
+    """Test banner string by checking some necesarry features.
+
+    The banner is not tested for exact string equality. We just check the necessary
+    features. Everything else is up to the developers to get creative.
+    """
+    # Test the character replacement
+    assert maicos.lib.util.maicos_banner(frame_char="%")[1] == "%"
+    # Check for correct number of lines as a sanity check
+    assert maicos.lib.util.maicos_banner().count("\n") == 10
+    # Check that newlines are added top and bottom
+    assert maicos.lib.util.maicos_banner().startswith("\n")
+    assert maicos.lib.util.maicos_banner().endswith("\n")
+    # Check for correct length of lines (80 characters excluding top and bottom)
+    # Also add in a long version string to check that it doesn't overflow
+    for line in maicos.lib.util.maicos_banner(version="v1.10.11").split("\n")[1:-1]:
+        assert len(line) == 80
+    # Check that the version is correctly inserted
+    assert "v0.0.1" in maicos.lib.util.maicos_banner(version="v0.0.1")
+
+
 @pytest.mark.parametrize(
     "doc, new_doc",
     [
