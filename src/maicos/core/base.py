@@ -28,6 +28,7 @@ from ..lib.util import (
     correlation_analysis,
     get_center,
     get_cli_input,
+    maicos_banner,
     render_docs,
 )
 
@@ -217,6 +218,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             analysis object
         """
         self._run_locals = locals()
+        logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
         logger.info("Choosing frames to analyze")
         # if verbose unchanged, use class default
         verbose = getattr(self, "_verbose", False) if verbose is None else verbose

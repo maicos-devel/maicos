@@ -738,6 +738,36 @@ def unit_vectors_sphere(
     return unit_vectors
 
 
+def maicos_banner(version: str = "", frame_char: str = "-") -> str:
+    """Prints ASCII banner resembling the MAICoS Logo with 80 chars width.
+
+    Parameters
+    ----------
+    version : str
+        Version string to add to the banner.
+    frame_char : str
+        Character used to as framing around the banner.
+
+    Returns
+    -------
+    banner : str
+        formatted banner
+    """
+    banner = rf"""
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@                  __  __              _____    _____            _____         @
+@    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|        @
+@   /  |     \    | \  / |    /  \      | |   | |        ___   | (___          @
+@  () ||| |  ()   | |\/| |   / /\ \     | |   | |       / _ \   \___ \         @
+@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @
+@    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/ {version:^8}@
+@                                                                              @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
+
+    return banner.replace("@", frame_char)
+
+
 class Unit_vector(Protocol):
     """Protocol class for unit vector methods type hints."""
 

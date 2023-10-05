@@ -20,7 +20,7 @@ from MDAnalysis.analysis.base import Results
 from numpy.testing import assert_allclose
 from scipy.signal import find_peaks
 
-from maicos import DensityPlanar
+from maicos import DensityPlanar, _version
 from maicos.core import AnalysisBase, ProfileBase
 
 
@@ -323,6 +323,26 @@ class Test_AnalysisBase(object):
         error_msg = "Obervable observable has uncompatible type."
         with pytest.raises(TypeError, match=error_msg):
             class_obj.run(stop=2)
+
+    def test_banner(self, ag, caplog):
+        """Test whether AnalysisBase prints the MAICoS banner."""
+        ana_obj = AnalysisBase(ag)
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        caplog.set_level(logging.INFO)
+        ana_obj.run(stop=1)
+
+        assert (
+            r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
+            in "".join([rec.message for rec in caplog.records])
+        )
+        assert _version.get_versions()["version"] in "".join(
+            [rec.message for rec in caplog.records]
+        )
 
     def test_n_bins(self, ag, caplog):
         """Test `n_bins` logger info."""
