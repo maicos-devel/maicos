@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Fixed typing error in RDF modules (!273)
 - Update docs to reflect changes in ``mdacli`` (!271)
 - Add banner to MAICoS output reporting the version (!272)
 - Update UML graphic (!269)
