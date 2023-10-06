@@ -30,8 +30,7 @@ class SphereBase(AnalysisBase):
 
     Parameters
     ----------
-    atomgroups : Atomgroup or list[Atomgroup]
-        Atomgroups taken for the Analysis
+    ${ATOMGROUPS_PARAMETER}
     ${SPHERE_CLASS_PARAMETERS}
     kwargs : dict
         Parameters parsed to `AnalysisBase`.

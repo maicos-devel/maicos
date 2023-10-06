@@ -27,8 +27,7 @@ class PlanarBase(AnalysisBase):
 
     Parameters
     ----------
-    atomgroups : Atomgroup or list[Atomgroup]
-        Atomgroups taken for the Analysis
+    ${ATOMGROUPS_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     kwargs : dict
         Parameters parsed to `AnalysisBase`.

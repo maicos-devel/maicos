@@ -42,7 +42,9 @@ class Saxs(AnalysisBase):
 
     Parameters
     ----------
-    ${ATOMGROUP_PARAMETER} ${BASE_CLASS_PARAMETERS} noboindata : bool
+    ${ATOMGROUP_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
+    noboindata : bool
         Do not bin the data. Only works reliable for NVT!
     startq : float
         Starting q (1/Å)

@@ -66,8 +66,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         Analysis is able to work with list of atomgroups
     wrap_compound : str
         The group which will be kept together through the wrap processes.
-        Allowed values are: ``'atoms'``, ``'group'``, ``'residues'``,
-        ``'segments'``, ``'molecules'``, or ``'fragments'``.
+        Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
+        ``"segments"``, ``"molecules"``, or ``"fragments"``.
 
     Attributes
     ----------

@@ -35,7 +35,7 @@ def FT(
         Function values corresponding to the time series.
     indvar : bool
         If :obj:`True`, returns the FFT and frequency values. If :obj:`False`, returns
-        only the FFT. Default is :obj:`True`.
+        only the FFT.
 
     Returns
     -------
@@ -103,7 +103,7 @@ def iFT(
         The function series in the frequency domain.
     indvar : bool
         If :obj:`True`, return both the iFT and the time series. If :obj:`False`, return
-        only the iFT. Default is :obj:`True`.
+        only the iFT.
 
     Returns
     -------
@@ -151,7 +151,6 @@ def correlation(
         The first input array to calculate the correlation
     b : numpy.ndarray
         The second input array. If :obj:`None`, autocorrelation of ``a`` is calculated.
-        Default is :obj:`None`.
     subtract_mean : bool, optional
         If obj:`True`, subtract the mean from the input data.
 
@@ -201,10 +200,10 @@ def scalar_prod_corr(
         The first vector timeseries of shape (t, i).
     b : numpy.ndarray
         The second vector timeseries of shape (t, i). If :obj:`None`, correlation with
-        itself is calculated. Default is :obj:`None`.
+        itself is calculated.
     subtract_mean : bool
         If :obj:`True`, subtract the mean from the timeseries before calculating the
-        correlation. Default is :obj:`False`.
+        correlation.
 
     Returns
     -------
@@ -238,13 +237,13 @@ def correlation_time(
     x_n : numpy.ndarray
         timeseries
     method : {"sokal", "chodera"}
-        Method to choose integration cutoff. Default is "sokal".
+        Method to choose integration cutoff.
     c : float
         cut-off factor for calculation of correlation time :math:`\tau` for the Sokal
         method. The cut-off :math:`T` for integration is determined to be :math:`T >= c
-        \cdot tau`. Default is 8.
+        \cdot tau`.
     mintime: int
-        minimum possible value for cut-off. Default is 3.
+        minimum possible value for cut-off.
 
     Returns
     -------

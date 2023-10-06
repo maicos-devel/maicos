@@ -32,7 +32,7 @@ class DensityCylinder(ProfileCylinderBase):
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    dens : str {'mass', 'number', 'charge'}
+    dens : {``"mass"``, ``"number"``, ``"charge"``}
         density type to be calculated.
 
     Attributes

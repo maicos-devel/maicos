@@ -34,8 +34,8 @@ class KineticEnergy(AnalysisBase):
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     refpoint : str
-        reference point for molecular center: center of mass (``com``) or center of
-        charge (``coc``).
+        reference point for molecular center: center of mass (``"com"``) or center of
+        charge (``"coc"``).
     output : str
         Output filename.
 

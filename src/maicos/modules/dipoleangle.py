@@ -30,14 +30,10 @@ class DipoleAngle(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
-    pdim : int, {0, 1, 2}
+    pdim : {0, 1, 2}
         direction of the projection
     output : str
        Prefix for output filenames.
-    concfreq : int
-        Default number of frames after which results are calculated and files refreshed.
-        If ``0`` results are only calculated at the end of the analysis and not saved by
-        default.
 
     Attributes
     ----------
