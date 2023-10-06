@@ -24,7 +24,7 @@ integration pipeline is based on Tox_. So you need to install ``tox`` first
 
     pip install tox
     # or
-    conda install tox-c conda-forge
+    conda install -c conda-forge tox
 
 Then go to the `MAICoS develop project`_ page, hit the ``Fork`` button and clone your
 forked branch to your machine. 

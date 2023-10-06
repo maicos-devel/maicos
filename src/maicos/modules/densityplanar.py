@@ -31,7 +31,7 @@ class DensityPlanar(ProfilePlanarBase):
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    dens : str {'mass', 'number', 'charge'}
+    dens : {``"mass"``, ``"number"``, ``"charge"``}
         density type to be calculated.
 
     Attributes

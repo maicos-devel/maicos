@@ -32,7 +32,7 @@ class DiporderCylinder(ProfileCylinderBase):
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    pdim : {"r", "z"}
+    pdim : {``"r"``, ``"z"``}
         direction of the projection
     ${ORDER_PARAMETER_PARAMETER}
 

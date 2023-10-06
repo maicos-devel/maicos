@@ -30,8 +30,7 @@ class CylinderBase(PlanarBase):
 
     Parameters
     ----------
-    atomgroups : Atomgroup or list[Atomgroup]
-        Atomgroups taken for the Analysis
+    ${ATOMGROUPS_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
     kwargs : dict
         Parameters parsed to `AnalysisBase`.

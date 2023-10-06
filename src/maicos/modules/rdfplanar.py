@@ -49,9 +49,9 @@ class RDFPlanar(PlanarBase):
 
     Parameters
     ----------
-    g1 : AtomGroup
+    g1 : MDAnalysis.core.groups.AtomGroup
         First AtomGroup.
-    g2 : AtomGroup
+    g2 : MDAnalysis.core.groups.AtomGroup
         Second AtomGroup.
     rdf_bin_width : int
         Binwidth of bins in the histogram of the RDF (Å).
@@ -61,9 +61,10 @@ class RDFPlanar(PlanarBase):
         the minimum pairwise distance between 'g1' and 'g2' (Å).
     dmax : float
         the maximum pairwise distance between 'g1' and 'g2' (Å).
-    bin_method : str
-        Method for position binning; possible options are center of geometry (``cog``),
-        center of mass (``com``) or center of charge (``coc``).
+    bin_method : {``"com"``, ``"cog"``, ``"coc"``}
+        Method for position binning; possible options are
+        center of mass (``"com"``), center of geometry (``"cog"``) or
+        center of charge (``"coc"``).
     output : str
         Output filename
     ${PLANAR_CLASS_PARAMETERS}

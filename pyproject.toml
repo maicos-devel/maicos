@@ -53,7 +53,7 @@ classifiers = [
     "Topic :: System :: Shells",
 ]
 dependencies = [
-    "mdacli>=0.1.12",
+    "mdacli>=0.1.28",
     "MDAnalysis>=2.5.0",
     "numpy>=1.22.3",
     "scipy>=1.0.0",

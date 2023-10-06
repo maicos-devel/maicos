@@ -35,9 +35,9 @@ class VelocityCylinder(ProfileCylinderBase):
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    vdim : int {0, 1, 2},
+    vdim : {0, 1, 2}
         Dimension for velocity binning (x=0, y=1, z=2).
-    flux : bool,
+    flux : bool
         Calculate the flux instead of the velocity :math:`[Å^2/\mathrm{ps}]`.
 
     Attributes

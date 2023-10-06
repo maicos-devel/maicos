@@ -182,8 +182,6 @@ def bin(a: np.ndarray, bins: np.ndarray) -> np.ndarray:
     return avg / count
 
 
-#: Dictionary containing the keys and the actual docstring used by
-#: :func:`maicos.lib.util.render_docs`.
 DOC_DICT = dict(
     DENSITY_DESCRIPTION=r"""Calculations are carried out for
     ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
@@ -199,12 +197,12 @@ DOC_DICT = dict(
     DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
     :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
     dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
-    ATOMGROUP_PARAMETER="""atomgroup : AtomGroup
+    ATOMGROUP_PARAMETER="""atomgroup : MDAnalysis.core.groups.AtomGroup
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
         performed.""",
-    ATOMGROUPS_PARAMETER="""atomgroups : list[AtomGroup]
-        a list of :class:`~MDAnalysis.core.groups.AtomGroup` objects for which the
-        calculations are performed.""",
+    ATOMGROUPS_PARAMETER="""atomgroups : MDAnalysis.core.groups.AtomGroup or list[MDAnalysis.core.groups.AtomGroup]
+        A :class:`~MDAnalysis.core.groups.AtomGroup` or list thereof for which the
+        calculations are performed.""",  # noqa: E501
     BASE_CLASS_PARAMETERS="""unwrap : bool
         When :obj:`True`, molecules that are broken due to the periodic boundary
         conditions are made whole.
@@ -218,7 +216,7 @@ DOC_DICT = dict(
         currently supported in MDAnalysis. In this case, you need to provide unwrapped
         trajectory files directly, and disable unwrap. Trajectories can be unwrapped,
         for example, using the ``trjconv`` command of GROMACS.
-    refgroup : AtomGroup
+    refgroup : MDAnalysis.core.groups.AtomGroup
         Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation.
 
         If refgroup is provided, the calculation is performed relative to the center of
@@ -247,8 +245,8 @@ DOC_DICT = dict(
         'segments', 'molecules', 'fragments') as second. Additional parameters can be
         given as `f_kwargs`. The function must return a numpy.ndarray with the same
         length as the number of group members.
-    normalization : str {'None', 'number', 'volume'}
-        The normalization of the profile performed in every frame. If `None`, no
+    normalization : {``"none"``, ``"number"``, ``"volume"``}
+        The normalization of the profile performed in every frame. If `none`, no
         normalization is performed. If `number`, the histogram is divided by the number
         of occurences in each bin. If `volume`, the profile is divided by the volume of
         each bin.
@@ -282,23 +280,22 @@ DOC_DICT = dict(
     SYM_PARAMETER="""sym : bool
         Symmetrize the profile. Only works in combination with
         ``refgroup``.""",
-    ORDER_PARAMETER_PARAMETER="""order_parameter : {"P0", "cos_theta", "cos_2_theta"}
-        order parameter to be calculated""",
-    PROFILE_CLASS_PARAMETERS="""grouping : str {``'atoms'``, ``'residues'``, ``'segments'``, ``'molecules'``, ``'fragments'``}"""  # noqa
-    """
+    ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P0"``, ``"cos_theta"``, ``"cos_2_theta"``}
+        order parameter to be calculated""",  # noqa: E501
+    PROFILE_CLASS_PARAMETERS="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
           Atom grouping for the calculations of profiles.
 
-          The possible grouping options are the atom positions (in the case where
-          ``grouping='atoms'``) or the center of mass of the specified grouping unit (in
-          the case where ``grouping='residues'``, ``'segments'``, ``'molecules'`` or
-          ``'fragments'``).
-    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
+        The possible grouping options are the atom positions (in the case where
+        ``grouping="atoms"``) or the center of mass of the specified grouping unit (in
+        the case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
+        ``"fragments"``).
+    bin_method : {``"com"``, ``"cog"``, ``"coc"``}
         Method for the position binning.
 
-        The possible options are center of geometry (``cog``), center of mass (``com``),
-        and center of charge (``coc``).
+        The possible options are center of mass (``"com"``),
+        center of geometry (``"cog"``), and center of charge (``"coc"``).
     output : str
-        Output filename.""",
+        Output filename.""",  # noqa: E501
     PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
         Bin positions (in Å) ranging from ``zmin`` to ``zmax``.""",
     RADIAL_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
@@ -309,7 +306,7 @@ DOC_DICT = dict(
         Estimated profile's uncertainity.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
     refer to :class:`maicos.core.base.AnalysisBase` or the :ref:`general-design`
-    Ísection.""",
+    section.""",
     CORRELATION_INFO_PLANAR=r"""For the correlation analysis the central bin of
     the 0th's group profile calculated via :math:`n \backslash 2` is used.""",
     CORRELATION_INFO_CYLINDER="""For the correlation analysis the 0th bin of the 0th's
@@ -317,6 +314,10 @@ DOC_DICT = dict(
     CORRELATION_INFO_SPHERE="""For the correlation analysis the 0th bin of the 0th's
     group profile is used.""",
 )
+"""Dictionary containing the keys and the actual docstring used by :func:`maicos.lib.util.render_docs`.
+
+    :meta hide-value:
+"""  # noqa: E501
 
 # Inherit docstrings
 DOC_DICT["PLANAR_CLASS_PARAMETERS"] = (
@@ -361,8 +362,6 @@ DOC_DICT["PROFILE_SPHERE_CLASS_PARAMETERS"] = (
     DOC_DICT["ATOMGROUPS_PARAMETER"]
     + "\n    "
     + DOC_DICT["SPHERE_CLASS_PARAMETERS"]
-    + "\n    "
-    + DOC_DICT["RADIAL_CLASS_PARAMETERS"]
     + "\n    "
     + DOC_DICT["PROFILE_CLASS_PARAMETERS"]
 )
@@ -501,8 +500,8 @@ def trajectory_precision(
     ----------
     trajectory : MDAnalysis.coordinates.base.ReaderBase
         Trajectory from which the precision is detected.
-    dim : int
-        Dimension along which the precision is detected. Default is 2.
+    dim : {2, 0, 1}
+        Dimension along which the precision is detected.
 
     Returns
     -------
@@ -543,14 +542,17 @@ def trajectory_precision(
     return precision
 
 
-#: references associated with MAICoS
 DOI_LIST = {
     "10.1103/PhysRevLett.117.048001": "Schlaich, A. et al., Phys. Rev. Lett. 117, "
     "(2016).",
     "10.1021/acs.jpcb.9b09269": "Loche, P. et al., J. Phys. Chem. B 123, (2019).",
     "10.1021/acs.jpca.0c04063": "Carlson, S. et al., J. Phys. Chem. A 124, (2020).",
-    "10.1103/PhysRevE.92.032718": "1. Schaaf, C. et al., Phys. Rev. E 92, (2015).",
+    "10.1103/PhysRevE.92.032718": "Schaaf, C. et al., Phys. Rev. E 92, (2015).",
 }
+"""References associated with MAICoS
+
+    :meta hide-value:
+"""
 
 
 def citation_reminder(*dois: str) -> str:
@@ -596,13 +598,14 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         AtomGroup for which the center needs to be calculated.
-    bin_method : {'cog', 'com', 'coc'}
-        The binning method to be used for center calculation. Can be one of the
-        following: ``'cog'`` for the center of Geometry, ``'com'`` for the center of
-        mass or ``'coc'`` for the center of charge.
-    compound : {'group', 'segments', 'residues', 'molecules', 'fragments'}
-        The compound to be used in the center calculation. For example, 'residue',
-        'segment', etc.
+    bin_method : {``"com"``, ``"cog"``, ``"coc"``}
+        Method for the position binning.
+
+        The possible options are center of mass (``"com"``),
+        center of geometry (``"cog"``), and center of charge (``"coc"``).
+    compound : {``"group"``, ``"segments"``, ``"residues"``, ``"molecules"``, ``"fragments"``}
+        The compound to be used in the center calculation. For example, ``"residue"``,
+        ``"segment"``, etc.
 
     Returns
     -------
@@ -612,8 +615,8 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
     Raises
     ------
     ValueError
-        If the provided ``bin_method`` is not one of ``'cog'``, ``'com'``, or ``'coc'``.
-    """
+        If the provided ``bin_method`` is not one of {``"com"``, ``"cog"``, ``"coc"``}.
+    """  # noqa: E501
     if bin_method == "cog":
         weights = None
     elif bin_method == "com":
@@ -638,7 +641,7 @@ def unit_vectors_planar(
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for which the unit vectors will be calculated.
-    grouping : {'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
         constituent to group weights with respect to
     pdim : {0, 1, 2}
         direction of the projection
@@ -667,13 +670,13 @@ def unit_vectors_cylinder(
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for which the unit vectors will be calculated.
-    grouping : {'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
         constituent to group weights with respect to
-    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
+    bin_method : {``"com"``, ``"cog"``, ``"coc"``}
         type of the center calculations
     dim : {0, 1, 2}
         Direction of the cylinder axis (0=x, 1=y, 2=z).
-    pdim : {'r', 'z'}
+    pdim : {``"r"``, ``"z"``}
         direction of the projection
 
     Returns
@@ -714,9 +717,9 @@ def unit_vectors_sphere(
     ----------
     atomgroup : MDAnalysis.core.groups.AtomGroup
         atomgroup taken for which the unit vectors will be calculated.
-    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
+    grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
         constituent to group weights with respect to
-    bin_method : {``'cog'``, ``'com'``, ``'coc'``}
+    bin_method : {``"com"``, ``"cog"``, ``"coc"``}
         type of the center calculations
 
     Returns
@@ -724,7 +727,7 @@ def unit_vectors_sphere(
     numpy.ndarray
         Array of the calculated unit vectors with shape (3,n). The length of `n`
         depends on the grouping.
-    """
+    """  # noqa: 501
     # We do NOT transform ``unit_vectors`` into spherical coordinates, because all
     # scalar products in ``dipolar_weights`` will be performed cartesian coordinates!
     unit_vectors = get_center(

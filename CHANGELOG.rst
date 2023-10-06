@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Update docs to reflect changes in ``mdacli`` (!271)
 - Add banner to MAICoS output reporting the version (!272)
 - Update UML graphic (!269)
 - Show warnings if set boundaries would result in wrong results (!261)
