@@ -55,7 +55,7 @@ class RDFCylinder(CylinderBase):
         First AtomGroup.
     g2 : MDAnalysis.core.groups.AtomGroup
         Second AtomGroup.
-    rdf_bin_width : int
+    rdf_bin_width : float
         Binwidth of bins in the histogram of the RDF (Å).
     drwidth : float
         radial width of a RDF cylindrical shell (Å).
