@@ -97,6 +97,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         Observables of the current frame
     _obs.box_center : numpy.ndarray
         Center of the simulation cell of the current frame
+    sums : MDAnalysis.analysis.base.Results
+         Sum of the observables across frames. Keys are the same as :attr:`_obs`.
     means : MDAnalysis.analysis.base.Results
         Means of the observables. Keys are the same as :attr:`_obs`.
     sems : MDAnalysis.analysis.base.Results
@@ -306,12 +308,15 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                         )
                         / self._index
                     )
+                    self.sums[key] += self._obs[key]  # type: ignore
+
             except AttributeError:
                 with logging_redirect_tqdm():
                     logger.info("Preparing error estimation.")
                 # the means and sems are not yet defined. We initialize the means with
                 # the data from the first frame and set the sems to zero (with the
                 # correct shape).
+                self.sums = self._obs.copy()
                 self.means = self._obs.copy()
                 self.sems = Results()
                 for key in self._obs.keys():
@@ -500,9 +505,6 @@ class ProfileBase:
         if not hasattr(self, "unwrap"):
             self.unwrap = True
 
-        if self.normalization == "number":
-            self.tot_bincount = np.zeros((self.n_bins, self.n_atomgroups))
-
     def _compute_histogram(
         self, positions: np.ndarray, weights: Optional[np.ndarray] = None
     ) -> np.ndarray:
@@ -524,6 +526,7 @@ class ProfileBase:
 
     def _single_frame(self):
         self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
+        self._obs.bincount = np.zeros((self.n_bins, self.n_atomgroups))
         for index, selection in enumerate(self.atomgroups):
             if self.grouping == "atoms":
                 positions = selection.atoms.positions
@@ -535,28 +538,22 @@ class ProfileBase:
             weights = self.weighting_function(selection)
             profile = self._compute_histogram(positions, weights)
 
-            if self.normalization == "number":
-                bincount = self._compute_histogram(positions, weights=None)
+            self._obs.bincount[:, index] = self._compute_histogram(
+                positions, weights=None
+            )
 
-                self.tot_bincount[:, index] += bincount
-
-                # If a bin does not contain any particles we divide by 0.
-                with np.errstate(invalid="ignore"):
-                    profile /= bincount
-                profile = np.nan_to_num(profile)
-            elif self.normalization == "volume":
+            if self.normalization == "volume":
                 profile /= self._obs.bin_volume
 
             self._obs.profile[:, index] = profile
 
     def _conclude(self):
-        self.results.profile = self.means.profile
-        self.results.dprofile = self.sems.profile
-
         if self.normalization == "number":
-            no_occurences_idx = self.tot_bincount == 0
-            self.results.profile[no_occurences_idx] = np.nan
-            self.results.dprofile[no_occurences_idx] = np.nan
+            with np.errstate(divide="ignore"):
+                self.results.profile = self.sums.profile / self.sums.bincount
+        else:
+            self.results.profile = self.means.profile
+        self.results.dprofile = self.sems.profile
 
     def save(self):
         """Save results of analysis to file."""

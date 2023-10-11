@@ -462,7 +462,7 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile.flatten()
-        desired = [np.nan, np.nan, np.nan, 1e-04, 0.4, 1, 1, 1, 1, 1]
+        desired = [np.nan, np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1]
         desired += desired[::-1]
 
         assert_allclose(actual, desired, atol=1e-2)

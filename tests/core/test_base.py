@@ -156,10 +156,11 @@ class Test_AnalysisBase(object):
             AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
 
     def test_frame_data(self, ag):
-        """Test the calculation of the frame, mean and vars results dicts."""
+        """Test the calculation of the frame, sums, mean and sems results dicts."""
         ana = Series(ag)
         ana.run()
 
+        assert_allclose(ana.sums.observable, np.sum(ana.series))
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
 
