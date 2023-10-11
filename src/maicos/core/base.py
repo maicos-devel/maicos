@@ -549,7 +549,7 @@ class ProfileBase:
 
     def _conclude(self):
         if self.normalization == "number":
-            with np.errstate(divide="ignore", invalid='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 self.results.profile = self.sums.profile / self.sums.bincount
         else:
             self.results.profile = self.means.profile
