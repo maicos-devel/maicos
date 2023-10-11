@@ -429,7 +429,6 @@ class TestProfileSphereBase:
             profile_vals = u.atoms.n_atoms / (4 * np.pi / 3 * 0.5**3)
         elif normalization == "number":
             profile_vals = np.ones(5)
-            profile_vals[0] = 0.63  # Only very few particles in first bin.
         else:  # == None
             profile_vals = 6 * np.array([0, 1, 3, 6, 10]) + 1
 

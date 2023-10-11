@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Changed the way number normalization works, introduced sums dict (!274)
 - Fixed typing error in RDF modules (!273)
 - Update docs to reflect changes in ``mdacli`` (!271)
 - Add banner to MAICoS output reporting the version (!272)

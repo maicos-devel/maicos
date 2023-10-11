@@ -228,11 +228,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         PlanarBase._conclude(self)
 
         if self.sym:
+            symmetrize(self.sums.profile, inplace=True)
             symmetrize(self.means.profile, inplace=True)
             symmetrize(self.sems.profile, inplace=True)
 
             if self.normalization == "number":
-                symmetrize(self.tot_bincount, inplace=True)
+                symmetrize(self.sums.bincount, inplace=True)
 
         # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
         # this prevents symmetrizing.
