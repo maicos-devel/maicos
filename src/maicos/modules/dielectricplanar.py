@@ -48,7 +48,8 @@ class DielectricPlanar(PlanarBase):
         interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
     vac : bool
-        Use vacuum boundary conditions instead of metallic (2D only!).
+        Use vacuum boundary conditions instead of metallic. Option is only applied if
+        ``is_3d=True``.
     sym : bool
         Symmetrize the profiles.
     temperature : float
@@ -118,6 +119,9 @@ class DielectricPlanar(PlanarBase):
                 "Setting `zmin` and `zmax` might cut off molecules. This will lead to "
                 "severe artifacts in the dielectric profiles."
             )
+
+        if vac and not is_3d:
+            logger.warn("``vac=True`` will be ignored since ``is_3d=False``.")
 
         super().__init__(
             atomgroups=atomgroups,
