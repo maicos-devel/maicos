@@ -15,10 +15,11 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Fixed markup and consistency in ``correlation`` function docs (!277)
 - Add info for ``DielectricPlanar`` module for ignored combination of ``vac=True`` and
-  ``is_3d=False``.
-- Add description for `tox` jobs
-- Cleanup coverage config and move to ``pyproject.toml``
+  ``is_3d=False``. (!275)
+- Add description for `tox` jobs (!275)
+- Cleanup coverage config and move to ``pyproject.toml`` (!275)
 - Changed the way number normalization works, introduced sums dict (!274)
 - Fixed typing error in RDF modules (!273)
 - Update docs to reflect changes in ``mdacli`` (!271)

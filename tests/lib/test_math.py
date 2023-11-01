@@ -373,49 +373,52 @@ def test_corr2(vector1, vector2, subtract_mean, result):
 
 
 @pytest.mark.parametrize(
-    ("vector, method, c, mintime, result"),
+    ("vector, method, result"),
     (
         (
             generate_correlated_data(int(1e6), 5),
             "sokal",
-            8,
-            3,
             np.sum(1 - np.arange(1, 5) / 5),
         ),
         (
             generate_correlated_data(int(1e6), 10),
             "sokal",
-            8,
-            3,
             np.sum(1 - np.arange(1, 10) / 10),
         ),
         (
             generate_correlated_data(int(1e6), 5),
             "chodera",
-            8,
-            3,
             np.sum(1 - np.arange(1, 5) / 5),
         ),
         (
             generate_correlated_data(int(1e6), 10),
             "chodera",
-            8,
-            3,
             np.sum(1 - np.arange(1, 10) / 10),
         ),
     ),
 )
-def test_correlation_time(vector, method, c, mintime, result):
+def test_correlation_time(vector, method, result):
     """Tests for correlation_time."""
-    utils_run = maicos.lib.math.correlation_time(vector, method, c, mintime)
+    utils_run = maicos.lib.math.correlation_time(vector, method)
     assert_almost_equal(np.mean(utils_run), result, decimal=1)
 
 
 def test_correlation_time_wrong_method():
     """Tests for correlation_time with wrong method."""
-    with pytest.raises(ValueError):
+    match = "Unknown method: wrong. Chose either 'sokal' or 'chodera'."
+    with pytest.raises(ValueError, match=match):
         maicos.lib.math.correlation_time(
-            generate_correlated_data(int(1e3), 5), "wrong", 8, 3
+            generate_correlated_data(int(1e3), 5),
+            method="wrong",
+        )
+
+
+def test_correlation_large_mintime():
+    """Tests for correlation_time with where mintime is larger than timeseries."""
+    match = "has to be smaller then the length of `timeseries`"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.correlation_time(
+            generate_correlated_data(int(1e3), 5), mintime=2e3
         )
 
 

@@ -151,8 +151,8 @@ def correlation(
         The first input array to calculate the correlation
     b : numpy.ndarray
         The second input array. If :obj:`None`, autocorrelation of ``a`` is calculated.
-    subtract_mean : bool, optional
-        If obj:`True`, subtract the mean from the input data.
+    subtract_mean : bool
+        If :obj:`True`, subtract the mean from the input data.
 
     Returns
     -------
@@ -225,61 +225,97 @@ def scalar_prod_corr(
 
 
 def correlation_time(
-    x_n: np.ndarray, method: str = "sokal", c: float = 8, mintime: int = 3
+    timeseries: np.ndarray,
+    method: str = "sokal",
+    mintime: int = 3,
+    sokal_factor: float = 8,
 ) -> float:
-    r"""Compute the integrated correlation time of a timeseries.
+    r"""Compute the integrated correlation time of a time series.
 
-    The "sokal" method is based on :footcite:t:`sokalLecture`. The "chodera" method is
-    based on :footcite:t:`choderaWeightedHistogramAnalysis2007`.
+    The integrated correlation time (in units of the sampling interval) is given by
+
+    .. math::
+        \tau = \sum\limits_{t=1}^{N_\mathrm{cut}} C(t) \left(1 - \frac{t}{N}\right)
+
+    where :math:`N_\mathrm{cut} < N` is a subset of the time series of length :math:`N`
+    and :math:`C(t)` is the discrete-time autocorrelation function. To obtain the upper
+    limit of the sum :math:`N_\mathrm{cut}` two different methods are provided:
+
+    1. For "chodera" :footcite:p:`choderaWeightedHistogramAnalysis2007`
+       :math:`N_\mathrm{cut}` is given by the time when :math:`C(t)`
+       crosses zero the first time.
+
+    2. For "sokal" :footcite:p:`sokalLecture` :math:`N_\mathrm{cut}` is determined
+       iteratively by stepwise increasing until
+
+       .. math::
+            N_\mathrm{cut} \geq c \cdot \tau
+
+       where :math:`c` is the constant ``sokal_factor``. If the condition is never
+       fulfilled, ``-1`` is returned, indicating that the time series does not provide
+       sufficient statistics to estimate a
+       correlation time.
+
+    While both methods give the same correlation time for a smooth time series that
+    decays to 0, "sokal" will results in a more reasonable result for actual time series
+    that are noisy and cross zero several times.
 
     Parameters
     ----------
-    x_n : numpy.ndarray
-        timeseries
+    timeseries : numpy.ndarray
+        The time series used to calculate the correlation time from.
     method : {"sokal", "chodera"}
-        Method to choose integration cutoff.
-    c : float
-        cut-off factor for calculation of correlation time :math:`\tau` for the Sokal
-        method. The cut-off :math:`T` for integration is determined to be :math:`T >= c
-        \cdot tau`.
+        Method to choose summation cutoff :math:`N_\mathrm{cut}`.
     mintime: int
-        minimum possible value for cut-off.
+        Minimum possible value for :math:`N_\mathrm{cut}`.
+    sokal_factor : float
+        Cut-off factor :math:`c` for the Sokal method.
 
     Returns
     -------
     tau : float
-        integrated correlation time
+        Integrated correlation time :math:`\tau`. If ``-1`` (only for
+        ``method="sokal"``) the provided time series does not provide sufficient
+        statistics to estimate a correlation time.
 
     Raises
     ------
     ValueError
-        If method is not one of "sokal" or "chodera"
+        If mintime is larger than the length of the timeseries.
+    ValueError
+        If method is not one of "sokal" or "chodera".
 
     References
     ----------
     .. footbibliography::
     """
-    corr = correlation(x_n, subtract_mean=True)
+    if mintime > len(timeseries):
+        raise ValueError(
+            f"mintime ({mintime}) has to be smaller then the length of `timeseries` "
+            f"({len(timeseries)})."
+        )
+
+    corr = correlation(timeseries, subtract_mean=True)
 
     if method == "sokal":
-        cutoff = mintime
-        tau = mintime
-        for cutoff in range(mintime, len(x_n)):
+        for cutoff in range(mintime, len(timeseries)):
             tau = np.sum(
-                (1 - np.arange(1, cutoff) / len(x_n)) * corr[1:cutoff] / corr[0]
+                (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
             )
-            if cutoff > tau * c:
+            if cutoff >= sokal_factor * tau:
                 break
 
-            if cutoff > len(x_n) / 3:
+            if cutoff > len(timeseries) / 3:
                 return -1
 
     elif method == "chodera":
         cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
-        tau = np.sum((1 - np.arange(1, cutoff) / len(x_n)) * corr[1:cutoff] / corr[0])
+        tau = np.sum(
+            (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
+        )
     else:
         raise ValueError(
-            f"Unknown method: {method}. " "Chose either 'sokal' or 'chodera'."
+            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
         )
     return tau
 
