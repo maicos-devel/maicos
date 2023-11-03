@@ -105,8 +105,8 @@ if __name__ == "__main__":
 
     pre_exts = [
         Extension(
-            "maicos.lib._cutil",
-            ["src/maicos/lib/_cutil" + source_suffix],
+            "maicos.lib._cmath",
+            ["src/maicos/lib/_cmath" + source_suffix],
             include_dirs=[np.get_include()],
             extra_compile_args=["-std=c99", "-ffast-math", "-O3", "-funroll-loops"]
             + has_openmp * ["-fopenmp"],

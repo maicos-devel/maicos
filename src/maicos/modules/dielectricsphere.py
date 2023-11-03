@@ -166,7 +166,7 @@ class DielectricSphere(SphereBase):
         self.results.deps_rad = 4 * np.pi * self.results.bin_pos**2 * pref * dcov_rad
 
     def save(self):
-        """Save result."""
+        """Save results of analysis to file specified by ``output``."""
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T

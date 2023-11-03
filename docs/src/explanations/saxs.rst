@@ -1,22 +1,23 @@
 .. _saxs-explanations:
 
-================
-SAXS calculation
-================
+============================
+Small-angle X-ray scattering
+============================
 
 MD Simulations often complement conventional experiments, such as X-ray crystallography,
 Nuclear Magnetic Resonance (NMR) spectroscopy and Atomic-Force Microscopy (AFM). X-ray
 crystallography is a method by which the structure of molecules can be resolved. X-rays
 of wavelength 0.1 to 100 Å are scattered by the electrons of atoms. The intensities of
-the scattered rays are amplified by creating crystals containing a multitude of the
-studied molecule positionally ordered. The molecule is thereby no longer under
-physiological conditions. The study of structures in a solvent should be done under
-physiological conditions (in essence a disordered system), wherefore X-ray
-crystallography does not represent the ideal method. Small-Angle X-ray Scattering
-(abbreviated to SAXS) allows for measurements to be made on molecules in solutions. With
-this method the shape and size of the molecule and also distances within it can be
-obtained. For generally larger objects, the information provided by SAXS can be
-converted to information about the objects geometry from the Bragg-Equation
+the scattered rays are often amplified using creating crystals containing a multitude of
+the studied molecule positionally ordered. The molecule is thereby no longer under
+physiological conditions. However, the study of structures in a solvent should be done
+under physiological conditions (in essence, this implies a disordered, solvated fluid
+system); therefore X-ray crystallography does not represent the ideal method for such
+systems. Small-Angle X-ray Scattering (abbreviated to SAXS) allows for measurements of
+molecules in solutions. With this method the shape and size of the molecule and also
+distances within it can be obtained. In general, for larger objects, the information
+provided by SAXS can be converted to information about the object's geometry via the
+Bragg-Equation
 
 .. math::
     n \cdot \lambda = 2 \cdot d \cdot \sin(\theta)
@@ -49,32 +50,26 @@ the incident rays with wave vector :math:`\boldsymbol{k}_i` reach the sample the
 scatter. The scattered rays, with wave vector :math:`\boldsymbol{k}_s`, are recorded by
 a 2D-detector revealing a diffraction pattern.
 
-The scattering agents in the sample are electrons. Therefore diffraction patterns reveal
-the electron density. Because the scattering is elastic, the magnitudes of the incident
-and scattered waves are the same: :math:`|\boldsymbol{k}_i| = |\boldsymbol{k}_s| =
-2\pi/\lambda`. The scattering vector is :math:`\boldsymbol{q} = \boldsymbol{k}_s -
-\boldsymbol{k}_i` with a magnitude of :math:`q = |\boldsymbol{q}| = 4\pi
-\sin(\theta)/\lambda`. The structure factor can be obtained from the intensity of the
-scattered wave, :math:`I_s(\boldsymbol{q})`, and each particle`s form factor :math:`f
-(q)`.
+Since the scattering agents in the sample are electrons, X-Ray diffraction patterns
+reveal the electron density. Since the scattering is elastic, the magnitudes of the
+incident and scattered waves are the same: :math:`|\boldsymbol{k}_i| =
+|\boldsymbol{k}_s| = 2\pi/\lambda`. The scattering vector is :math:`\boldsymbol{q} =
+\boldsymbol{k}_s - \boldsymbol{k}_i` with a magnitude of :math:`q = |\boldsymbol{q}| =
+4\pi \sin(\theta)/\lambda`. The structure factor can be obtained from the intensity of
+the scattered wave, :math:`I_s(\boldsymbol{q})`, and the correspnding form factor
+:math:`f (q)`, which involves a frourier transform of the element-specific local
+electron density and thus determines the amplitude of the scattered wave of a single
+element.
 
 -----------
 Simulations
 -----------
 
 In simulations, the structure factor :math:`S(\boldsymbol{q})` can be extracted directly
-from the positions of the particles. MAICoS' :ref:`Saxs` module calculates these
+from the positions of the particles. :class:`maicos.Saxs` calculates these
 factors. The calculated scattering intensities can be directly compared to the
-experimental one without any further processing. We now derive the essential equations.
-:math:`S(\boldsymbol{q})` is defined as
-
-.. math::
-    S(\boldsymbol{q}) = \frac{1}{\sum_{j=1}^N f_j^2(q)} I_s(\boldsymbol{q}) \,.
-
-The form factor as a function of :math:`q` is specific to each atom and relates to the
-amplitude of the scattered waves.
-
-The scattering intensity is expressed as
+experimental one without any further processing. In the following we derive the
+essential relations. We start with the scattering intensity which is expressed as
 
 .. math::
     I_s(\boldsymbol{q}) = A_s(\boldsymbol{q}) \cdot A_s^*(\boldsymbol{q}) \,,
@@ -84,11 +79,21 @@ with the amplitude of the elastically scattered wave
 .. math::
     A_s(\boldsymbol{q}) = \sum\limits_{j=1}^N f_j(q) \cdot e^{-i\boldsymbol{qr}_j} \,,
 
-:math:`f_j(q)` is the form factor and :math:`\boldsymbol{r}_j` the position of the
-:math:`j` th atom out of :math:`N` atoms. The complex conjugate of the amplitude is
+where :math:`f_j(q)` is the element-specific form factor of atom :math:`j` and
+:math:`\boldsymbol{r}_j` the position of the :math:`j` th atom out of :math:`N` atoms.
+
+The scattering intensity can be evaluated for wave vectors :math:`\boldsymbol q = 2 \pi
+(L_x n_x, L_y n_y, L_z n_z)`, where :math:`n \in \mathbb N` and :math:`L_x, L_y, L_z`
+are the box lengths of cubic cells.
+
+.. Note::
+    :class:`maicos.Saxs` can analyze any cells by mapping coordinates back onto cubic
+    cells.
+
+The complex conjugate of the amplitude is
 
 .. math::
-    A_s^*(\boldsymbol{q}) = \sum\limits_{k=1}^N f_k(q) \cdot e^{i\boldsymbol{qr}_j} \,.
+    A_s^*(\boldsymbol{q}) = \sum\limits_{j=1}^N f_j(q) \cdot e^{i\boldsymbol{qr}_j} \,.
 
 The intensity therefore can be written as
 
@@ -117,13 +122,15 @@ For isotropic systems containing only one kind of atom the structure factor is
                         \left\langle \frac{1}{N} \sum\limits_{j=1}^N f_j(q) \sin(\boldsymbol{qr}_j) \right \rangle^2 \,.
 
 The structure factor of systems with more than one atom type is the sum of partial
-structure factors normalised by the form factor
+structure factors normalized by the form factor
 
 .. math::
     S(\boldsymbol{q}) = \left\langle \frac{1}{\sum_{j=1}^N f_j^2(q)}\sum\limits_{j=1}^N f_j(q) \cos(\boldsymbol{qr}_j) \right \rangle^2 +
                         \left\langle \frac{1}{\sum_{j=1}^N f_j^2(q)} \sum\limits_{j=1}^N f_j(q) \sin(\boldsymbol{qr}_j) \right \rangle^2 \,.
 
-The form factors :math:`f(q)` of a specific atom can be approximated with
+The limiting value :math:`S(0)` for :math:`q \rightarrow 0` is connected to the
+isothermal compressibility :footcite:p:`hansen_theory_2006` and the element-specific
+form factors :math:`f(q)` of a specific atom can be approximated with
 
 .. math::
     f(\sin\theta/\lambda) = \sum_{i=1}^4 a_i e^{-b_i \sin^2\theta/\lambda^2} + c \,.
@@ -133,8 +140,58 @@ Expressed in terms of the scattering vector we can write
 .. math::
     f(q) = \sum_{i=1}^4 a_i e^{-b_i q^2/(4\pi)^2} + c \,.
 
-The coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and :math:`c` are
-documented in :footcite:t:`princeInternationalTablesCrystallography2004`.
+The element-specific coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and
+:math:`c` are documented :footcite:p:`princeInternationalTablesCrystallography2004`.
+
+----------------------------------------------------------------------
+Connection of the structure factor to the radial distribution function
+----------------------------------------------------------------------
+
+If the system's structure is determined by pairwise interactions only, the density
+correlations of a fluid are characterized by the pair distribution function
+
+.. math::
+    g(\boldsymbol r, \boldsymbol r^\prime) =
+        \frac{\langle \rho^{(2)}(\boldsymbol r, \boldsymbol r^\prime) \rangle}
+        {\langle \rho(\boldsymbol r) \rangle \langle \rho(\boldsymbol r\prime) \rangle}
+    \,,
+
+where :math:`\rho^{(2)}(\boldsymbol r, \boldsymbol r\prime) = \sum_{i,j=1, i\neq j}^{N}
+\delta (\boldsymbol r - \boldsymbol r_i) \delta (\boldsymbol r - \boldsymbol r_j)` and
+:math:`\rho(\boldsymbol r) = \sum_{i=1}^{N} \delta (\boldsymbol r - \boldsymbol r_i)`
+are the two- and one-particle density operators.
+
+For a homogeneous and isotropic system, :math:`g(r) = g(\boldsymbol r, \boldsymbol
+r^\prime)` is a function of the distance :math:`r =|\boldsymbol r - \boldsymbol
+r^\prime|` only and is called the radial distribution function (RDF). As explained
+above, scattering experiments measure the structure factor
+
+.. math::
+    S(\boldsymbol q) = \left \langle \frac{1}{N} \sum_{i,j=1}^N
+        \exp(-i\boldsymbol q \cdot [\boldsymbol r_i - \boldsymbol r_j]) \right \rangle
+    \,,
+
+which we here normalize only by the number of particles :math:`N`. For a homogeneous and
+isotropic system, it is a function of :math:`q = |\boldsymbol q|` only and related to
+the RDF by Fourier transformation (FT)
+
+.. math::
+    S^{FT}(q) = 1 + 4 \pi \rho \int_0^\infty \mathrm{d}r r \frac{\sin(qr)}{q} (g(r) - 1) \,,
+
+which is another way compared for the direct evaluation from trajectories which was
+derived above. In general this can be as accurate as the direct evaluation if the
+RDF implementation works for non-cubic cells and is not limited to distances
+:math:`r_\mathrm{max} = L/2`, see :footcite:p:`zeman_ionic_2021` for details.
+However, in usual implementation the RDF can only be obtained until
+:math:`r_\mathrm{max} = L/2` which leads to a range of :math:`q >
+q_\mathrm{min}^\mathrm{FT} = 2\pi / r_\mathrm{rmax} = 4 \pi /L`. This means that the
+minimal wave vector that can be resolved is a factor of 2 larger compared compared to
+the direct evaluation, leading to "cutoff ripples". The direct evaluation should
+therefore usually be preferred :footcite:p:`sedlmeier_spatial_2011`.
+
+To compare the RDF and the structure factor you can use
+:func:`maicos.lib.math.compute_rdf_structure_factor`. For a detailed example take
+a look at :ref:`howto-saxs`.
 
 References
 ----------

@@ -1,7 +1,7 @@
 # distutils: language = c
 # cython: language_level=3
 #
-# Copyright (c) 2020 Authors and contributors
+# Copyright (c) 2023 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version
@@ -18,20 +18,26 @@ from libc cimport math
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision
-cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensions,
-                                     double start_q, double end_q, double mintheta,
-                                     double maxtheta):
+cpdef tuple compute_structure_factor(
+        double[:,:] positions,
+        double[:] dimensions,
+        double start_q,
+        double end_q,
+        double mintheta,
+        double maxtheta,
+        double[:] weights,
+    ):
     r"""Calculates :math:`S(\vert q \vert)` for all possible :math:`q` values.
-    
-    Returns the :math:`q` values as well as the scattering factor.
 
-    Use via `from maicos.lib.math import compute_structure_factor`
+    Returns the :math:`q` values as well as the structure factor.
+
+    Use via ``from maicos.lib.math import compute_structure_factor``
 
     Parameters
     ----------
     positions : numpy.ndarray
         position array.
-    boxdimensions : numpy.ndarray
+    dimensions : numpy.ndarray
         dimensions of the cell.
     startq : float
         Starting q (1/Å).
@@ -41,6 +47,10 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
         Maximal angle (°) between the q vectors and the z-axis.
+    weights : numpy.ndarray
+        Atomic quantity whose :math:`S(\vert q \vert)` we are computing. Provide an
+        array of ``1`` that has the same size as the postions, i.e
+        ``np.ones(len(positions))``, for the standard structure factor
 
     Returns
     -------
@@ -48,8 +58,9 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
         The q values and the corresponding structure factor.
     """
 
-    assert(boxdimensions.shape[0]==3)
-    assert(positions.shape[1]==3)
+    assert(dimensions.shape[0] == 3)
+    assert(positions.shape[1] == 3)
+    assert(len(weights) == len(positions))
 
     cdef Py_ssize_t i, j, k, l, n_atoms
     cdef int[::1] maxn = np.empty(3,dtype=np.int32)
@@ -58,13 +69,13 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
 
     n_atoms = positions.shape[0]
     for i in range(3):
-        q_factor[i] = 2*np.pi/boxdimensions[i]
-        maxn[i] = <int>math.ceil(end_q/<float>q_factor[i])
+        q_factor[i] = 2 * np.pi / dimensions[i]
+        maxn[i] = <int>math.ceil(end_q / <float>q_factor[i])
 
     cdef double[:,:,::1] S_array = np.zeros(maxn, dtype=np.double)
     cdef double[:,:,::1] q_array = np.zeros(maxn, dtype=np.double)
 
-    for i in prange(<int>maxn[0],nogil=True):
+    for i in prange(<int>maxn[0], nogil=True):
         qx = i * q_factor[0]
 
         for j in range(maxn[1]):
@@ -73,20 +84,20 @@ cpdef tuple compute_structure_factor(double[:,:] positions, double[:] boxdimensi
             for k in range(maxn[2]):
                 if (i + j + k != 0):
                     qz = k * q_factor[2]
-                    qrr = math.sqrt(qx*qx+qy*qy+qz*qz)
+                    qrr = math.sqrt(qx * qx + qy * qy + qz * qz)
                     theta = math.acos(qz / qrr)
 
                     if (qrr >= start_q and qrr <= end_q and
                           theta >= mintheta and theta <= maxtheta):
-                        q_array[i,j,k] = qrr
+                        q_array[i, j, k] = qrr
 
-                        sin = 0
-                        cos = 0
+                        sin = 0.0
+                        cos = 0.0
                         for l in range(n_atoms):
-                            qdotr = positions[l,0]*qx + positions[l,1]*qy + positions[l,2]*qz
-                            sin += math.sin(qdotr)
-                            cos += math.cos(qdotr)
+                            qdotr = positions[l, 0] * qx + positions[l, 1] * qy + positions[l, 2] * qz
+                            sin += weights[l] * math.sin(qdotr)
+                            cos += weights[l] * math.cos(qdotr)
 
-                        S_array[i,j,k] += sin*sin + cos*cos
+                        S_array[i, j, k] += sin * sin + cos * cos
 
     return (np.asarray(q_array), np.asarray(S_array))

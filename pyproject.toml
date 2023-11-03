@@ -100,7 +100,7 @@ testpaths = "tests"
 
 [tool.check-manifest]
 # ignore files missing in VCS
-ignore = ["src/maicos/lib/_cutil.c"]
+ignore = ["src/maicos/lib/_cmath.c"]
 
 [tool.versioneer]
 VCS = "git"

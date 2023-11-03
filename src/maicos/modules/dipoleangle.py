@@ -118,7 +118,7 @@ class DipoleAngle(AnalysisBase):
         self.results.cos_theta_ij = self.cos_theta_ij[: self._index]
 
     def save(self):
-        """Save result."""
+        """Save results of analysis to file specified by ``output``."""
         self.savetxt(
             self.output,
             np.vstack(

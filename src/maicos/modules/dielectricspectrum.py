@@ -253,7 +253,7 @@ class DielectricSpectrum(AnalysisBase):
         )
 
     def save(self):
-        """Save result."""
+        """Save results of analysis to file specified by ``output``."""
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
         with open(self.output_prefix + "V.txt", "w") as Vfile:

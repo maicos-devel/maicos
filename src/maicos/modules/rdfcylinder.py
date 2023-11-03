@@ -303,7 +303,7 @@ class RDFCylinder(CylinderBase):
         self.results.rdf = np.nan_to_num(self.results.rdf.T, nan=0, posinf=0, neginf=0)
 
     def save(self):
-        """Save results."""
+        """Save results of analysis to file specified by ``output``."""
         columns = ["r [Å]"]
         for z in self.results.bin_pos:
             columns.append(f"rdf at {z:.2f} Å [Å^-3]")
