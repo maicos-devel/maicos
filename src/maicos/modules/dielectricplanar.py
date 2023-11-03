@@ -356,7 +356,7 @@ class DielectricPlanar(PlanarBase):
             symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
 
     def save(self):
-        """Save results."""
+        """Save results of analysis to file specified by ``output``."""
         columns = ["position [Å]"]
         for i, _ in enumerate(self.atomgroups):
             columns.append(f"ε^-1_⟂ - 1 ({i+1})")

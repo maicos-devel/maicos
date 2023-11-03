@@ -5,7 +5,7 @@
 *.dat
 
 # Cython generated files
-_cutil.c
+_cmath.c
 
 # Unit test / coverage reports
 .tox/

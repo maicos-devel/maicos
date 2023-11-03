@@ -281,9 +281,12 @@ DOC_DICT = dict(
         Symmetrize the profile. Only works in combination with
         ``refgroup``.""",
     ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P0"``, ``"cos_theta"``, ``"cos_2_theta"``}
-        order parameter to be calculated""",  # noqa: E501
+        Order parameter to be calculated:
+            - ``"P0"``: total dipole moment projected on an axis
+            - ``"cos_theta"``: cosine of the dipole moment with an axis
+            - ``"cos_2_theta"``: squred cosine with an axis.""",  # noqa: E501
     PROFILE_CLASS_PARAMETERS="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
-          Atom grouping for the calculations of profiles.
+        Atom grouping for the calculations of profiles.
 
         The possible grouping options are the atom positions (in the case where
         ``grouping="atoms"``) or the center of mass of the specified grouping unit (in

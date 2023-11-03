@@ -15,6 +15,16 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Add physical integration test to test that structure factor from Saxs is the same as
+  the Fourier transformed RDF. (!279)
+- Add example and explenation of how to relate the radial distribution function and the
+  structure factor (!279)
+- Add function :func:`maicos.lib.math.rdf_structure_factor` for converting a radial
+  distribution function into a structure factor. (!279)
+- Change default biwnwidth (``dq``) in :class:`maicos.Saxs` to ``0.1``. (!279)
+- Move ``cutils`` to ``cmath`` (!279)
+- Add ``weight`` argument to :func:`maicos.lib._cmath.compute_structure_factor`
+- Code cleanup of :class:`maicos.Saxs` (!279)
 - Fixed markup and consistency in ``correlation`` function docs (!277)
 - Add info for ``DielectricPlanar`` module for ignored combination of ``vac=True`` and
   ``is_3d=False``. (!275)

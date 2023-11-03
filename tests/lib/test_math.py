@@ -156,9 +156,10 @@ class Test_sfactor(object):
             np.double(ag.universe.dimensions)[:3],
             startq,
             endq,
-            0,  # mintheta
-            np.pi,
-        )  # maxtheta
+            0,  # mimtheta
+            np.pi,  # maxtheta
+            np.ones(len(ag.positions)),
+        )
 
         q = q.flatten()
         S = S.flatten()
@@ -188,8 +189,9 @@ class Test_sfactor(object):
             0,  # startq
             0.5,  # endq
             np.pi / 4,  # mintheta
-            np.pi / 2,
-        )  # maxtheta
+            np.pi / 2,  # maxtheta
+            np.ones(len(ag.positions)),
+        )
 
         q = q.flatten()
         S = S.flatten()

@@ -113,7 +113,7 @@ class AnalysisExample(AnalysisBase):
         )
 
     def save(self):
-        """Save results to a file.
+        """Save results of analysis to file specified by ``output``.
 
         Called at the end of the run() method after _conclude.
         """

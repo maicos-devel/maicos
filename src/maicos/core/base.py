@@ -556,7 +556,7 @@ class ProfileBase:
         self.results.dprofile = self.sems.profile
 
     def save(self):
-        """Save results of analysis to file."""
+        """Save results of analysis to file specified by ``output``."""
         columns = ["positions [Å]"]
 
         for i, _ in enumerate(self.atomgroups):

@@ -240,7 +240,7 @@ class DielectricCylinder(CylinderBase):
         )
 
     def save(self):
-        """Save result."""
+        """Save results of analysis to file specified by ``output``."""
         outdata_z = np.array(
             [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
         ).T
