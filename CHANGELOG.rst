@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Update MacOS images for CI (!281)
 - Add physical integration test to test that structure factor from Saxs is the same as
   the Fourier transformed RDF. (!279)
 - Add example and explenation of how to relate the radial distribution function and the
