@@ -16,6 +16,10 @@ cache:
   paths:
     - .cache/pip
 
+.python_setup: &python_setup
+  - python --version; pip --version
+  - python -m pip install -U tox
+
 .linux:
   image: python:$PYTHON_VERSION
   variables:
@@ -23,7 +27,7 @@ cache:
   tags:
     - linux
   before_script:
-    - python -m pip install -U tox
+    - *python_setup
 
 .supported_python_versions:
   parallel:
@@ -39,10 +43,10 @@ cache:
     - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
     - choco install -y python --version=$PYTHON_VERSION --no-progress
     - RefreshEnv
-    - python -m pip install -U tox
+    - *python_setup
 
 .macos:
-  image: macos-12-xcode-13
+  image: macos-13-xcode-14
   variables:
     OS_NAME: "macos"
   tags:
@@ -50,10 +54,12 @@ cache:
   before_script:
     - export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
     - export HOMEBREW_NO_INSTALL_CLEANUP=1
-    - brew unlink python@3.9
     - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
-    - python -m pip install -U tox
+    - python$PYTHON_VERSION -m pip install virtualenv || brew install virtualenv
+    - python$PYTHON_VERSION -m virtualenv venv
+    - source venv/bin/activate
+    - *python_setup
 
 ###########################
 ######### STAGES ##########
