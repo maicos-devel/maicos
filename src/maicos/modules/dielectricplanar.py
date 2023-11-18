@@ -47,9 +47,6 @@ class DielectricPlanar(PlanarBase):
         Use 3d-periodic boundary conditions, i.e., include the dipole correction for the
         interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
-    vac : bool
-        Use vacuum boundary conditions instead of metallic. Option is only applied if
-        ``is_3d=True``.
     sym : bool
         Symmetrize the profiles.
     temperature : float
@@ -100,7 +97,6 @@ class DielectricPlanar(PlanarBase):
         refgroup: Optional[mda.AtomGroup] = None,
         is_3d: bool = False,
         sym: bool = False,
-        vac: bool = False,
         unwrap: bool = True,
         temperature: float = 300,
         output_prefix: str = "eps",
@@ -120,9 +116,6 @@ class DielectricPlanar(PlanarBase):
                 "severe artifacts in the dielectric profiles."
             )
 
-        if vac and not is_3d:
-            logger.warn("``vac=True`` will be ignored since ``is_3d=False``.")
-
         super().__init__(
             atomgroups=atomgroups,
             dim=dim,
@@ -137,7 +130,6 @@ class DielectricPlanar(PlanarBase):
         )
         self.is_3d = is_3d
         self.sym = sym
-        self.vac = vac
 
         self.temperature = temperature
         self.output_prefix = output_prefix
@@ -291,11 +283,6 @@ class DielectricPlanar(PlanarBase):
             self.results.eps_perp_self = -pref * cov_perp_self
             self.results.eps_perp_coll = -pref * cov_perp_coll
             self.results.deps_perp = pref * dcov_perp
-            if self.vac:
-                self.results.eps_perp *= 2.0 / 3.0
-                self.results.eps_perp_self *= 2.0 / 3.0
-                self.results.eps_perp_coll *= 2.0 / 3.0
-                self.results.deps_perp *= 2.0 / 3.0
 
         else:
             self.results.eps_perp = -cov_perp / (pref**-1 + var_perp / self.results.V)

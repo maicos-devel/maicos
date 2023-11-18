@@ -249,16 +249,6 @@ class TestDielectricPlanar(object):
             open("foo_perp.dat")
             open("foo_par.dat")
 
-    def test_is_3d_vac(self, ag_two_frames):
-        """Tests for conditions xy & vac when True."""
-        eps1 = DielectricPlanar(ag_two_frames)
-        eps1.run()
-        k1 = np.mean(eps1.results.eps_perp)
-        eps2 = DielectricPlanar(ag_two_frames, vac=True)
-        eps2.run()
-        k2 = np.mean(eps2.results.eps_perp)
-        assert_allclose((k1 / k2), 1.5)
-
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""
         eps_sym = DielectricPlanar([ag_two_frames, ag_two_frames[:-30]], sym=True).run()

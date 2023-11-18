@@ -218,7 +218,7 @@ the fluctuation dissipation formalism directly as shown in refs.
 :footcite:p:`sternCalculationDielectricPermittivity2003`
 :footcite:p:`schlaichWaterDielectricEffects2016`
 
-For tin-foil boundary conditions  (which are most commonly used), one gets
+For tin-foil boundary conditions, one gets
 :footcite:p:`schlaichWaterDielectricEffects2016`
 
 .. math::
@@ -228,9 +228,12 @@ For tin-foil boundary conditions  (which are most commonly used), one gets
 
 where :math:`C_\perp = \int \mathrm{d} m_\perp(z)`.
 
-A very close formula :footcite:p:`sternCalculationDielectricPermittivity2003` can also
-be derived for vacuum boundary conditions at infinity, which some simulation codes also
-provide.
+Note, that a very close formula :footcite:p:`sternCalculationDielectricPermittivity2003`
+can also be derived for arbitrary boundary conditions at infinity, which some
+simulation codes can also utilize. As most simulations nowadays are performed using
+tin-foil boundary conditions, MAICoS does not provide these special cases and we
+do not recommend that simulations for the calculation of dielectric profiles
+are performed with other boundary conditions.
 
 .. note::
     The above equation reduces to the correct 2d periodic system if one
@@ -249,9 +252,8 @@ provide.
     dipole corrections, but only simulate the physical system, without a padding vacuum
     layer.
 
-These boundary conditions can be specified using the parameters ``is_3d``. If a
-simulation used vacuum boundary conditions at infinity, one can use the ``vac``
-parameter.
+The correction for 3d periodic systems with tin-foil boundary conditions can be
+turned on using the parameter ``is_3d``.
 
 References
 ----------
