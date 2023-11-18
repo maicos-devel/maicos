@@ -15,6 +15,9 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Removed the obsolete option for the vacuum boundary condition in the
+  ``DielectricPlanar`` module and prompt users to use tin-foil boundary
+  conditions instead (!280).
 - Update MacOS images for CI (!281)
 - Add physical integration test to test that structure factor from Saxs is the same as
   the Fourier transformed RDF. (!279)
