@@ -10,8 +10,8 @@
 
 import inspect
 import logging
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -24,7 +24,7 @@ from maicos.core import CylinderBase, PlanarBase, ProfilePlanarBase
 from maicos.lib.weights import density_weights
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 

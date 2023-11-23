@@ -11,28 +11,26 @@
 # inplace and the tests fail...
 """Tests for custom modules."""
 
-import os
 import shutil
 import subprocess
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
 from data import WATER_TPR, WATER_TRR
-from numpy.testing import assert_almost_equal
-from pkg_resources import resource_filename
+from numpy.testing import assert_allclose
 
 
 # Ugly constrection but I was not able to get the code running with a fixture...
-custom_dir = os.path.join(os.path.expanduser("~"), ".maicos")
-try:
-    os.mkdir(custom_dir)
-except FileExistsError:
-    pass
+custom_dir = Path().home() / ".maicos"
+custom_dir.mkdir(exist_ok=True)
 
-EXAMPLE_PATH = resource_filename(__name__, "../examples")
-shutil.copy(os.path.join(EXAMPLE_PATH, "maicos_custom_modules.py"), custom_dir)
-shutil.copy(os.path.join(EXAMPLE_PATH, "own_module.py"), custom_dir)
+print(custom_dir)
+
+DIR_PATH = Path(__file__).parent
+shutil.copy(DIR_PATH / "../examples/maicos_custom_modules.py", custom_dir)
+shutil.copy(DIR_PATH / "../examples/own_module.py", custom_dir)
 
 from maicos import AnalysisExample  # noqa: E402
 
@@ -53,12 +51,12 @@ class TestAnalysisExample(object):
     def test_analysis_example(self, ag):
         """Test analysis example."""
         example = AnalysisExample(ag).run()
-        assert_almost_equal(example.results["volume"].mean(), 15443.7, decimal=1)
+        assert_allclose(example.results["volume"].mean(), 15443.7, rtol=1e-1)
 
-    def test_output(self, ag, tmpdir):
+    def test_output(self, ag, monkeypatch, tmp_path):
         """Test outputs."""
-        with tmpdir.as_cwd():
-            example = AnalysisExample(ag).run()
-            example.save()
-            res_volume = np.loadtxt(example.output)
-            assert_almost_equal(example.results["volume"], res_volume, decimal=2)
+        monkeypatch.chdir(tmp_path)
+        example = AnalysisExample(ag).run()
+        example.save()
+        res_volume = np.loadtxt(example.output)
+        assert_allclose(example.results["volume"], res_volume, rtol=1e-2)

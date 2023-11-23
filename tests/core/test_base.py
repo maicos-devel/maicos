@@ -9,8 +9,8 @@
 """Tests for the base modules."""
 import inspect
 import logging
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -24,7 +24,7 @@ from maicos import DensityPlanar, _version
 from maicos.core import AnalysisBase, ProfileBase
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 
 from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 
@@ -164,112 +164,117 @@ class Test_AnalysisBase(object):
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
 
-    def test_output_message(self, ag, tmpdir):
+    def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""
+        monkeypatch.chdir(tmp_path)
+
         data = np.random.rand(100, 2)
         ana = Output(ag)
         ana._index = 1
         sub_ana = SubOutput(ag)
         sub_ana._index = 1
 
-        with tmpdir.as_cwd():
-            # Simple check if a single message gets written to the output file
-            ana.savetxt("foo", data, columns=["First", "Second"])
-            assert ana.OUTPUT in open("foo.dat").read()
+        # Simple check if a single message gets written to the output file
+        ana.savetxt("foo", data, columns=["First", "Second"])
+        assert ana.OUTPUT in open("foo.dat").read()
 
-            # More elaborate check to find out if output messages of subclasses
-            # get written to the file in the right order.
-            sub_ana.savetxt("foo2", data, columns=["First", "Second"])
-            foo = open("foo2.dat", "r").readlines()
-            for i, line in enumerate(foo):
-                if ana.OUTPUT in line:
-                    assert sub_ana.OUTPUT in foo[i + 1]
-                    break
-            else:
-                # Fail if the loop finished without finding the first
-                raise AssertionError()
+        # More elaborate check to find out if output messages of subclasses
+        # get written to the file in the right order.
+        sub_ana.savetxt("foo2", data, columns=["First", "Second"])
+        foo = open("foo2.dat", "r").readlines()
+        for i, line in enumerate(foo):
+            if ana.OUTPUT in line:
+                assert sub_ana.OUTPUT in foo[i + 1]
+                break
+        else:
+            # Fail if the loop finished without finding the first
+            raise AssertionError()
 
-    def test_module_input(self, ag, tmpdir):
+    def test_module_input(self, ag, monkeypatch, tmp_path):
         """Test the module input reporting."""
-        with tmpdir.as_cwd():
-            # Test if the module name is written correctly
-            ana = FileModuleInput(ag)
-            ana.run()
-            ana.savetxt("test.dat", np.random.rand(10, 2))
-            assert "Module input:    FileModuleInput(" in open("test.dat").read()
+        monkeypatch.chdir(tmp_path)
 
-            # Test if the refgroup name is written correctly
-            ana = FileModuleInput(ag, refgroup=ag)
-            ana.run()
-            ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
-            assert "refgroup=<AtomGroup>" in open("test_refgroup.dat").read()
-            assert "atomgroups=<AtomGroup>" in open("test_refgroup.dat").read()
+        # Test if the module name is written correctly
+        ana = FileModuleInput(ag)
+        ana.run()
+        ana.savetxt("test.dat", np.random.rand(10, 2))
+        assert "Module input:    FileModuleInput(" in open("test.dat").read()
 
-            # Test if the default value of the test_input parameter is written
-            ana = FileModuleInput(ag)
-            ana.run()
-            ana.savetxt("test_default.dat", np.random.rand(10, 2))
-            assert "test_input='some_default'" in open("test_default.dat").read()
-            assert "refgroup=None" in open("test_default.dat").read()
-            assert (
-                ".run(start=None, stop=None, step=None, verbose=None)"
-                in open("test_default.dat").read()
-            )
+        # Test if the refgroup name is written correctly
+        ana = FileModuleInput(ag, refgroup=ag)
+        ana.run()
+        ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
+        assert "refgroup=<AtomGroup>" in open("test_refgroup.dat").read()
+        assert "atomgroups=<AtomGroup>" in open("test_refgroup.dat").read()
 
-            # Test if the set test_input parameter is written correctly
-            ana = FileModuleInput(ag, test_input="some_other_value")
-            ana.run()
-            ana.savetxt("test_nondefault.dat", np.random.rand(10, 2))
-            assert "test_input='some_other_value'" in open("test_nondefault.dat").read()
+        # Test if the default value of the test_input parameter is written
+        ana = FileModuleInput(ag)
+        ana.run()
+        ana.savetxt("test_default.dat", np.random.rand(10, 2))
+        assert "test_input='some_default'" in open("test_default.dat").read()
+        assert "refgroup=None" in open("test_default.dat").read()
+        assert (
+            ".run(start=None, stop=None, step=None, verbose=None)"
+            in open("test_default.dat").read()
+        )
 
-            ana.run(step=2, stop=7, start=5, verbose=True)
-            ana.savetxt("test_run.dat", np.random.rand(10, 2))
-            assert (
-                ".run(start=5, stop=7, step=2, verbose=True)"
-                in open("test_run.dat").read()
-            )
+        # Test if the set test_input parameter is written correctly
+        ana = FileModuleInput(ag, test_input="some_other_value")
+        ana.run()
+        ana.savetxt("test_nondefault.dat", np.random.rand(10, 2))
+        assert "test_input='some_other_value'" in open("test_nondefault.dat").read()
+
+        ana.run(step=2, stop=7, start=5, verbose=True)
+        ana.savetxt("test_run.dat", np.random.rand(10, 2))
+        assert (
+            ".run(start=5, stop=7, step=2, verbose=True)" in open("test_run.dat").read()
+        )
 
     @pytest.mark.parametrize(
         "concfreq, files",
         [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
     )
-    def test_conclude_multi_frame(self, ag, tmpdir, concfreq, files):
+    def test_conclude_multi_frame(self, ag, monkeypatch, tmp_path, concfreq, files):
         """Test the conclude and save methods for multi frame trajectories."""
-        with tmpdir.as_cwd():
-            conclude = Conclude(ag, concfreq=concfreq)
-            conclude.run()
-            # check that all expected files have been written
-            if concfreq != 0:
-                for file in files:
-                    assert os.path.exists(file)
-            else:
-                assert len(os.listdir(tmpdir)) == 0
-            # check that the _conclude method is running
-            # the expected number of times
-            if concfreq != 0:
-                conclude_count = np.ceil(conclude.n_frames / concfreq)
-            else:
-                conclude_count = 1
-            assert conclude.conclude_count == conclude_count
-            # check that no more files than the expected
-            # ones have been written
-            assert len(files) == len(os.listdir(tmpdir))
+        monkeypatch.chdir(tmp_path)
+
+        conclude = Conclude(ag, concfreq=concfreq)
+        conclude.run()
+        # check that all expected files have been written
+        if concfreq != 0:
+            for file in files:
+                assert Path(file).exists()
+        else:
+            assert len(list(tmp_path.iterdir())) == 0
+        # check that the _conclude method is running
+        # the expected number of times
+        if concfreq != 0:
+            conclude_count = np.ceil(conclude.n_frames / concfreq)
+        else:
+            conclude_count = 1
+        assert conclude.conclude_count == conclude_count
+        # check that no more files than the expected
+        # ones have been written
+        assert len(files) == len(list(tmp_path.iterdir()))
 
     @pytest.mark.parametrize("concfreq, file", [(0, []), (50, ["out_1"])])
-    def test_conclude_single_frame(self, ag_single_frame, tmpdir, concfreq, file):
+    def test_conclude_single_frame(
+        self, ag_single_frame, monkeypatch, tmp_path, concfreq, file
+    ):
         """Test the conclude and save methods for single frame trajectories."""
-        with tmpdir.as_cwd():
-            conclude = Conclude(ag_single_frame, concfreq=concfreq)
-            conclude.run()
-            if concfreq != 0:
-                assert os.path.exists(file[0])
-            # check that no extra files are written
-            if concfreq != 0:
-                assert len(os.listdir(tmpdir)) == 1
-            else:
-                assert len(os.listdir(tmpdir)) == 0
-            # check that no double execution of the _conclude method happens
-            assert conclude.conclude_count == 1
+        monkeypatch.chdir(tmp_path)
+
+        conclude = Conclude(ag_single_frame, concfreq=concfreq)
+        conclude.run()
+        if concfreq != 0:
+            assert Path(file[0]).exists()
+        # check that no extra files are written
+        if concfreq != 0:
+            assert len(list(tmp_path.iterdir())) == 1
+        else:
+            assert len(list(tmp_path.iterdir())) == 0
+        # check that no double execution of the _conclude method happens
+        assert conclude.conclude_count == 1
 
     @pytest.mark.parametrize("indices", [[0], [0, 1, 2], [3, 4, 5]])
     def test_refgroup(self, ag, indices):
@@ -444,8 +449,10 @@ class Test_ProfileBase:
 
         assert 2 * profile.weighting_function(1) == profile_scaled.weighting_function(1)
 
-    def test_output_name(self, params, tmpdir):
+    def test_output_name(self, params, monkeypatch, tmp_path):
         """Test output name of save method."""
+        monkeypatch.chdir(tmp_path)
+
         params.update(output="foo.dat")
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.zeros(10)
@@ -454,11 +461,13 @@ class Test_ProfileBase:
         profile.run = lambda x: x
         profile._index = 0
 
-        with tmpdir.as_cwd():
-            profile.save()
-            assert os.path.exists(params["output"])
+        profile.save()
+        assert Path(params["output"]).exists()
 
-    def test_output(self, params, tmpdir):
+    def test_output(self, params, monkeypatch, tmp_path):
+        """Test output."""
+        monkeypatch.chdir(tmp_path)
+
         """Test output."""
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.random.random(10)
@@ -467,9 +476,8 @@ class Test_ProfileBase:
         profile.run = lambda x: x
         profile._index = 0
 
-        with tmpdir.as_cwd():
-            profile.save()
-            res_dens = np.loadtxt(profile.output)
+        profile.save()
+        res_dens = np.loadtxt(profile.output)
 
         assert_allclose(profile.results.bin_pos, res_dens[:, 0], rtol=2)
 

@@ -7,8 +7,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the RDFPlanar class."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import RDFCylinder
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 from modules.create_mda_universe import line_of_water_molecules  # noqa: E402
 
@@ -114,28 +114,30 @@ class TestRDFPlanar(object):
             ana_obj.results.rdf.T, np.nan_to_num(ana_obj._obs.count / ana_obj.norm / 2)
         )
 
-    def test_output(self, spce_water, tmpdir):
+    def test_output(self, spce_water, monkeypatch, tmp_path):
         """Test output."""
-        with tmpdir.as_cwd():
-            ana_obj = RDFCylinder(spce_water.atoms)
-            ana_obj.run()
-            ana_obj.save()
-            res = np.loadtxt(f"{ana_obj.output}")
-            assert_allclose(
-                res,
-                np.hstack([ana_obj.results.bins[:, np.newaxis], ana_obj.results.rdf]),
-            )
+        monkeypatch.chdir(tmp_path)
+
+        ana_obj = RDFCylinder(spce_water.atoms)
+        ana_obj.run()
+        ana_obj.save()
+        res = np.loadtxt(f"{ana_obj.output}")
+        assert_allclose(
+            res,
+            np.hstack([ana_obj.results.bins[:, np.newaxis], ana_obj.results.rdf]),
+        )
 
     @pytest.mark.parametrize(
         "name, output", [("foo", "foo.dat"), ("bar.dat", "bar.dat")]
     )
-    def test_output_name(self, spce_water, name, output, tmpdir):
+    def test_output_name(self, spce_water, name, output, monkeypatch, tmp_path):
         """Test output name."""
-        with tmpdir.as_cwd():
-            ana_obj = RDFCylinder(spce_water.atoms, output=name)
-            ana_obj.run()
-            ana_obj.save()
-            open(output)
+        monkeypatch.chdir(tmp_path)
+
+        ana_obj = RDFCylinder(spce_water.atoms, output=name)
+        ana_obj.run()
+        ana_obj.save()
+        assert Path(output).exists()
 
     def test_wrong_bin_method(self, spce_water):
         """Test grouping for a non existing bin_method."""

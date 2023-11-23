@@ -16,6 +16,7 @@ import sys
 import tempfile
 from distutils.ccompiler import new_compiler
 from distutils.sysconfig import customize_compiler
+from pathlib import Path
 
 import numpy as np
 from setuptools import Extension, setup
@@ -33,11 +34,11 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
 
     Credit to MDAnalysis setup.py.
     """
-    tmpdir = tempfile.mkdtemp(prefix="hasfunction-")
+    tmpdir = Path(tempfile.mkdtemp(prefix="hasfunction-"))
     devnull = oldstderr = None
     try:
         try:
-            fname = os.path.join(tmpdir, "funcname.c")
+            fname = tmpdir / "funcname.c"
             with open(fname, "w") as f:
                 if include is not None:
                     f.write("#include {0!s}\n".format(include))
@@ -53,7 +54,7 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
             objects = cc.compile(
                 [fname], output_dir=tmpdir, extra_postargs=extra_postargs
             )
-            cc.link_executable(objects, os.path.join(tmpdir, "a.out"))
+            cc.link_executable(objects, tmpdir / "a.out")
         except Exception:
             return False
         return True
@@ -66,11 +67,11 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
 
 
 def detect_openmp():
-    # From MDAnalysis setup.py
     """
     Support for OpenMP parallelization.
 
-    Check if this compiler support OpenMP parallelization.
+    Check if this compiler support OpenMP parallelization. Credit to MDAnalysis
+    setup.py.
     """
     print("Attempting to autodetect OpenMP support... ", end="")
     compiler = new_compiler()
@@ -124,12 +125,10 @@ if __name__ == "__main__":
         # Let's check early for missing .c files
         for ext in extensions:
             for source in ext.sources:
-                if not (os.path.isfile(source) and os.access(source, os.R_OK)):
+                if not (Path(source).exists() and os.access(source, os.R_OK)):
                     raise IOError(
-                        f"Source file {source!r} not found. This "
-                        "might be caused by a missing Cython "
-                        "install, or a failed/disabled "
-                        "Cython build."
+                        f"Source file {source!r} not found. This might be caused by a "
+                        "missing Cython install, or a failed/disabled Cython build."
                     )
 
     setup(cmdclass=versioneer.get_cmdclass(), version=VERSION, ext_modules=extensions)

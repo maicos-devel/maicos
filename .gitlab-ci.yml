@@ -57,7 +57,7 @@ cache:
     - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
     - python$PYTHON_VERSION -m pip install virtualenv || brew install virtualenv
-    - python$PYTHON_VERSION -m virtualenv venv
+    - python$PYTHON_VERSION -m virtualenv venv || /opt/homebrew/bin/virtualenv venv
     - source venv/bin/activate
     - *python_setup
 
@@ -67,9 +67,9 @@ cache:
 
 stages:
   - lint
-  - docs
   - build
   - tests
+  - docs
   - wheels
   - deploy
 
@@ -93,38 +93,21 @@ build:linux:
   stage: build
   needs: []
   script:
-    - python -m tox -e py${PYTHON_VERSION//.}-build-linux
+    - python -m tox -e build-linux
 
 build:windows:
   extends: .windows
   stage: build
   needs: []
   script:
-    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-build-windows
+    - python -m tox -e build-windows
 
 build:macos:
   extends: .macos
   stage: build
   needs: []
   script:
-    - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
-    - python -m tox -e py${PYTHON_VERSION//.}-build-macos
-
-###########################
-######### DOCS ############
-###########################
-
-docs:
-  extends: .linux
-  stage: docs
-  needs: []
-  script:
-    - git switch $CI_COMMIT_BRANCH
-    - git fetch origin main
-    - python -m tox -e docs
-  artifacts:
-    paths:
-      - dist/docs
+    - python -m tox -e build-macos
 
 ###########################
 ######### TESTS ###########
@@ -133,7 +116,7 @@ docs:
 .tests:
   extends: .supported_python_versions
   script:
-    - python -m tox -e py${PYTHON_VERSION//.}-tests
+    - python -m tox -e tests
   stage: tests
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
@@ -153,8 +136,6 @@ tests:windows:
   extends:
     - .windows
     - .tests
-  script:
-    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-tests
   needs: ["build:windows"]
 
 tests:macos:
@@ -162,6 +143,22 @@ tests:macos:
     - .macos
     - .tests
   needs: ["build:macos"]
+
+###########################
+######### DOCS ############
+###########################
+
+docs:
+  extends: .linux
+  stage: docs
+  needs: []
+  script:
+    - git switch $CI_COMMIT_BRANCH
+    - git fetch origin main
+    - python -m tox -e docs
+  artifacts:
+    paths:
+      - dist/docs
 
 ###########################
 ######## DEPLOY ###########
@@ -182,7 +179,7 @@ build-wheel:linux:
     - .build-wheel
   script:
     - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m pip install -U tox
-    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m tox -e py${PYTHON_VERSION//.}-build-linux
+    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m tox -e build-linux
     - auditwheel repair dist/*.whl -w dist/
     - rm dist/*linux_x86_64.whl
   needs: ["tests:linux"]
@@ -192,7 +189,7 @@ build-wheel:macos:
     - .macos
     - .build-wheel
   script:
-    - python -m tox -e py${PYTHON_VERSION//.}-build-macos
+    - python -m tox -e build-macos
   needs: ["tests:macos"]
 
 build-wheel:windows:
@@ -200,7 +197,7 @@ build-wheel:windows:
     - .windows
     - .build-wheel
   script:
-    - python -m tox -e py$($PYTHON_VERSION -replace '\.', '')-build-windows
+    - python -m tox -e build-windows
   needs: ["tests:windows"]
 
 # The name must be `pages`!

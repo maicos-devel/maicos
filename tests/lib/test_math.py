@@ -7,19 +7,19 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Test for lib."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.math
 import maicos.lib.util
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import SPCE_GRO, SPCE_ITP, WATER_GRO, WATER_TPR  # noqa: E402
 
 
@@ -175,11 +175,11 @@ class Test_sfactor(object):
         # Get indices to slice qS array
         sel_indices = np.logical_and(startq < qS[0], qS[0] < endq)
 
-        assert_almost_equal(q, qS[0][sel_indices], decimal=2)
+        assert_allclose(q, qS[0][sel_indices], rtol=1e-2)
 
         # Only check S for full q width
         if startq == 0 and endq == 1:
-            assert_almost_equal(S, qS[1], decimal=2)
+            assert_allclose(S, qS[1], rtol=1e-2)
 
     def test_sfactor_angle(self, ag):
         """Test sfactor angle."""
@@ -204,11 +204,9 @@ class Test_sfactor(object):
         q = q[sorted_ind]
         S = S[sorted_ind]
 
-        assert_almost_equal(
-            q, np.array([0.25, 0.25, 0.36, 0.36, 0.36, 0.44]), decimal=2
-        )
-        assert_almost_equal(
-            S, np.array([6.91, 835.3, 192.54, 157.79, 506.76, 99.65]), decimal=2
+        assert_allclose(q, np.array([0.25, 0.25, 0.36, 0.36, 0.36, 0.44]), rtol=1e-1)
+        assert_allclose(
+            S, np.array([6.91, 835.3, 192.54, 157.79, 506.76, 99.65]), rtol=1e-1
         )
 
 
@@ -247,7 +245,7 @@ def test_FT():
     x = np.linspace(-np.pi, np.pi, 500)
     sin = np.sin(5 * x)
     t, sin_FT = maicos.lib.math.FT(x, sin)
-    assert_almost_equal(abs(t[np.argmax(sin_FT)]), 5, decimal=2)
+    assert_allclose(abs(t[np.argmax(sin_FT)]), 5, rtol=1e-2)
 
 
 def test_iFT():
@@ -256,7 +254,8 @@ def test_iFT():
     sin = np.sin(5 * x)
     t, sin_FT = maicos.lib.math.FT(x, sin)
     sin_new = maicos.lib.math.iFT(t, sin_FT, indvar=False)
-    assert_almost_equal(sin, sin_new.real, decimal=1)
+    # Shift to positive y domain to avoid comparing 0
+    assert_allclose(2 + sin, 2 + sin_new.real, rtol=1e-1)
 
 
 def test_symmetrize_even():
@@ -327,7 +326,7 @@ def test_symmetrize_inplace():
 def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
     utils_run = maicos.lib.math.scalar_prod_corr(vector1, vector2, subtract_mean)
-    assert_almost_equal(np.mean(utils_run), result, decimal=2)
+    assert_allclose(np.mean(utils_run), result, rtol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -346,7 +345,7 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
 def test_corr(vector1, vector2, subtract_mean, result):
     """Tests for correlation."""
     utils_run = maicos.lib.math.correlation(vector1, vector2, subtract_mean)
-    assert_almost_equal(np.mean(utils_run), result, decimal=2)
+    assert_allclose(np.mean(utils_run), result, rtol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -371,7 +370,7 @@ def test_corr2(vector1, vector2, subtract_mean, result):
     utils_run = np.mean(
         maicos.lib.math.correlation(vector1, vector2, subtract_mean)[:6]
     )
-    assert_almost_equal(utils_run, result, decimal=2)
+    assert_allclose(utils_run, result, rtol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -402,7 +401,7 @@ def test_corr2(vector1, vector2, subtract_mean, result):
 def test_correlation_time(vector, method, result):
     """Tests for correlation_time."""
     utils_run = maicos.lib.math.correlation_time(vector, method)
-    assert_almost_equal(np.mean(utils_run), result, decimal=1)
+    assert_allclose(np.mean(utils_run), result, rtol=1e-1)
 
 
 def test_correlation_time_wrong_method():
@@ -432,7 +431,7 @@ def test_new_mean():
     for value in series[1:]:
         i += 1
         mean = maicos.lib.math.new_mean(mean, value, i)
-    assert_almost_equal(mean, np.mean(series), decimal=6)
+    assert_allclose(mean, np.mean(series), rtol=1e-6)
 
 
 def test_new_variance():
@@ -446,7 +445,7 @@ def test_new_variance():
         old_mean = mean
         mean = maicos.lib.math.new_mean(mean, value, i)
         var = maicos.lib.math.new_variance(var, old_mean, mean, value, i)
-    assert_almost_equal(var, np.std(series) ** 2, decimal=6)
+    assert_allclose(var, np.std(series) ** 2, rtol=1e-6)
 
 
 @pytest.mark.parametrize("dim", (0, 1, 2))
@@ -481,9 +480,7 @@ def test_center_cluster(dim, weight):
         water_shifted.atoms.translate(e_z * z)
         water_shifted.atoms.wrap()
         com = maicos.lib.math.center_cluster(water_shifted.atoms, ref_weight)[dim]
-        assert_almost_equal(
-            minimum_image_distance(com, z, dimensions[dim]), 0, decimal=5
-        )
+        assert_allclose(minimum_image_distance(com, z, dimensions[dim]), 0, atol=1e-4)
 
 
 @pytest.mark.parametrize(

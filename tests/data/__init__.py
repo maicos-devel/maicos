@@ -8,40 +8,41 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from pkg_resources import resource_filename
+from pathlib import Path
+
+
+DIR_PATH = Path(__file__).parent
 
 
 # bulk water
-WATER_GRO = resource_filename(__name__, "../../docs/static/water/water.gro")
-WATER_TRR = resource_filename(__name__, "../../docs/static/water/water.trr")
-WATER_2F_TRR = resource_filename(
-    __name__, "../../docs/static/water/water_two_frames.trr"
-)
-WATER_TPR = resource_filename(__name__, "../../docs/static/water/water.tpr")
+WATER_GRO = DIR_PATH / "../../docs/static/water/water.gro"
+WATER_TRR = DIR_PATH / "../../docs/static/water/water.trr"
+WATER_2F_TRR = DIR_PATH / "../../docs/static/water/water_two_frames.trr"
+WATER_TPR = DIR_PATH / "../../docs/static/water/water.tpr"
 
 # air-water interface
-AIRWATER_GRO = resource_filename(__name__, "airwater/airwater.gro")
-AIRWATER_TRR = resource_filename(__name__, "airwater/airwater.trr")
-AIRWATER_TPR = resource_filename(__name__, "airwater/airwater.tpr")
+AIRWATER_GRO = DIR_PATH / "airwater/airwater.gro"
+AIRWATER_TRR = DIR_PATH / "airwater/airwater.trr"
+AIRWATER_TPR = DIR_PATH / "airwater/airwater.tpr"
 
-SALT_WATER_GRO = resource_filename(__name__, "salt_water/salt_water.gro")
-SALT_WATER_TPR = resource_filename(__name__, "salt_water/salt_water.tpr")
+SALT_WATER_GRO = DIR_PATH / "salt_water/salt_water.gro"
+SALT_WATER_TPR = DIR_PATH / "salt_water/salt_water.tpr"
 
 # NVE bulk water
-NVE_WATER_TPR = resource_filename(__name__, "kineticenergy/nve.tpr")
-NVE_WATER_TRR = resource_filename(__name__, "kineticenergy/nve.trr")
+NVE_WATER_TPR = DIR_PATH / "kineticenergy/nve.tpr"
+NVE_WATER_TRR = DIR_PATH / "kineticenergy/nve.trr"
 
 # MICA slab
-MICA_XTC = resource_filename(__name__, "mica/mica.xtc")
-MICA_TPR = resource_filename(__name__, "mica/mica.tpr")
-MICA_GRO = resource_filename(__name__, "mica/mica.gro")
+MICA_XTC = DIR_PATH / "mica/mica.xtc"
+MICA_TPR = DIR_PATH / "mica/mica.tpr"
+MICA_GRO = DIR_PATH / "mica/mica.gro"
 
-LAMMPS10WATER = resource_filename(__name__, "lammps10water.data")
+LAMMPS10WATER = DIR_PATH / "lammps10water.data"
 
 # An SPC/E water molecule pointing in z-direction
-SPCE_ITP = resource_filename(__name__, "spce.itp")
-SPCE_GRO = resource_filename(__name__, "spce.gro")
+SPCE_ITP = DIR_PATH / "spce.itp"
+SPCE_GRO = DIR_PATH / "spce.gro"
 
 # Dipole made of two atoms pointing in the x-direction
-DIPOLE_ITP = resource_filename(__name__, "dipole.itp")
-DIPOLE_GRO = resource_filename(__name__, "dipole.gro")
+DIPOLE_ITP = DIR_PATH / "dipole.itp"
+DIPOLE_GRO = DIR_PATH / "dipole.gro"

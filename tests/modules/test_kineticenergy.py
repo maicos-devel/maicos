@@ -7,24 +7,19 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the KineticEnergy class."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
 from create_mda_universe import line_of_water_molecules
-from numpy.testing import (
-    assert_allclose,
-    assert_almost_equal,
-    assert_equal,
-    assert_raises,
-)
+from numpy.testing import assert_allclose, assert_raises
 
 from maicos import KineticEnergy
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import NVE_WATER_TPR, NVE_WATER_TRR  # noqa: E402
 
 
@@ -46,23 +41,23 @@ class TestKineticEnergy(ReferenceAtomGroups):
         ke = KineticEnergy(ag, refpoint="COM").run(stop=1)
         assert_allclose(ke.results.trans, 1905.26, rtol=1e-2)
 
-    def test_ke_trans_trajectory_save(self, ag, tmpdir):
+    def test_ke_trans_trajectory_save(self, ag, monkeypatch, tmp_path):
         """Test translational kinetic energy.
 
         Save the result in a text file, and assert that the results printed in the file
         is correct.
         """
-        with tmpdir.as_cwd():
-            ke = KineticEnergy(ag, refpoint="COM").run(stop=1)
-            ke.save()
-            assert_equal(os.path.exists("ke.dat"), True)
-            saved = np.loadtxt("ke.dat")
-            assert_almost_equal(saved[1], 1905.26, decimal=2)
+        monkeypatch.chdir(tmp_path)
+
+        ke = KineticEnergy(ag, refpoint="COM").run(stop=1)
+        ke.save()
+        saved = np.loadtxt("ke.dat")
+        assert_allclose(saved[1], 1905.26, rtol=1e-2)
 
     def test_ke_rot(self, ag):
         """Test rotational kinetic energy."""
         ke = KineticEnergy(ag).run(stop=1)
-        assert_almost_equal(ke.results.rot, 1898.81, decimal=2)
+        assert_allclose(ke.results.rot, 1898.81, rtol=1e-2)
 
     def test_prepare(self, ag):
         """Test Value error when refpoint is not COM or COC."""
@@ -73,7 +68,7 @@ class TestKineticEnergy(ReferenceAtomGroups):
     def test_ke_rot_COC(self, ag):
         """Test rotational KE COC."""
         ke = KineticEnergy(ag, refpoint="COC").run(stop=1)
-        assert_almost_equal(ke.results.rot, 584.17, decimal=1)
+        assert_allclose(ke.results.rot, 584.17, rtol=1e-1)
 
     @pytest.mark.parametrize("vel", (0, 1, 2))
     def test_ke_single_molecule(self, vel):
@@ -92,4 +87,4 @@ class TestKineticEnergy(ReferenceAtomGroups):
         mass_h2o = 18.0153 / 1000  # kg/mol
         myke = 0.5 * mass_h2o * (vel * 100) ** 2  # kJ/mol (100 = A/ps to m/s)
 
-        assert_almost_equal(ke.results.trans, myke / vol, decimal=1)
+        assert_allclose(ke.results.trans, myke / vol, rtol=1e-1)

@@ -6,10 +6,9 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-import os
 import sys
 import warnings
+from pathlib import Path
 
 from ._version import get_versions
 from .modules import *
@@ -17,7 +16,7 @@ from .modules import __all__
 
 
 try:
-    sys.path.append(os.path.join(os.path.expanduser("~"), ".maicos/"))
+    sys.path.append(str(Path().home() / ".maicos/"))
     from maicos_custom_modules import *
     from maicos_custom_modules import custom_modules
 

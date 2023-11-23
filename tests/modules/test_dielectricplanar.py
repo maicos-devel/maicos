@@ -7,8 +7,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricPlanar class."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import DielectricPlanar
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import (  # noqa: E402
     DIPOLE_GRO,
     DIPOLE_ITP,
@@ -229,25 +229,27 @@ class TestDielectricPlanar(object):
         assert np.allclose(eps1.results.eps_par, eps2.results.eps_par)
         assert np.allclose(eps1.results.eps_perp, eps2.results.eps_perp)
 
-    def test_output(self, ag_two_frames, tmpdir):
+    def test_output(self, ag_two_frames, monkeypatch, tmp_path):
         """Test output."""
-        with tmpdir.as_cwd():
-            eps = DielectricPlanar(ag_two_frames)
-            eps.run()
-            eps.save()
-            res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
-            assert_allclose(eps.results.eps_perp[:, 0], res_perp[:, 1])
-            res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
-            assert_allclose(eps.results.eps_par[:, 0], res_par[:, 1])
+        monkeypatch.chdir(tmp_path)
 
-    def test_output_name(self, ag_two_frames, tmpdir):
+        eps = DielectricPlanar(ag_two_frames)
+        eps.run()
+        eps.save()
+        res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
+        assert_allclose(eps.results.eps_perp[:, 0], res_perp[:, 1])
+        res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
+        assert_allclose(eps.results.eps_par[:, 0], res_par[:, 1])
+
+    def test_output_name(self, ag_two_frames, monkeypatch, tmp_path):
         """Test output name."""
-        with tmpdir.as_cwd():
-            eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
-            eps.run()
-            eps.save()
-            open("foo_perp.dat")
-            open("foo_par.dat")
+        monkeypatch.chdir(tmp_path)
+
+        eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
+        eps.run()
+        eps.save()
+        open("foo_perp.dat")
+        open("foo_par.dat")
 
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""

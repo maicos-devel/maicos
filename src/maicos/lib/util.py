@@ -9,9 +9,9 @@
 """Small helper and utilities functions that don't fit anywhere else."""
 import functools
 import logging
-import os
 import sys
 import warnings
+from pathlib import Path
 from typing import Callable, Protocol
 
 import MDAnalysis as mda
@@ -113,7 +113,7 @@ def get_cli_input() -> str:
     str
         A string representing the command line input in a proper format.
     """
-    program_name = os.path.basename(sys.argv[0])
+    program_name = Path(sys.argv[0]).name
     # Add additional quotes for connected arguments.
     arguments = ['"{}"'.format(arg) if " " in arg else arg for arg in sys.argv[1:]]
     return "{} {}".format(program_name, " ".join(arguments))

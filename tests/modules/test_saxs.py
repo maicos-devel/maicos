@@ -7,8 +7,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the SAXS modules."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -21,7 +21,7 @@ from maicos import Saxs
 from maicos.lib.math import compute_form_factor, compute_rdf_structure_factor
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 
 
 class ReferenceAtomGroups:
@@ -57,11 +57,12 @@ class TestSaxs(ReferenceAtomGroups):
         saxs = Saxs(ag_single_frame, endq=20).run()
         assert_allclose(saxs.results.scat_factor[0], 1.6047, rtol=1e-3)
 
-    def test_theta(self, ag_single_frame, tmpdir):
+    def test_theta(self, ag_single_frame, monkeypatch, tmp_path):
         """Test min & max theta conditions on one frame."""
-        with tmpdir.as_cwd():
-            with pytest.raises(ValueError, match=r"mintheta \(-10°\) has to between 0"):
-                Saxs(ag_single_frame, mintheta=-10, maxtheta=190).run()
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(ValueError, match=r"mintheta \(-10°\) has to between 0"):
+            Saxs(ag_single_frame, mintheta=-10, maxtheta=190).run()
 
     def test_bin_spectrum(self, ag_single_frame):
         """Test when bin_spectrum is False."""

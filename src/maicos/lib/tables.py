@@ -12,17 +12,17 @@ The module contains static lookup tables for atom typing etc.
 The tables are dictionaries that are indexed by elements.
 """
 
-import os
+from pathlib import Path
 
 import numpy as np
 
 
-_share_path = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "share"))
+_share_path = Path(__file__).parents[1] / "share"
 
 
 #: Translation of atomnames to types/element
 atomtypes = {}
-with open(os.path.join(_share_path, "atomtypes.dat")) as f:
+with open(_share_path / "atomtypes.dat") as f:
     for line in f:
         if line[0] != "#":
             elements = line.split()
@@ -31,7 +31,7 @@ with open(os.path.join(_share_path, "atomtypes.dat")) as f:
 #: Cromer-Mann X-ray scattering factors computed from numerical
 #: Hartree-Fock wave functions. See Acta Cryst. A 24 (1968) p. 321
 CM_parameters = {}
-with open(os.path.join(_share_path, "sfactor.dat")) as f:
+with open(_share_path / "sfactor.dat") as f:
     for line in f:
         if line[0] != "#":
             elements = line.split()

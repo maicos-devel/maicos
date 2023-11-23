@@ -7,8 +7,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricSphere class."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose
 from maicos import DielectricSphere
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 
 
@@ -132,22 +132,24 @@ class TestDielectricSphere(object):
             eps._obs.M_r, np.sum(eps._obs.bin_width * eps._obs.m_r_tot), rtol=0.1
         )
 
-    def test_output(self, ag_single_frame, tmpdir):
+    def test_output(self, ag_single_frame, monkeypatch, tmp_path):
         """Tests output."""
-        with tmpdir.as_cwd():
-            eps = DielectricSphere(ag_single_frame)
-            eps.run()
-            eps.save()
-            res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
-            assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
+        monkeypatch.chdir(tmp_path)
 
-    def test_output_name(self, ag_single_frame, tmpdir):
+        eps = DielectricSphere(ag_single_frame)
+        eps.run()
+        eps.save()
+        res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
+        assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
+
+    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
         """Tests output name."""
-        with tmpdir.as_cwd():
-            eps = DielectricSphere(ag_single_frame, output_prefix="foo")
-            eps.run()
-            eps.save()
-            open("foo_rad.dat")
+        monkeypatch.chdir(tmp_path)
+
+        eps = DielectricSphere(ag_single_frame, output_prefix="foo")
+        eps.run()
+        eps.save()
+        open("foo_rad.dat")
 
     @pytest.mark.parametrize(
         "rmin, rmax, result",
