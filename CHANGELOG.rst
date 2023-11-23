@@ -15,10 +15,16 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Unify Python versions in tox environments i.e. ``py311-build-macos`` to
+  ``build-macos`` (!283)
+- Remove deprecated pytest tmpdir fixture (!283)
+- Remove deprecated ``assert_almost_equal`` in favor of ``assert_allclose`` (!283)
+- Move from ``os.path`` to ``pathlib.Path`` (!283)
+- Added Support for Python 3.11 (!283)
+- Update MacOS images for CI (!281)
 - Removed the obsolete option for the vacuum boundary condition in the
   ``DielectricPlanar`` module and prompt users to use tin-foil boundary
   conditions instead (!280).
-- Update MacOS images for CI (!281)
 - Add physical integration test to test that structure factor from Saxs is the same as
   the Fourier transformed RDF. (!279)
 - Add example and explenation of how to relate the radial distribution function and the

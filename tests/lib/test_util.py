@@ -7,22 +7,22 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
-import os
 import sys
 import warnings
+from pathlib import Path
 from unittest.mock import patch
 
 import MDAnalysis as mda
 import numpy as np
 import pytest
 from MDAnalysisTests.core.util import UnWrapUniverse
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import WATER_GRO, WATER_TPR  # noqa: E402
 from modules.create_mda_universe import circle_of_water_molecules  # noqa: E402
 
@@ -373,7 +373,7 @@ class TestUnitVectors:
         )
 
         # Test that the length of the vectors is 1.
-        assert_almost_equal(
+        assert_allclose(
             np.linalg.norm(unit_vectors, axis=1), np.ones(len(unit_vectors))
         )
 
@@ -387,7 +387,7 @@ class TestUnitVectors:
         transform[:, dim] = 0
         transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
 
-        assert_almost_equal(transform, unit_vectors)
+        assert_allclose(transform, unit_vectors)
 
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_unit_vectors_cylinder_z(self, dim):
@@ -415,7 +415,7 @@ class TestUnitVectors:
         )
 
         # Test that the length of the vectors is 1.
-        assert_almost_equal(
+        assert_allclose(
             np.linalg.norm(unit_vectors, axis=1), np.ones(len(unit_vectors))
         )
 
@@ -427,4 +427,4 @@ class TestUnitVectors:
         transform -= ag.universe.dimensions[:3] / 2
         transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
 
-        assert_almost_equal(transform, unit_vectors)
+        assert_allclose(transform, unit_vectors)

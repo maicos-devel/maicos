@@ -15,14 +15,14 @@ the documentation: http://www.sphinx-doc.org/en/master/config
 
 # -- Path setup --------------------------------------------------------------
 
-import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import maicos
 
 
-sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, Path("../../"))
 
 # -- Project information -----------------------------------------------------
 project = "MAICoS"

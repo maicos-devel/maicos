@@ -7,8 +7,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DensitySphere class."""
-import os
 import sys
+from pathlib import Path
 
 import MDAnalysis as mda
 import pytest
@@ -17,7 +17,7 @@ from numpy.testing import assert_allclose
 from maicos import DensitySphere
 
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(Path(__file__).parents[1])
 from data import WATER_TPR, WATER_TRR  # noqa: E402
 
 
