@@ -5,8 +5,8 @@ Maintainers
 -----------
 
 - `Philip Loche`_
-- Henrik Jaeger
 - `Alexander Schlaich`_
+- Henrik Stooß
 
 .. _Philip Loche: https://people.epfl.ch/philip.loche
 .. _Alexander Schlaich:  https://www.simtech.uni-stuttgart.de/exc/people/Schlaich-00004/
