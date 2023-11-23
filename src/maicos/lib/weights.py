@@ -15,17 +15,15 @@ from scipy import constants
 from .util import Unit_vector, render_docs
 
 
+@render_docs
 def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.ndarray:
     """Weights for density calculations.
 
     Parameters
     ----------
-    atomgroup : MDAnalysis.core.groups.AtomGroup
-        atomgroup taken for weight calculation
-    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
-        constituent to group weights with respect to.
-    dens : {'mass', 'number', 'charge'}
-        type of density weight
+    ${ATOMGROUP_PARAMETER}
+    ${GROUPING_PARAMETER}
+    ${DENS_PARAMETER}
 
     Returns
     -------
@@ -68,15 +66,14 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
         )
 
 
+@render_docs
 def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     """Weights for temperature calculations.
 
     Parameters
     ----------
-    atomgroup : MDAnalysis.core.groups.AtomGroup
-        atomgroup taken for weight calculation
-    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
-        constituent to group weights with respect to
+    ${ATOMGROUP_PARAMETER}
+    ${GROUPING_PARAMETER}
 
     Returns
     -------
@@ -110,10 +107,8 @@ def diporder_weights(
 
     Parameters
     ----------
-    atomgroup : MDAnalysis.core.groups.AtomGroup
-        atomgroup taken for weight calculation
-    grouping : {'residues', 'segments', 'molecules', 'fragments'}
-        constituent to group weights with respect to
+    ${ATOMGROUP_PARAMETER}
+    ${GROUPING_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
     get_unit_vectors : Callable
         Callable that returns unit vectors on which the projection is performed.
@@ -151,6 +146,7 @@ def diporder_weights(
     return weights
 
 
+@render_docs
 def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.ndarray:
     """Weights for velocity calculations.
 
@@ -158,12 +154,9 @@ def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.n
 
     Parameters
     ----------
-    atomgroup : MDAnalysis.core.groups.AtomGroup
-        atomgroup taken for weight calculation
-    grouping : {'atoms', 'residues', 'segments', 'molecules', 'fragments'}
-        constituent to group weights with respect to
-    vdim : {0, 1, 2}
-        direction of the velocity taken for the weights
+    ${ATOMGROUP_PARAMETER}
+    ${GROUPING_PARAMETER}
+    ${VDIM_PARAMETER}
 
     Returns
     -------

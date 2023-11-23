@@ -36,8 +36,7 @@ class KineticEnergy(AnalysisBase):
     refpoint : str
         reference point for molecular center: center of mass (``"com"``) or center of
         charge (``"coc"``).
-    output : str
-        Output filename.
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -125,8 +124,9 @@ class KineticEnergy(AnalysisBase):
         self.results.trans = self.E_center / 2 / 100
         self.results.rot = (self.E_kin - self.E_center) / 2 / 100
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         self.savetxt(
             self.output,
             np.vstack([self.results.t, self.results.trans, self.results.rot]).T,

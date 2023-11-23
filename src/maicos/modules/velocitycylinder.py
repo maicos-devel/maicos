@@ -30,15 +30,13 @@ class VelocityCylinder(ProfileCylinderBase):
     for complex compounds, usually a contribution corresponding to the vorticity appears
     in the profile.
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    vdim : {0, 1, 2}
-        Dimension for velocity binning (x=0, y=1, z=2).
-    flux : bool
-        Calculate the flux instead of the velocity :math:`[Å^2/\mathrm{ps}]`.
+    ${VDIM_PARAMETER}
+    ${FLUX_PARAMETER}
 
     Attributes
     ----------

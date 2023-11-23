@@ -30,10 +30,8 @@ class DipoleAngle(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
-    pdim : {0, 1, 2}
-        direction of the projection
-    output : str
-       Prefix for output filenames.
+    ${PDIM_PLANAR_PARAMETER}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -54,8 +52,8 @@ class DipoleAngle(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
+        refgroup: Optional[mda.AtomGroup] = None,
         concfreq: int = 0,
         pdim: int = 2,
         output: str = "dipangle.dat",
@@ -117,8 +115,9 @@ class DipoleAngle(AnalysisBase):
         self.results.cos_theta_ii = self.cos_theta_ii[: self._index]
         self.results.cos_theta_ij = self.cos_theta_ij[: self._index]
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         self.savetxt(
             self.output,
             np.vstack(

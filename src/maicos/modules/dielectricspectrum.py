@@ -45,10 +45,8 @@ class DielectricSpectrum(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
-    temperature : float
-        Reference temperature.
-    output_prefix : str
-        Prefix for the output files.
+    ${TEMPERATURE_PARAMETER}
+    ${OUTPUT_PREFIX_PARAMETER}
     segs : int
         Sets the number of segments the trajectory is broken into.
     df : float
@@ -252,8 +250,9 @@ class DielectricSpectrum(AnalysisBase):
             f"Not binning data: there are " f"{len(self.results.susc)} datapoints"
         )
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
         with open(self.output_prefix + "V.txt", "w") as Vfile:

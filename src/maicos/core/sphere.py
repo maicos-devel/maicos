@@ -133,7 +133,7 @@ class SphereBase(AnalysisBase):
 class ProfileSphereBase(SphereBase, ProfileBase):
     """Base class for computing radial profiles in a spherical geometry.
 
-    ${CORRELATION_INFO_SPHERE}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------

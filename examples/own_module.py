@@ -49,9 +49,8 @@ class AnalysisExample(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
-    output : str
-        Output filename
-    temperature : str
+    ${OUTPUT_PARAMETER}
+    temperature : float
         Reference temperature (K)
 
     Attributes

@@ -26,13 +26,12 @@ class DensitySphere(ProfileSphereBase):
 
     ${DENSITY_DESCRIPTION}
 
-    ${CORRELATION_INFO_SPHERE}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------
     ${PROFILE_SPHERE_CLASS_PARAMETERS}
-    dens : {``"mass"``, ``"number"``, ``"charge"``}
-        density type to be calculated.
+    ${DENS_PARAMETER}
 
     Attributes
     ----------

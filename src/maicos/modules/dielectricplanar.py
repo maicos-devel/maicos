@@ -44,15 +44,12 @@ class DielectricPlanar(PlanarBase):
     ${ATOMGROUPS_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     is_3d : bool
-        Use 3d-periodic boundary conditions, i.e., include the dipole correction for the
-        interaction between periodic images
+        Use 3d-periodic boundary conditions, i.e., include the dipole correction for
+        the interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
-    sym : bool
-        Symmetrize the profiles.
-    temperature : float
-        temperature (K)
-    output_prefix : str
-        Prefix for output files.
+    ${SYM_PARAMETER}
+    ${TEMPERATURE_PARAMETER}
+    ${OUTPUT_PREFIX_PARAMETER}
     vcutwidth : float
         Spacing of virtual cuts (bins) along the parallel directions.
 
@@ -342,8 +339,9 @@ class DielectricPlanar(PlanarBase):
             symmetrize(self.results.eps_par_self, axis=0, inplace=True)
             symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         columns = ["position [Å]"]
         for i, _ in enumerate(self.atomgroups):
             columns.append(f"ε^-1_⟂ - 1 ({i+1})")

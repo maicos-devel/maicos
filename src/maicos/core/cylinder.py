@@ -134,7 +134,7 @@ class CylinderBase(PlanarBase):
 class ProfileCylinderBase(CylinderBase, ProfileBase):
     """Base class for computing radial profiles in a cylindrical geometry.
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------

@@ -27,13 +27,12 @@ class DiporderCylinder(ProfileCylinderBase):
 
     ${DIPORDER_DESCRIPTION}
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    pdim : {``"r"``, ``"z"``}
-        direction of the projection
+    ${PDIM_RADIAL_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
 
     Attributes

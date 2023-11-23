@@ -27,7 +27,7 @@ class DiporderSphere(ProfileSphereBase):
 
     ${DIPORDER_DESCRIPTION}
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------

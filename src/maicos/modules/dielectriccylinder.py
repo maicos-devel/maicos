@@ -44,8 +44,7 @@ class DielectricCylinder(CylinderBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
-    temperature : float
-        temperature (K)
+    ${TEMPERATURE_PARAMETER}
     single : bool
         For a single chain of molecules the average of M is zero. This flag sets
         <M> = 0.
@@ -239,8 +238,9 @@ class DielectricCylinder(CylinderBase):
             2 * np.pi * self._obs.L * pref * self.results.bin_pos * dcov_r
         )
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         outdata_z = np.array(
             [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
         ).T

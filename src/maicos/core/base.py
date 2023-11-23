@@ -61,9 +61,9 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUPS_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
     multi_group : bool
         Analysis is able to work with list of atomgroups
+    ${BASE_CLASS_PARAMETERS}
     wrap_compound : str
         The group which will be kept together through the wrap processes.
         Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
@@ -71,10 +71,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
     Attributes
     ----------
-    atomgroup : MDAnalysis.core.groups.AtomGroup
-        Atomgroup taken for the Analysis (available if `multi_group = False`)
-    atomgroups : list[MDAnalysis.core.groups.AtomGroup]
-        Atomgroups taken for the Analysis (available if `multi_group = True`)
+    ${ATOMGROUP_PARAMETER} (available if `multi_group = False`)
+    ${ATOMGROUPS_PARAMETER} (available if `multi_group = True`)
     n_atomgroups : int
         Number of atomngroups (available if `multi_group = True`)
     _universe : MDAnalysis.core.universe.Universe
@@ -119,8 +117,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         self,
         atomgroups: mda.AtomGroup,
         multi_group: bool = False,
-        refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
+        refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
         wrap_compound: str = "atoms",
         concfreq: int = 0,
@@ -555,8 +553,9 @@ class ProfileBase:
             self.results.profile = self.means.profile
         self.results.dprofile = self.sems.profile
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         columns = ["positions [Å]"]
 
         for i, _ in enumerate(self.atomgroups):
