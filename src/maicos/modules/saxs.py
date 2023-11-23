@@ -61,8 +61,7 @@ class Saxs(AnalysisBase):
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
         Maximal angle (°) between the q vectors and the z-axis.
-    output : str
-        Output filename
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -81,8 +80,8 @@ class Saxs(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = False,
+        refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
         concfreq: int = 0,
         bin_spectrum: bool = True,
@@ -239,8 +238,9 @@ class Saxs(AnalysisBase):
 
         self.results.scat_factor /= self.atomgroup.n_atoms
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         if self.bin_spectrum:
             self.savetxt(
                 self.output,

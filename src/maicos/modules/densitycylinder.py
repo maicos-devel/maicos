@@ -27,13 +27,12 @@ class DensityCylinder(ProfileCylinderBase):
 
     ${DENSITY_DESCRIPTION}
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    dens : {``"mass"``, ``"number"``, ``"charge"``}
-        density type to be calculated.
+    ${DENS_PARAMETER}
 
     Attributes
     ----------

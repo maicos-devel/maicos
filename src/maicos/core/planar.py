@@ -146,7 +146,7 @@ class PlanarBase(AnalysisBase):
 class ProfilePlanarBase(PlanarBase, ProfileBase):
     """Base class for computing profiles in a cartesian geometry.
 
-    ${CORRELATION_INFO_CYLINDER}
+    ${CORRELATION_INFO_RADIAL}
 
     Parameters
     ----------

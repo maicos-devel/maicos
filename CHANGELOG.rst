@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
 
+- Improvements to documentation rendering (#122, !282)
 - Unify Python versions in tox environments i.e. ``py311-build-macos`` to
   ``build-macos`` (!283)
 - Remove deprecated pytest tmpdir fixture (!283)

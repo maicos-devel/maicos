@@ -83,15 +83,21 @@ def test_banner():
         ("", ""),
         ("foo", "foo"),
         ("${TEST} ${BLA}", "test blu"),
+        ("${OUTER}", "desc with inner"),
     ],
 )
 def test_render_docs(doc, new_doc):
-    """Test decorator for setting of phrase in documentation."""
+    """Test decorator for replacing patterns in docstrings."""
 
     def func():
         pass
 
-    DOC_DICT = dict(TEST="test", BLA="blu")
+    DOC_DICT = dict(
+        TEST="test",
+        BLA="blu",
+        INNER="inner",
+        OUTER="desc with ${INNER}",
+    )
 
     func.__doc__ = doc
     func_decorated = maicos.lib.util._render_docs(func, doc_dict=DOC_DICT)

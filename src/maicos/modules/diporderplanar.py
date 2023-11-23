@@ -32,8 +32,7 @@ class DiporderPlanar(ProfilePlanarBase):
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    pdim : {0, 1, 2}
-        direction of the projection
+    ${PDIM_PLANAR_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
 
     Attributes

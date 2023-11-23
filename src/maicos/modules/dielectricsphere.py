@@ -44,10 +44,8 @@ class DielectricSphere(SphereBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${SPHERE_CLASS_PARAMETERS}
-    temperature : float
-        temperature (K)
-    output_prefix : str
-        Prefix for output_prefix files
+    ${TEMPERATURE_PARAMETER}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -165,8 +163,9 @@ class DielectricSphere(SphereBase):
         )
         self.results.deps_rad = 4 * np.pi * self.results.bin_pos**2 * pref * dcov_rad
 
+    @render_docs
     def save(self):
-        """Save results of analysis to file specified by ``output``."""
+        """${SAVE_DESCRIPTION}"""
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T
