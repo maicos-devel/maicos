@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant Agrawal
+Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
 
+- Update dev names (!284)
 - Improvements to documentation rendering (#122, !282)
 - Unify Python versions in tox environments i.e. ``py311-build-macos`` to
   ``build-macos`` (!283)
@@ -89,7 +90,7 @@ Simon Gravelle, Philip Loche, Marc Sauter, Henrik Jaeger, Philipp Staerk, Adyant
 
 v0.7.2 (2023/01/09)
 -------------------
-Philip Loche, Henrik Jaeger
+Philip Loche, Henrik Stooß
 
 - Remove superfluous group wise wrapping (!225)
 - Clarify unclear definition in Dieletric modules that could lead to wrong results
@@ -103,13 +104,13 @@ Philip Loche, Henrik Jaeger
 
 v0.7.1 (2023/01/01)
 -------------------
-Henrik Jaeger
+Henrik Stooß
 
 - Fix upload to PyPi. This release is identical to v0.7.
 
 v0.7 (2022/12/27)
 -----------------
-Philip Loche, Simon Gravelle, Marc Sauter, Henrik Jaeger, Kira Fischer, Alexander
+Philip Loche, Simon Gravelle, Marc Sauter, Henrik Stooß, Kira Fischer, Alexander
 Schlaich, Philipp Staerk
 
 - Make sure citation are only printed once (!260)
@@ -177,13 +178,13 @@ Schlaich, Philipp Staerk
 
 v0.6.1 (2022/09/26)
 -------------------
-Henrik Jaeger
+Henrik Stooß
 
 - Fix the output of the `ChemicalPotentialPlanar` module (!173)
 
 v0.6 (2022/09/01)
 -----------------
-Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Jaeger, Alexander Schlaich,
+Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Stooß, Alexander Schlaich,
 Maximilian Becker, Kira Fischer
 
 - Write total epsilon as defined in paper (!155)
@@ -227,7 +228,7 @@ Maximilian Becker, Kira Fischer
 
 v0.5.1 (2022/02/21)
 -------------------
-Henrik Jaeger
+Henrik Stooß
 
 - Fix pypi installation (!98)
 
@@ -269,7 +270,7 @@ Philip Loche
 v0.4 (2021/12/13)
 -----------------
 
-Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Jaeger, Srihas Velpuri, Maximilian
+Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Stooß, Srihas Velpuri, Maximilian
 Becker
 
 - Restructure docs and build docs for develop and release version

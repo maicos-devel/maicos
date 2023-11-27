@@ -24,7 +24,7 @@ description = "Analyse molecular dynamics simulations of interfacial and confine
 authors = [{name = "MAICoS Developer Team"}]
 maintainers = [
     {name = "Philip Loche"},
-    {name = "Henrik Jaeger"},
+    {name = "Henrik Stooß"},
     {name = "Alexander Schlaich"}
 ]
 readme = "README.rst"
