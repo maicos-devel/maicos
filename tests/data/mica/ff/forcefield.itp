@@ -1,11 +1,8 @@
-; Production force field for master thesis of Henrik Stooß
-; parameters taken as indicated below
-;
 [ defaults ]
 ; nbfunc	comb-rule	gen-pairs	fudgeLJ	fudgeQQ
   1		2		no		1.0	1.0
 
-; ions	     (Paper Netz Group) "the counterion k* is specified below"
+; Ion Force Field	(J. Phys. Chem. B 2021, 125, 30, 8581–8587, https://doi.org/10.1021/acs.jpcb.1c05303)
 [ atomtypes ]
 ;name   at.num  mass      charge  ptype   sigma  epsilon
 K       19      39.098    1       A       0.283  0.90
@@ -20,7 +17,7 @@ VW              0        -1.054   D       0.0    0.0
 OW             15.9994    0       A       0.3165 0.77324
 HW              1.0079    0.527   A       0.0    0.0
 
-; Mica
+; Mica Force Field (Langmuir 2013, 29, 6, 1754–1765, https://doi.org/10.1021/la3038846)
 [ atomtypes ]
 ;name	at.num	mass	    charge	    ptype	sigma	        epsilon
 SY1	    14	    28.08600	0.000000	A	0.356359487256	0.209200
