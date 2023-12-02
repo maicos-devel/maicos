@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import DielectricPlanar
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
     DIPOLE_GRO,
     DIPOLE_ITP,

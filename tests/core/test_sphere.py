@@ -26,7 +26,7 @@ from maicos.lib.math import transform_sphere
 from maicos.lib.weights import density_weights
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
 

@@ -21,7 +21,7 @@ from maicos import Saxs
 from maicos.lib.math import compute_form_factor, compute_rdf_structure_factor
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 
 
 class ReferenceAtomGroups:

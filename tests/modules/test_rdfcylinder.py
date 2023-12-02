@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import RDFCylinder
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 from modules.create_mda_universe import line_of_water_molecules  # noqa: E402
 

@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose
 from maicos import DiporderPlanar
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 
 
 class ReferenceAtomGroups:

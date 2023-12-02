@@ -19,7 +19,7 @@ from numpy.testing import assert_allclose
 from maicos import DensityPlanar
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
     MICA_TPR,
     MICA_XTC,

@@ -19,7 +19,7 @@ from numpy.testing import assert_allclose
 from maicos import DensityCylinder
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO, WATER_TPR  # noqa: E402
 
 
