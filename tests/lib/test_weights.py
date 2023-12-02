@@ -19,7 +19,7 @@ import maicos.lib.weights
 from maicos.lib.util import unit_vectors_planar
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP, WATER_TPR, WATER_TRR  # noqa: E402
 
 

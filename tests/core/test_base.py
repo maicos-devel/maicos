@@ -24,7 +24,7 @@ from maicos import DensityPlanar, _version
 from maicos.core import AnalysisBase, ProfileBase
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 
 from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 

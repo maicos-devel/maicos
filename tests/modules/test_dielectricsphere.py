@@ -18,7 +18,7 @@ from numpy.testing import assert_allclose
 from maicos import DielectricSphere
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import DIPOLE_GRO, DIPOLE_ITP, WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
 
 

@@ -19,7 +19,7 @@ import maicos.lib.math
 import maicos.lib.util
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP, WATER_GRO, WATER_TPR  # noqa: E402
 
 

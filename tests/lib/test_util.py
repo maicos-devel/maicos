@@ -22,7 +22,7 @@ import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
 
-sys.path.append(Path(__file__).parents[1])
+sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO, WATER_TPR  # noqa: E402
 from modules.create_mda_universe import circle_of_water_molecules  # noqa: E402
 

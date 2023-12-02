@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
 
+- Convert ``pathlib.Path`` into ``str`` when using in ``sys.path.append`` (#123, !286)
 - Update dev names (!284)
 - Improvements to documentation rendering (#122, !282)
 - Unify Python versions in tox environments i.e. ``py311-build-macos`` to
