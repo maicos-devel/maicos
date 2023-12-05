@@ -108,7 +108,7 @@ def iFT(
 
     Returns
     -------
-    tuple(numpy.ndarray, np.ndarray) or numpy.ndarray
+    tuple(numpy.ndarray, numpy.ndarray) or numpy.ndarray
         If indvar is :obj:`True`, returns a tuple containing the time series and the
         iFT. If indvar is :obj:`False`, returns only the iFT.
 
@@ -157,7 +157,7 @@ def correlation(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         The correlation or autocorrelation function.
     """
     meana = int(subtract_mean) * np.mean(
@@ -208,7 +208,7 @@ def scalar_prod_corr(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray
         The correlation function of the scalar product of the vector timeseries.
 
     """

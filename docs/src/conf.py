@@ -15,17 +15,22 @@ the documentation: http://www.sphinx-doc.org/en/master/config
 
 # -- Path setup --------------------------------------------------------------
 
-import sys
 from datetime import datetime
 from pathlib import Path
+
+import tomli
 
 import maicos
 
 
-sys.path.insert(0, Path("../../"))
+ROOT = Path("../../")
 
 # -- Project information -----------------------------------------------------
-project = "MAICoS"
+
+with open(ROOT / "pyproject.toml", "rb") as fp:
+    project_dict = tomli.load(fp)["project"]
+
+project = project_dict["name"]
 author = maicos.__authors__
 version = maicos.__version__
 copyright = f"{datetime.now().date().year}, {author}"
@@ -124,7 +129,7 @@ html_theme_options = {
     "footer_icons": [
         {
             "name": "GitLab",
-            "url": "https://gitlab.com/maicos-devel/maicos",
+            "url": project_dict["urls"]["repository"],
             "html": "",
             "class": "fa-brands fa-gitlab fa-2x",
         },

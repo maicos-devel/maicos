@@ -18,6 +18,7 @@ report.xml
 __pycache__/
 build/
 dist/
+sg_execution_times.rst
 
 # Allow maicos share text files
 !maicos/share/*.dat
