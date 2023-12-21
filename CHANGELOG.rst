@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
 
+- Use default tox error for non-exsiting enviroment (!285)
 - Parse documentation metadata from ``pyproject.toml`` (!287)
 - Convert ``pathlib.Path`` into ``str`` when using in ``sys.path.append`` (#123, !286)
 - Update dev names (!284)
