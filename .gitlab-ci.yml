@@ -93,21 +93,21 @@ build:linux:
   stage: build
   needs: []
   script:
-    - python -m tox -e build-linux
+    - python -m tox -e build
 
 build:windows:
   extends: .windows
   stage: build
   needs: []
   script:
-    - python -m tox -e build-windows
+    - python -m tox -e build
 
 build:macos:
   extends: .macos
   stage: build
   needs: []
   script:
-    - python -m tox -e build-macos
+    - python -m tox -e build
 
 ###########################
 ######### TESTS ###########
@@ -189,7 +189,7 @@ build-wheel:macos:
     - .macos
     - .build-wheel
   script:
-    - python -m tox -e build-macos
+    - python -m tox -e build
   needs: ["tests:macos"]
 
 build-wheel:windows:
@@ -197,7 +197,7 @@ build-wheel:windows:
     - .windows
     - .build-wheel
   script:
-    - python -m tox -e build-windows
+    - python -m tox -e build
   needs: ["tests:windows"]
 
 # The name must be `pages`!
