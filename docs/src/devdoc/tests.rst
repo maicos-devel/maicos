@@ -20,18 +20,14 @@ functionalities, for example
 .. code-block:: bash
 
     tox -e lint  # code style
-    tox -e py310-build-linux  # packaging
-    tox -e docs  # only builds the documentation
-    tox -e py310-tests  # testing
+    tox -e build  # packaging
+    tox -e tests  # testing
+    tox -e docs  # build the documentation
 
-Where the commands above assume that you are using Python 3.10 and Linux. For other
-Python versions i.e. 3.11 change to ``py311``. For MacOs use ``macos`` and for Windows
-``windows``.
-
-You can run only a subset of the tests with ``tox -e py310-tests --
-<test/file.py>``, replacing ``<test/file.py>`` with the path to the files you want to
-test, e.g. ``tox -e tests -- tests/test_main.py`` for testing only the main functions.
-For more details take a look at the `usage and invocation
+You can also run only a subset of the tests with ``tox -e tests -- <tests/file.py>``,
+replacing ``<tests/file.py>`` with the path to the files you want to test, e.g. ``tox -e
+tests -- tests/test_main.py`` for testing only the main functions. For more details take
+a look at the `usage and invocation
 <https://docs.pytest.org/en/latest/usage.html#usage-and-invocations>` page of the pytest
 documentation.
 
