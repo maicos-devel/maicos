@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
 
+- Added Support for Python 3.12 (!289)
 - Remove suffixes ``-linux``, ``-macos``, ``-windows`` when building wheels. Platform
   will be detected automatically. (!288)
 - Use default tox error for non-exsiting enviroment (!285)
