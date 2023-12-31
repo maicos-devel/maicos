@@ -44,6 +44,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: C",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
@@ -54,7 +55,7 @@ classifiers = [
 ]
 dependencies = [
     "mdacli>=0.1.28",
-    "MDAnalysis>=2.5.0",
+    "MDAnalysis>=2.7.0",
     "numpy>=1.22.3",
     "scipy>=1.0.0",
     "tqdm>=4.60.0",
