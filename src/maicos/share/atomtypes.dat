@@ -1,109 +1,128 @@
-# Conversion table for atom atom types
-# atom type --> Element
-  O             O
-  OM            O
-  OA            O
-  OE            O
-  OW            O
-   N            N
-  NT            NH2
-  NL            NH3
-  NR            N
-  NZ            NH2
-  NE            NH1
-   C           C
-CH0            C
-CH1            CH1
-CH2            CH2
-CH3            CH3
-CH4            CH4
-CH2r           CH2
-CR1            CH1
-  HC           CH1
-   H           H
- DUM           DUM
-   S           S
-CU1+           CU1+
-CU2+           CU1+
-  FE           FE
-ZN2+           ZN2+
-MG2+           MG2+
-CA2+           CA2+
-   P           P
-  AR           AR
-   F           FE
-  CL           CL
-  BR           BR
-CMET           CH3
-OMET           O
- NA+           NA1+
- CL-           CL1-
- CCHL          C
-Br             BR
-C              C
-CA             C
-CB             C
-CC             C
-CK             C
-CM             C
-CN             C
-CQ             C
-CR             C
-CT             C
-CV             C
-CW             C
-C*              C
-C0             CA
-F              FE
-H               H
-HC              H
-H1              H
-H2              H
-H3            H
-HA            H
-H4            H
-H5            H
-HO            H
-HS            H
-HW            H
-HP            H
-I             I
-Cl            CL1-
-Na            NA1+
-IB            NA1+
-MG            MG
-N             N
-NA            N
-NB            N
-NC            N
-N2            N
-N3            N
-N*            N
-O             O
-OW            O
-OH            O
-OS            O
-O2            O
-P             P
-S             S
-SH            SI
-CU            CU
-FE            FE
-K             K
-Rb            RB
-Cs            CS
-OW_spc        O
-HW_spc        H
-Li            Li
-Zn            ZN2+
-HW_tip4pew    H
-OW_tip4pew    O
-HW_tip4p      H
-OW_tip4p      O
-HW_tip5p      H
-OW_tip5p      O
-MW            DUM
-VW            DUM
-MCH3          DUM
-MNH3          DUM
-OW_tip4p2005  O
+# Atom Type to Chemical Element Conversion Table
+#
+# This table maps atom types to their corresponding chemical elements.
+# For consistency and clarity, maintain a fixed length of 15 characters
+# for both the atom type and the chemical element fields.
+#
+# This table is an extended version of the TABLE_ATOMELEMENTS list in the MDAnalysis
+# package.
+             AR             AR
+             BR             BR
+             Br             BR
+              C              C
+             C*              C
+             C0             CA
+             CA              C
+           CA2+           CA2+
+             CB              C
+             CC              C
+           CCHL              C
+         CG2R51              C
+         CG2R53              C
+         CG2R61              C
+          CG311              C
+          CG321              C
+          CG324              C
+          CG331              C
+          CG334              C
+         CG3C51              C
+         CG3C52              C
+         CG3RC1              C
+            CH0              C
+            CH1            CH1
+            CH2            CH2
+           CH2r            CH2
+            CH3            CH3
+            CH4            CH4
+             CK              C
+             CL             CL
+            CL-           CL1-
+            CLA              C
+             CM              C
+           CMET            CH3
+             CN              C
+             CQ              C
+             CR              C
+            CR1            CH1
+             CT              C
+             CU             CU
+           CU1+           CU1+
+           CU2+           CU1+
+             CV              C
+             CW              C
+             Cl           CL1-
+             Cs             CS
+            DUM            DUM
+              F             FE
+             FE             FE
+              H              H
+             H1              H
+             H2              H
+             H3              H
+             H4              H
+             H5              H
+             HA              H
+             HC              H
+           HGA1              H
+           HGA2              H
+           HGA3              H
+           HGP1              H
+          HGR52              H
+          HGR53              H
+          HGR61              H
+             HO              H
+             HP              H
+             HS              H
+             HT              H
+             HW              H
+         HW_spc              H
+       HW_tip4p              H
+     HW_tip4pew              H
+       HW_tip5p              H
+              I              I
+             IB           NA1+
+              K              K
+             Li             Li
+           MCH3            DUM
+             MG             MG
+           MG2+           MG2+
+           MNH3            DUM
+             MW            DUM
+              N              N
+             N*              N
+             N2              N
+             N3              N
+             NA              N
+            NA+           NA1+
+             NB              N
+             NC              N
+             NE            NH1
+         NG2R52              N
+             NL            NH3
+             NR              N
+             NT            NH2
+             NZ            NH2
+             Na           NA1+
+              O              O
+             O2              O
+             OA              O
+             OE              O
+          OG311              O
+             OH              O
+             OM              O
+           OMET              O
+             OS              O
+             OT              O
+             OW              O
+         OW_spc              O
+       OW_tip4p              O
+   OW_tip4p2005              O
+     OW_tip4pew              O
+       OW_tip5p              O
+              P              P
+             Rb             RB
+              S              S
+             SH             SI
+             VW            DUM
+           ZN2+           ZN2+
+             Zn           ZN2+

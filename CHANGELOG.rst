@@ -15,6 +15,7 @@ v0.8 (XXXX/XX/XX)
 -----------------
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
 
+- Sort format and add more atomtypes to ``atomtypes.dat`` (!291)
 - Add grouping option to `DipoleAngle` module (!290)
 - Added Support for Python 3.12 (!289)
 - Remove suffixes ``-linux``, ``-macos``, ``-windows`` when building wheels. Platform
