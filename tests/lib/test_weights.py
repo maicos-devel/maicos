@@ -169,8 +169,8 @@ class Testdiporder_weights:
                 get_unit_vectors=get_unit_vectors,
             )
 
-    def test_wrong_grouping(self, atomgroup):
-        """Test error raise for wrong grouping."""
+    def test_wrong_order_parameter(self, atomgroup):
+        """Test error raise for wrong order_parameter."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=0)
@@ -180,5 +180,26 @@ class Testdiporder_weights:
                 atomgroup=atomgroup,
                 grouping="fragments",
                 order_parameter="foo",
+                get_unit_vectors=get_unit_vectors,
+            )
+
+    def test_atoms_grouping(self, atomgroup):
+        """Test error raise if grouping="atoms".
+
+        For atoms now dipoler moments are defined and we should test that a propper
+        error is raised in this is option is provided.
+
+        The error should is raised by MDAnalysis and we only test if this is the
+        case.
+        """
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup, grouping, pdim=0)
+
+        with pytest.raises(ValueError, match="Unrecognized compound definition: atoms"):
+            maicos.lib.weights.diporder_weights(
+                atomgroup=atomgroup,
+                grouping="atoms",
+                order_parameter="cos_thete",
                 get_unit_vectors=get_unit_vectors,
             )

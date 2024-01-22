@@ -36,9 +36,10 @@ class ReferenceAtomGroups:
 class TestDipoleAngle(ReferenceAtomGroups):
     """Tests for the DipoleAngle class."""
 
-    def test_DipoleAngle_trajectory(self, ag_single_frame):
-        """Test dipole angle module on a single frame."""
-        dip = DipoleAngle(ag_single_frame).run()
+    @pytest.mark.parametrize("grouping", ["molecules", "residues"])
+    def test_DipoleAngle_trajectory(self, ag_single_frame, grouping):
+        """Regression test for dipole angle module on a single frame."""
+        dip = DipoleAngle(ag_single_frame, grouping=grouping).run()
         assert_allclose(dip.results.cos_theta_i, -0.0821, rtol=1e-3)
 
     def test_DipoleAngle_trajectory_save(self, ag_single_frame, monkeypatch, tmp_path):

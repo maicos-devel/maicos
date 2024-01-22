@@ -77,7 +77,7 @@ DOC_DICT = dict(
         direction of the projection""",
     FLUX_PARAMETER=r"""flux : bool
         Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
-    GROUPING_PARAMETER="""grouping : {``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
+    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
         Atom grouping for the calculations.
 
         The possible grouping options are the atom positions (in the case where
