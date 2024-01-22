@@ -30,6 +30,7 @@ class DipoleAngle(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${GROUPING_PARAMETER}
     ${PDIM_PLANAR_PARAMETER}
     ${OUTPUT_PARAMETER}
 
@@ -55,6 +56,7 @@ class DipoleAngle(AnalysisBase):
         unwrap: bool = False,
         refgroup: Optional[mda.AtomGroup] = None,
         concfreq: int = 0,
+        grouping: str = "residues",
         pdim: int = 2,
         output: str = "dipangle.dat",
         jitter: float = 0.0,
@@ -69,6 +71,7 @@ class DipoleAngle(AnalysisBase):
             wrap_compound=self.wrap_compound,
             jitter=jitter,
         )
+        self.grouping = grouping
         self.pdim = pdim
         self.output = output
 
@@ -89,7 +92,7 @@ class DipoleAngle(AnalysisBase):
     def _single_frame(self):
         cos_theta = diporder_weights(
             self.atomgroup,
-            grouping=self.wrap_compound,
+            grouping=self.grouping,
             order_parameter="cos_theta",
             get_unit_vectors=self.get_unit_vectors,
         )
