@@ -123,7 +123,7 @@ DOC_DICT = dict(
         If refgroup is provided, the calculation is performed relative to the center of
         mass of the AtomGroup.
 
-        If refgroup is ``None`` the calculations are performed to the center of the
+        If refgroup is :obj:`None` the calculations are performed to the center of the
         (changing) box.
     jitter : float
         Magnitude of the random noise to add to the atomic positions.
@@ -147,7 +147,7 @@ DOC_DICT = dict(
         given as `f_kwargs`. The function must return a numpy.ndarray with the same
         length as the number of group members.
     normalization : {``"none"``, ``"number"``, ``"volume"``}
-        The normalization of the profile performed in every frame. If `none`, no
+        The normalization of the profile performed in every frame. If :obj:`None`, no
         normalization is performed. If `number`, the histogram is divided by the number
         of occurences in each bin. If `volume`, the profile is divided by the volume of
         each bin.
@@ -179,9 +179,7 @@ DOC_DICT = dict(
     RDF_PARAMETERS="""g1 : MDAnalysis.core.groups.AtomGroup
         First AtomGroup.
     g2 : MDAnalysis.core.groups.AtomGroup
-        Second AtomGroup.
-    rdf_bin_width : float
-        Binwidth of bins in the histogram of the RDF (Å).""",
+        Second AtomGroup.""",
     PROFILE_CLASS_PARAMETERS="""${GROUPING_PARAMETER}
     ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}""",
