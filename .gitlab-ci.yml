@@ -153,7 +153,11 @@ docs:
   stage: docs
   needs: []
   script:
-    - [[ -n $CI_COMMIT_BRANCH ]] && git switch $CI_COMMIT_BRANCH # switch to branch if not on tag
+    # the following 2 lines are needed to make sure we are on the right branch to check
+    # for changes in the CHANGELOG. We omit this on tags, because $CI_COMMIT_BRANCH does
+    # not exist and would make git switch fail.
+    # ($CI_COMMIT_BRANCH does not exist on tags)
+    - "[[ -n $CI_COMMIT_BRANCH ]] && git switch $CI_COMMIT_BRANCH"
     - git fetch origin main
     - python -m tox -e docs
   artifacts:
