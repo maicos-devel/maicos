@@ -153,7 +153,7 @@ docs:
   stage: docs
   needs: []
   script:
-    - git switch $CI_COMMIT_BRANCH
+    - [[ -n $CI_COMMIT_BRANCH ]] && git switch $CI_COMMIT_BRANCH # switch to branch if not on tag
     - git fetch origin main
     - python -m tox -e docs
   artifacts:
