@@ -1,4 +1,5 @@
-# Scattering factors for elements. Numbers taken from:
+# Scattering factors for elements. Table is copied from sfactor.dat in the GROMACS
+# package. Numbers taken from:
 # http://www.ruppweb.org/xray/comp/scatfac.htm
 # Underlying calculations due to D. T. Cromer & J. B. Mann
 # X-ray scattering factors computed from numerical Hartree-Fock wave functions
