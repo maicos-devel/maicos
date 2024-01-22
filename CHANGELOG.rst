@@ -13,7 +13,8 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.8 (XXXX/XX/XX)
 -----------------
-Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal
+Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal,
+Kira Fischer
 
 - Rename radial distribution function to pair distribution function (!278)
 - Add RDF derivation and explain role of dz. (!278)
