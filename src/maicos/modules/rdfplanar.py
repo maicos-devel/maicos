@@ -50,6 +50,8 @@ class RDFPlanar(PlanarBase):
     Parameters
     ----------
     ${RDF_PARAMETERS}
+    rdf_bin_width : float
+        Binwidth of bins in the histogram of the RDF (Å).
     dzheight : float
         dz height of a RDF slab (Å).
     dmin : float

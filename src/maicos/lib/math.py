@@ -12,7 +12,6 @@ from typing import Optional, Tuple, Union
 import MDAnalysis as mda
 import numpy as np
 from scipy.fftpack import dst
-from scipy.special import ellipe, ellipk
 
 from . import tables
 from ._cmath import compute_structure_factor  # noqa: F401
@@ -721,60 +720,6 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
 
     return trans_positions
-
-
-def ellipT(m: np.ndarray) -> np.ndarray:
-    r"""Elliptic integral of the first kind.
-
-    Returns complete elliptic integral if parameter :math:`m \leq 1`, otherwise returns
-    the incomplete elliptic integral up to the value for which the integral is real.
-
-    Approximates the integral
-
-    .. math::
-        E(m) = \int_0^\phi \sqrt{1 - m \sin^2 \vartheta } d\vartheta
-
-    where :math:`\phi = \frac{\pi}{2}` for :math:`m \leq 1` and
-    :math:`\phi = \arcsin\left(\frac{1}{\sqrt{m}}\right)` for :math:`m > 1`.
-
-    Parameters
-    ----------
-    m : numpy.ndarray
-        Parameter of the elliptic integral
-
-    Returns
-    -------
-    numpy.ndarray
-        element-wise value of the integral
-    """
-    K = np.zeros_like(m)
-    for i, mi in enumerate(m):
-        if mi <= 1:
-            K[i] = ellipe(mi)
-        else:
-            K[i] = np.sqrt(mi) * ((1 / mi - 1) * ellipk(1 / mi) + ellipe(1 / mi))
-    return K
-
-
-def sa_cylider_intersect_circle(r: float, R: np.ndarray) -> np.ndarray:
-    r"""Surface area of a cylinder of radius R inside a sphere of radius r.
-
-    For :math:`R \gg r`, this is :math:`\pi \cdot r^2`.
-
-    Parameters
-    ----------
-    r : float
-        Radius of the sphere
-
-    R : numpy.ndarray
-        Radius of the cylinder
-
-    Returns
-    -------
-    numpy.ndarray
-        Surface area of the cylinder inside the sphere
-    """
-    return 8 * R * r * ellipT(np.square(2 * R / r))
 
 
 def compute_rdf_structure_factor(

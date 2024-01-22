@@ -14,10 +14,9 @@ from typing import Optional
 import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
-from scipy.interpolate import interp1d
 
 from ..core import CylinderBase
-from ..lib.math import sa_cylider_intersect_circle, transform_cylinder
+from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
 
 
@@ -26,15 +25,32 @@ logger = logging.getLogger(__name__)
 
 @render_docs
 class RDFCylinder(CylinderBase):
-    r"""Cylindrical shell-wise 1D radial distribution functions.
+    r"""Shell-wise one-dimensional (cylindrical) pair distribution functions.
 
-    The radial distribution function :math:`g_\mathrm{1d}(r)` describes the
-    spatial correlation between atoms in :math:`g1` and atoms in :math:`g2`.
-    The 2D RDF can be used in systems that are inhomogeneous along one axis, and
-    homogeneous in a plane. It gives the average number density of :math:`g2` as
-    a function of lateral distance from a centered :math:`g1` atom. In fully
-    homogeneous systems and in the limit of small 'drwidth' :math:`\Delta R`,
-    it is the same as the well known three dimensional RDF.
+    The one-dimensional pair distribution functions :math:`g_{\text{1d}}(\phi)`
+    and :math:`g_{\text{1d}}(z)` describes the pair distribution to particles
+    which lie on the same cylinder along the angular and axial directions
+    respectively. These functions can be used in cylindrical systems that are
+    inhomogeneous along radial coordinate, and homogeneous in the angular and
+    axial directions. It gives the average number density of :math:`g2` as a
+    function of angular and axial distances respectively from a :math:`g1` atom.
+    Then the angular pair distribution function is
+
+    .. math::
+
+            g_{\text{1d}}(\phi) = \left \langle \sum_{i}^{N_{g_1}}
+            \sum_{j}^{N_{g2}} \delta(\phi - \phi_{ij}) \delta(R_{ij}) \delta(z_{ij})
+            \right \rangle
+
+
+    And the axial pair distribution function is
+
+    .. math::
+
+            g_{\text{1d}}(z) = \left \langle \sum_{i}^{N_{g_1}}
+            \sum_{j}^{N_{g2}} \delta(z - z_{ij}) \delta(R_{ij}) \delta(\phi_{ij})
+            \right \rangle
+
 
     .. math::
 
@@ -43,55 +59,69 @@ class RDFCylinder(CylinderBase):
          \delta(r - r_{ij}) \cdot \left( \theta \left(|R_{ij}| + {\Delta R}
          \right) - \theta \left( |R_{ij}| - {\Delta R} \right) \right) .
 
-    As the density to normalise the RDF with is unknown, the output
-    is in the dimension of number/volume in 1/Å^3.
-
-    Functionally, RDFCylinder bins all pairwise :math:`g1`-:math:`g2` distances,
-    where the radial distance is smaller than `drwidth` in a histogram.
+    Even though due to consistency reasons the results are called pair distribution
+    functions the output is not unitless. The default output is is in dimension of
+    number/volume in :math:`Å^{-3}`. If ``density`` is set to :py:obj:`True`, the
+    output is normalised by the density of :math:`g2` and
 
     Parameters
     ----------
     ${RDF_PARAMETERS}
+    pdf_z_bin_width : float
+        Binwidth of bins in the histogram of the axial PDF (Å).
+    pdf_phi_bin_width : float
+        Binwidth of bins in the histogram of the angular PDF (Å).
     drwidth : float
-        radial width of a RDF cylindrical shell (Å).
+        radial width of a PDF cylindrical shell (Å), and axial or angular (arc) slices.
     dmin: float
         the minimum pairwise distance between 'g1' and 'g2' (Å).
     dmax : float
-        the minimum pairwise distance between 'g1' and 'g2' (Å).
+        the maximum pairwise distance between 'g1' and 'g2' (Å).
+    density : bool
+        normalise the PDF by the density of 'g2' (:math:`Å^{-3}`).
+    origin : numpy.ndarray
+        Set origin of the cylindrical coordinate system (x,y,z). If :obj:`None` the
+        origin will be set according to the ``refgroup`` parameter.
     ${BIN_METHOD_PARAMETER}
-    ${OUTPUT_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
-    results.bins: numpy.ndarray
-        radial distances to which the RDF is calculated with shape (`rdf_nbins`) (Å)
-    results.rdf: numpy.ndarray
-        RDF with shape (`rdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
+    results.phi_bins: numpy.ndarray
+        Angular distances to which the PDF is calculated with shape (`pdf_nbins`) (Å)
+    results.z_bins: numpy.ndarray
+        axial distances to which the PDF is calculated with shape (`pdf_nbins`) (Å)
+    results.phi_pdf: numpy.ndarray
+        Angular PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
+    results.z_pdf: numpy.ndarray
+        Axial PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
     """
 
     def __init__(
         self,
         g1: mda.AtomGroup,
         g2: Optional[mda.AtomGroup] = None,
-        rdf_bin_width: float = 0.3,
+        bin_width_pdf_z: float = 0.3,
+        bin_width_pdf_phi: float = 0.1,
         drwidth: float = 0.1,
-        dmin: float = 0,
+        dmin: Optional[float] = None,
         dmax: Optional[float] = None,
+        density: bool = False,
+        origin: Optional[np.ndarray] = None,
         bin_method: str = "com",
-        output: str = "rdf.dat",
         unwrap: bool = False,
         refgroup: Optional[mda.AtomGroup] = None,
-        concfreq: int = 0,
         jitter: float = 0.0,
+        concfreq: int = 0,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
         rmin: float = 0,
         rmax: Optional[float] = None,
         bin_width: float = 1,
-        origin: Optional[np.ndarray] = None,
+        output: str = "pdf.dat",
     ):
         self.comp_1 = get_compound(g1)
         super(RDFCylinder, self).__init__(
@@ -101,10 +131,10 @@ class RDFCylinder(CylinderBase):
             concfreq=concfreq,
             jitter=jitter,
             dim=dim,
-            zmin=zmin,
-            zmax=zmax,
             rmin=rmin,
             rmax=rmax,
+            zmin=zmin,
+            zmax=zmax,
             bin_width=bin_width,
             wrap_compound=self.comp_1,
         )
@@ -114,72 +144,80 @@ class RDFCylinder(CylinderBase):
             self.g2 = g1
         else:
             self.g2 = g2
-        self.dmin = dmin
-        self.dmax = dmax
-        self.rdf_bin_width = rdf_bin_width
+
+        self.bin_width_pdf_phi = bin_width_pdf_phi
+        self.bin_width_pdf_z = bin_width_pdf_z
         self.drwidth = drwidth
         self.bin_width = bin_width
         self.output = output
         self.bin_method = bin_method.lower()
-        self.origin = origin
+
+        if origin is not None and origin.shape != (3,):
+            raise ValueError(
+                f"Origin has length {origin.shape} but only (3,) is allowed."
+            )
+        else:
+            self.origin = origin
 
         self.comp_2 = get_compound(self.g2)
+        self.nbins_pdf_phi = 100
+        self.nbins_pdf_z = 100
 
-        if self.dmax is None:
-            self.dmax = self.box_center[self.dim]
-            logger.info(
-                "Setting maximum range of RDF to half the box size" f"({self.dmax} Å)."
-            )
-        elif self.dmax > self.box_center[self.dim]:
-            raise ValueError(
-                "Range of RDF exceeds half of the box size. "
-                f"Set to smaller than {self.box_center[self.dim]} Å."
-            )
-
-        if self.origin is None:
-            self.origin = self.box_center
-
-        if self.rdf_bin_width < 0:
-            raise ValueError("RDF bin_width must be a positive number.")
-
-        self.rdf_nbins = int(np.ceil((self.dmax - self.dmin) / self.rdf_bin_width))
-
-        self.rdf_bin_width = (self.dmax - self.dmin) / self.rdf_nbins
-
-        # TODO: No longer needed?
-        if self.bin_method not in ["cog", "com", "coc"]:
-            raise ValueError(
-                f"{self.bin_method!r} is an unknown binning "
-                "method. Use 'cog', 'com' or 'coc'."
-            )
-
-        self.edges = np.histogram(
-            [-1], bins=self.rdf_nbins, range=(self.dmin, self.dmax)
-        )[1]
-        self.results.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
+        self.dmin = dmin
+        self.dmax = dmax
+        self.density = density
 
     def _prepare(self):
         super(RDFCylinder, self)._prepare()
         logger.info("Compute radial distribution function.")
-        logger.info(f"Using {self.rdf_nbins} rdf bins.")
 
-        # Set the max range to filter the search radius.
-        self._maxrange = self.dmax
+        if self.origin is None:
+            self.origin = self.box_center
 
-        # Initialize Volume*N_g1 integration bins for normalisation.
-        self.integration_nbins = int(np.ceil((self.rmax - self.rmin) / self.drwidth))
-        self.integration_bins = np.linspace(
-            self.rmin,
-            self.rmax,
-            self.integration_nbins + 1,
-            endpoint=True,
+        if self.dmin is None:
+            self.dmin = 0
+
+        if self.dmax is None:
+            self.dmax = self.box_center[self.dim]
+        else:
+            if self.dmax > self.box_center[self.dim]:
+                raise ValueError(
+                    "Axial range of PDF exceeds half of the box size. "
+                    "This will lead to unexpected results."
+                )
+
+        if self.bin_width_pdf_z > 0:
+            self.nbins_pdf_z = int(
+                np.ceil((self.dmax - self.dmin) / self.bin_width_pdf_z)
+            )
+            self.bin_width_pdf_z = (self.dmax - self.dmin) / self.nbins_pdf_z
+        else:
+            raise ValueError("PDF bin_width must be a positive number.")
+        if self.bin_width_pdf_phi > 0:
+            self.nbins_pdf_phi = int(np.ceil(np.pi / self.bin_width_pdf_phi))
+            self.bin_width_pdf_phi = np.pi / self.nbins_pdf_phi
+        else:
+            raise ValueError("PDF bin_width must be a positive number.")
+
+        if self.bin_method not in ["cog", "com", "coc"]:
+            raise ValueError(
+                f"{self.bin_method} is an unknown binning method. Use `cog`, `com` or "
+                "`coc`."
+            )
+
+        logger.info(
+            f"Using {self.nbins_pdf_phi} pdf bins in phi direction and "
+            f"{self.nbins_pdf_z} in z direction."
         )
-        self.integration_bin_width = (self.rmax - self.rmin) / self.integration_nbins
 
     def _single_frame(self):
         super(RDFCylinder, self)._single_frame()
-        self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
+        self._obs.n_g1 = np.zeros((self.n_bins, 1))
+        self._obs.n_g2 = np.zeros((self.n_bins, 1))
+        self._obs.count_phi = np.zeros((self.n_bins, self.nbins_pdf_phi))
+        self._obs.count_z = np.zeros((self.n_bins, self.nbins_pdf_z))
 
+        # Get the center of each atom in g1 and g2.
         g1_bin_positions = get_center(
             atomgroup=self.g1, bin_method=self.bin_method, compound=self.comp_1
         )
@@ -187,121 +225,202 @@ class RDFCylinder(CylinderBase):
             atomgroup=self.g2, bin_method=self.bin_method, compound=self.comp_2
         )
 
-        # concatenate the bin positions with radial dimension of the
-        # cylinderical coordinate system and zero as rest two dimensions so
-        # that we can use MDA.capped_distance to filter positions with drwidth
-        g1_bin_positions_w_radial = np.zeros((g1_bin_positions.shape[0], 6))
-        g1_bin_positions_w_radial[:, :3] = g1_bin_positions
-        g1_bin_positions_w_radial[:, 3] = transform_cylinder(
+        # convert to cylinderical coordinates
+        g1_bin_positions_cyl = transform_cylinder(
             g1_bin_positions, origin=self.origin, dim=self.dim
-        )[:, 0]
-
-        g2_bin_positions_w_radial = np.zeros((g2_bin_positions.shape[0], 6))
-        g2_bin_positions_w_radial[:, :3] = g2_bin_positions
-        g2_bin_positions_w_radial[:, 3] = transform_cylinder(
+        )
+        g2_bin_positions_cyl = transform_cylinder(
             g2_bin_positions, origin=self.origin, dim=self.dim
-        )[:, 0]
+        )
 
-        # Histogram the radial dimension of the cylinderical coordinate system
-        self._obs.integration_bin_count = np.histogram(
-            g1_bin_positions_w_radial[:, 3],
-            bins=self.integration_nbins,
-            range=(self.rmin, self.rmax),
-        )[0]
-
-        # Create a new box such that minimum image convention returns the
-        # non-periodic coordinate along odims
-        box_new = np.copy(self._universe.dimensions)
-        box_new[self.odims] += self._maxrange
-
-        # Calculate planar rdf per bin by averaging over all atoms in one bin.
+        # Calculate pdf per bin by averaging over all atoms in one bin.
         for r_bin in range(0, self.n_bins):
             # Get all atoms in a bin.
-            g1_in_rbin_positions = g1_bin_positions_w_radial[
+            g1_in_rbin_positions = g1_bin_positions_cyl[
                 np.logical_and(
-                    g1_bin_positions_w_radial[:, 3] >= self._obs.bin_edges[r_bin],
-                    g1_bin_positions_w_radial[:, 3] < self._obs.bin_edges[r_bin + 1],
+                    g1_bin_positions_cyl[:, 0] >= self._obs.bin_edges[r_bin],
+                    g1_bin_positions_cyl[:, 0] < self._obs.bin_edges[r_bin + 1],
                 )
             ]
 
-            g2_in_rbin_positions = g2_bin_positions_w_radial[
+            g2_in_rbin_positions = g2_bin_positions_cyl[
                 np.logical_and(
-                    g2_bin_positions_w_radial[:, 3]
+                    g2_bin_positions_cyl[:, 0]
                     >= self._obs.bin_edges[r_bin] - self.drwidth,
-                    g2_bin_positions_w_radial[:, 3]
+                    g2_bin_positions_cyl[:, 0]
                     < self._obs.bin_edges[r_bin + 1] + self.drwidth,
                 )
             ]
 
-            n_g2 = len(g2_in_rbin_positions)
+            self._obs.n_g1[r_bin] = len(g1_in_rbin_positions)
+            self._obs.n_g2[r_bin] = len(g2_in_rbin_positions)
 
-            # Automatically filter only those pairs with delta r < dr.
+            # Below we abuse the 3D `capped_distance` search for do a distance search in
+            # 1D distance by setting the other positions as well as the box size in
+            # these directions to 0.
+
+            # Filter only those pairs with delta r < dr.
             r_pairs = capped_distance(
-                g1_in_rbin_positions[:, 3:],
-                g2_in_rbin_positions[:, 3:],
+                g1_in_rbin_positions * [1, 0, 0],
+                g2_in_rbin_positions * [1, 0, 0],
                 self.drwidth,
                 box=None,
                 return_distances=False,
             )
 
-            # Calculate pairwise distances between g1 and g2.
-            pairs, xy_distances = capped_distance(
-                g1_in_rbin_positions[:, :3],
-                g2_in_rbin_positions[:, :3],
-                self._maxrange,
-                box=box_new,
+            # Filter only those pairs with delta phi < dphi.
+            phi_pairs = capped_distance(
+                g1_in_rbin_positions * [0, 1, 0],
+                g2_in_rbin_positions * [0, 1, 0],
+                # define: r dphi = drwidth
+                # therefore: dphi = drwidth / r
+                self.drwidth / self._obs.bin_pos[r_bin],
+                box=[0, 2 * np.pi, 0, 90, 90, 90],
+                return_distances=False,
+            )
+
+            # Filter only those pairs with delta z < dz.
+            z_pairs = capped_distance(
+                g1_in_rbin_positions * [0, 0, 1],
+                g2_in_rbin_positions * [0, 0, 1],
+                self.drwidth,  # define: dz = drwidth
+                box=[0, 0, self._universe.dimensions[self.dim], 90, 90, 90],
+                return_distances=False,
+            )
+
+            # Calculate pairwise phi distances between g1 and g2.
+            phi_dist_pairs, phi_distances = capped_distance(
+                g1_in_rbin_positions * [0, 1, 0],
+                g2_in_rbin_positions * [0, 1, 0],
+                np.pi,  # maximum phi distance is pi
+                box=[
+                    0,
+                    2 * np.pi,
+                    0,
+                    90,
+                    90,
+                    90,
+                ],  # minimum image convention in phi direction (0, 2pi)
+            )
+
+            # Calculate pairwise z distances between g1 and g2.
+            z_dist_pairs, z_distances = capped_distance(
+                g1_in_rbin_positions * [0, 0, 1],
+                g2_in_rbin_positions * [0, 0, 1],
+                self.dmax,
+                box=[
+                    0,
+                    0,
+                    self._universe.dimensions[self.dim],
+                    90,
+                    90,
+                    90,
+                ],  # minimum image convention in z direction (0, boxsize)
             )
 
             # Map pairs (i, j) to a number i+N*j (so we can use np.isin).
-            r_pairs_encode = r_pairs[:, 0] + n_g2 * r_pairs[:, 1]
-            pairs_encode = pairs[:, 0] + n_g2 * pairs[:, 1]
+            r_pairs_encode = r_pairs[:, 0] + self._obs.n_g2[r_bin] * r_pairs[:, 1]
+            phi_pairs_encode = phi_pairs[:, 0] + self._obs.n_g2[r_bin] * phi_pairs[:, 1]
+            z_pairs_encode = z_pairs[:, 0] + self._obs.n_g2[r_bin] * z_pairs[:, 1]
+            phi_dist_pairs_encode = (
+                phi_dist_pairs[:, 0] + self._obs.n_g2[r_bin] * phi_dist_pairs[:, 1]
+            )
+            z_dist_pairs_encode = (
+                z_dist_pairs[:, 0] + self._obs.n_g2[r_bin] * z_dist_pairs[:, 1]
+            )
 
-            mask_in_dr = np.isin(pairs_encode, r_pairs_encode)
-            mask_different_atoms = np.where(xy_distances > 0, True, False)
+            # Filter pairs that are in the same dr bin and dz bin.
+            mask_in_dr_and_dz = np.isin(
+                phi_dist_pairs_encode, r_pairs_encode
+            ) * np.isin(phi_dist_pairs_encode, z_pairs_encode)
 
-            relevant_xy_distances = xy_distances[mask_in_dr * mask_different_atoms]
+            # Filter pairs that are in the same dr bin and dphi bin.
+            mask_in_dr_and_dphi = np.isin(
+                z_dist_pairs_encode, r_pairs_encode
+            ) * np.isin(z_dist_pairs_encode, phi_pairs_encode)
+
+            mask_same_atom = phi_distances > 0
+            relevant_phi_distances = phi_distances[mask_in_dr_and_dz * mask_same_atom]
+
+            mask_same_atom = z_distances > 0
+            relevant_z_distances = z_distances[mask_in_dr_and_dphi * mask_same_atom]
+
             # Histogram the pairwise distances.
-            self._obs.count[r_bin] = np.histogram(
-                relevant_xy_distances, bins=self.rdf_nbins, range=(self.dmin, self.dmax)
+            self._obs.count_phi[r_bin] = np.histogram(
+                relevant_phi_distances, bins=self.nbins_pdf_phi, range=(0, np.pi)
+            )[0]
+
+            self._obs.count_z[r_bin] = np.histogram(
+                relevant_z_distances,
+                bins=self.nbins_pdf_z,
+                range=(self.dmin, self.dmax),
             )[0]
 
     def _conclude(self):
         super()._conclude()
 
-        # Calculate the Volume*N_g1 normalization factor for each bin.
-        self.norm = np.zeros((self.n_bins, self.rdf_nbins))
-        AN_bin_last = np.zeros(self.n_bins)
-        for i in range(self.rdf_nbins):
-            AN_integral = np.cumsum(
-                sa_cylider_intersect_circle(
-                    self.edges[i + 1], self.integration_bins[1:]
-                )
-                * self.means.integration_bin_count
-            )
-            AN_integral = np.append([0], AN_integral)
-            AN_in_interp = interp1d(
-                self.integration_bins, AN_integral, kind=1, assume_sorted=True
-            )
-            AN_bin = AN_in_interp(self.means.bin_edges[1:]) - AN_in_interp(
-                self.means.bin_edges[:-1]
-            )
-            self.norm[:, i] = (AN_bin - AN_bin_last) * self.drwidth
-            AN_bin_last = AN_bin
+        # Calculate the density of g2.
+        if self.density:
+            g2_density = self.means.n_g2 / self.means.bin_volume
+        else:
+            g2_density = 1
 
-        # Normalise rdf using the normalisation factor.
+        # Normalising volume for the angular PDF. This is 2(R*dR*2dz*2dphi),
+        # where R is the radius of the bin center, dR is the width of the rdf bin.
+        phi_norm = (
+            np.array(
+                [
+                    2
+                    * (self.means.bin_edges[1:] + self.means.bin_edges[:-1])
+                    / 2
+                    * self.bin_width_pdf_phi
+                    * 2
+                    * self.drwidth
+                    * 2
+                    * self.drwidth
+                ]
+            ).T
+            * g2_density
+        )
+
+        # Normalising volume for the axial PDF. This is 2(dZ*2dr*2dz),
+        # where dZ is the width of the rdf bin.
+        z_norm = (
+            2 * self.bin_width_pdf_z * 2 * self.drwidth * 2 * self.drwidth * g2_density
+        )
+
+        # Normalise pdf using the normalisation factor.
         with np.errstate(invalid="ignore", divide="ignore"):
-            self.results.rdf = self.means.count / self.norm / 2
-        self.results.rdf = np.nan_to_num(self.results.rdf.T, nan=0, posinf=0, neginf=0)
+            pdf_phi = self.means.count_phi / self.means.n_g1 / phi_norm
+        self.results.pdf_phi = np.nan_to_num(pdf_phi, nan=0, posinf=0, neginf=0)
+
+        with np.errstate(invalid="ignore", divide="ignore"):
+            pdf_z = self.means.count_z / self.means.n_g1 / z_norm
+        self.results.pdf_z = np.nan_to_num(pdf_z, nan=0, posinf=0, neginf=0)
+
+        # Calculate the bin centers.
+        edges_phi = np.histogram([-1], bins=self.nbins_pdf_phi, range=(0, np.pi))[1]
+        edges_z = np.histogram(
+            [-1], bins=self.nbins_pdf_z, range=(self.dmin, self.dmax)
+        )[1]
+        self.results.bins_phi = 0.5 * (edges_phi[1:] + edges_phi[:-1])
+        self.results.bins_z = 0.5 * (edges_z[1:] + edges_z[:-1])
 
     @render_docs
     def save(self):
         """${SAVE_DESCRIPTION}"""
         columns = ["r [Å]"]
-        for z in self.results.bin_pos:
-            columns.append(f"rdf at {z:.2f} Å [Å^-3]")
+        for r in self.results.bin_pos:
+            columns.append(f"pdf at {r:.2f} Å [Å^-3]")
 
         self.savetxt(
-            self.output,
-            np.hstack([self.results.bins[:, np.newaxis], self.results.rdf]),
+            "phi_" + self.output,
+            np.hstack([self.results.bins_phi[:, np.newaxis], self.results.pdf_phi.T]),
+            columns=columns,
+        )
+
+        self.savetxt(
+            "z_" + self.output,
+            np.hstack([self.results.bins_z[:, np.newaxis], self.results.pdf_z.T]),
             columns=columns,
         )
