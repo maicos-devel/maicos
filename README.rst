@@ -114,10 +114,10 @@ Currently, MAICoS supports the following analysis modules:
      - Compute cylindrical dipolar order parameters
    * - DiporderSphere
      - Compute spherical dipolar order parameters
-   * - RDFPlanar
-     - Compute slab-wise planar 2D radial distribution functions
-   * - RDFCylinder
-     - Compute cylindrical shell-wise planar 2D radial distribution functions
+   * - PDFPlanar
+     - Compute slab-wise planar 2D pair distribution functions
+   * - PDFCylinder
+     - Compute cylindrical shell-wise planar 2D pair distribution functions
    * - DipoleAngle
      - Compute angle timeseries of dipole moments
    * - KineticEnergy

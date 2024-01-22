@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Module for computing 1D radial distribution functions."""
+r"""Module for computing 1D cylindrical pair distribution functions."""
 
 import logging
 from typing import Optional
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 @render_docs
-class RDFCylinder(CylinderBase):
+class PDFCylinder(CylinderBase):
     r"""Shell-wise one-dimensional (cylindrical) pair distribution functions.
 
     The one-dimensional pair distribution functions :math:`g_{\text{1d}}(\phi)`
@@ -51,22 +51,14 @@ class RDFCylinder(CylinderBase):
             \sum_{j}^{N_{g2}} \delta(z - z_{ij}) \delta(R_{ij}) \delta(\phi_{ij})
             \right \rangle
 
-
-    .. math::
-
-         g_\mathrm{1D}(r) =
-         \frac{1}{N_{g1}2 \Delta R} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
-         \delta(r - r_{ij}) \cdot \left( \theta \left(|R_{ij}| + {\Delta R}
-         \right) - \theta \left( |R_{ij}| - {\Delta R} \right) \right) .
-
     Even though due to consistency reasons the results are called pair distribution
     functions the output is not unitless. The default output is is in dimension of
     number/volume in :math:`Å^{-3}`. If ``density`` is set to :py:obj:`True`, the
-    output is normalised by the density of :math:`g2` and
+    output is normalised by the density of :math:`g2`.
 
     Parameters
     ----------
-    ${RDF_PARAMETERS}
+    ${PDF_PARAMETERS}
     pdf_z_bin_width : float
         Binwidth of bins in the histogram of the axial PDF (Å).
     pdf_phi_bin_width : float
@@ -124,7 +116,7 @@ class RDFCylinder(CylinderBase):
         output: str = "pdf.dat",
     ):
         self.comp_1 = get_compound(g1)
-        super(RDFCylinder, self).__init__(
+        super(PDFCylinder, self).__init__(
             atomgroups=g1,
             refgroup=refgroup,
             unwrap=unwrap,
@@ -168,15 +160,14 @@ class RDFCylinder(CylinderBase):
         self.density = density
 
     def _prepare(self):
-        super(RDFCylinder, self)._prepare()
-        logger.info("Compute radial distribution function.")
+        super(PDFCylinder, self)._prepare()
+        logger.info("Compute pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center
 
         if self.dmin is None:
             self.dmin = 0
-
         if self.dmax is None:
             self.dmax = self.box_center[self.dim]
         else:
@@ -211,7 +202,7 @@ class RDFCylinder(CylinderBase):
         )
 
     def _single_frame(self):
-        super(RDFCylinder, self)._single_frame()
+        super(PDFCylinder, self)._single_frame()
         self._obs.n_g1 = np.zeros((self.n_bins, 1))
         self._obs.n_g2 = np.zeros((self.n_bins, 1))
         self._obs.count_phi = np.zeros((self.n_bins, self.nbins_pdf_phi))
@@ -366,7 +357,7 @@ class RDFCylinder(CylinderBase):
             g2_density = 1
 
         # Normalising volume for the angular PDF. This is 2(R*dR*2dz*2dphi),
-        # where R is the radius of the bin center, dR is the width of the rdf bin.
+        # where R is the radius of the bin center, dR is the width of the pdf bin.
         phi_norm = (
             np.array(
                 [
@@ -384,7 +375,7 @@ class RDFCylinder(CylinderBase):
         )
 
         # Normalising volume for the axial PDF. This is 2(dZ*2dr*2dz),
-        # where dZ is the width of the rdf bin.
+        # where dZ is the width of the pdf bin.
         z_norm = (
             2 * self.bin_width_pdf_z * 2 * self.drwidth * 2 * self.drwidth * g2_density
         )

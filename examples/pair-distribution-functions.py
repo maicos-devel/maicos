@@ -7,14 +7,14 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-Radial distribution function
-============================
+Pair distribution functions
+===========================
 
 Basic usage
 -----------
 
 In the following example, we will show how to calculate the two-dimensional planar
-radial distribution functions.
+pair distribution functions.
 
 In the following, we will give an example of a trajectory of water confined by graphene
 sheets simulated via GROMACS. We assume that the GROMACS topology is given by
@@ -44,9 +44,8 @@ import maicos
 u = mda.Universe("./graphene_water.tpr", "graphene_water.xtc")
 
 # %%
-# This universe object can then be passed to the planar radial distribution
-# analysis object, documented in
-# :class:`maicos.modules.rdfplanar.RDFPlanar`.
+# This universe object can then be passed to :class:`maicos.modules.pdfplanar.PDFPlanar`
+# analysis object.
 # It expects you to pass the atom groups you want to perform the analysis for.
 # In our example, we have graphene walls and SPC/E water confined between them,
 # where we are interested in the dielectric behavior of the fluid.
@@ -56,12 +55,12 @@ u = mda.Universe("./graphene_water.tpr", "graphene_water.xtc")
 
 water = u.select_atoms("resname SOL")
 
-ana_obj = maicos.RDFPlanar(
+ana_obj = maicos.PDFPlanar(
     water,
     water,
     dzheight=0.25,
     dim=2,
-    rdf_bin_width=0.2,
+    pdf_bin_width=0.2,
     refgroup=water,
     zmin=-5.0,
     zmax=0,
@@ -70,7 +69,7 @@ ana_obj = maicos.RDFPlanar(
 # %%
 # Next, we can run the analysis over the trajectory.
 # To this end we call the member function
-# :meth:`run <maicos.modules.rdfplanar.RDFPlanar.run>`.
+# :meth:`run <maicos.modules.pdfplanar.PDFPlanar.run>`.
 # We may set the ``verbose`` keyword to ``True`` to get additional information
 # such a a progress bar.
 #
@@ -93,18 +92,18 @@ dana_obj.run(verbose=True, step=10)
 
 # %%
 # The results of the analysis are stored in the ``results`` member variable.
-# As per the documentation of ``RDFPlanar``, we get three different arrays:
-# ``bin_pos``, ``bins``, and ``rdf``.
+# As per the documentation of ``PDFPlanar``, we get three different arrays:
+# ``bin_pos``, ``bins``, and ``pdf``.
 # Here, ``bin_pos`` is the position of the center of the slices in the
-# z-direction, ``bins`` contains the bin positions of the radial distribution,
-# which are shared by all slices and correspondingly ``rdf`` contains each
+# z-direction, ``bins`` contains the bin positions of the pair distribution,
+# which are shared by all slices and correspondingly ``pdf`` contains each
 # profile that our code produced.
 #
-# In the following, we loop over all the rdf slices and plot each of them.
+# In the following, we loop over all the pdf slices and plot each of them.
 # Furthermore, in a separate subplot, we also show the density profile of the
-# water molecules and highlight the slices that each rdf is calculated for.
+# water molecules and highlight the slices that each pdf is calculated for.
 # Hence, the same color in both plots corresponds to the same slice for the
-# radial distribution function and the density profile.
+# pair distribution function and the density profile.
 # %%
 
 # u per cubic angstrom to kg per cubic meter factor
@@ -116,14 +115,14 @@ print(ax)
 tax = ax[1].twinx()
 shift = 0
 shift_amount = 2
-for i in range(0, len(ana_obj.results.rdf[0])):
+for i in range(0, len(ana_obj.results.pdf[0])):
     bin_pos = ana_obj.results.bin_pos[i]
 
-    rdf_prof = ana_obj.results.rdf[:, i]
-    mean_bulk = np.mean(rdf_prof[ana_obj.results.bins > 10])
+    pdf_prof = ana_obj.results.pdf[:, i]
+    mean_bulk = np.mean(pdf_prof[ana_obj.results.bins > 10])
 
     line = ax[0].plot(
-        ana_obj.results.bins, ana_obj.results.rdf[:, i] / mean_bulk + shift
+        ana_obj.results.bins, ana_obj.results.pdf[:, i] / mean_bulk + shift
     )
     tax.vlines(
         7 + bin_pos, 0, 3500, alpha=0.7, color=line[0].get_color(), linestyles="dashed"

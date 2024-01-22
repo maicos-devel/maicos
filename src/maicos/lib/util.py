@@ -176,7 +176,7 @@ DOC_DICT = dict(
         evaluation (in Å).
 
         If ``rmax=None``, the box extension is taken.""",
-    RDF_PARAMETERS="""g1 : MDAnalysis.core.groups.AtomGroup
+    PDF_PARAMETERS="""g1 : MDAnalysis.core.groups.AtomGroup
         First AtomGroup.
     g2 : MDAnalysis.core.groups.AtomGroup
         Second AtomGroup.""",
