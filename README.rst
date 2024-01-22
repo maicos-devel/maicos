@@ -117,7 +117,7 @@ Currently, MAICoS supports the following analysis modules:
    * - PDFPlanar
      - Compute slab-wise planar 2D pair distribution functions
    * - PDFCylinder
-     - Compute cylindrical shell-wise planar 2D pair distribution functions
+     - Compute cylindrical shell-wise 1D pair distribution functions
    * - DipoleAngle
      - Compute angle timeseries of dipole moments
    * - KineticEnergy
