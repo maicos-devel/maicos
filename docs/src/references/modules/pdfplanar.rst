@@ -1,9 +1,9 @@
-.. _RDFPlanar:
+.. _PDFPlanar:
 
-RDFPlanar
+PDFPlanar
 #########
 
-.. autoclass:: maicos.RDFPlanar
+.. autoclass:: maicos.PDFPlanar
     :members:
     :undoc-members:
     :show-inheritance:

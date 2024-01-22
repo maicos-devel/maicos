@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Module for computing 2D radial distribution functions."""
+r"""Module for computing 2D planar pair distribution functions."""
 
 import logging
 from typing import Optional
@@ -23,41 +23,75 @@ logger = logging.getLogger(__name__)
 
 
 @render_docs
-class RDFPlanar(PlanarBase):
-    r"""Slab-wise planar 2D radial distribution functions.
+class PDFPlanar(PlanarBase):
+    r"""Slab-wise planar 2D pair distribution functions.
 
-    The radial distribution function :math:`g_\mathrm{2D}(r)` describes the spatial
-    correlation between atoms in :math:`g1` and atoms in :math:`g2`. The 2D RDF can be
-    used in systems that are inhomogeneous along one axis, and homogeneous in a plane.
-    It gives the average number density of :math:`g2` as a function of lateral distance
-    from a centered :math:`g1` atom. In fully homogeneous systems and in the limit of
-    small 'dzheight' :math:`\Delta z`, it is the same as the well known three
-    dimensional RDF.
+    The pair distribution function :math:`g_\mathrm{2D}(r)` describes the
+    spatial correlation between atoms in :math:`g_1` and atoms in
+    :math:`g_2`, which lie in the same plane.
+    It gives the average number density of :math:`g_2` atoms as a function of lateral
+    distance :math:`r` from a centered :math:`g_1` atom.
+    PDFPlanar can be used in systems that are inhomogeneous along one axis,
+    and homogeneous in a plane.
+    In fully homogeneous systems and in the limit of small 'dzheight'
+    :math:`\Delta z`, it is the same as the well known three dimensional PDF.
+
+    The planar PDF is defined by
 
     .. math::
 
-     g_\mathrm{2D}(r) =
-     \frac{1}{N_{g1}2 \Delta z} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
-     \delta(r - r_{ij}) \cdot \left( \theta \left(|z_{ij}| + {\Delta z}
-     \right) - \theta \left( |z_{ij}| - {\Delta z} \right) \right) .
+        g_\mathrm{2D}(r) = \left \langle
+        \frac{1}{N_{g1}} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
+        \frac{1}{2 \pi r} \delta(r - r_{ij}) \delta(z_{ij})
+        \right \rangle .
 
-    As the density to normalise the RDF with is unknown, the output is in the dimension
-    of number/volume in 1/Å^3.
+    where the brackets :math:`\langle \cdot \rangle` denote the ensemble
+    average. :math:`\delta(r- r_{ij})` counts the :math:`g_2` atoms at distance
+    :math:`r` from atom :math:`i`.
+    :math:`\delta(z_{ij})` ensures that only atoms, which lie
+    in the same plane :math:`z_i = z_j`, are considered for the PDF.
 
-    Functionally, RDFPlanar bins all pairwise :math:`g1`-:math:`g2` distances, where the
-    z distance is smaller than `dzheight` in a histogram.
+    Discretized for computational purposes the equation reads as
+
+    .. math::
+
+        g_\mathrm{2D}(r) =
+        \frac{1}{N_{g1}} \cdot \sum_{i}^{N_{g1}} \frac{\mathrm{count}\; g_2 \;
+        \mathrm{in}\; \Delta V_i(r) }{\Delta V_i(r)} .
+
+    where :math:`\Delta V_i(r)` is a ring around atom i, with inner
+    radius :math:`r - \frac{\Delta r}{2}`, outer radius
+    :math:`r + \frac{\Delta r}{2}` and height :math:`2 \Delta z`.
+
+    As the density to normalise the PDF with is unknown, the output is in
+    the dimension of number/volume in 1/Å^3.
+
+    Functionally, PDFPlanar bins all pairwise :math:`g_1`-:math:`g_2` distances,
+    where the z distance is smaller than 'dzheight' in a histogram.
+
+    For a more detailed explanation refer to
+    :ref:`Explanation: PDF<pdfs-explanation>` and
+    :ref:`PDFPlanar Derivation<pdfplanar-derivation>`
 
     Parameters
     ----------
-    ${RDF_PARAMETERS}
-    rdf_bin_width : float
-        Binwidth of bins in the histogram of the RDF (Å).
+    ${PDF_PARAMETERS}
+    pdf_bin_width : float
+        Binwidth of bins in the histogram of the PDF (Å).
     dzheight : float
-        dz height of a RDF slab (Å).
+        dz height of a PDF slab :math:`\Delta z` (Å). :math:`\Delta z` is
+        introduced to discretize the delta function :math:`\delta(z_{ij})`.
+        It is the maximum :math:`z` distance between atoms which are
+        considered to lie in the same plane.
+        In the limit of :math:`\Delta z \to 0`, PDFPlanar reaches the
+        continous limit. However, if :math:`\Delta z` is too small, there
+        are no atoms in 'g2' to sample.
+        We recommend a choice of :math:`\Delta z` that is 1/10th of
+        a bond length.
     dmin : float
-        the minimum pairwise distance between 'g1' and 'g2' (Å).
+        Minimum pairwise distance between 'g1' and 'g2' (Å).
     dmax : float
-        the maximum pairwise distance between 'g1' and 'g2' (Å).
+        Maximum pairwise distance between 'g1' and 'g2' (Å).
     ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
@@ -66,21 +100,21 @@ class RDFPlanar(PlanarBase):
     ----------
     ${PLANAR_CLASS_ATTRIBUTES}
     results.bins: numpy.ndarray
-        distances to which the RDF is calculated with shape (rdf_nbins) (Å)
-    results.rdf: np.ndrray
-        RDF with shape (rdf_nbins, n_bins) (1/Å^3)
+        distances to which the PDF is calculated with shape (pdf_nbins) (Å)
+    results.pdf: np.ndrray
+        PDF with shape (pdf_nbins, n_bins) (1/Å^3)
     """
 
     def __init__(
         self,
         g1: mda.AtomGroup,
         g2: Optional[mda.AtomGroup] = None,
-        rdf_bin_width: float = 0.3,
+        pdf_bin_width: float = 0.3,
         dzheight: float = 0.1,
         dmin: float = 0.0,
         dmax: Optional[float] = None,
         bin_method: str = "com",
-        output: str = "rdf.dat",
+        output: str = "pdf.dat",
         unwrap: bool = False,
         refgroup: Optional[mda.AtomGroup] = None,
         concfreq: int = 0,
@@ -112,7 +146,7 @@ class RDFPlanar(PlanarBase):
             self.g2 = g2
         self.dmin = dmin
         self.dmax = dmax
-        self.rdf_bin_width = rdf_bin_width
+        self.pdf_bin_width = pdf_bin_width
         self.dzheight = dzheight
         self.output = output
         self.bin_method = bin_method.lower()
@@ -121,29 +155,29 @@ class RDFPlanar(PlanarBase):
 
     def _prepare(self):
         super()._prepare()
-        logger.info("Compute radial distribution function.")
+        logger.info("Compute pair distribution function.")
 
         half_of_box_size = min(self.box_center)
         if self.dmax is None:
             self.dmax = min(self.box_center)
             logger.info(
-                "Setting maximum range of RDF to half the box size ({self.range[1]} Å)."
+                "Setting maximum range of PDF to half the box size ({self.range[1]} Å)."
             )
         elif self.dmax > min(self.box_center):
             raise ValueError(
-                "Range of RDF exceeds half of the box size. Set to smaller than "
+                "Range of PDF exceeds half of the box size. Set to smaller than "
                 f"{half_of_box_size} Å."
             )
 
         try:
-            if self.rdf_bin_width > 0:
-                self.rdf_nbins = int(
-                    np.ceil((self.dmax - self.dmin) / self.rdf_bin_width)
+            if self.pdf_bin_width > 0:
+                self.pdf_nbins = int(
+                    np.ceil((self.dmax - self.dmin) / self.pdf_bin_width)
                 )
             else:
-                raise ValueError("RDF bin_width must be a positive number.")
+                raise ValueError("PDF bin_width must be a positive number.")
         except TypeError:
-            raise ValueError("RDF bin_width must be a number.")
+            raise ValueError("PDF bin_width must be a number.")
 
         if self.bin_method not in ["cog", "com", "coc"]:
             raise ValueError(
@@ -151,11 +185,11 @@ class RDFPlanar(PlanarBase):
                 "`coc`."
             )
 
-        logger.info(f"Using {self.rdf_nbins} rdf bins.")
+        logger.info(f"Using {self.pdf_nbins} pdf bins.")
 
-        # Empty histogram self.count to store the RDF.
+        # Empty histogram self.count to store the PDF.
         self.edges = np.histogram(
-            [-1], bins=self.rdf_nbins, range=(self.dmin, self.dmax)
+            [-1], bins=self.pdf_nbins, range=(self.dmin, self.dmax)
         )[1]
         self.results.bins = 0.5 * (self.edges[:-1] + self.edges[1:])
 
@@ -165,7 +199,7 @@ class RDFPlanar(PlanarBase):
     def _single_frame(self):
         super()._single_frame()
         self._obs.n_g1 = np.zeros((self.n_bins, 1))
-        self._obs.count = np.zeros((self.n_bins, self.rdf_nbins))
+        self._obs.count = np.zeros((self.n_bins, self.pdf_nbins))
 
         bin_width = (self.zmax - self.zmin) / self.n_bins
 
@@ -176,7 +210,7 @@ class RDFPlanar(PlanarBase):
             atomgroup=self.g2, bin_method=self.bin_method, compound=self.comp_2
         )
 
-        # Calculate planar rdf per bin by averaging over all atoms in one bin.
+        # Calculate planar pdf per bin by averaging over all atoms in one bin.
         for z_bin in range(0, self.n_bins):
             # Set zmin and zmax of the bin.
             z_min = self.zmin + bin_width * z_bin
@@ -231,30 +265,30 @@ class RDFPlanar(PlanarBase):
             relevant_xy_distances = xy_distances[mask_in_dz * mask_different_atoms]
             # Histogram the pairwise distances.
             self._obs.count[z_bin] = np.histogram(
-                relevant_xy_distances, bins=self.rdf_nbins, range=(self.dmin, self.dmax)
+                relevant_xy_distances, bins=self.pdf_nbins, range=(self.dmin, self.dmax)
             )[0]
 
     def _conclude(self):
         super()._conclude()
 
-        # Normalise rdf using the volumes of a ring with height dz.
+        # Normalise pdf using the volumes of a ring with height 2*dz.
         ring_volumes = (
-            np.pi * (self.edges[1:] ** 2 - self.edges[:-1] ** 2) * self.dzheight
+            np.pi * (self.edges[1:] ** 2 - self.edges[:-1] ** 2) * 2 * self.dzheight
         )
         ring_volumes = np.expand_dims(ring_volumes, axis=0)
         self.results.bins = self.results.bins
-        self.results.rdf = self.means.count / self.means.n_g1 / ring_volumes / 2
-        self.results.rdf = np.nan_to_num(self.results.rdf.T, nan=0)
+        self.results.pdf = self.means.count / self.means.n_g1 / ring_volumes
+        self.results.pdf = np.nan_to_num(self.results.pdf.T, nan=0)
 
     @render_docs
     def save(self):
         """${SAVE_DESCRIPTION}"""
         columns = ["r [Å]"]
         for z in self.results.bin_pos:
-            columns.append(f"rdf at {z:.2f} Å [Å^-3]")
+            columns.append(f"pdf at {z:.2f} Å [Å^-3]")
 
         self.savetxt(
             self.output,
-            np.hstack([self.results.bins[:, np.newaxis], self.results.rdf]),
+            np.hstack([self.results.bins[:, np.newaxis], self.results.pdf]),
             columns=columns,
         )

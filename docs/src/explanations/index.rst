@@ -13,3 +13,4 @@ understanding of what MAICoS is all about.
     general-design
     dielectric
     saxs
+    pdfs

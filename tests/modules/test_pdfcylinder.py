@@ -6,7 +6,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the RDFCylinder class."""
+"""Tests for the PDFCylinder class."""
 import sys
 from pathlib import Path
 
@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import RDFCylinder
+from maicos import PDFCylinder
 
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -26,8 +26,8 @@ from modules.create_mda_universe import (  # noqa: E402
 )
 
 
-class TestRDFCylinder(object):
-    """Tests for the RDFCylinder class."""
+class TestPDFCylinder(object):
+    """Tests for the PDFCylinder class."""
 
     @pytest.fixture()
     def spce_water(self):
@@ -42,15 +42,15 @@ class TestRDFCylinder(object):
         with pytest.raises(
             ValueError, match="Axial range of PDF exceeds half of the box size."
         ):
-            RDFCylinder(spce_water.atoms, dmax=L + 1e3, dim=dim)._prepare()
+            PDFCylinder(spce_water.atoms, dmax=L + 1e3, dim=dim)._prepare()
         # No error if dmax is smaller than or equal half of the box size
-        RDFCylinder(spce_water.atoms, dmax=L, dim=dim)._prepare()
+        PDFCylinder(spce_water.atoms, dmax=L, dim=dim)._prepare()
 
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_dmax_default(self, spce_water, dim):
         """Test that dmax defaults to half the box size in the given dimension."""
         L = spce_water.dimensions[dim] / 2
-        ana_obj = RDFCylinder(spce_water.atoms, dim=dim)
+        ana_obj = PDFCylinder(spce_water.atoms, dim=dim)
         ana_obj._prepare()
         assert ana_obj.dmax == L
 
@@ -58,7 +58,7 @@ class TestRDFCylinder(object):
         """Test error raise when origin paramater has wrong shape"""
         match = r"Origin has length \(1,\) but only \(3,\) is allowed."
         with pytest.raises(ValueError, match=match):
-            RDFCylinder(spce_water.atoms, origin=np.array([1]))
+            PDFCylinder(spce_water.atoms, origin=np.array([1]))
 
     # TODO: Do the same for phi
     @pytest.mark.parametrize("dim", [0, 1, 2])
@@ -69,7 +69,7 @@ class TestRDFCylinder(object):
         dmax = 15
         # Make the dimensions of the univese a bit easier to handle
         spce_water.dimensions = np.array([30, 40, 50, 90, 90, 90])
-        ana_obj = RDFCylinder(
+        ana_obj = PDFCylinder(
             spce_water.atoms,
             dim=dim,
             dmin=dmin,
@@ -87,11 +87,11 @@ class TestRDFCylinder(object):
         with pytest.raises(
             ValueError, match="PDF bin_width must be a positive number."
         ):
-            RDFCylinder(spce_water.atoms, bin_width_pdf_z=-1)._prepare()
+            PDFCylinder(spce_water.atoms, bin_width_pdf_z=-1)._prepare()
         with pytest.raises(
             ValueError, match="PDF bin_width must be a positive number."
         ):
-            RDFCylinder(spce_water.atoms, bin_width_pdf_phi=-1)._prepare()
+            PDFCylinder(spce_water.atoms, bin_width_pdf_phi=-1)._prepare()
 
     @pytest.mark.parametrize(
         "dim, results",
@@ -102,12 +102,12 @@ class TestRDFCylinder(object):
         ],
     )
     def test_z_edges(self, spce_water, dim, results):
-        """Test whether the RDF edges and the deduced bin positions are correct."""
+        """Test whether the PDF edges and the deduced bin positions are correct."""
         pdf_nbins = 5
         results = np.array(results)
         # Make the dimensions of the univese a bit easier to handle
         spce_water.dimensions = np.array([10, 20, 30, 90, 90, 90])
-        ana_obj = RDFCylinder(
+        ana_obj = PDFCylinder(
             spce_water.atoms,
             dim=dim,
             bin_width_pdf_z=spce_water.dimensions[dim] / 2 / pdf_nbins,
@@ -116,10 +116,10 @@ class TestRDFCylinder(object):
         assert_allclose(ana_obj.results.bins_z, 0.5 * (results[:-1] + results[1:]))
 
     def test_phi_edges(self, spce_water):
-        """Test whether the RDF edges and the deduced bin positions are correct."""
+        """Test whether the PDF edges and the deduced bin positions are correct."""
         # Make the dimensions of the univese a bit easier to handle
         spce_water.dimensions = np.array([10, 20, 30, 90, 90, 90])
-        ana_obj = RDFCylinder(
+        ana_obj = PDFCylinder(
             spce_water.atoms,
             dim=2,
             bin_width_pdf_phi=np.pi / 6,  # this should result in 6 bins
@@ -133,7 +133,7 @@ class TestRDFCylinder(object):
         assert_allclose(ana_obj.results.bins_phi, results)
 
     def test_count_z(self):
-        """Test whether the RDF molecule counts in a line are correct."""
+        """Test whether the PDF molecule counts in a line are correct."""
         g2 = line_of_water_molecules(5, 1)
         g2.translate([0, 0, 0.5])
         g1 = line_of_water_molecules(1, 1)
@@ -145,7 +145,7 @@ class TestRDFCylinder(object):
         g1 = g.atoms[:3]
         g2 = g.atoms[3:]
 
-        ana_obj = RDFCylinder(
+        ana_obj = PDFCylinder(
             g1,
             g2,
             dim=2,
@@ -159,7 +159,7 @@ class TestRDFCylinder(object):
         assert_allclose(ana_obj._obs.count_z[0], [1, 1, 1, 1, 1, 0, 0, 0, 0, 0])
 
     def test_count_phi(self):
-        """Test whether the RDF molecule counts in ring are correct.
+        """Test whether the PDF molecule counts in ring are correct.
 
         Here, g2 is a circle of 6 water molecules with radius 1 and center (10, 10, 10).
         The box is (20, 20, 20), so the circle sits in the center of the box.
@@ -191,7 +191,7 @@ class TestRDFCylinder(object):
         g1 = g.atoms[:3]
         g2 = g.atoms[3:]
 
-        ana_obj = RDFCylinder(
+        ana_obj = PDFCylinder(
             g1,
             g2,
             dim=2,
@@ -214,7 +214,7 @@ class TestRDFCylinder(object):
         """Test output name."""
         monkeypatch.chdir(tmp_path)
 
-        ana_obj = RDFCylinder(spce_water.atoms, output=name)
+        ana_obj = PDFCylinder(spce_water.atoms, output=name)
         ana_obj.run()
         ana_obj.save()
         for file in output:
@@ -223,5 +223,5 @@ class TestRDFCylinder(object):
     def test_wrong_bin_method(self, spce_water):
         """Test grouping for a non existing bin_method."""
         with pytest.raises(ValueError, match="is an unknown binning"):
-            ana_obj = RDFCylinder(spce_water.atoms, bin_method="foo")
+            ana_obj = PDFCylinder(spce_water.atoms, bin_method="foo")
             ana_obj._prepare()

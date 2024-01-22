@@ -20,8 +20,8 @@ from .dipordercylinder import DiporderCylinder
 from .diporderplanar import DiporderPlanar
 from .dipordersphere import DiporderSphere
 from .kineticenergy import KineticEnergy
-from .rdfcylinder import RDFCylinder
-from .rdfplanar import RDFPlanar
+from .pdfcylinder import PDFCylinder
+from .pdfplanar import PDFPlanar
 from .saxs import Saxs
 from .temperatureplanar import TemperaturePlanar
 from .velocitycylinder import VelocityCylinder
@@ -41,8 +41,8 @@ __all__ = [
     "DiporderPlanar",
     "DiporderSphere",
     "KineticEnergy",
-    "RDFCylinder",
-    "RDFPlanar",
+    "PDFCylinder",
+    "PDFPlanar",
     "Saxs",
     "TemperaturePlanar",
     "VelocityCylinder",
