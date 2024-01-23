@@ -183,7 +183,7 @@ build-wheel:linux:
     - .build-wheel
   script:
     - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m pip install -U tox
-    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m tox -e build-linux
+    - /opt/python/cp${PYTHON_VERSION//.}-cp${PYTHON_VERSION//.}/bin/python -m tox -e build
     - auditwheel repair dist/*.whl -w dist/
     - rm dist/*linux_x86_64.whl
   needs: ["tests:linux"]
