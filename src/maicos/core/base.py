@@ -412,9 +412,11 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             sig.args.remove("self")
             run_signature = ", ".join(
                 [
-                    f"{param}='{self._run_locals[param]}'"
-                    if type(self._run_locals[param]) is str
-                    else f"{param}={self._run_locals[param]}"
+                    (
+                        f"{param}='{self._run_locals[param]}'"
+                        if type(self._run_locals[param]) is str
+                        else f"{param}={self._run_locals[param]}"
+                    )
                     for param in sig.args
                 ]
             )

@@ -84,9 +84,7 @@ def mu(rho: np.ndarray, T: float, m: float) -> np.ndarray:
 
     # De Broglie (converted to angstrom)
     db = (
-        np.sqrt(
-            const.h**2 / (2 * np.pi * m * const.atomic_mass * const.Boltzmann * T)
-        )
+        np.sqrt(const.h**2 / (2 * np.pi * m * const.atomic_mass * const.Boltzmann * T))
         / const.angstrom
     )
 

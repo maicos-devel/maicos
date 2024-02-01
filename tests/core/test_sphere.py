@@ -204,12 +204,7 @@ class TestSphereBase(object):
         """Test correct volume of ach bin."""
         sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
         sphere_class_obj.run(stop=5)
-        bin_volume = (
-            4
-            * np.pi
-            * np.array([1**3 - 0**3, 2**3 - 1**3, 3**3 - 2**3])
-            / 3
-        )
+        bin_volume = 4 * np.pi * np.array([1**3 - 0**3, 2**3 - 1**3, 3**3 - 2**3]) / 3
 
         assert_allclose(sphere_class_obj.means.bin_volume, bin_volume)
 
