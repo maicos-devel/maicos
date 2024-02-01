@@ -94,11 +94,9 @@ where we have followed the general derivations given above.
 For discretized calculation we count the number of atoms per ring as illustrated below
 
 .. image:: ../../static/pdfplanar_sketch.svg
-.. image:: ../../static/pdfplanar_sketch.svg
    :alt: Sketch of the discretization
    :class: only-light
 
-.. image:: ../../static/pdfplanar_sketch_dark.svg
 .. image:: ../../static/pdfplanar_sketch_dark.svg
    :alt: Sketch of the discretization
    :class: only-dark
