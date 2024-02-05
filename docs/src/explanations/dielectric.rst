@@ -163,14 +163,14 @@ is given by
 
 .. math::
      \epsilon_\parallel(z) = 1 + \frac{\langle m_\parallel(z) M_\parallel \rangle
-                            - \langle m_\parallel (z) \rangle \langle M \rangle}
-                            {\epsilon_0 k_\mathrm{B}T}
+                            - \langle m_\parallel (z) \rangle \langle M_\parallel
+                            \rangle}{\epsilon_0 k_\mathrm{B}T}
 
 for the **parallel** dielectric profile, and
 
 .. math::
      \epsilon_\perp^{-1}(z) = 1 - \frac{\langle m_\perp(z) M_\perp \rangle
-                             - \langle m_\perp (z) \rangle \langle M \rangle}
+                             - \langle m_\perp (z) \rangle \langle M_\perp \rangle}
                              {\epsilon_0 k_\mathrm{B}T},
 
 for the **inverse** perpendicular dielectric profile.
