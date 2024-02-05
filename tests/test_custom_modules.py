@@ -22,17 +22,14 @@ from data import WATER_TPR, WATER_TRR
 from numpy.testing import assert_allclose
 
 
-# Ugly constrection but I was not able to get the code running with a fixture...
-custom_dir = Path().home() / ".maicos"
-custom_dir.mkdir(exist_ok=True)
+COSTUM_DIR = Path().home() / ".maicos"
+COSTUM_DIR.mkdir(exist_ok=True)
 
-print(custom_dir)
+REPO_PATH = Path(__file__).parents[1]
+shutil.copy(REPO_PATH / "examples/maicos_custom_modules.py", COSTUM_DIR)
+shutil.copy(REPO_PATH / "examples/own_module.py", COSTUM_DIR)
 
-DIR_PATH = Path(__file__).parent
-shutil.copy(DIR_PATH / "../examples/maicos_custom_modules.py", custom_dir)
-shutil.copy(DIR_PATH / "../examples/own_module.py", custom_dir)
-
-from maicos import AnalysisExample  # noqa: E402
+custom_modules = pytest.importorskip("maicos_custom_modules")
 
 
 class TestAnalysisExample(object):
@@ -50,13 +47,13 @@ class TestAnalysisExample(object):
 
     def test_analysis_example(self, ag):
         """Test analysis example."""
-        example = AnalysisExample(ag).run()
+        example = custom_modules.AnalysisExample(ag).run()
         assert_allclose(example.results["volume"].mean(), 15443.7, rtol=1e-1)
 
     def test_output(self, ag, monkeypatch, tmp_path):
         """Test outputs."""
         monkeypatch.chdir(tmp_path)
-        example = AnalysisExample(ag).run()
+        example = custom_modules.AnalysisExample(ag).run()
         example.save()
         res_volume = np.loadtxt(example.output)
         assert_allclose(example.results["volume"], res_volume, rtol=1e-2)

@@ -16,6 +16,7 @@ v0.8 (XXXX/XX/XX)
 Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal,
 Kira Fischer
 
+- Skip test for custom modules in case the import is not working (!294)
 - Change to CHANGELOG.rst update check so that it is only executed in MRs (!198)
 - Rename radial distribution function to pair distribution function (!278)
 - Add RDF derivation and explain role of dz. (!278)
