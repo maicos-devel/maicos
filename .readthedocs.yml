@@ -31,3 +31,4 @@ python:
      path: .
      extra_requirements:
       - examples
+      - cython
