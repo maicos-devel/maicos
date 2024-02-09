@@ -181,6 +181,7 @@ docs:
       - dist
   only:
     - tags
+    - schedules
 
 build-wheel:linux:
   image: quay.io/pypa/manylinux2014_x86_64
