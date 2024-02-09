@@ -232,3 +232,6 @@ pypi:
     - python -m twine upload --verbose --skip-existing dist/*.tar.gz dist/*.whl
   only:
     - tags
+  needs:
+    - tests:windows
+  when: manual
