@@ -125,11 +125,10 @@ def dmu(rho: np.ndarray, drho: np.ndarray, T: float) -> np.ndarray:
 # %%
 # Finally, we can use those previously defined functions to calculate the chemical
 # potential and its error for an example trajectory called `water`, whose data can be
-# downloaded from :download:`topology <../../static/water/water.tpr>` and
-# :download:`trajectory <../../static/water/water.trr>`. To calculate the mean density
-# we use the module :class:`maicos.DensityPlanar` of MAICoS.
-# This example uses a temperature of :math:`300 \: \rm K` and a mass of :math:`18 \: \rm
-# u`.
+# downloaded from :download:`topology <water.tpr>` and :download:`trajectory
+# <water.trr>`. To calculate the mean density we use the module
+# :class:`maicos.DensityPlanar` of MAICoS. This example uses a temperature of :math:`300
+# \: \rm K` and a mass of :math:`18 \: \rm u`.
 
 
 water = mda.Universe("water.tpr", "water.trr")

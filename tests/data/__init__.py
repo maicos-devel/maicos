@@ -12,13 +12,14 @@ from pathlib import Path
 
 
 DIR_PATH = Path(__file__).parent
+EXAMPLES = DIR_PATH / ".." / ".." / "examples"
 
 
 # bulk water
-WATER_GRO = DIR_PATH / "../../docs/static/water/water.gro"
-WATER_TRR = DIR_PATH / "../../docs/static/water/water.trr"
-WATER_2F_TRR = DIR_PATH / "../../docs/static/water/water_two_frames.trr"
-WATER_TPR = DIR_PATH / "../../docs/static/water/water.tpr"
+WATER_GRO = DIR_PATH / "water/water.gro"
+WATER_TRR = EXAMPLES / "water.trr"
+WATER_2F_TRR = DIR_PATH / "water/water_two_frames.trr"
+WATER_TPR = EXAMPLES / "water.tpr"
 
 # air-water interface
 AIRWATER_GRO = DIR_PATH / "airwater/airwater.gro"

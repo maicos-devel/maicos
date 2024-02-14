@@ -66,9 +66,8 @@ import maicos
 # atoms of the wall were maintained frozen along :math:`\boldsymbol{e}_x`.
 #
 # We first create an :class:`MDAnalysis.core.universe.Universe` by loading a topology
-# and trajectory from disk. You can download the :download:`topology
-# <../../static/slit_flow/slit_flow.tpr>` and the :download:`trajectory
-# <../../static/slit_flow/slit_flow.trr>` from our website.
+# and trajectory from disk. You can download the :download:`topology <slit_flow.tpr>`
+# and the :download:`trajectory <slit_flow.trr>` from our website.
 
 u = mda.Universe("slit_flow.tpr", "slit_flow.trr")
 

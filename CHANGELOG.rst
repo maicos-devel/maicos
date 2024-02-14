@@ -13,6 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.9 (XXXX/XX/XX)
 -----------------
+Philip Loche
+
+- Remove symbolic links from examples (!295)
 
 v0.8 (2024/02/05)
 -----------------

@@ -1,4 +1,5 @@
-# Kinetic Energy data
+Kinetic Energy data
+===================
 
 A bulk water liquid sample made of 510 water molecules.
 

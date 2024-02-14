@@ -39,6 +39,7 @@ copyright = f"{datetime.now().date().year}, {author}"
 
 # Add any Sphinx extension module names here, as strings.
 extensions = [
+    "sphinx.builders.linkcheck",  # Check that external links are working
     "sphinx.ext.autodoc",  # import the modules you are documenting
     "sphinx_gallery.gen_gallery",  # Generate examples from python files
     "sphinx.ext.viewcode",  # link to source files from docs
@@ -56,6 +57,7 @@ bibtex_reference_style = "author_year"
 
 sphinx_gallery_conf = {
     "filename_pattern": "/*",
+    "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "ignore_pattern": r"maicos_custom_modules\.py",
     "examples_dirs": ["../../examples"],
     "gallery_dirs": ["examples"],
