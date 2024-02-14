@@ -27,7 +27,7 @@ integration pipeline is based on Tox_. So you need to install ``tox`` first
     conda install -c conda-forge tox
 
 Then go to the `MAICoS develop project`_ page, hit the ``Fork`` button and clone your
-forked branch to your machine. 
+forked branch to your machine.
 
 .. code-block:: bash
 
@@ -45,6 +45,16 @@ you to edit the code and directly use the updated version.
 
 .. _Tox: https://tox.readthedocs.io/en/latest/
 .. _`MAICoS develop project` : https://gitlab.com/maicos-devel/maicos
+
+Useful developer scripts
+------------------------
+
+The following scripts can be useful to developers:
+
+- ``./developer/clean_dist_check.sh``: Clean dist files. Useful before/after ``tox -e
+  build``
+- ``./developer/clean_tempfiles.sh``: Remove all generated files related to Python,
+  including all build caches.
 
 Code of Conduct
 ---------------

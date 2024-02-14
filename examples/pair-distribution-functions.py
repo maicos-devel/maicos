@@ -19,9 +19,8 @@ pair distribution functions.
 In the following, we will give an example of a trajectory of water confined by graphene
 sheets simulated via GROMACS. We assume that the GROMACS topology is given by
 `graphene_water.tpr` and the trajectory is given by `graphene_water.xtc`. Both can be
-downloaded under :download:`topology <../../static/graphene_water/graphene_water.tpr>`
-and :download:`trajectory <../../static/graphene_water/graphene_water.xtc>`,
-respectively.
+downloaded under :download:`topology <graphene_water.tpr>` and
+:download:`trajectory <graphene_water.xtc>`, respectively.
 
 From these files you can create a MDAnalysis universe object.
 
@@ -88,7 +87,7 @@ dana_obj = maicos.DensityPlanar(
     water, dim=2, refgroup=water, bin_width=0.1, sym=True, zmin=-7, zmax=7
 )
 
-dana_obj.run(verbose=True, step=10)
+dana_obj.run(step=10)
 
 # %%
 # The results of the analysis are stored in the ``results`` member variable.

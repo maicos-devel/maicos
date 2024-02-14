@@ -1,4 +1,5 @@
-# Mica data
+Mica data
+=========
 
 A realistic mica-water interface.
 

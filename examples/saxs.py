@@ -13,8 +13,8 @@ Small-angle X-ray scattering
 ============================
 
 Small-angle X-ray scattering (SAXS) can be extracted using MAICoS. To follow this how-to
-guide, you should download the :download:`topology <../../static/water/water.tpr>` and
-the :download:`trajectory <../../static//water/water.trr>` files of the water system.
+guide, you should download the :download:`topology <water.tpr>` and the
+:download:`trajectory <water.trr>` files of the water system.
 
 First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:
 """
