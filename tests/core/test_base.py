@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -26,7 +26,7 @@ from maicos.core import AnalysisBase, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import WATER_GRO, WATER_TPR, WATER_TRR  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 
 
 class Output(AnalysisBase):
@@ -106,12 +106,12 @@ class Test_AnalysisBase(object):
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
-        return mda.Universe(WATER_TPR, WATER_TRR, in_memory=True).atoms
+        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
 
     @pytest.fixture()
     def ag_single_frame(self):
         """Import MDA universe of single frame."""
-        return mda.Universe(WATER_TPR, WATER_GRO, in_memory=True).atoms
+        return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT, in_memory=True).atoms
 
     @pytest.fixture()
     def empty_ag(self):
@@ -153,7 +153,7 @@ class Test_AnalysisBase(object):
     def test_different_universes(self, ag):
         """Test different universes."""
         with pytest.raises(ValueError, match="Atomgroups belong"):
-            AnalysisBase([ag, mda.Universe(WATER_TPR)], multi_group=True)
+            AnalysisBase([ag, mda.Universe(WATER_TPR_NPT)], multi_group=True)
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""

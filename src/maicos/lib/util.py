@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -153,6 +153,12 @@ DOC_DICT = dict(
         each bin.
     f_kwargs : dict
         Additional parameters for `function`""",
+    Q_SPACE_PARAMETERS="""startq : float
+        Starting q (1/Å)
+    endq : float
+        Ending q (1/Å)
+    dq : float
+        bin_width (1/Å)""",
     PLANAR_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
     ${DIM_PARAMETER}
     zmin : float

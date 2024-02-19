@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -26,7 +26,7 @@ from maicos.lib.weights import density_weights
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR  # noqa: E402
+from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
 
 
 class PlanarClass(PlanarBase):
@@ -306,7 +306,7 @@ class TestPlanarBaseChilds:
     @pytest.fixture()
     def ag_single_frame(self):
         """Import MDA univers."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
     members = []

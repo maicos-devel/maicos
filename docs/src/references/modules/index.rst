@@ -26,9 +26,11 @@ Discord_.
    dipordercylinder
    diporderplanar
    dipordersphere
+   diporderstructurefactor
    kineticenergy
    pdfcylinder
    pdfplanar
+   rdfdiporder
    saxs
    temperatureplanar
    velocitycylinder

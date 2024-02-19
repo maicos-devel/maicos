@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -23,7 +23,7 @@ from maicos.core.base import AnalysisBase
 
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO, WATER_TPR  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
 from util import circle_of_water_molecules  # noqa: E402
 
 
@@ -146,7 +146,7 @@ class TestChargedDecorator(object):
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
     def test_charged_single(self, ag):
@@ -227,7 +227,7 @@ class TestTrajectoryPrecision(object):
     @pytest.fixture()
     def trj(self):
         """Import MDA universe trajectory."""
-        return mda.Universe(WATER_TPR, WATER_GRO).trajectory
+        return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT).trajectory
 
     def test_gro_trajectory(self, trj):
         """Test detect gro traj."""
@@ -315,7 +315,7 @@ class Testget_center:
     @pytest.fixture
     def ag(self):
         """An AtomGroup made from water molecules."""
-        return mda.Universe(WATER_TPR, WATER_GRO)
+        return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
 
     @pytest.mark.parametrize("compound", compounds)
     def cog(self, ag, compound):

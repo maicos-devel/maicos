@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -85,13 +85,13 @@ class PDFPlanar(PlanarBase):
         considered to lie in the same plane.
         In the limit of :math:`\Delta z \to 0`, PDFPlanar reaches the
         continous limit. However, if :math:`\Delta z` is too small, there
-        are no atoms in 'g2' to sample.
+        are no atoms in ``g2`` to sample.
         We recommend a choice of :math:`\Delta z` that is 1/10th of
         a bond length.
     dmin : float
-        Minimum pairwise distance between 'g1' and 'g2' (Å).
+        Minimum pairwise distance between ``g1`` and ``g2`` (Å).
     dmax : float
-        Maximum pairwise distance between 'g1' and 'g2' (Å).
+        Maximum pairwise distance between ``g1`` and ``g2`` (Å).
     ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}

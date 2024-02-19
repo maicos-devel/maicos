@@ -1,7 +1,7 @@
 #!/bin/bash
 # -*- Mode: bash; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -14,7 +14,7 @@ maicos densityplanar -s slit_flow.tpr \
 # The density profile has been written in a file named ``density.dat`` in the current
 # directory. The written file starts with the following lines
 
-head -n 20 density.dat 
+head -n 20 density.dat
 
 # For lengthy analysis, use the ``concfreq`` option to update the result during the run
 

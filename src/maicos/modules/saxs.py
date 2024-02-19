@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -41,8 +41,11 @@ class Saxs(AnalysisBase):
     an element-specific form factor based on Cromer-Mann parameters
     :footcite:t:`princeInternationalTablesCrystallography2004`.
 
-    For an examples on the usage refer to :ref:`How-to: SAXS<howto-saxs>` and for
-    details on the theory see :ref:`saxs-explanations`.
+    For the correlation time estimation the module will use the value of the scattering
+    intensity with the largest possible :math:`q` value.
+
+    For an example on the usage refer to :ref:`How-to: SAXS<howto-saxs>` and for details
+    on the theory see :ref:`saxs-explanations`.
 
     Parameters
     ----------
@@ -51,12 +54,7 @@ class Saxs(AnalysisBase):
     bin_spectrum : bool
         Bin the spectrum. If :py:obj:`False` Miller indices of q-vector are returned.
         Only works for NVT simulations.
-    startq : float
-        Starting q (1/Å)
-    endq : float
-        Ending q (1/Å)
-    dq : float
-        bin_width (1/Å)
+    ${Q_SPACE_PARAMETERS}
     mintheta : float
         Minimal angle (°) between the q vectors and the z-axis.
     maxtheta : float
@@ -220,6 +218,8 @@ class Saxs(AnalysisBase):
                 self._obs.struct_factor[:, i_group] = np.nan_to_num(struct_ts)
             else:
                 self._obs.S_array[:, :, :, i_group] = S_ts
+
+        return S_ts.flatten()[-1]
 
     def _conclude(self):
         if self.bin_spectrum:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -19,7 +19,7 @@ from maicos import DielectricSpectrum
 
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_TPR, WATER_TRR  # noqa: E402
+from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 
 
 class TestDielectricSpectrum(object):
@@ -28,7 +28,7 @@ class TestDielectricSpectrum(object):
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
     def test_output_name(self, ag, monkeypatch, tmp_path):
