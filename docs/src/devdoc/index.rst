@@ -8,7 +8,7 @@ Developer documentation
 .. toctree::
     :maxdepth: 0
 
-    ../examples/own_module
+    own_module
     tests
     documentation
     versioning
