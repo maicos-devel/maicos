@@ -6,16 +6,40 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Create a mda analysis universe with few molecules."""
+"""Helper and utilities functions for testing."""
+import logging
 import sys
 from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
+import sympy as sp
+
+
+logger = logging.getLogger(__name__)
 
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+
+
+def error_prop(f, variables, errors):
+    """
+    Analytic error propagation.
+
+    This function takes a sympy expression, its variables, and
+    the corresponding error values as inputs and returns the analytic
+    error propagation as a regular python function of the variables.
+    """
+    assert len(variables) == len(errors)
+    error_propagation = 0
+    for i, var in enumerate(variables):
+        error_propagation += (np.abs(f.diff(var)) * errors[i]) ** 2
+
+    return sp.lambdify([*variables], sp.sqrt(error_propagation))
+
+
+# Useful functions for creating test systems
 
 
 def line_of_water_molecules(

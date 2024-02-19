@@ -13,7 +13,6 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import line_of_water_molecules
 from numpy.testing import assert_allclose, assert_raises
 
 from maicos import KineticEnergy
@@ -21,6 +20,7 @@ from maicos import KineticEnergy
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import NVE_WATER_TPR, NVE_WATER_TRR  # noqa: E402
+from util import line_of_water_molecules  # noqa: E402
 
 
 class ReferenceAtomGroups:

@@ -13,7 +13,6 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import circle_of_water_molecules
 from numpy.testing import assert_allclose
 
 from maicos import DensityCylinder
@@ -21,6 +20,7 @@ from maicos import DensityCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO, WATER_TPR  # noqa: E402
+from util import circle_of_water_molecules  # noqa: E402
 
 
 class ReferenceAtomGroups:
