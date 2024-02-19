@@ -15,6 +15,11 @@ v0.9 (XXXX/XX/XX)
 -----------------
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Allow running an analysis with a universe without a cell (!297)
+- Test that :class:`core.AnalysisBase` API and ``run`` method is the same as
+  :class:`MDAnalysis.analysis.base.AnalysisBase` (!297)
+- Add ``frames`` and ``progressbar_kwargs`` argument to
+  :meth:`maicos.core.AnalysisBase.run` (!297)
 - Update copyright year (!296)
 - Add new diporder modules: ``RDFDiporder``, ``DiporderStructureFactor`` (!296)
 - Add correlation time estimate for ``SAXS`` module (!296)

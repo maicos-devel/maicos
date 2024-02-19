@@ -174,6 +174,11 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             )
         self.wrap_compound = wrap_compound
 
+        if self.unwrap and self._universe.dimensions is None:
+            raise ValueError(
+                "Universe does not have `dimensions` and can't be unwrapped!"
+            )
+
         if self.unwrap and self.wrap_compound == "atoms":
             logger.warning(
                 "Unwrapping in combination with the "
@@ -183,7 +188,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             self.unwrap = False
 
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
-            raise ValueError("The provided `refgroup` does not contain " "any atoms.")
+            raise ValueError("The provided `refgroup` does not contain any atoms.")
 
         super().__init__(trajectory=self._trajectory)
 
@@ -197,7 +202,9 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         start: Optional[int] = None,
         stop: Optional[int] = None,
         step: Optional[int] = None,
+        frames: Optional[int] = None,
         verbose: Optional[bool] = None,
+        progressbar_kwargs: Optional[dict] = None,
     ) -> Self:
         """Iterate over the trajectory.
 
@@ -209,8 +216,16 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
             stop frame of analysis
         step : int
             number of frames to skip between each analysed frame
+        frames : array_like
+            array of integers or booleans to slice trajectory; ``frames`` can only be
+            used *instead* of ``start``, ``stop``, and ``step``. Setting *both*
+            ``frames`` and at least one of ``start``, ``stop``, ``step`` to a
+            non-default value will raise a :exc:`ValueError`.
         verbose : bool
             Turn on verbosity
+        progressbar_kwargs : dict
+            ProgressBar keywords with custom parameters regarding progress bar position,
+            etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
 
         Returns
         -------
@@ -223,7 +238,9 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         # if verbose unchanged, use class default
         verbose = getattr(self, "_verbose", False) if verbose is None else verbose
 
-        self._setup_frames(self._trajectory, start, stop, step)
+        self._setup_frames(
+            self._trajectory, start=start, stop=stop, step=step, frames=frames
+        )
         logger.info("Starting preparation")
 
         if self.refgroup is not None:
@@ -252,9 +269,16 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         timeseries = np.zeros(self.n_frames)
 
+        logger.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
+
+        if progressbar_kwargs is None:
+            progressbar_kwargs = {}
+
         for i, ts in enumerate(
             ProgressBar(
-                self._trajectory[self.start : self.stop : self.step], verbose=verbose
+                self._sliced_trajectory,
+                verbose=verbose,
+                **progressbar_kwargs,
             )
         ):
             self._frame_index = i
@@ -273,8 +297,10 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                 t = self.box_center - com_refgroup
                 self._universe.atoms.translate(t)
 
-            # Wrap into the primary unit cell to use all compounds for the analysis.
-            self._universe.atoms.wrap(compound=self.wrap_compound)
+            # If universe has a cell we wrap the compound into the primary unit cell to
+            # use all compounds for the analysis.
+            if self._universe.dimensions is not None:
+                self._universe.atoms.wrap(compound=self.wrap_compound)
 
             if self.jitter != 0.0:
                 ts.positions += (
