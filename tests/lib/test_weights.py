@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -20,68 +20,97 @@ from maicos.lib.util import unit_vectors_planar
 
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP, WATER_TPR, WATER_TRR  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from util import line_of_water_molecules  # noqa: E402
 
 
-def test_density_weights_mass():
+@pytest.fixture
+def ag_spce():
+    """Atomgroup containing a single water molecule poiting in z-direction."""
+    return mda.Universe(SPCE_ITP, SPCE_GRO).atoms
+
+
+@pytest.fixture
+def ag_water_npt():
+    """Water atomgroup in the NVT ensemble."""
+    return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT).atoms
+
+
+def test_density_weights_mass(ag_water_npt):
     """Test mass weights."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", "mass")
+    weights = maicos.lib.weights.density_weights(ag_water_npt, "atoms", "mass")
     # Convert back to atomic units
-    assert_allclose(weights, u.atoms.masses)
+    assert_allclose(weights, ag_water_npt.masses)
 
 
 @pytest.mark.parametrize("compound", ["residues", "segments", "molecules", "fragments"])
-def test_density_weights_mass_grouping(compound):
+def test_density_weights_mass_grouping(ag_water_npt, compound):
     """Test mass weights with grouping."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, "mass")
-    assert_allclose(weights, u.atoms.total_mass(compound=compound))
+    weights = maicos.lib.weights.density_weights(ag_water_npt, compound, "mass")
+    assert_allclose(weights, ag_water_npt.total_mass(compound=compound))
 
 
-def test_density_weights_charge():
+def test_density_weights_charge(ag_water_npt):
     """Test charge weights."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, "atoms", "charge")
-    assert_equal(weights, u.atoms.charges)
+    weights = maicos.lib.weights.density_weights(ag_water_npt, "atoms", "charge")
+    assert_equal(weights, ag_water_npt.charges)
 
 
 @pytest.mark.parametrize("compound", ["residues", "segments", "molecules", "fragments"])
-def test_density_weights_charge_grouping(compound):
+def test_density_weights_charge_grouping(ag_water_npt, compound):
     """Test charge weights with grouping."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, "charge")
-    assert_equal(weights, u.atoms.total_charge(compound=compound))
+    weights = maicos.lib.weights.density_weights(ag_water_npt, compound, "charge")
+    assert_equal(weights, ag_water_npt.total_charge(compound=compound))
 
 
 @pytest.mark.parametrize("compound", ["residues", "segments", "fragments"])
-def test_density_weights_number(compound):
+def test_density_weights_number(ag_water_npt, compound):
     """Test number weights for grouping."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, compound, "number")
-    assert_equal(weights, np.ones(getattr(u.atoms, f"n_{compound}")))
+    weights = maicos.lib.weights.density_weights(ag_water_npt, compound, "number")
+    assert_equal(weights, np.ones(getattr(ag_water_npt, f"n_{compound}")))
 
 
-def test_density_weights_number_molecules():
+def test_density_weights_number_molecules(ag_water_npt):
     """Test number weights for grouping with respect to molecules."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
-    weights = maicos.lib.weights.density_weights(u.atoms, "molecules", "number")
-    assert_equal(weights, np.ones(len(np.unique(u.atoms.molnums))))
+    weights = maicos.lib.weights.density_weights(ag_water_npt, "molecules", "number")
+    assert_equal(weights, np.ones(len(np.unique(ag_water_npt.molnums))))
 
 
-def test_density_weights_error():
+def test_density_weights_error(ag_water_npt):
     """Test error raise for non existing weight."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
     with pytest.raises(ValueError, match="not supported"):
-        maicos.lib.weights.density_weights(u.atoms, "atoms", "foo")
+        maicos.lib.weights.density_weights(ag_water_npt, "atoms", "foo")
 
 
-@pytest.mark.parametrize("grouping", ("residues", "segments", "molecules", "fragments"))
-def test_tempetaure_weights_grouping(grouping):
+@pytest.mark.parametrize("grouping", ["residues", "segments", "molecules", "fragments"])
+def test_tempetaure_weights_grouping(ag_water_npt, grouping):
     """Test when grouping != atoms."""
-    u = mda.Universe(WATER_TPR, WATER_TRR)
     with pytest.raises(NotImplementedError):
-        maicos.lib.weights.temperature_weights(u.atoms, grouping)
+        maicos.lib.weights.temperature_weights(ag_water_npt, grouping)
+
+
+def test_diporder_pair_weights_single(ag_spce):
+    """Test that the weight of the same molecules is equal to one 1."""
+    weights = maicos.lib.weights.diporder_pair_weights(
+        ag_spce, ag_spce, compound="residues"
+    )
+    assert_allclose(weights, 1)
+
+
+def test_diporder_pair_weights_line(ag_spce):
+    """Test that the weight of the same molecules is equal to one 1."""
+    ag = line_of_water_molecules(n_molecules=4, angle_deg=[0, 45, 90, 180])
+    weights = maicos.lib.weights.diporder_pair_weights(ag, ag, compound="residues")
+
+    weights_expected = np.array(
+        [
+            [1.00, 0.71, 0.00, -1.00],
+            [0.71, 1.00, 0.71, -0.71],
+            [0.00, 0.71, 1.00, 0.00],
+            [-1.00, -0.71, 0.00, 1.00],
+        ]
+    )
+    assert_equal(weights.round(2), weights_expected)
 
 
 class Testdiporder_weights:
@@ -91,20 +120,15 @@ class Testdiporder_weights:
     correctly.
     """
 
-    @pytest.fixture
-    def atomgroup(self):
-        """Atomgroup containing a single water molecule poiting in z-direction."""
-        return mda.Universe(SPCE_ITP, SPCE_GRO).atoms
-
     @pytest.mark.parametrize("pdim, P0", [(0, 0), (1, 0), (2, 0.491608)])
-    def test_P0(self, atomgroup, pdim, P0):
+    def test_P0(self, ag_spce, pdim, P0):
         """Test calculation of the projection of the dipole moment."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
 
         diporder_weights = maicos.lib.weights.diporder_weights(
-            atomgroup=atomgroup,
+            atomgroup=ag_spce,
             grouping="fragments",
             order_parameter="P0",
             get_unit_vectors=get_unit_vectors,
@@ -113,14 +137,14 @@ class Testdiporder_weights:
         assert_allclose(diporder_weights, np.array([P0]))
 
     @pytest.mark.parametrize("pdim, cos_theta", [(0, 0), (1, 0), (2, 1)])
-    def test_cos_theta(self, atomgroup, pdim, cos_theta):
+    def test_cos_theta(self, ag_spce, pdim, cos_theta):
         """Test calculation of the cos of the dipole moment and a unit vector."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
 
         diporder_weights = maicos.lib.weights.diporder_weights(
-            atomgroup=atomgroup,
+            atomgroup=ag_spce,
             grouping="fragments",
             order_parameter="cos_theta",
             get_unit_vectors=get_unit_vectors,
@@ -128,14 +152,14 @@ class Testdiporder_weights:
 
         assert_allclose(diporder_weights, np.array([cos_theta]))
 
-    def test_cos_2_theta(self, atomgroup):
+    def test_cos_2_theta(self, ag_spce):
         """Test that cos_2_theta is the squared of cos_theta."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=0)
 
         kwargs_weights = {
-            "atomgroup": atomgroup,
+            "atomgroup": ag_spce,
             "grouping": "fragments",
             "get_unit_vectors": get_unit_vectors,
         }
@@ -150,7 +174,7 @@ class Testdiporder_weights:
             ),
         )
 
-    def test_wrong_unit_vector_shape(self, atomgroup):
+    def test_wrong_unit_vector_shape(self, ag_spce):
         """Test raise for a wrong shape of provided unit vector."""
 
         def get_unit_vectors(atomgroup, grouping):
@@ -163,13 +187,13 @@ class Testdiporder_weights:
 
         with pytest.raises(ValueError, match=match):
             maicos.lib.weights.diporder_weights(
-                atomgroup=atomgroup,
+                atomgroup=ag_spce,
                 grouping="fragments",
                 order_parameter="cos_theta",
                 get_unit_vectors=get_unit_vectors,
             )
 
-    def test_wrong_order_parameter(self, atomgroup):
+    def test_wrong_order_parameter(self, ag_spce):
         """Test error raise for wrong order_parameter."""
 
         def get_unit_vectors(atomgroup, grouping):
@@ -177,13 +201,13 @@ class Testdiporder_weights:
 
         with pytest.raises(ValueError, match="'foo' not supported."):
             maicos.lib.weights.diporder_weights(
-                atomgroup=atomgroup,
+                atomgroup=ag_spce,
                 grouping="fragments",
                 order_parameter="foo",
                 get_unit_vectors=get_unit_vectors,
             )
 
-    def test_atoms_grouping(self, atomgroup):
+    def test_atoms_grouping(self, ag_spce):
         """Test error raise if grouping="atoms".
 
         For atoms now dipoler moments are defined and we should test that a propper
@@ -198,7 +222,7 @@ class Testdiporder_weights:
 
         with pytest.raises(ValueError, match="Unrecognized compound definition: atoms"):
             maicos.lib.weights.diporder_weights(
-                atomgroup=atomgroup,
+                atomgroup=ag_spce,
                 grouping="atoms",
                 order_parameter="cos_thete",
                 get_unit_vectors=get_unit_vectors,

@@ -81,7 +81,7 @@ List of analysis modules
 
 .. inclusion-marker-modules-start
 
-Currently, MAICoS supports the following analysis modules:
+Currently, MAICoS supports the following analysis modules in alphabetical order:
 
 .. list-table::
    :widths: 25 50
@@ -90,41 +90,45 @@ Currently, MAICoS supports the following analysis modules:
    * - Module Name
      - Description
 
-   * - DensityPlanar
-     - Compute cartesian partial density profiles
    * - DensityCylinder
      - Compute cylindrical partial densitiy profiles
+   * - DensityPlanar
+     - Compute cartesian partial density profiles
    * - DensitySphere
      - Compute spherical partial density profiles
-   * - TemperaturePlanar
-     - Compute temperature profiles in a cartesian geometry
-   * - DielectricPlanar
-     - Compute planar dielectric profiles
    * - DielectricCylinder
      - Compute cylindrical dielectric profiles
-   * - DielectricSphere
-     - Compute spherical dielectric profiles
+   * - DielectricPlanar
+     - Compute planar dielectric profiles
    * - DielectricSpectrum
      - Compute the linear dielectric spectrum
-   * - Saxs
-     - Compute small angle X-Ray scattering intensities (SAXS)
-   * - DiporderPlanar
-     - Compute planar dipolar order parameters
-   * - DiporderCylinder
-     - Compute cylindrical dipolar order parameters
-   * - DiporderSphere
-     - Compute spherical dipolar order parameters
-   * - PDFPlanar
-     - Compute slab-wise planar 2D pair distribution functions
-   * - PDFCylinder
-     - Compute cylindrical shell-wise 1D pair distribution functions
+   * - DielectricSphere
+     - Compute spherical dielectric profiles
    * - DipoleAngle
      - Compute angle timeseries of dipole moments
+   * - DiporderCylinder
+     - Compute cylindrical dipolar order parameters
+   * - DiporderPlanar
+     - Compute planar dipolar order parameters
+   * - RDFDiporder
+     - Spherical Radial Distribution function between dipoles
+   * - DiporderSphere
+     - Compute spherical dipolar order parameters
+   * - DiporderStructureFactor
+     - Structure factor for dipoles
    * - KineticEnergy
      - Compute the timeseries of energies
-   * - VelocityPlanar
-     - Compute the velocity profile in a cartesian geometry
+   * - PDFCylinder
+     - Compute cylindrical shell-wise 1D pair distribution functions
+   * - PDFPlanar
+     - Compute slab-wise planar 2D pair distribution functions
+   * - Saxs
+     - Compute small angle X-Ray scattering intensities (SAXS)
+   * - TemperaturePlanar
+     - Compute temperature profiles in a cartesian geometry
    * - VelocityCylinder
      - Compute the cartesian velocity profile across a cylinder
+   * - VelocityPlanar
+     - Compute the velocity profile in a cartesian geometry
 
 .. inclusion-marker-modules-end

@@ -13,8 +13,11 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.9 (XXXX/XX/XX)
 -----------------
-Philip Loche, Marc Sauter, Kira Fischer
+Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Update copyright year (!296)
+- Add new diporder modules: ``RDFDiporder``, ``DiporderStructureFactor`` (!296)
+- Add correlation time estimate for ``SAXS`` module (!296)
 - Added tests of the analytical error propagation (!292)
 - Remove symbolic links from examples (!295)
 

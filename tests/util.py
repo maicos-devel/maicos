@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -10,6 +10,7 @@
 import logging
 import sys
 from pathlib import Path
+from typing import List, Tuple, Union
 
 import MDAnalysis as mda
 import numpy as np
@@ -43,7 +44,11 @@ def error_prop(f, variables, errors):
 
 
 def line_of_water_molecules(
-    n_molecules=1, distance=10, angle_deg=0, axis_rotation=(0, 1, 0), myvel=(0, 0, 0)
+    n_molecules: int = 1,
+    distance: float = 10,
+    angle_deg: Union[float, List[float]] = 0,
+    axis_rotation: Tuple[float] = (0, 1, 0),
+    myvel: Tuple[float] = (0, 0, 0),
 ):
     """
     Create an MDAnalysis universe with regularly spaced molecules.
@@ -51,6 +56,13 @@ def line_of_water_molecules(
     The molecules are placed along a line `distance` apart, have an orientation
     controlled by `angle_deg` and `axis_rotation`. All the molecules have the same
     velocities `myvel`.
+
+    Parameters
+    ----------
+    angle_deg : float, List[float]
+        angle by which the molecules will be rotated. If `angle_deg` is float all
+        molecules will be rotated by the same angle. If List[float] each molecule will
+        be rotated by a different angle.
     """
     # import molecule topology
     fluid = []
@@ -64,8 +76,15 @@ def line_of_water_molecules(
 
     # set the orientation of the molecules
     rotations = []
-    for _n in range(n_molecules):
-        rotations.append([angle_deg, axis_rotation])
+    if type(angle_deg) in [float, int]:
+        angle_deg = n_molecules * [angle_deg]
+    elif len(angle_deg) != n_molecules:
+        raise ValueError(
+            f"Length of {len(angle_deg)} is not the same a n_molecules {n_molecules}."
+        )
+
+    for _n, angle in zip(range(n_molecules), angle_deg):
+        rotations.append([angle, axis_rotation])
 
     # multiply molecules and apply translation and rotations
     for molecule, rotation, position in zip(fluid, rotations, positions):

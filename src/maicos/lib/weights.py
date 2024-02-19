@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -144,6 +144,19 @@ def diporder_weights(
         )
 
     return weights
+
+
+def diporder_pair_weights(
+    g1: mda.AtomGroup, g2: mda.AtomGroup, compound: str
+) -> np.ndarray:
+    """Normalized dipole moments as weights for general diporder RDF calculations."""
+    dipoles_1 = g1.dipole_vector(compound=compound)
+    dipoles_2 = g2.dipole_vector(compound=compound)
+
+    dipoles_1 /= np.linalg.norm(dipoles_1, axis=1)[:, np.newaxis]
+    dipoles_2 /= np.linalg.norm(dipoles_2, axis=1)[:, np.newaxis]
+
+    return dipoles_1 @ dipoles_2.T
 
 
 @render_docs

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -25,9 +25,9 @@ from data import (  # noqa: E402
     MICA_XTC,
     SALT_WATER_GRO,
     SALT_WATER_TPR,
-    WATER_GRO,
-    WATER_TPR,
-    WATER_TRR,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
 )
 
 
@@ -37,13 +37,13 @@ class ReferenceAtomGroups:
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
     @pytest.fixture()
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
     @pytest.fixture()
@@ -77,7 +77,7 @@ class ReferenceAtomGroups:
     @pytest.fixture()
     def ag_no_masses(self):
         """Atom group with no mass."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         u.del_TopologyAttr("masses")
         return u.atoms
 

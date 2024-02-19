@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -19,7 +19,7 @@ from maicos import VelocityPlanar
 
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_TPR, WATER_TRR  # noqa: E402
+from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 from util import line_of_water_molecules  # noqa: E402
 
 
@@ -35,14 +35,14 @@ class ReferenceAtomGroups:
         along all 3 dimensions of space, respectively. Only the first frame is
         considered.
         """
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         v_array_1 = u.atoms.velocities.mean(axis=0)
         return v_array_1
 
     @pytest.fixture()
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR, WATER_TRR)
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
 
@@ -62,7 +62,7 @@ class TestVelocityPlanar(ReferenceAtomGroups):
     @pytest.mark.parametrize("dim", (0, 1, 2))
     @pytest.mark.parametrize("vdim", (0, 1, 2))
     def test_vel_trr(self, ag, dim, vdim, vel_frame1_TRR):
-        """Test VelocityPlanar module using WATER_TPR data.
+        """Test VelocityPlanar module using WATER_TPR_NPT data.
 
         All 9 combinations of dim and vdim are tested.
         """

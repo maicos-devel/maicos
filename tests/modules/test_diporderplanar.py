@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2023 Authors and contributors
+# Copyright (c) 2024 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -13,7 +13,7 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR
+from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT
 from numpy.testing import assert_allclose
 
 from maicos import DiporderPlanar
@@ -29,7 +29,7 @@ class ReferenceAtomGroups:
     @pytest.fixture()
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
-        u = mda.Universe(WATER_TPR, WATER_GRO)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
     @pytest.fixture()

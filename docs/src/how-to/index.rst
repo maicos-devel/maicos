@@ -14,3 +14,4 @@ section.
     ../examples/chemical-potential
     ../examples/dielectric-profiles
     ../examples/pair-distribution-functions
+    ../examples/dipole-correlations

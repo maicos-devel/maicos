@@ -27,6 +27,7 @@ Contributors
 - Adyant Agrawal
 - Shane Carlson
 - Kira Fischer
+- Federico Grasselli
 - Julian Kappler
 - Marc Sauter
 - Laura Scalfi
