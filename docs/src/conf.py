@@ -58,7 +58,6 @@ bibtex_reference_style = "author_year"
 sphinx_gallery_conf = {
     "filename_pattern": "/*",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
-    "ignore_pattern": r"maicos_custom_modules\.py",
     "examples_dirs": ["../../examples"],
     "gallery_dirs": ["examples"],
     "min_reported_time": 60,

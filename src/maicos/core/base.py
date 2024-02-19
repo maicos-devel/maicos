@@ -111,6 +111,118 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     ValueError
         If any of the provided AtomGroups (`atomgroups` or `refgroup`) does
         not contain any atoms.
+
+    Example
+    -------
+    To write your own analysis module you can use the example given below. As with all
+    MAICoS modules, this inherits from the :class:`maicos.core.base.AnalysisBase` class.
+
+    The example will calculate the average box volume and stores the result within the
+    ``result`` object of the class.
+
+    >>> import logging
+    >>> from typing import Optional
+
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+
+    >>> from maicos.core import AnalysisBase
+    >>> from maicos.lib.util import render_docs
+
+    Creating a logger makes debugging easier.
+
+    >>> logger = logging.getLogger(__name__)
+
+    In the following the analysis module itself. Due to the similar structure of all
+    MAICoS modules you can render the parameters using the
+    :func:`maicos.lib.util.render_docs` decorator. The decorator will replace special
+    keywords with a leading ``$`` with the actual docstring as defined in
+    :attr:`maicos.lib.util.DOC_DICT`.
+
+    >>> @render_docs
+    ... class NewAnalysis(AnalysisBase):
+    ...     '''Analysis class calcuting the average box volume.'''
+    ...
+    ...     def __init__(
+    ...         self,
+    ...         atomgroup: mda.AtomGroup,
+    ...         unwrap: bool = False,
+    ...         refgroup: Optional[mda.AtomGroup] = None,
+    ...         jitter: float = 0.0,
+    ...         concfreq: int = 0,
+    ...         temperature: float = 300,
+    ...         output: str = "outfile.dat",
+    ...     ):
+    ...         super().__init__(
+    ...             atomgroup,
+    ...             refgroup=refgroup,
+    ...             unwrap=unwrap,
+    ...             jitter=jitter,
+    ...             concfreq=concfreq,
+    ...         )
+    ...
+    ...         self.temperature = temperature
+    ...         self.output = output
+    ...
+    ...     def _prepare(self):
+    ...         '''Set things up before the analysis loop begins.'''
+    ...         # self.atomgroup refers to the provided `atomgroup`
+    ...         # self._universe refers to full universe of given `atomgroup`
+    ...         self.volume = 0
+    ...
+    ...     def _single_frame(self):
+    ...         '''Calculate data from a single frame of trajectory.
+    ...
+    ...         Don't worry about normalising, just deal with a single frame.
+    ...         '''
+    ...         # Current frame index: self._frame_index
+    ...         # Current timestep object: self._ts
+    ...
+    ...         volume = self._ts.volume
+    ...         self.volume += volume
+    ...
+    ...         # Eeach module should return a characteristic scalar which is used
+    ...         # by MAICoS to estimate correlations of an Analysis.
+    ...         return volume
+    ...
+    ...     def _conclude(self):
+    ...         '''Finalise the results you've gathered.
+    ...
+    ...         Called at the end of the run() method to finish everything up.
+    ...         '''
+    ...         self.results.volume = self.volume / self.n_frames
+    ...         logger.info(
+    ...             "Average volume of the simulation box "
+    ...             f"{self.results.volume:.2f} Å³"
+    ...         )
+    ...
+    ...     def save(self):
+    ...         '''Save results of analysis to file specified by ``output``.
+    ...
+    ...         Called at the end of the run() method after _conclude.
+    ...         '''
+    ...         self.savetxt(
+    ...             self.output, np.array([self.results.volume]), columns="volume / Å³"
+    ...         )
+    ...
+
+
+    Afterwards the new analysis can be run like this
+
+    >>> import MDAnalysis as mda
+    >>> from MDAnalysisTests.datafiles import TPR, XTC
+
+    >>> u = mda.Universe(TPR, XTC)
+
+    >>> na = NewAnalysis(u.atoms)
+    >>> _ = na.run(start=0, stop=10)
+    >>> round(na.results.volume, 2)
+    362631.65
+
+    Results can also be accessed by key
+
+    >>> round(na.results["volume"], 2)
+    362631.65
     """
 
     def __init__(

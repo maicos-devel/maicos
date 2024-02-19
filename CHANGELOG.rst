@@ -15,6 +15,9 @@ v0.9 (XXXX/XX/XX)
 -----------------
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Remove custom module command line interface (!299)
+- Add example for :class:`maicos.core.AnalysisBase` and rework own module section in
+  developer docs (!299)
 - Allow running an analysis with a universe without a cell (!297)
 - Test that :class:`core.AnalysisBase` API and ``run`` method is the same as
   :class:`MDAnalysis.analysis.base.AnalysisBase` (!297)
