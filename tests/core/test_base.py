@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 from mdacli.libcli import find_cls_members
 from MDAnalysis.analysis.base import Results
+from MDAnalysisTests.datafiles import DCD, PSF
 from numpy.testing import assert_allclose
 from scipy.signal import find_peaks
 
@@ -119,6 +120,11 @@ class Test_AnalysisBase(object):
         u = mda.Universe.empty(0)
         return u.atoms
 
+    @pytest.fixture()
+    def u_no_cell(self):
+        """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
+        return mda.Universe(PSF, DCD)
+
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
         a = AnalysisBase(ag)
@@ -213,9 +219,10 @@ class Test_AnalysisBase(object):
         ana.savetxt("test_default.dat", np.random.rand(10, 2))
         assert "test_input='some_default'" in open("test_default.dat").read()
         assert "refgroup=None" in open("test_default.dat").read()
+        print(open("test_default.dat").read())
         assert (
-            ".run(start=None, stop=None, step=None, verbose=None)"
-            in open("test_default.dat").read()
+            ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
+            "progressbar_kwargs=None)" in open("test_default.dat").read()
         )
 
         # Test if the set test_input parameter is written correctly
@@ -227,7 +234,8 @@ class Test_AnalysisBase(object):
         ana.run(step=2, stop=7, start=5, verbose=True)
         ana.savetxt("test_run.dat", np.random.rand(10, 2))
         assert (
-            ".run(start=5, stop=7, step=2, verbose=True)" in open("test_run.dat").read()
+            ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
+            "progressbar_kwargs=None)" in open("test_run.dat").read()
         )
 
     @pytest.mark.parametrize(
@@ -366,6 +374,22 @@ class Test_AnalysisBase(object):
 
         assert "Using 10 bins." in [rec.message for rec in caplog.records]
 
+    def test_info_log(self, ag, caplog):
+        """Test that logger infos are printed."""
+        ana_obj = AnalysisBase(ag)
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        caplog.set_level(logging.INFO)
+        ana_obj.run(stop=1)
+
+        messages = [rec.message for rec in caplog.records]
+        assert "Starting preparation" in messages
+        assert "Starting analysis loop over 1 trajectory frames." in messages
+
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
         caplog.set_level(logging.WARN)
@@ -394,6 +418,18 @@ class Test_AnalysisBase(object):
             range=(0, 0.1),
         )
         assert find_peaks(hist)[0][0] < 100
+
+    def test_no_dimensions_unwrap_error(self, u_no_cell):
+        """Test that an error is raised if `unwrap=True` but no cell is present."""
+        match = "Universe does not have `dimensions` and can't be unwrapped!"
+        with pytest.raises(ValueError, match=match):
+            class_obj = AnalysisBase(u_no_cell.atoms, unwrap=True)
+            class_obj._prepare()
+
+    def test_no_dimensions_run(self, u_no_cell):
+        """Test that an analysis can be run for a universe without cell information."""
+        class_obj = Conclude(u_no_cell.atoms)
+        class_obj.run(stop=1)
 
 
 class Test_ProfileBase:
