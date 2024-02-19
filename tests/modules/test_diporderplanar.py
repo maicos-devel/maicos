@@ -13,7 +13,6 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import line_of_water_molecules
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO, WATER_TPR
 from numpy.testing import assert_allclose
 
@@ -21,6 +20,7 @@ from maicos import DiporderPlanar
 
 
 sys.path.append(str(Path(__file__).parents[1]))
+from util import line_of_water_molecules  # noqa: E402
 
 
 class ReferenceAtomGroups:

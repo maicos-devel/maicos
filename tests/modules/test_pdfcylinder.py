@@ -20,10 +20,7 @@ from maicos import PDFCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
-from modules.create_mda_universe import (  # noqa: E402
-    circle_of_water_molecules,
-    line_of_water_molecules,
-)
+from util import circle_of_water_molecules, line_of_water_molecules  # noqa: E402
 
 
 class TestPDFCylinder(object):

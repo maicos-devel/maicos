@@ -13,7 +13,6 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
-from create_mda_universe import line_of_water_molecules
 from numpy.testing import assert_allclose
 
 from maicos import DipoleAngle
@@ -21,6 +20,7 @@ from maicos import DipoleAngle
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO, WATER_TPR  # noqa: E402
+from util import line_of_water_molecules  # noqa: E402
 
 
 class ReferenceAtomGroups:

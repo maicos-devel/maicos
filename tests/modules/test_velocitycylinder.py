@@ -12,13 +12,13 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from create_mda_universe import circle_of_water_molecules
 from numpy.testing import assert_allclose
 
 from maicos import VelocityCylinder
 
 
 sys.path.append(str(Path(__file__).parents[1]))
+from util import circle_of_water_molecules  # noqa: E402
 
 
 class TestVelocityCylinder(object):

@@ -13,12 +13,14 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
+import sympy as sp
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DielectricPlanar
 
 
 sys.path.append(str(Path(__file__).parents[1]))
+
 from data import (  # noqa: E402
     DIPOLE_GRO,
     DIPOLE_ITP,
@@ -26,6 +28,7 @@ from data import (  # noqa: E402
     WATER_TPR,
     WATER_TRR,
 )
+from util import error_prop  # noqa: E402
 
 
 def dipoles(positions, orientations):
@@ -284,3 +287,77 @@ class TestDielectricPlanar(object):
         ag = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp").atoms
         DielectricPlanar(ag, zmin=zmin, zmax=zmax)
         assert result == (warning in "".join([rec.message for rec in caplog.records]))
+
+    def test_error_calculation(self, ag_two_frames):
+        """Test the analytic error propagation."""
+        eps = DielectricPlanar(ag_two_frames).run()
+
+        # set values and errors for testing propagation:
+        # perpendicular
+        eps.means.mM_perp = 0.4
+        eps.sems.mM_perp = 0.3
+
+        eps.means.m_perp = 0.7
+        eps.sems.m_perp = 1
+
+        eps.means.M_perp = 0.001
+        eps.sems.M_perp = 5e-5
+
+        # rerun conclude function with changed values
+        eps._conclude()
+        deps_perp = eps.results.deps_perp
+
+        m_mM, m_M, m_m = sp.symbols("m_mM m_M m_m")
+        eps_perp = 1 - (m_mM - m_m * m_M) * eps.results.pref
+
+        deps_perp_sympy = error_prop(
+            eps_perp,
+            [m_mM, m_M, m_m],
+            [eps.sems.mM_perp, eps.sems.M_perp, eps.sems.m_perp],
+        )(eps.means.mM_perp, eps.means.M_perp, eps.means.m_perp)
+
+        assert_allclose(deps_perp, deps_perp_sympy)
+
+        # same for parallel
+        eps.n_bins = 1
+        eps.means.mM_par = np.array([[0.4]])
+        eps.sems.mM_par = np.array([[0.3]])
+
+        eps.means.m_par = np.array([[[0.7], [0.1]]])
+        eps.sems.m_par = np.array([[[10.0], [1e-3]]])
+
+        eps.means.mm_par = np.array([[0.4]])
+        eps.sems.mm_par = np.array([[0.3]])
+
+        eps.means.M_par = np.array([[5], [5]])
+        eps.sems.M_par = np.array([[0.7], [0.1]])
+
+        eps.means.cmM_par = np.array([[0.4]])
+        eps.means.cM_par = np.array([[[5], [5]]])
+
+        # rerun conclude function with changed values
+        eps._conclude()
+        deps_par = eps.results.deps_par
+
+        m_mM, m_M1, m_m1, m_M2, m_m2 = sp.symbols("m_mM m_M1 m_m1 m_M2 m_m2")
+        eps_par = 0.5 * (m_mM - (m_m1 * m_M1 + m_m2 * m_M2)) * eps.results.pref
+
+        deps_par_sympy = error_prop(
+            eps_par,
+            [m_mM, m_M1, m_m1, m_M2, m_m2],
+            [
+                eps.sems.mM_par[0, 0],
+                eps.sems.M_par[0, 0],
+                eps.sems.m_par[0, 0, 0],
+                eps.sems.M_par[1, 0],
+                eps.sems.m_par[0, 1, 0],
+            ],
+        )(
+            eps.means.mM_par[0, 0],
+            eps.means.M_par[0, 0],
+            eps.means.m_par[0, 0, 0],
+            eps.means.M_par[1, 0],
+            eps.means.m_par[0, 1, 0],
+        )
+
+        assert_allclose(deps_par[0, 0], deps_par_sympy)
