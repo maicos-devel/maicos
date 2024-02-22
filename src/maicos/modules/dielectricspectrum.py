@@ -251,8 +251,8 @@ class DielectricSpectrum(AnalysisBase):
         )
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
         with open(self.output_prefix + "V.txt", "w") as Vfile:

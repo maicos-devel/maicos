@@ -119,8 +119,8 @@ class DipoleAngle(AnalysisBase):
         self.results.cos_theta_ij = self.cos_theta_ij[: self._index]
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         self.savetxt(
             self.output,
             np.vstack(

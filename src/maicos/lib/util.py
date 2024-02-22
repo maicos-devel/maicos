@@ -30,7 +30,7 @@ DOC_DICT = dict(
     #####################
     # DESCRIPTION SECTION
     #####################
-    SAVE_DESCRIPTION="Save results of analysis to file specified by ``output``.",
+    SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
     DENSITY_DESCRIPTION=r"""Calculations are carried out for
     ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
     :math:`(\rm e \cdot Å^{-3})` density profiles along certain cartesian axes ``[x, y,
@@ -52,6 +52,32 @@ DOC_DICT = dict(
     (:math:`N \backslash 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
     CORRELATION_INFO_RADIAL="""For the correlation analysis the 0th bin of the 0th's
     group profile is used. ${CORRELATION_INFO}""",
+    RUN_METHOD_DESCRIPTION="""Iterate over the trajectory.
+
+    Parameters
+    ----------
+    start : int
+        start frame of analysis
+    stop : int
+        stop frame of analysis
+    step : int
+        number of frames to skip between each analysed frame
+    frames : array_like
+        array of integers or booleans to slice trajectory; ``frames`` can only be
+        used *instead* of ``start``, ``stop``, and ``step``. Setting *both*
+        ``frames`` and at least one of ``start``, ``stop``, ``step`` to a
+        non-default value will raise a :exc:`ValueError`.
+    verbose : bool
+        Turn on verbosity
+    progressbar_kwargs : dict
+        ProgressBar keywords with custom parameters regarding progress bar position,
+        etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
+
+    Returns
+    -------
+    self : object
+        analysis object
+    """,
     ##########################
     # SINGLE PARAMETER SECTION
     ##########################

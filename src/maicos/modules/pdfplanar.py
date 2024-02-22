@@ -281,8 +281,8 @@ class PDFPlanar(PlanarBase):
         self.results.pdf = np.nan_to_num(self.results.pdf.T, nan=0)
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["r [Å]"]
         for z in self.results.bin_pos:
             columns.append(f"pdf at {z:.2f} Å [Å^-3]")

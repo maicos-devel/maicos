@@ -398,8 +398,8 @@ class PDFCylinder(CylinderBase):
         self.results.bins_z = 0.5 * (edges_z[1:] + edges_z[:-1])
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["r [Å]"]
         for r in self.results.bin_pos:
             columns.append(f"pdf at {r:.2f} Å [Å^-3]")

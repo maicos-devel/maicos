@@ -161,8 +161,8 @@ class DiporderStructureFactor(AnalysisBase):
         self.results.struct_factor = struct_factor
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         self.savetxt(
             self.output,
             np.vstack([self.results.q, self.results.struct_factor]).T,
