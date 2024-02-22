@@ -125,8 +125,8 @@ class KineticEnergy(AnalysisBase):
         self.results.rot = (self.E_kin - self.E_center) / 2 / 100
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         self.savetxt(
             self.output,
             np.vstack([self.results.t, self.results.trans, self.results.rot]).T,

@@ -258,22 +258,22 @@ class TestCitationReminder(object):
 class TestCorrelationAnalysis(object):
     """Test the calculation of the correlation of the data."""
 
-    def test_short_data(self, mocker, caplog):
-        """Test if a warning is raised if the data is too short."""
+    def test_short_data(self):
+        """Test if a warning is issued if the data is too short."""
         warning = "Your trajectory is too short to estimate a correlation "
         with pytest.warns(match=warning):
             corrtime = maicos.lib.util.correlation_analysis(np.arange(4))
         assert corrtime == -1
 
-    def test_insufficient_data(self, mocker, caplog):
-        """Test if a warning is raised if the data is insufficient."""
+    def test_insufficient_data(self, mocker):
+        """Test if a warning is issued if the data is insufficient."""
         warning = "Your trajectory does not provide sufficient statistics to "
         mocker.patch("maicos.lib.util.correlation_time", return_value=-1)
         with pytest.warns(match=warning):
             corrtime = maicos.lib.util.correlation_analysis(np.arange(10))
         assert corrtime == -1
 
-    def test_correlated_data(self, mocker, caplog):
+    def test_correlated_data(self, mocker):
         """Test if a warning is issued if the data is correlated."""
         corrtime = 10
         warnings = (
@@ -287,7 +287,7 @@ class TestCorrelationAnalysis(object):
                 returned_corrtime = maicos.lib.util.correlation_analysis(np.arange(10))
         assert returned_corrtime == corrtime
 
-    def test_uncorrelated_data(self, mocker, caplog):
+    def test_uncorrelated_data(self, mocker):
         """Test that no warning is issued if the data is uncorrelated."""
         corrtime = 0.25
         mocker.patch("maicos.lib.util.correlation_time", return_value=corrtime)
@@ -297,7 +297,7 @@ class TestCorrelationAnalysis(object):
 
         assert returned_corrtime == corrtime
 
-    def test_no_data(self, mocker, caplog):
+    def test_no_data(self):
         """Test that no warning is issued if no data exists."""
         with warnings.catch_warnings():  # no warning should be issued
             warnings.simplefilter("error")

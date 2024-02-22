@@ -239,8 +239,8 @@ class DielectricCylinder(CylinderBase):
         )
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         outdata_z = np.array(
             [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
         ).T

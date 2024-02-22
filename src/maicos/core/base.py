@@ -7,11 +7,11 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
-
 import inspect
 import logging
+import warnings
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -39,8 +39,65 @@ del get_versions
 logger = logging.getLogger(__name__)
 
 
+class _Runner:
+    """Private Runner class that provides a common ``run`` method.
+
+    Class is used inside ``AnalysisBase`` as well as in ``AnalysisCollection``
+    """
+
+    def _run(
+        self,
+        analysis_instances: Tuple["AnalysisBase", ...],
+        start: Optional[int] = None,
+        stop: Optional[int] = None,
+        step: Optional[int] = None,
+        frames: Optional[int] = None,
+        verbose: Optional[bool] = None,
+        progressbar_kwargs: Optional[dict] = None,
+    ) -> Self:
+        self._run_locals = locals()
+
+        logger.info("Choosing frames to analyze")
+        for analysis_object in analysis_instances:
+            analysis_object._setup_frames(
+                analysis_object._trajectory,
+                start=start,
+                stop=stop,
+                step=step,
+                frames=frames,
+            )
+
+        logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
+        logger.info("Starting preparation")
+
+        for analysis_object in analysis_instances:
+            analysis_object._call_prepare()
+
+        if progressbar_kwargs is None:
+            progressbar_kwargs = {}
+
+        for i, ts in enumerate(
+            ProgressBar(
+                analysis_instances[0]._sliced_trajectory,
+                verbose=verbose,
+                **progressbar_kwargs,
+            )
+        ):
+            ts_original = ts.copy()
+
+            for analysis_object in analysis_instances:
+                analysis_object._call_single_frame(ts=ts, current_frame_index=i)
+                ts = ts_original
+
+        logger.info("Finishing up")
+        for analysis_object in analysis_instances:
+            analysis_object._call_conclude()
+
+        return self
+
+
 @render_docs
-class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
+class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     """Base class derived from MDAnalysis for defining multi-frame analysis.
 
     The class is designed as a template for creating multi-frame analyses. This class
@@ -196,7 +253,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
     ...             f"{self.results.volume:.2f} Å³"
     ...         )
     ...
-    ...     def save(self):
+    ...     def save(self) -> None:
     ...         '''Save results of analysis to file specified by ``output``.
     ...
     ...         Called at the end of the run() method after _conclude.
@@ -302,6 +359,7 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         if self.refgroup is not None and self.refgroup.n_atoms == 0:
             raise ValueError("The provided `refgroup` does not contain any atoms.")
 
+        self.module_has_save = callable(getattr(self.__class__, "save", None))
         super().__init__(trajectory=self._trajectory)
 
     @property
@@ -309,52 +367,8 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         """Center of the simulation cell."""
         return self._universe.dimensions[:3] / 2
 
-    def run(
-        self,
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        step: Optional[int] = None,
-        frames: Optional[int] = None,
-        verbose: Optional[bool] = None,
-        progressbar_kwargs: Optional[dict] = None,
-    ) -> Self:
-        """Iterate over the trajectory.
-
-        Parameters
-        ----------
-        start : int
-            start frame of analysis
-        stop : int
-            stop frame of analysis
-        step : int
-            number of frames to skip between each analysed frame
-        frames : array_like
-            array of integers or booleans to slice trajectory; ``frames`` can only be
-            used *instead* of ``start``, ``stop``, and ``step``. Setting *both*
-            ``frames`` and at least one of ``start``, ``stop``, ``step`` to a
-            non-default value will raise a :exc:`ValueError`.
-        verbose : bool
-            Turn on verbosity
-        progressbar_kwargs : dict
-            ProgressBar keywords with custom parameters regarding progress bar position,
-            etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
-
-        Returns
-        -------
-        self : object
-            analysis object
-        """
-        self._run_locals = locals()
-        logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
-        logger.info("Choosing frames to analyze")
-        # if verbose unchanged, use class default
-        verbose = getattr(self, "_verbose", False) if verbose is None else verbose
-
-        self._setup_frames(
-            self._trajectory, start=start, stop=stop, step=step, frames=frames
-        )
-        logger.info("Starting preparation")
-
+    def _call_prepare(self):
+        """Base method wrapping all _prepare logic into a single call."""
         if self.refgroup is not None:
             if (
                 not hasattr(self.refgroup, "masses")
@@ -364,12 +378,10 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
                     "No masses available in refgroup, falling back "
                     "to center of geometry"
                 )
-                ref_weights = np.ones_like(self.refgroup.atoms)
+                self.ref_weights = np.ones_like(self.refgroup.atoms)
 
             else:
-                ref_weights = self.refgroup.masses
-
-        compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
+                self.ref_weights = self.refgroup.masses
 
         self._prepare()
 
@@ -377,106 +389,112 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
         if hasattr(self, "n_bins"):
             logger.info(f"Using {self.n_bins} bins.")
 
-        module_has_save = callable(getattr(self.__class__, "save", None))
-
-        timeseries = np.zeros(self.n_frames)
+        self.timeseries = np.zeros(self.n_frames)
 
         logger.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
 
-        if progressbar_kwargs is None:
-            progressbar_kwargs = {}
+    def _call_single_frame(self, ts, current_frame_index):
+        """Base method wrapping all single_frame logic into a single call."""
+        compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
+        self._frame_index = current_frame_index
+        self._index = self._frame_index + 1
 
-        for i, ts in enumerate(
-            ProgressBar(
-                self._sliced_trajectory,
-                verbose=verbose,
-                **progressbar_kwargs,
-            )
-        ):
-            self._frame_index = i
-            self._index = self._frame_index + 1
+        self._ts = ts
+        self.frames[current_frame_index] = ts.frame
+        self.times[current_frame_index] = ts.time
 
-            self._ts = ts
-            self.frames[i] = ts.frame
-            self.times[i] = ts.time
+        # Before we do any coordinate transformation we first unwrap the system to
+        # avoid artifacts of later wrapping.
+        if self.unwrap:
+            self._universe.atoms.unwrap(compound=self.wrap_compound)
+        if self.refgroup is not None:
+            com_refgroup = center_cluster(self.refgroup, self.ref_weights)
+            t = self.box_center - com_refgroup
+            self._universe.atoms.translate(t)
 
-            # Before we do any coordinate transformation we first unwrap the system to
-            # avoid artifacts of later wrapping.
-            if self.unwrap:
-                self._universe.atoms.unwrap(compound=self.wrap_compound)
-            if self.refgroup is not None:
-                com_refgroup = center_cluster(self.refgroup, ref_weights)
-                t = self.box_center - com_refgroup
-                self._universe.atoms.translate(t)
+        # If universe has a cell we wrap the compound into the primary unit cell to
+        # use all compounds for the analysis.
+        if self._universe.dimensions is not None:
+            self._universe.atoms.wrap(compound=self.wrap_compound)
 
-            # If universe has a cell we wrap the compound into the primary unit cell to
-            # use all compounds for the analysis.
-            if self._universe.dimensions is not None:
-                self._universe.atoms.wrap(compound=self.wrap_compound)
+        if self.jitter != 0.0:
+            ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
 
-            if self.jitter != 0.0:
-                ts.positions += (
-                    np.random.random(size=(len(ts.positions), 3)) * self.jitter
-                )
+        self._obs = Results()
 
-            self._obs = Results()
+        self.timeseries[current_frame_index] = self._single_frame()
 
-            timeseries[i] = self._single_frame()
-
-            # This try/except block is used because it will fail only once and is
-            # therefore not a performance issue like a if statement would be.
-            try:
-                for key in self._obs.keys():
-                    if type(self._obs[key]) is list:
-                        self._obs[key] = np.array(self._obs[key])
-                    old_mean = self.means[key]  # type: ignore
-                    old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
-                    self.means[key] = new_mean(  # type: ignore
-                        self.means[key], self._obs[key], self._index  # type: ignore
-                    )  # type: ignore
-                    self.sems[key] = np.sqrt(  # type: ignore
-                        new_variance(
-                            old_var,
-                            old_mean,
-                            self.means[key],  # type: ignore
-                            self._obs[key],
-                            self._index,
-                        )
-                        / self._index
+        # This try/except block is used because it will fail only once and is
+        # therefore not a performance issue like a if statement would be.
+        try:
+            for key in self._obs.keys():
+                if type(self._obs[key]) is list:
+                    self._obs[key] = np.array(self._obs[key])
+                old_mean = self.means[key]  # type: ignore
+                old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
+                self.means[key] = new_mean(  # type: ignore
+                    self.means[key], self._obs[key], self._index  # type: ignore
+                )  # type: ignore
+                self.sems[key] = np.sqrt(  # type: ignore
+                    new_variance(
+                        old_var,
+                        old_mean,
+                        self.means[key],  # type: ignore
+                        self._obs[key],
+                        self._index,
                     )
-                    self.sums[key] += self._obs[key]  # type: ignore
+                    / self._index
+                )
+                self.sums[key] += self._obs[key]  # type: ignore
 
-            except AttributeError:
-                with logging_redirect_tqdm():
-                    logger.info("Preparing error estimation.")
-                # the means and sems are not yet defined. We initialize the means with
-                # the data from the first frame and set the sems to zero (with the
-                # correct shape).
-                self.sums = self._obs.copy()
-                self.means = self._obs.copy()
-                self.sems = Results()
-                for key in self._obs.keys():
-                    if type(self._obs[key]) not in compatible_types:
-                        raise TypeError(f"Obervable {key} has uncompatible type.")
-                    self.sems[key] = np.zeros(np.shape(self._obs[key]))
+        except AttributeError:
+            with logging_redirect_tqdm():
+                logger.info("Preparing error estimation.")
+            # the means and sems are not yet defined. We initialize the means with
+            # the data from the first frame and set the sems to zero (with the
+            # correct shape).
+            self.sums = self._obs.copy()
+            self.means = self._obs.copy()
+            self.sems = Results()
+            for key in self._obs.keys():
+                if type(self._obs[key]) not in compatible_types:
+                    raise TypeError(f"Obervable {key} has uncompatible type.")
+                self.sems[key] = np.zeros(np.shape(self._obs[key]))
 
-            if (
-                self.concfreq
-                and self._index % self.concfreq == 0
-                and self._frame_index > 0
-            ):
-                self._conclude()
-                if module_has_save:
-                    self.save()
+        if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
+            self._conclude()
+            if self.module_has_save:
+                self.save()
 
-        logger.info("Finishing up")
-
-        self.corrtime = correlation_analysis(timeseries)
+    def _call_conclude(self):
+        """Base method wrapping all _conclude logic into a single call."""
+        self.corrtime = correlation_analysis(self.timeseries)
 
         self._conclude()
-        if self.concfreq and module_has_save:
+        if self.concfreq and self.module_has_save:
             self.save()
-        return self
+
+    @render_docs
+    def run(
+        self,
+        start: Optional[int] = None,
+        stop: Optional[int] = None,
+        step: Optional[int] = None,
+        frames: Optional[int] = None,
+        verbose: Optional[bool] = None,
+        progressbar_kwargs: Optional[dict] = None,
+    ) -> Self:
+        """Iterate over the trajectory."""
+        return _Runner._run(
+            self,
+            analysis_instances=(self,),
+            start=start,
+            stop=stop,
+            step=step,
+            frames=frames,
+            verbose=verbose,
+            progressbar_kwargs=progressbar_kwargs,
+        )
 
     def savetxt(
         self, fname: str, X: np.ndarray, columns: Optional[List[str]] = None
@@ -580,6 +598,124 @@ class AnalysisBase(MDAnalysis.analysis.base.AnalysisBase):
 
         fname = "{}{}".format(fname, (not fname.endswith(".dat")) * ".dat")
         np.savetxt(fname, X, header=header, fmt="% .18e ", encoding="utf8")
+
+
+class AnalysisCollection(_Runner):
+    """Running a collection of analysis classes on the same single trajectory.
+
+    .. warning::
+
+        ``AnalysisCollection`` is still experimental. You should not use it for anything
+        important.
+
+    An analyses with ``AnalysisCollection`` can lead to a speedup compared to running
+    the individual analyses, since the trajectory loop is performed only once. The class
+    requires that each analysis is a child of :class:`AnalysisBase`. Additionally, the
+    trajectory of all ``analysis_instances`` must be the same. It is ensured that all
+    analysis instances use the *same original* timestep and not an altered one from a
+    previous analysis instance.
+
+    Parameters
+    ----------
+    *analysis_instances : AnalysisBase
+        Arbitrary number of analysis instances to be run on the same trajectory.
+
+    Raises
+    ------
+    AttributeError
+        If the provided ``analysis_instances`` do not work on the same trajectory.
+    AttributeError
+        If an ``analysis_instances`` is not a child of :class:`AnalysisBase`.
+
+    Example
+    -------
+    >>> import MDAnalysis as mda
+    >>> from maicos import DensityPlanar
+    >>> from maicos.core import AnalysisCollection
+    >>> from MDAnalysisTests.datafiles import TPR, XTC
+    >>> u = mda.Universe(TPR, XTC)
+
+    Select atoms
+
+    >>> ag_O = u.select_atoms("name O")
+    >>> ag_H = u.select_atoms("name H")
+
+    Create the individual analysis instances
+
+    >>> dplan_O = DensityPlanar(ag_O)
+    >>> dplan_H = DensityPlanar(ag_H)
+
+    Create a collection for common trajectory
+
+    >>> collection = AnalysisCollection(dplan_O, dplan_H)
+
+    Run the collected analysis
+
+    >>> _ = collection.run(start=0, stop=100, step=10)
+
+    Results are stored in the individual instances see :class:`AnalysisBase` on how to
+    access them. You can also save all results of the analysis within one call:
+
+    >>> collection.save()
+    """
+
+    def __init__(self, *analysis_instances: AnalysisBase):
+        warnings.warn(
+            "`AnalysisCollection` is still experimental. You should not use it for "
+            "anything important.",
+            stacklevel=2,
+        )
+        for analysis_object in analysis_instances:
+            if analysis_instances[0]._trajectory != analysis_object._trajectory:
+                raise ValueError(
+                    "`analysis_instances` do not have the same trajectory."
+                )
+            if not isinstance(analysis_object, AnalysisBase):
+                raise AttributeError(
+                    f"Analysis object {analysis_object} is "
+                    "not a child of `AnalysisBase`."
+                )
+
+        self._analysis_instances = analysis_instances
+
+    @render_docs
+    def run(
+        self,
+        start: Optional[int] = None,
+        stop: Optional[int] = None,
+        step: Optional[int] = None,
+        frames: Optional[int] = None,
+        verbose: Optional[bool] = None,
+        progressbar_kwargs: Optional[dict] = None,
+    ) -> Self:
+        """${RUN_METHOD_DESCRIPTION}"""
+        return _Runner._run(
+            self,
+            analysis_instances=self._analysis_instances,
+            start=start,
+            stop=stop,
+            step=step,
+            frames=frames,
+            verbose=verbose,
+            progressbar_kwargs=progressbar_kwargs,
+        )
+
+    def save(self) -> None:
+        """Save results of all ``analysis_instances`` to disk.
+
+        The methods calls the :meth:`save` method of all ``analysis_instances`` if
+        available. If an instance has no :meth:`save` method a warning for this instance
+        is issued.
+        """
+        for analysis_object in self._analysis_instances:
+            if analysis_object.module_has_save:
+                analysis_object.save()
+            else:
+                warnings.warn(
+                    f"`{analysis_object}` has no save() method. Analysis results of "
+                    "this instance can not be written to disk.",
+                    stacklevel=2,
+                )
 
 
 @render_docs
@@ -695,7 +831,7 @@ class ProfileBase:
 
     @render_docs
     def save(self):
-        """${SAVE_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["positions [Å]"]
 
         for i, _ in enumerate(self.atomgroups):

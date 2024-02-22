@@ -239,8 +239,8 @@ class Saxs(AnalysisBase):
         self.results.scat_factor /= self.atomgroup.n_atoms
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         if self.bin_spectrum:
             self.savetxt(
                 self.output,

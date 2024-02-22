@@ -340,8 +340,8 @@ class DielectricPlanar(PlanarBase):
             symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["position [Å]"]
         for i, _ in enumerate(self.atomgroups):
             columns.append(f"ε^-1_⟂ - 1 ({i+1})")

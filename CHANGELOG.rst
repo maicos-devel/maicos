@@ -15,6 +15,8 @@ v0.9 (XXXX/XX/XX)
 -----------------
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Add an ``AnalaysisCollection`` class to perform multiple analyses on the same
+  trajectory (!298)
 - Remove custom module command line interface (!299)
 - Add example for :class:`maicos.core.AnalysisBase` and rework own module section in
   developer docs (!299)

@@ -178,8 +178,8 @@ class RDFDiporder(AnalysisBase):
         self.results.rdf = self.means.profile / norm
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["r (Å)", "rdf"]
         if self.norm in ["rdf", "density"]:
             columns[1] += " (Å^3)"

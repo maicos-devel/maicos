@@ -164,8 +164,8 @@ class DielectricSphere(SphereBase):
         self.results.deps_rad = 4 * np.pi * self.results.bin_pos**2 * pref * dcov_rad
 
     @render_docs
-    def save(self):
-        """${SAVE_DESCRIPTION}"""
+    def save(self) -> None:
+        """${SAVE_METHOD_DESCRIPTION}"""
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T

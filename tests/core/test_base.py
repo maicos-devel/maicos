@@ -17,12 +17,13 @@ import numpy as np
 import pytest
 from mdacli.libcli import find_cls_members
 from MDAnalysis.analysis.base import Results
-from MDAnalysisTests.datafiles import DCD, PSF
-from numpy.testing import assert_allclose
+from MDAnalysis.core._get_readers import get_reader_for
+from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
+from numpy.testing import assert_allclose, assert_equal
 from scipy.signal import find_peaks
 
 from maicos import DensityPlanar, _version
-from maicos.core import AnalysisBase, ProfileBase
+from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -87,6 +88,10 @@ class Conclude(AnalysisBase):
     time the `_conclude` method is called.
     """
 
+    def __init__(self, atomgroup, output_prefix="", **kwargs):
+        self.output_prefix = output_prefix
+        super().__init__(atomgroup, **kwargs)
+
     def _prepare(self):
         self.conclude_count = 0
 
@@ -96,9 +101,9 @@ class Conclude(AnalysisBase):
     def _conclude(self):
         self.conclude_count += 1
 
-    def save(self):
+    def save(self) -> None:
         """Save a file named after the current number of frames."""
-        open(f"out_{self._index}", "w").close()
+        open(f"{self.output_prefix}out_{self._index}", "w").close()
 
 
 class Test_AnalysisBase(object):
@@ -300,6 +305,24 @@ class Test_AnalysisBase(object):
             refgroup.center_of_mass(), ag.universe.dimensions[:3] / 2, rtol=1e-01
         )
 
+    def test_refgroup_nomass(self, caplog):
+        """Test warning and succesful ref_weights"""
+        u = mda.Universe.empty(2)
+        positions = np.array([[1, 2, 3], [3, 2, 1]])
+        u.trajectory = get_reader_for(positions)(positions, order="fac", n_atoms=2)
+
+        for ts in u.trajectory:
+            ts.dimensions = np.array([4, 4, 1, 90, 90, 90])
+        ana_obj = AnalysisBase(u.atoms, refgroup=u.atoms, unwrap=True)
+        ana_obj._setup_frames(ana_obj._trajectory)
+        ana_obj._call_prepare()
+
+        assert_equal(ana_obj.ref_weights, np.ones_like(u.atoms))
+        assert (
+            "No masses available in refgroup, falling back to center of geometry"
+            in caplog.text
+        )
+
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
@@ -430,6 +453,107 @@ class Test_AnalysisBase(object):
         """Test that an analysis can be run for a universe without cell information."""
         class_obj = Conclude(u_no_cell.atoms)
         class_obj.run(stop=1)
+
+
+class TestAnalysisCollection:
+    """Test functions for the AnalysisCollection class."""
+
+    @pytest.fixture
+    def u(self):
+        """An MDAnalysis universe."""
+        return mda.Universe(PSF, DCD)
+
+    def test_experimental_warning(self, u):
+        """Test that the experimental warning is displayed."""
+        ana_1 = Conclude(u.atoms)
+
+        with pytest.warns(UserWarning, match="still experimental"):
+            AnalysisCollection(ana_1)
+
+    def test_run(self, u):
+        """Smoke test if the class can be run."""
+        ana_1 = Conclude(u.atoms)
+        ana_2 = Conclude(u.atoms)
+
+        collection = AnalysisCollection(ana_1, ana_2)
+        collection.run()
+
+        assert ana_1.results is not None
+        assert ana_2.results is not None
+
+    def test_trajectory_manipulation(self, u):
+        """Test that the timestep is the same for each analysis class."""
+
+        class CustomAnalysis(AnalysisBase):
+            """Custom class that is shifting positions in every step by 10."""
+
+            def _prepare(self):
+                pass
+
+            def _single_frame(self):
+                self._ts.positions += 10
+                self.ref_pos = self._ts.positions.copy()[0, 0]
+
+            def _conlude(self):
+                pass
+
+        ana_1 = CustomAnalysis(u.atoms)
+        ana_2 = CustomAnalysis(u.atoms)
+
+        collection = AnalysisCollection(ana_1, ana_2)
+        collection.run(frames=[0])
+
+        assert ana_2.ref_pos == ana_1.ref_pos
+
+    def test_inconsistent_trajectory(self, u):
+        """Test error raise if two analysis objects have a different trajectory."""
+        v = mda.Universe(TPR, XTC)
+
+        with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
+            AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
+
+    def test_no_base_child(self, u):
+        """Test error raise if an object is not a AnalyisBase child."""
+
+        class CustomAnalysis:
+            def __init__(self, trajectory):
+                self._trajectory = trajectory
+
+        # Create collection for common trajectory loop with inconsistent trajectory
+        with pytest.raises(AttributeError, match="not a child of `AnalysisBase`"):
+            AnalysisCollection(CustomAnalysis(u.trajectory))
+
+    def test_save(self, u, monkeypatch, tmp_path):
+        """Test that all results can be written to disk with one command."""
+        monkeypatch.chdir(tmp_path)
+
+        ana_1 = Conclude(u.atoms, output_prefix="ana1")
+        ana_2 = Conclude(u.atoms, output_prefix="ana2")
+
+        collection = AnalysisCollection(ana_1, ana_2)
+        collection.run(stop=1)
+        collection.save()
+
+        assert Path(f"{ana_1.output_prefix}out_{ana_1._index}").exists()
+        assert Path(f"{ana_2.output_prefix}out_{ana_2._index}").exists()
+
+    def test_save_warning(self, u, monkeypatch, tmp_path):
+        """Test that a warning is issued in an instance has no `save` method."""
+        monkeypatch.chdir(tmp_path)
+
+        ana_1 = Conclude(u.atoms, output_prefix="ana1")
+        ana_2 = AnalysisBase(u.atoms)
+        # Create empty methods for allowing the run method to succeed.
+        ana_2._prepare = lambda: None
+        ana_2._single_frame = lambda: None
+        ana_2._conclude = lambda: None
+
+        collection = AnalysisCollection(ana_1, ana_2)
+        collection.run(stop=1)
+        with pytest.warns(UserWarning, match=r"has no save\(\) method"):
+            collection.save()
+
+        assert Path(f"{ana_1.output_prefix}out_{ana_1._index}").exists()
 
 
 class Test_ProfileBase:
