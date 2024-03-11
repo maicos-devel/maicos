@@ -60,11 +60,12 @@ class DipoleAngle(AnalysisBase):
         pdim: int = 2,
         output: str = "dipangle.dat",
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         self.wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,
+            multi_group=False,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,
@@ -75,7 +76,7 @@ class DipoleAngle(AnalysisBase):
         self.pdim = pdim
         self.output = output
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         self.n_residues = self.atomgroup.residues.n_residues
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
@@ -89,7 +90,7 @@ class DipoleAngle(AnalysisBase):
         self.cos_theta_ii = np.empty(self.n_frames)
         self.cos_theta_ij = np.empty(self.n_frames)
 
-    def _single_frame(self):
+    def _single_frame(self) -> None:
         cos_theta = diporder_weights(
             self.atomgroup,
             grouping=self.grouping,
@@ -104,15 +105,7 @@ class DipoleAngle(AnalysisBase):
         self.cos_theta_ij[self._frame_index] = matrix.sum() - trace
         self.cos_theta_ij[self._frame_index] /= self.n_residues**2 - self.n_residues
 
-        if (
-            self.concfreq
-            and self._frame_index % self.concfreq == 0
-            and self._frame_index > 0
-        ):
-            self._conclude()
-            self.save()
-
-    def _conclude(self):
+    def _conclude(self) -> None:
         self.results.t = self.times
         self.results.cos_theta_i = self.cos_theta_i[: self._index]
         self.results.cos_theta_ii = self.cos_theta_ii[: self._index]

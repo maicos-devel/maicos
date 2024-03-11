@@ -42,15 +42,18 @@ class SphereClass(SphereBase):
         rmin=0,
         rmax=None,
         bin_width=1,
-        **kwargs,
     ):
         super().__init__(
             atomgroups=atomgroups,
+            multi_group=True,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
             rmin=rmin,
             rmax=rmax,
             bin_width=bin_width,
-            multi_group=True,
-            **kwargs,
         )
         self.pos_arg = pos_arg
         self.opt_arg = opt_arg
@@ -272,7 +275,16 @@ class TestSphereBase(object):
         """Test warning if rmax is larger than the smallest box vector in odims."""
         warning = "`rmax` is bigger than half the smallest box vector"
         ana_obj = SphereBase(
-            ag.atoms, rmin=1, rmax=1.1 * ag.dimensions[:3].min() / 2, bin_width=1
+            ag.atoms,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+            rmin=1,
+            rmax=1.1 * ag.dimensions[:3].min() / 2,
+            bin_width=1,
         )
         ana_obj._compute_lab_frame_sphere()
         assert warning in "".join([rec.message for rec in caplog.records])
@@ -299,9 +311,19 @@ class TestSphereBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(rmin=0, rmax=None, bin_width=1)
+        params = dict(
+            unwrap=False,
+            jitter=0.0,
+            concfreq=0,
+            bin_width=1,
+            refgroup=None,
+            rmin=0,
+            rmax=None,
+        )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = SphereBase(ag_single_frame, **params).run()
+        pb_obj = SphereBase(
+            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
+        ).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -399,6 +421,8 @@ class TestProfileSphereBase:
         """Fixture for CylinderBase class atributes."""
         p = dict(
             weighting_function=self.weights,
+            weighting_function_kwargs=None,
+            jitter=0.0,
             atomgroups=u.atoms,
             normalization="number",
             rmin=0,

@@ -34,6 +34,17 @@ from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 class Output(AnalysisBase):
     """Class creating a file to check the output."""
 
+    def __init__(self, atomgroups):
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
     OUTPUT = "This is the output message of an analysis class."
 
 
@@ -52,11 +63,30 @@ class FileModuleInput(AnalysisBase):
 
     def __init__(self, atomgroups, test_input="some_default", refgroup=None):
         self._locals = locals()
-        super().__init__(atomgroups, refgroup=refgroup)
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=False,
+            unwrap=False,
+            refgroup=refgroup,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
 
 class Series(AnalysisBase):
     """Class creating a random time series to check observables."""
+
+    def __init__(self, atomgroups):
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
     def _prepare(self):
         self.series = np.random.rand(self.n_frames)
@@ -77,6 +107,17 @@ class Frame_types(AnalysisBase):
     - np.int
     """
 
+    def __init__(self, atomgroups):
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
     def _single_frame(self):
         self._obs.observable = self.data[self._frame_index]
 
@@ -88,9 +129,28 @@ class Conclude(AnalysisBase):
     time the `_conclude` method is called.
     """
 
-    def __init__(self, atomgroup, output_prefix="", **kwargs):
+    def __init__(
+        self,
+        atomgroups,
+        multi_group=False,
+        unwrap=False,
+        refgroup=None,
+        jitter=0.0,
+        wrap_compound="atoms",
+        concfreq=0,
+        output_prefix="",
+    ):
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=multi_group,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            wrap_compound=wrap_compound,
+            concfreq=concfreq,
+        )
+
         self.output_prefix = output_prefix
-        super().__init__(atomgroup, **kwargs)
 
     def _prepare(self):
         self.conclude_count = 0
@@ -106,7 +166,7 @@ class Conclude(AnalysisBase):
         open(f"{self.output_prefix}out_{self._index}", "w").close()
 
 
-class Test_AnalysisBase(object):
+class Test_AnalysisBase:
     """Tests for the Analysis base class."""
 
     @pytest.fixture()
@@ -132,7 +192,15 @@ class Test_AnalysisBase(object):
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
-        a = AnalysisBase(ag)
+        a = AnalysisBase(
+            atomgroups=ag,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
         assert a.atomgroup.n_atoms == ag.n_atoms
         assert a._trajectory == ag.universe.trajectory
@@ -143,20 +211,42 @@ class Test_AnalysisBase(object):
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
-            class_obj = AnalysisBase(ag.select_atoms("name foo"))
+            class_obj = AnalysisBase(
+                atomgroups=ag.select_atoms("name foo"),
+                multi_group=False,
+                unwrap=False,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
             class_obj._prepare()
 
     def test_empty_atomgroups(self, ag):
         """Test behaviour for empty atomgroups."""
         with pytest.raises(ValueError, match="not contain any atoms."):
             class_obj = AnalysisBase(
-                [ag, ag.select_atoms("name foo")], multi_group=True
+                atomgroups=[ag, ag.select_atoms("name foo")],
+                multi_group=True,
+                unwrap=False,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
             )
             class_obj._prepare()
 
     def test_multigroups(self, ag):
         """Test multiple groups."""
-        a = AnalysisBase([ag[:10], ag[10:]], multi_group=True)
+        a = AnalysisBase(
+            atomgroups=[ag[:10], ag[10:]],
+            multi_group=True,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
         assert a.n_atomgroups == 2
         assert a._universe == ag.universe
@@ -164,11 +254,19 @@ class Test_AnalysisBase(object):
     def test_different_universes(self, ag):
         """Test different universes."""
         with pytest.raises(ValueError, match="Atomgroups belong"):
-            AnalysisBase([ag, mda.Universe(WATER_TPR_NPT)], multi_group=True)
+            AnalysisBase(
+                atomgroups=[ag, mda.Universe(WATER_TPR_NPT)],
+                multi_group=True,
+                unwrap=False,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = Series(ag)
+        ana = Series(atomgroups=ag)
         ana.run()
 
         assert_allclose(ana.sums.observable, np.sum(ana.series))
@@ -313,7 +411,15 @@ class Test_AnalysisBase(object):
 
         for ts in u.trajectory:
             ts.dimensions = np.array([4, 4, 1, 90, 90, 90])
-        ana_obj = AnalysisBase(u.atoms, refgroup=u.atoms, unwrap=True)
+        ana_obj = AnalysisBase(
+            atomgroups=u.atoms,
+            multi_group=False,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+            refgroup=u.atoms,
+            unwrap=True,
+        )
         ana_obj._setup_frames(ana_obj._trajectory)
         ana_obj._call_prepare()
 
@@ -326,7 +432,15 @@ class Test_AnalysisBase(object):
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
-            class_obj = AnalysisBase(ag, refgroup=empty_ag)
+            class_obj = AnalysisBase(
+                atomgroups=ag,
+                refgroup=empty_ag,
+                multi_group=False,
+                unwrap=False,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
             class_obj._prepare()
 
     def test_unwrap(self, ag):
@@ -363,7 +477,15 @@ class Test_AnalysisBase(object):
 
     def test_banner(self, ag, caplog):
         """Test whether AnalysisBase prints the MAICoS banner."""
-        ana_obj = AnalysisBase(ag)
+        ana_obj = AnalysisBase(
+            atomgroups=ag,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
         # Create empty methods for allowing the run method to succeed.
         ana_obj._prepare = lambda: None
@@ -383,7 +505,15 @@ class Test_AnalysisBase(object):
 
     def test_n_bins(self, ag, caplog):
         """Test `n_bins` logger info."""
-        ana_obj = AnalysisBase(ag)
+        ana_obj = AnalysisBase(
+            atomgroups=ag,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
         # Create empty methods for allowing the run method to succeed.
         ana_obj._prepare = lambda: None
@@ -399,7 +529,15 @@ class Test_AnalysisBase(object):
 
     def test_info_log(self, ag, caplog):
         """Test that logger infos are printed."""
-        ana_obj = AnalysisBase(ag)
+        ana_obj = AnalysisBase(
+            atomgroups=ag,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
 
         # Create empty methods for allowing the run method to succeed.
         ana_obj._prepare = lambda: None
@@ -416,7 +554,15 @@ class Test_AnalysisBase(object):
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
         caplog.set_level(logging.WARN)
-        profile = AnalysisBase(ag, unwrap=True, wrap_compound="atoms")
+        profile = AnalysisBase(
+            atomgroups=ag,
+            unwrap=True,
+            wrap_compound="atoms",
+            multi_group=False,
+            refgroup=None,
+            jitter=0.0,
+            concfreq=0,
+        )
 
         msgs = [rec.message for rec in caplog.records]
         # Assume wrap warning is first warning recorded
@@ -446,7 +592,15 @@ class Test_AnalysisBase(object):
         """Test that an error is raised if `unwrap=True` but no cell is present."""
         match = "Universe does not have `dimensions` and can't be unwrapped!"
         with pytest.raises(ValueError, match=match):
-            class_obj = AnalysisBase(u_no_cell.atoms, unwrap=True)
+            class_obj = AnalysisBase(
+                u_no_cell.atoms,
+                unwrap=True,
+                multi_group=False,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
             class_obj._prepare()
 
     def test_no_dimensions_run(self, u_no_cell):
@@ -486,6 +640,17 @@ class TestAnalysisCollection:
 
         class CustomAnalysis(AnalysisBase):
             """Custom class that is shifting positions in every step by 10."""
+
+            def __init__(self, atomgroups):
+                super().__init__(
+                    atomgroups=atomgroups,
+                    multi_group=False,
+                    unwrap=False,
+                    refgroup=None,
+                    jitter=0.0,
+                    wrap_compound="atoms",
+                    concfreq=0,
+                )
 
             def _prepare(self):
                 pass
@@ -542,7 +707,15 @@ class TestAnalysisCollection:
         monkeypatch.chdir(tmp_path)
 
         ana_1 = Conclude(u.atoms, output_prefix="ana1")
-        ana_2 = AnalysisBase(u.atoms)
+        ana_2 = AnalysisBase(
+            atomgroups=u.atoms,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
         # Create empty methods for allowing the run method to succeed.
         ana_2._prepare = lambda: None
         ana_2._single_frame = lambda: None
@@ -581,6 +754,7 @@ class Test_ProfileBase:
         """Fixture for PlanarBase class atributes."""
         p = dict(
             weighting_function=lambda x, grouping, a=1: a * x,
+            weighting_function_kwargs=None,
             atomgroups=[u.atoms],
             normalization="number",
             grouping="atoms",
@@ -601,10 +775,10 @@ class Test_ProfileBase:
             params.update(grouping="foo")
             ProfileBase(**params)._prepare()
 
-    def test_f_kwargs(self, params):
+    def test_weighting_function_kwargs(self, params):
         """Test an extra keyword argument."""
         profile = ProfileBase(**params)
-        params.update(f_kwargs={"a": 2})
+        params.update(weighting_function_kwargs={"a": 2})
         profile_scaled = ProfileBase(**params)
 
         assert 2 * profile.weighting_function(1) == profile_scaled.weighting_function(1)

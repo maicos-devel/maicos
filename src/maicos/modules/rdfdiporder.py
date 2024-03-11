@@ -82,10 +82,11 @@ class RDFDiporder(AnalysisBase):
         jitter: float = 0.0,
         concfreq: int = 0,
         output: str = "diporderrdf.dat",
-    ):
+    ) -> None:
         self._locals = locals()
         super().__init__(
             g1,
+            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,

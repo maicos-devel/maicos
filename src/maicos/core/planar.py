@@ -29,8 +29,7 @@ class PlanarBase(AnalysisBase):
     ----------
     ${ATOMGROUPS_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
-    kwargs : dict
-        Parameters parsed to `AnalysisBase`.
+    ${WRAP_COMPOUND_PARAMETER}
 
     Attributes
     ----------
@@ -61,13 +60,26 @@ class PlanarBase(AnalysisBase):
     def __init__(
         self,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        multi_group: bool,
+        unwrap: bool,
+        refgroup: Optional[mda.AtomGroup],
+        jitter: float,
+        concfreq: int,
         dim: int,
         zmin: Union[None, float],
         zmax: Union[None, float],
         bin_width: float,
-        **kwargs,
+        wrap_compound: str,
     ):
-        super().__init__(atomgroups=atomgroups, **kwargs)
+        super().__init__(
+            atomgroups=atomgroups,
+            multi_group=multi_group,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            concfreq=concfreq,
+            wrap_compound=wrap_compound,
+        )
 
         if dim not in [0, 1, 2]:
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")
@@ -150,10 +162,8 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     Parameters
     ----------
-    ${PROFILE_CLASS_PARAMETERS_PRIVATE}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    f_kwargs : dict
-        Additional parameters for `function`
+    ${PROFILE_CLASS_PARAMETERS_PRIVATE}
 
     Attributes
     ----------
@@ -162,34 +172,48 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     def __init__(
         self,
-        weighting_function: Callable,
-        normalization: str,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        unwrap: bool,
+        refgroup: Optional[mda.AtomGroup],
+        jitter: float,
+        concfreq: int,
+        dim: int,
+        zmin: Union[None, float],
+        zmax: Union[None, float],
+        bin_width: float,
         sym: bool,
         grouping: str,
         bin_method: str,
         output: str,
-        f_kwargs: Optional[Dict] = None,
-        **kwargs,
+        weighting_function: Callable,
+        weighting_function_kwargs: Union[None, Dict],
+        normalization: str,
     ):
         PlanarBase.__init__(
             self,
             atomgroups=atomgroups,
             multi_group=True,
-            wrap_compound=grouping,
-            **kwargs,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            concfreq=concfreq,
+            dim=dim,
+            zmin=zmin,
+            zmax=zmax,
+            bin_width=bin_width,
+            wrap_compound=grouping,  # same as grouping to avoid broken compounds
         )
         # `AnalysisBase` performs conversions on `atomgroups`.
         # Take converted `atomgroups` and not the user provided ones.
         ProfileBase.__init__(
             self,
             atomgroups=self.atomgroups,
-            weighting_function=weighting_function,
-            normalization=normalization,
             grouping=grouping,
             bin_method=bin_method,
             output=output,
-            f_kwargs=f_kwargs,
+            weighting_function=weighting_function,
+            weighting_function_kwargs=weighting_function_kwargs,
+            normalization=normalization,
         )
 
         self.sym = sym

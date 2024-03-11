@@ -85,9 +85,9 @@ class DielectricCylinder(CylinderBase):
         zmax: Optional[float] = None,
         vcutwidth: float = 0.1,
         unwrap: bool = True,
-    ):
+    ) -> None:
         self._locals = locals()
-        self.comp = get_compound(atomgroup.atoms)
+        self.comp = get_compound(atomgroup)
         ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
@@ -100,16 +100,17 @@ class DielectricCylinder(CylinderBase):
 
         super().__init__(
             atomgroup,
-            concfreq=concfreq,
-            jitter=jitter,
+            multi_group=False,
+            unwrap=unwrap,
             refgroup=refgroup,
-            rmin=rmin,
-            rmax=rmax,
+            jitter=jitter,
+            concfreq=concfreq,
+            dim=dim,
             zmin=zmin,
             zmax=zmax,
-            dim=dim,
             bin_width=bin_width,
-            unwrap=unwrap,
+            rmin=rmin,
+            rmax=rmax,
             wrap_compound=self.comp,
         )
         self.output_prefix = output_prefix
@@ -117,7 +118,7 @@ class DielectricCylinder(CylinderBase):
         self.single = single
         self.vcutwidth = vcutwidth
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         # Print Philip Loche citation
         logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 
@@ -196,7 +197,7 @@ class DielectricCylinder(CylinderBase):
         # Save the total dipole moment in z dierection for correlation analysis.
         return self._obs.M_z
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0
