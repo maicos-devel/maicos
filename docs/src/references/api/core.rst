@@ -10,7 +10,7 @@ Core classes
    :maxdepth: 4
    :caption: Core classes
 
-   base
-   planar
-   cylinder
-   sphere
+   base/index
+   planar/index
+   cylinder/index
+   sphere/index

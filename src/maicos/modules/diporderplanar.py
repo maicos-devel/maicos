@@ -57,7 +57,7 @@ class DiporderPlanar(ProfilePlanarBase):
         pdim: int = 2,
         order_parameter: str = "P0",
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         if order_parameter == "P0":
             normalization = "volume"
@@ -70,23 +70,23 @@ class DiporderPlanar(ProfilePlanarBase):
             )
 
         super().__init__(
-            weighting_function=diporder_weights,
-            f_kwargs={
-                "order_parameter": order_parameter,
-                "get_unit_vectors": get_unit_vectors,
-            },
-            normalization=normalization,
             atomgroups=atomgroups,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            concfreq=concfreq,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
             bin_width=bin_width,
-            refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq,
-            jitter=jitter,
+            weighting_function=diporder_weights,
+            weighting_function_kwargs={
+                "order_parameter": order_parameter,
+                "get_unit_vectors": get_unit_vectors,
+            },
+            normalization=normalization,
         )

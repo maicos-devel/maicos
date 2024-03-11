@@ -1,9 +1,9 @@
-.. _base_class:
+.. _PlanarBase:
 
-Base class
+PlanarBase
 ##########
 
-.. automodule:: maicos.core.base
+.. autoclass:: maicos.core.PlanarBase
     :members:
     :undoc-members:
     :show-inheritance:

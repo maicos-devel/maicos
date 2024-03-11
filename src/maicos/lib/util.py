@@ -87,6 +87,10 @@ DOC_DICT = dict(
     ATOMGROUPS_PARAMETER="""atomgroups : MDAnalysis.core.groups.AtomGroup or list[MDAnalysis.core.groups.AtomGroup]
         A :class:`~MDAnalysis.core.groups.AtomGroup` or list thereof for which the
         calculations are performed.""",  # noqa: E501
+    WRAP_COMPOUND_PARAMETER="""wrap_compound : str
+        The group which will be kept together through the wrap processes.
+        Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
+        ``"segments"``, ``"molecules"``, or ``"fragments"``.""",
     DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``}
         density type to be calculated.""",
     TEMPERATURE_PARAMETER="""temperature : float
@@ -145,12 +149,9 @@ DOC_DICT = dict(
         for example, using the ``trjconv`` command of GROMACS.
     refgroup : MDAnalysis.core.groups.AtomGroup
         Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation.
-
-        If refgroup is provided, the calculation is performed relative to the center of
-        mass of the AtomGroup.
-
-        If refgroup is :obj:`None` the calculations are performed to the center of the
-        (changing) box.
+        If ``refgroup`` is provided, the calculation is performed relative to the center
+        of mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are
+        performed with respect to the center of the (changing) box.
     jitter : float
         Magnitude of the random noise to add to the atomic positions.
 
@@ -164,21 +165,23 @@ DOC_DICT = dict(
         :func:`maicos.lib.util.trajectory_precision`. Note that if the precision is not
         the same for all frames, the smallest precision should be used.
     concfreq : int
-        When concfreq (for conclude frequency) is larger than 0, the conclude function
-        is called and the output files are written every concfreq frames""",
+        When concfreq (for conclude frequency) is larger than ``0``, the conclude
+        function is called and the output files are written every ``concfreq``
+        frames.""",
     PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
         The function calculating the array weights for the histogram analysis. It must
-        take an `Atomgroup` as first argument and a grouping ('atoms', 'residues',
-        'segments', 'molecules', 'fragments') as second. Additional parameters can be
-        given as `f_kwargs`. The function must return a numpy.ndarray with the same
-        length as the number of group members.
+        take an ``Atomgroup`` as first argument and a grouping (``"atoms"``,
+        ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``) as second.
+        Additional parameters can be given as ``weighting_function_kwargs``. The
+        function must return a numpy.ndarray with the same length as the number of group
+        members.
+    weighting_function_kwargs : dict
+        Additional keyword arguments for ``weighting_function``
     normalization : {``"none"``, ``"number"``, ``"volume"``}
         The normalization of the profile performed in every frame. If :obj:`None`, no
         normalization is performed. If `number`, the histogram is divided by the number
         of occurences in each bin. If `volume`, the profile is divided by the volume of
-        each bin.
-    f_kwargs : dict
-        Additional parameters for `function`""",
+        each bin.""",
     Q_SPACE_PARAMETERS="""startq : float
         Starting q (1/Å)
     endq : float

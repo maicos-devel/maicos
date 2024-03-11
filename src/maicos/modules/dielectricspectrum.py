@@ -89,11 +89,12 @@ class DielectricSpectrum(AnalysisBase):
         binafter: float = 20,
         nobin: bool = False,
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,
+            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             concfreq=concfreq,
@@ -108,7 +109,7 @@ class DielectricSpectrum(AnalysisBase):
         self.binafter = binafter
         self.nobin = nobin
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         # Print the Shane Carlson citation
         logger.info(citation_reminder("10.1021/acs.jpca.0c04063"))
 
@@ -119,13 +120,13 @@ class DielectricSpectrum(AnalysisBase):
         self.V = 0
         self.P = np.zeros((self.n_frames, 3))
 
-    def _single_frame(self):
+    def _single_frame(self) -> None:
         self.V += self._ts.volume
         self.P[self._frame_index, :] = np.dot(
             self.atomgroup.charges, self.atomgroup.positions
         )
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         self.results.t = self._trajectory.dt * self.frames
         self.results.V = self.V / self._index
 
@@ -173,7 +174,7 @@ class DielectricSpectrum(AnalysisBase):
 
             # loop over x, y, z
             for self._i in range(3):
-                FP = FT(
+                FP: np.ndarry = FT(
                     self.results.t,
                     np.append(
                         self.results.P[
@@ -188,11 +189,12 @@ class DielectricSpectrum(AnalysisBase):
             ss *= self.results.nu * 1j
 
             # Get the real part by Kramers Kronig
-            ss.real = iFT(
+            ift: np.ndarray = iFT(
                 self.results.t,
                 1j * np.sign(self.results.nu) * FT(self.results.nu, ss, False),
                 False,
-            ).imag
+            )
+            ss.real = ift.imag
 
             if s == 0:
                 self.results.susc += ss[self.seglen :]

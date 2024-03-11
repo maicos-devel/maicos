@@ -60,31 +60,35 @@ class KineticEnergy(AnalysisBase):
         jitter: float = 0.0,
         concfreq: int = 0,
         output: str = "ke.dat",
-        refpoint: str = "COM",
-    ):
+        refpoint: str = "com",
+    ) -> None:
         self._locals = locals()
+
+        self.comp = get_compound(atomgroup)
         super().__init__(
             atomgroup,
+            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,
+            wrap_compound=self.comp,
         )
         self.output = output
         self.refpoint = refpoint.lower()
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
         if self.refpoint not in ["com", "coc"]:
             raise ValueError(
                 f"Invalid choice for dens: {self.refpoint} (choose from 'com' or 'coc')"
             )
 
-        self.masses = self.atomgroup.atoms.accumulate(
-            self.atomgroup.atoms.masses, compound=get_compound(self.atomgroup)
+        self.masses = self.atomgroup.accumulate(
+            self.atomgroup.masses, compound=self.comp
         )
-        self.abscharges = self.atomgroup.atoms.accumulate(
-            np.abs(self.atomgroup.atoms.charges), compound=get_compound(self.atomgroup)
+        self.abscharges = self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
         )
         # Total kinetic energy
         self.E_kin = np.zeros(self.n_frames)
@@ -92,7 +96,7 @@ class KineticEnergy(AnalysisBase):
         # Molecular center energy
         self.E_center = np.zeros(self.n_frames)
 
-    def _single_frame(self):
+    def _single_frame(self) -> None:
         self.E_kin[self._frame_index] = np.dot(
             self.atomgroup.masses,
             np.linalg.norm(self.atomgroup.velocities, axis=1) ** 2,
@@ -119,7 +123,7 @@ class KineticEnergy(AnalysisBase):
             self.masses, np.linalg.norm(v, axis=1) ** 2
         )
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         self.results.t = self.times
         self.results.trans = self.E_center / 2 / 100
         self.results.rot = (self.E_kin - self.E_center) / 2 / 100

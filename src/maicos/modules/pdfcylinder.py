@@ -114,10 +114,11 @@ class PDFCylinder(CylinderBase):
         rmax: Optional[float] = None,
         bin_width: float = 1,
         output: str = "pdf.dat",
-    ):
+    ) -> None:
         self.comp_1 = get_compound(g1)
         super(PDFCylinder, self).__init__(
             atomgroups=g1,
+            multi_group=False,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,
@@ -159,8 +160,8 @@ class PDFCylinder(CylinderBase):
         self.dmax = dmax
         self.density = density
 
-    def _prepare(self):
-        super(PDFCylinder, self)._prepare()
+    def _prepare(self) -> None:
+        super()._prepare()
         logger.info("Compute pair distribution function.")
 
         if self.origin is None:
@@ -201,8 +202,8 @@ class PDFCylinder(CylinderBase):
             f"{self.nbins_pdf_z} in z direction."
         )
 
-    def _single_frame(self):
-        super(PDFCylinder, self)._single_frame()
+    def _single_frame(self) -> None:
+        super()._single_frame()
         self._obs.n_g1 = np.zeros((self.n_bins, 1))
         self._obs.n_g2 = np.zeros((self.n_bins, 1))
         self._obs.count_phi = np.zeros((self.n_bins, self.nbins_pdf_phi))
@@ -347,7 +348,7 @@ class PDFCylinder(CylinderBase):
                 range=(self.dmin, self.dmax),
             )[0]
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         super()._conclude()
 
         # Calculate the density of g2.

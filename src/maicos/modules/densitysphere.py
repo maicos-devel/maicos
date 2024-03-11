@@ -52,21 +52,21 @@ class DensitySphere(ProfileSphereBase):
         output: str = "density.dat",
         concfreq: int = 0,
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         super().__init__(
-            weighting_function=density_weights,
-            f_kwargs={"dens": dens},
-            normalization="volume",
             atomgroups=atomgroups,
-            bin_width=bin_width,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
+            concfreq=concfreq,
             rmin=rmin,
             rmax=rmax,
-            refgroup=refgroup,
+            bin_width=bin_width,
             grouping=grouping,
-            unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq,
-            jitter=jitter,
+            weighting_function=density_weights,
+            weighting_function_kwargs={"dens": dens},
+            normalization="volume",
         )

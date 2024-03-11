@@ -72,9 +72,9 @@ class DielectricSphere(SphereBase):
         rmin: float = 0,
         rmax: Optional[float] = None,
         unwrap: bool = True,
-    ):
+    ) -> None:
         self._locals = locals()
-        self.comp = get_compound(atomgroup.atoms)
+        self.comp = get_compound(atomgroup)
         ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
         if rmin != 0 or rmax is not None:
@@ -85,6 +85,7 @@ class DielectricSphere(SphereBase):
 
         super().__init__(
             atomgroup,
+            multi_group=False,
             concfreq=concfreq,
             jitter=jitter,
             refgroup=refgroup,
@@ -98,7 +99,7 @@ class DielectricSphere(SphereBase):
         self.bin_width = bin_width
         self.temperature = temperature
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         # Print the Christian Schaaf citation
         logger.info(citation_reminder("10.1103/PhysRevE.92.032718"))
 
@@ -142,7 +143,7 @@ class DielectricSphere(SphereBase):
 
         return self._obs.M_r
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0

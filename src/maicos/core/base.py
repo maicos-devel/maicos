@@ -121,10 +121,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     multi_group : bool
         Analysis is able to work with list of atomgroups
     ${BASE_CLASS_PARAMETERS}
-    wrap_compound : str
-        The group which will be kept together through the wrap processes.
-        Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
-        ``"segments"``, ``"molecules"``, or ``"fragments"``.
+    ${WRAP_COMPOUND_PARAMETER}
+
 
     Attributes
     ----------
@@ -203,18 +201,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...     def __init__(
     ...         self,
     ...         atomgroup: mda.AtomGroup,
-    ...         unwrap: bool = False,
-    ...         refgroup: Optional[mda.AtomGroup] = None,
-    ...         jitter: float = 0.0,
     ...         concfreq: int = 0,
     ...         temperature: float = 300,
     ...         output: str = "outfile.dat",
     ...     ):
     ...         super().__init__(
-    ...             atomgroup,
-    ...             refgroup=refgroup,
-    ...             unwrap=unwrap,
-    ...             jitter=jitter,
+    ...             atomgroups=atomgroup,
+    ...             multi_group=False,
+    ...             refgroup=None,
+    ...             unwrap=False,
+    ...             jitter=0.0,
+    ...             wrap_compound="atoms",
     ...             concfreq=concfreq,
     ...         )
     ...
@@ -285,13 +282,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def __init__(
         self,
         atomgroups: mda.AtomGroup,
-        multi_group: bool = False,
-        unwrap: bool = False,
-        refgroup: Optional[mda.AtomGroup] = None,
-        jitter: float = 0.0,
-        wrap_compound: str = "atoms",
-        concfreq: int = 0,
-    ):
+        multi_group: bool,
+        unwrap: bool,
+        refgroup: Union[None, mda.AtomGroup],
+        jitter: float,
+        concfreq: int,
+        wrap_compound: str,
+    ) -> None:
         if multi_group:
             if type(atomgroups) not in (list, tuple):
                 atomgroups = [atomgroups]
@@ -367,7 +364,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         """Center of the simulation cell."""
         return self._universe.dimensions[:3] / 2
 
-    def _call_prepare(self):
+    def _prepare(self) -> None:
+        """Set things up before the analysis loop begins"""
+        pass  # pylint: disable=unnecessary-pass
+
+    def _call_prepare(self) -> None:
         """Base method wrapping all _prepare logic into a single call."""
         if self.refgroup is not None:
             if (
@@ -393,7 +394,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         logger.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
 
-    def _call_single_frame(self, ts, current_frame_index):
+    def _single_frame(self) -> Union[None, float]:
+        """Calculate data from a single frame of trajectory
+
+        Don't worry about normalising, just deal with a single frame.
+        """
+        raise NotImplementedError("Only implemented in child classes")
+
+    def _call_single_frame(self, ts, current_frame_index) -> None:
         """Base method wrapping all single_frame logic into a single call."""
         compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
         self._frame_index = current_frame_index
@@ -466,7 +474,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if self.module_has_save:
                 self.save()
 
-    def _call_conclude(self):
+    def _conclude(self) -> None:
+        """Finalize the results you've gathered.
+
+        Called at the end of the :meth:`run` method to finish everything up.
+        """
+        pass  # pylint: disable=unnecessary-pass
+
+    def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
         self.corrtime = correlation_analysis(self.timeseries)
 
@@ -659,7 +674,7 @@ class AnalysisCollection(_Runner):
     >>> collection.save()
     """
 
-    def __init__(self, *analysis_instances: AnalysisBase):
+    def __init__(self, *analysis_instances: AnalysisBase) -> None:
         warnings.warn(
             "`AnalysisCollection` is still experimental. You should not use it for "
             "anything important.",
@@ -736,24 +751,24 @@ class ProfileBase:
     def __init__(
         self,
         atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
-        weighting_function: Callable,
-        normalization: str,
         grouping: str,
         bin_method: str,
         output: str,
-        f_kwargs: Optional[Dict] = None,
-    ):
+        weighting_function: Callable,
+        weighting_function_kwargs: Union[None, Dict],
+        normalization: str,
+    ) -> None:
         self.atomgroups = atomgroups
-        self.normalization = normalization.lower()
         self.grouping = grouping.lower()
         self.bin_method = bin_method.lower()
         self.output = output
+        self.normalization = normalization.lower()
 
-        if f_kwargs is None:
-            f_kwargs = {}
+        if weighting_function_kwargs is None:
+            weighting_function_kwargs = {}
 
         self.weighting_function = lambda ag: weighting_function(
-            ag, grouping, **f_kwargs
+            ag, grouping, **weighting_function_kwargs
         )
         # We need to set the following dictionaries here because ProfileBase is not a
         # subclass of AnalysisBase (only needed for tests)
@@ -798,11 +813,11 @@ class ProfileBase:
         """
         raise NotImplementedError("Only implemented in child classes.")
 
-    def _single_frame(self):
-        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))
-        self._obs.bincount = np.zeros((self.n_bins, self.n_atomgroups))
+    def _single_frame(self) -> Union[None, float]:
+        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))  # type: ignore
+        self._obs.bincount = np.zeros((self.n_bins, self.n_atomgroups))  # type: ignore
         for index, selection in enumerate(self.atomgroups):
-            if self.grouping == "atoms":
+            if self.grouping == "atoms":  # type: ignore
                 positions = selection.atoms.positions
             else:
                 positions = get_center(
@@ -821,16 +836,20 @@ class ProfileBase:
 
             self._obs.profile[:, index] = profile
 
-    def _conclude(self):
+        return None
+
+    def _conclude(self) -> None:
         if self.normalization == "number":
             with np.errstate(divide="ignore", invalid="ignore"):
-                self.results.profile = self.sums.profile / self.sums.bincount
+                self.results.profile = (
+                    self.sums.profile / self.sums.bincount  # type: ignore
+                )
         else:
-            self.results.profile = self.means.profile
-        self.results.dprofile = self.sems.profile
+            self.results.profile = self.means.profile  # type: ignore
+        self.results.dprofile = self.sems.profile  # type: ignore
 
     @render_docs
-    def save(self):
+    def save(self) -> None:
         """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["positions [Å]"]
 
@@ -843,7 +862,7 @@ class ProfileBase:
         self._allow_multiple_atomgroups = True
 
         AnalysisBase.savetxt(
-            self,
+            self,  # type: ignore
             self.output,
             np.hstack(
                 (

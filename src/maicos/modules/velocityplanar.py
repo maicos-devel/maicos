@@ -60,7 +60,7 @@ class VelocityPlanar(ProfilePlanarBase):
         vdim: int = 0,
         flux: bool = False,
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
@@ -70,10 +70,10 @@ class VelocityPlanar(ProfilePlanarBase):
             normalization = "number"
 
         super().__init__(
-            weighting_function=velocity_weights,
-            f_kwargs={"vdim": vdim},
-            normalization=normalization,
             atomgroups=atomgroups,
+            unwrap=unwrap,
+            jitter=jitter,
+            concfreq=concfreq,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
@@ -81,9 +81,9 @@ class VelocityPlanar(ProfilePlanarBase):
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq,
-            jitter=jitter,
+            weighting_function=velocity_weights,
+            weighting_function_kwargs={"vdim": vdim},
+            normalization=normalization,
         )

@@ -15,6 +15,7 @@ v0.9 (XXXX/XX/XX)
 -----------------
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Remove default arguments from core classes (!302)
 - Add an ``AnalaysisCollection`` class to perform multiple analyses on the same
   trajectory (!298)
 - Remove custom module command line interface (!299)

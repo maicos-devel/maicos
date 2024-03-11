@@ -48,13 +48,18 @@ class CylinderClass(CylinderBase):
     ):
         super().__init__(
             atomgroups=atomgroups,
+            multi_group=True,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
             rmin=rmin,
             rmax=rmax,
             bin_width=bin_width,
-            multi_group=True,
             **kwargs,
         )
         self.pos_arg = pos_arg
@@ -308,9 +313,22 @@ class TestCylinderBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(dim=2, zmin=None, zmax=None, rmin=0, rmax=None, bin_width=1)
+        params = dict(
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            concfreq=0,
+            dim=2,
+            zmin=None,
+            zmax=None,
+            rmin=0,
+            rmax=None,
+            bin_width=1,
+        )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = CylinderBase(ag_single_frame, **params).run()
+        pb_obj = CylinderBase(
+            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
+        ).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -412,6 +430,8 @@ class TestProfileCylinderBase:
         """Fixture for CylinderBase class atributes."""
         p = dict(
             weighting_function=self.weights,
+            weighting_function_kwargs=None,
+            jitter=0.0,
             atomgroups=u.atoms,
             normalization="number",
             dim=2,
@@ -531,7 +551,18 @@ class TestProfileCylinderBase:
         odims = np.roll(np.arange(3), -dimension)[1:]
 
         params = dict(
-            dim=dimension, zmin=None, zmax=None, rmin=0, rmax=None, bin_width=1
+            multi_group=True,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+            dim=dimension,
+            zmin=None,
+            zmax=None,
+            rmin=0,
+            rmax=None,
+            bin_width=1,
         )
         params["atomgroups"] = u_dimers.atoms
         params["rmax"] = 1.1 * u_dimers.dimensions[odims].min() / 2

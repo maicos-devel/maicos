@@ -53,7 +53,7 @@ class DiporderSphere(ProfileSphereBase):
         concfreq: int = 0,
         order_parameter: str = "P0",
         jitter: float = 0.0,
-    ):
+    ) -> None:
         if order_parameter == "P0":
             normalization = "volume"
         else:
@@ -65,21 +65,21 @@ class DiporderSphere(ProfileSphereBase):
             )
 
         super().__init__(
+            atomgroups=atomgroups,
+            unwrap=unwrap,
+            jitter=jitter,
+            refgroup=refgroup,
+            concfreq=concfreq,
+            rmin=rmin,
+            rmax=rmax,
+            bin_width=bin_width,
+            grouping=grouping,
+            bin_method=bin_method,
+            output=output,
             weighting_function=diporder_weights,
-            f_kwargs={
+            weighting_function_kwargs={
                 "order_parameter": order_parameter,
                 "get_unit_vectors": get_unit_vectors,
             },
             normalization=normalization,
-            atomgroups=atomgroups,
-            bin_width=bin_width,
-            rmin=rmin,
-            rmax=rmax,
-            refgroup=refgroup,
-            grouping=grouping,
-            unwrap=unwrap,
-            bin_method=bin_method,
-            output=output,
-            concfreq=concfreq,
-            jitter=jitter,
         )

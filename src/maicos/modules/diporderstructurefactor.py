@@ -65,10 +65,11 @@ class DiporderStructureFactor(AnalysisBase):
         endq: float = 6,
         dq: float = 0.01,
         output: str = "sq.dat",
-    ):
+    ) -> None:
         self._locals = locals()
         super().__init__(
             atomgroup,
+            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -82,10 +83,10 @@ class DiporderStructureFactor(AnalysisBase):
         self.dq = dq
         self.output = output
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         self.n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
 
-    def _single_frame(self):
+    def _single_frame(self) -> float:
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
 
         positions = get_center(
@@ -152,7 +153,7 @@ class DiporderStructureFactor(AnalysisBase):
 
         return self._obs.struct_factor[-1]
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
         nonzeros = np.where(self.means.struct_factor != 0)[0]
         struct_factor = self.means.struct_factor[nonzeros]

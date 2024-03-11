@@ -100,7 +100,7 @@ class DielectricPlanar(PlanarBase):
         concfreq: int = 0,
         jitter: float = 0.0,
         vcutwidth: float = 0.1,
-    ):
+    ) -> None:
         self._locals = locals()
         if type(atomgroups) not in (list, tuple):
             wrap_compound = get_compound(atomgroups)
@@ -115,25 +115,25 @@ class DielectricPlanar(PlanarBase):
 
         super().__init__(
             atomgroups=atomgroups,
+            multi_group=True,
+            unwrap=unwrap,
+            refgroup=refgroup,
+            jitter=jitter,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
             bin_width=bin_width,
-            refgroup=refgroup,
-            unwrap=unwrap,
-            multi_group=True,
             wrap_compound=wrap_compound,
-            jitter=jitter,
+            concfreq=concfreq,
         )
         self.is_3d = is_3d
         self.sym = sym
 
         self.temperature = temperature
         self.output_prefix = output_prefix
-        self.concfreq = concfreq
         self.vcutwidth = vcutwidth
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         # Print Alex Schlaich citation
         logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 
@@ -246,7 +246,7 @@ class DielectricPlanar(PlanarBase):
         # Save norm of the total parallel dipole moment for correlation analysis.
         return np.linalg.norm(self._obs.M_par)
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         super()._conclude()
 
         pref = 1 / scipy.constants.epsilon_0

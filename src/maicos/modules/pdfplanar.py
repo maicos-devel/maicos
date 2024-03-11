@@ -123,11 +123,12 @@ class PDFPlanar(PlanarBase):
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
         bin_width: float = 1,
-    ):
+    ) -> None:
         self._locals = locals()
         self.comp_1 = get_compound(g1)
         super().__init__(
             atomgroups=g1,
+            multi_group=False,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,
@@ -153,7 +154,7 @@ class PDFPlanar(PlanarBase):
 
         self.comp_2 = get_compound(self.g2)
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         super()._prepare()
         logger.info("Compute pair distribution function.")
 
@@ -196,7 +197,7 @@ class PDFPlanar(PlanarBase):
         # Set the max range to filter the search radius.
         self._maxrange = self.dmax
 
-    def _single_frame(self):
+    def _single_frame(self) -> None:
         super()._single_frame()
         self._obs.n_g1 = np.zeros((self.n_bins, 1))
         self._obs.count = np.zeros((self.n_bins, self.pdf_nbins))
@@ -268,7 +269,7 @@ class PDFPlanar(PlanarBase):
                 relevant_xy_distances, bins=self.pdf_nbins, range=(self.dmin, self.dmax)
             )[0]
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         super()._conclude()
 
         # Normalise pdf using the volumes of a ring with height 2*dz.

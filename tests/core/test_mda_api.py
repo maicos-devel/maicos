@@ -37,16 +37,32 @@ def override_analysis_base():
     by our ``AnalysisBase``.
     """
 
-    def frame_analysis_init(self, reader, **kwargs):
-        super(FrameAnalysis, self).__init__(reader.universe.atoms, **kwargs)
+    def frame_analysis_init(self, reader):
+        super(FrameAnalysis, self).__init__(
+            reader.universe.atoms,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0.0,
+        )
         self.traj = reader
         self.found_frames = []
 
     FrameAnalysis.__bases__ = (AnalysisBase,)
     FrameAnalysis.__init__ = frame_analysis_init
 
-    def incomplete_analysis_init(self, reader, **kwargs):
-        super(IncompleteAnalysis, self).__init__(reader.universe.atoms, **kwargs)
+    def incomplete_analysis_init(self, reader):
+        super(IncompleteAnalysis, self).__init__(
+            reader.universe.atoms,
+            multi_group=False,
+            unwrap=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0.0,
+        )
         self.traj = reader
         self.found_frames = []
 

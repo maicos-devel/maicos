@@ -38,7 +38,7 @@ class TestKineticEnergy(ReferenceAtomGroups):
 
     def test_ke_trans_trajectory(self, ag):
         """Test translational kinetic energy."""
-        ke = KineticEnergy(ag, refpoint="COM").run(stop=1)
+        ke = KineticEnergy(ag, refpoint="com").run(stop=1)
         assert_allclose(ke.results.trans, 1905.26, rtol=1e-2)
 
     def test_ke_trans_trajectory_save(self, ag, monkeypatch, tmp_path):

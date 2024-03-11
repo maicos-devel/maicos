@@ -54,15 +54,16 @@ class TemperaturePlanar(ProfilePlanarBase):
         output: str = "temperature.dat",
         concfreq: int = 0,
         jitter: float = 0.0,
-    ):
+    ) -> None:
         self._locals = locals()
         if grouping != "atoms":
             raise ValueError("Invalid choice of grouping, must use atoms")
 
         super().__init__(
-            weighting_function=temperature_weights,
-            normalization="number",
             atomgroups=atomgroups,
+            unwrap=unwrap,
+            jitter=jitter,
+            concfreq=concfreq,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
@@ -70,9 +71,9 @@ class TemperaturePlanar(ProfilePlanarBase):
             refgroup=refgroup,
             sym=sym,
             grouping=grouping,
-            unwrap=unwrap,
             bin_method=bin_method,
             output=output,
-            concfreq=concfreq,
-            jitter=jitter,
+            weighting_function=temperature_weights,
+            weighting_function_kwargs=None,
+            normalization="number",
         )

@@ -89,14 +89,16 @@ class Saxs(AnalysisBase):
         mintheta: float = 0,
         maxtheta: float = 180,
         output: str = "sq.dat",
-    ):
+    ) -> None:
         self._locals = locals()
         super().__init__(
             atomgroup,
+            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,
+            wrap_compound="atoms",
         )
         self.bin_spectrum = bin_spectrum
         self.startq = startq
@@ -106,7 +108,7 @@ class Saxs(AnalysisBase):
         self.maxtheta = maxtheta
         self.output = output
 
-    def _prepare(self):
+    def _prepare(self) -> None:
         self.mintheta = min(self.mintheta, self.maxtheta)
         self.maxtheta = max(self.mintheta, self.maxtheta)
 
@@ -160,7 +162,7 @@ class Saxs(AnalysisBase):
             self.q_factor = 2 * np.pi / self.box
             self.maxn = np.ceil(self.endq / self.q_factor).astype(int)
 
-    def _single_frame(self):
+    def _single_frame(self) -> None:
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
 
         if self.bin_spectrum:
@@ -221,7 +223,7 @@ class Saxs(AnalysisBase):
 
         return S_ts.flatten()[-1]
 
-    def _conclude(self):
+    def _conclude(self) -> None:
         if self.bin_spectrum:
             q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
             nonzeros = np.where(self.means.struct_factor[:, 0] != 0)[0]

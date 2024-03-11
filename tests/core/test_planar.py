@@ -42,17 +42,19 @@ class PlanarClass(PlanarBase):
         zmax=None,
         bin_width=1,
         refgroup=None,
-        **kwargs,
     ):
         super().__init__(
             atomgroups=atomgroups,
+            unwrap=False,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
             dim=dim,
             zmin=zmin,
             zmax=zmax,
             bin_width=bin_width,
             refgroup=refgroup,
             multi_group=True,
-            **kwargs,
         )
         self.pos_arg = pos_arg
         self.opt_arg = opt_arg
@@ -323,9 +325,20 @@ class TestPlanarBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(dim=2, zmin=None, zmax=None, bin_width=1, refgroup=None)
+        params = dict(
+            unwrap=False,
+            jitter=0.0,
+            concfreq=0,
+            dim=2,
+            zmin=None,
+            zmax=None,
+            bin_width=1,
+            refgroup=None,
+        )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = PlanarBase(ag_single_frame, **params).run()
+        pb_obj = PlanarBase(
+            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
+        ).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -412,6 +425,7 @@ class TestProfilePlanarBase:
         """Fixture for PlanarBase class atributes."""
         p = dict(
             weighting_function=self.weights,
+            weighting_function_kwargs=None,
             atomgroups=u.atoms,
             normalization="number",
             dim=2,
