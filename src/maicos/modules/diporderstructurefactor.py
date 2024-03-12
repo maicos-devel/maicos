@@ -22,8 +22,9 @@ from ..lib.weights import diporder_weights
 class DiporderStructureFactor(AnalysisBase):
     r"""Structure factor for dipoles.
 
-    Extension the standard structure factor by weighting it with different the
-    normalized dipole moment :math:`\hat{\boldsymbol{\mu}}` of a ``group`` according to
+    Extension the standard structure factor :math:`S(q)` by weighting it with different
+    the normalized dipole moment :math:`\hat{\boldsymbol{\mu}}` of a ``group`` according
+    to
 
     .. math::
         S(q)_{\hat{\boldsymbol{\mu}} \hat{\boldsymbol{\mu}}} = \left \langle
@@ -48,7 +49,7 @@ class DiporderStructureFactor(AnalysisBase):
     ----------
     results.q : numpy.ndarray
         length of binned q-vectors
-    results.struct_factor : numpy.ndarray
+    results.structure_factors : numpy.ndarray
         Structure factor
     """
 
@@ -61,8 +62,8 @@ class DiporderStructureFactor(AnalysisBase):
         unwrap: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        startq: float = 0,
-        endq: float = 6,
+        qmin: float = 0,
+        qmax: float = 6,
         dq: float = 0.01,
         output: str = "sq.dat",
     ) -> None:
@@ -78,13 +79,13 @@ class DiporderStructureFactor(AnalysisBase):
         )
 
         self.bin_method = str(bin_method).lower()
-        self.startq = startq
-        self.endq = endq
+        self.qmin = qmin
+        self.qmax = qmax
         self.dq = dq
         self.output = output
 
     def _prepare(self) -> None:
-        self.n_bins = int(np.ceil((self.endq - self.startq) / self.dq))
+        self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))
 
     def _single_frame(self) -> float:
         box = np.diag(mda.lib.mdamath.triclinic_vectors(self._ts.dimensions))
@@ -95,7 +96,7 @@ class DiporderStructureFactor(AnalysisBase):
             compound=self.wrap_compound,
         )
 
-        self._obs.struct_factor = np.zeros(self.n_bins)
+        self._obs.structure_factors = np.zeros(self.n_bins)
 
         # Calculate structure factor per vector component and sum them up
         for pdim in range(3):
@@ -114,58 +115,57 @@ class DiporderStructureFactor(AnalysisBase):
                 get_unit_vectors=get_unit_vectors,
             )
 
-            q_ts, S_ts = compute_structure_factor(
+            scattering_vectors, structure_factors = compute_structure_factor(
                 np.double(positions),
                 np.double(box),
-                self.startq,
-                self.endq,
+                self.qmin,
+                self.qmax,
                 0,
                 np.pi,
                 weights,
             )
 
-            q_ts = q_ts.flatten()
-            S_ts = S_ts.flatten()
-            nonzeros = np.where(S_ts != 0)[0]
+            scattering_vectors = scattering_vectors.flatten()
+            structure_factors = structure_factors.flatten()
+            nonzeros = np.where(structure_factors != 0)[0]
 
-            q_ts = q_ts[nonzeros]
-            S_ts = S_ts[nonzeros]
+            scattering_vectors = scattering_vectors[nonzeros]
+            structure_factors = structure_factors[nonzeros]
 
-            struct_ts, _ = np.histogram(
-                a=q_ts,
+            histogram_kwargs = dict(
+                a=scattering_vectors,
                 bins=self.n_bins,
-                range=(self.startq, self.endq),
-                weights=S_ts,
+                range=(self.qmin, self.qmax),
             )
-            bincount, _ = np.histogram(
-                a=q_ts,
-                bins=self.n_bins,
-                range=(self.startq, self.endq),
-                weights=None,
+            structure_factors_binned, _ = np.histogram(
+                weights=structure_factors, **histogram_kwargs
             )
+            bincount, _ = np.histogram(weights=None, **histogram_kwargs)
             with np.errstate(invalid="ignore"):
-                struct_ts /= bincount
+                structure_factors_binned /= bincount
 
-            self._obs.struct_factor += np.nan_to_num(struct_ts)
+            self._obs.structure_factors += np.nan_to_num(structure_factors_binned)
 
         # Normalize with respect to the number of compounds
-        self._obs.struct_factor /= len(positions)
+        self._obs.structure_factors /= len(positions)
 
-        return self._obs.struct_factor[-1]
+        return self._obs.structure_factors[-1]
 
     def _conclude(self) -> None:
-        q = np.arange(self.startq, self.endq, self.dq) + 0.5 * self.dq
-        nonzeros = np.where(self.means.struct_factor != 0)[0]
-        struct_factor = self.means.struct_factor[nonzeros]
+        scattering_vectors = np.arange(self.qmin, self.qmax, self.dq) + 0.5 * self.dq
+        nonzeros = np.where(self.means.structure_factors != 0)[0]
+        structure_factors = self.means.structure_factors[nonzeros]
 
-        self.results.q = q[nonzeros]
-        self.results.struct_factor = struct_factor
+        self.results.scattering_vectors = scattering_vectors[nonzeros]
+        self.results.structure_factors = structure_factors
 
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_DESCRIPTION}"""
         self.savetxt(
             self.output,
-            np.vstack([self.results.q, self.results.struct_factor]).T,
+            np.vstack(
+                [self.results.scattering_vectors, self.results.structure_factors]
+            ).T,
             columns=["q (1/Å)", "S(q) (arb. units)"],
         )

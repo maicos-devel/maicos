@@ -123,7 +123,7 @@ Currently, MAICoS supports the following analysis modules in alphabetical order:
    * - PDFPlanar
      - Compute slab-wise planar 2D pair distribution functions
    * - Saxs
-     - Compute small angle X-Ray scattering intensities (SAXS)
+     - Compute small angle X-Ray structure factors and scattering intensities (SAXS)
    * - TemperaturePlanar
      - Compute temperature profiles in a cartesian geometry
    * - VelocityCylinder

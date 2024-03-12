@@ -182,9 +182,9 @@ DOC_DICT = dict(
         normalization is performed. If `number`, the histogram is divided by the number
         of occurences in each bin. If `volume`, the profile is divided by the volume of
         each bin.""",
-    Q_SPACE_PARAMETERS="""startq : float
+    Q_SPACE_PARAMETERS="""qmin : float
         Starting q (1/Å)
-    endq : float
+    qmax : float
         Ending q (1/Å)
     dq : float
         bin_width (1/Å)""",

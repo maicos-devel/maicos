@@ -266,8 +266,8 @@ fig.tight_layout()
 # module.
 
 
-struct_fac = maicos.DiporderStructureFactor(atomgroup=u.atoms, dq=0.05)
-struct_fac.run()
+diporder_structure_factors = maicos.DiporderStructureFactor(atomgroup=u.atoms, dq=0.05)
+diporder_structure_factors.run()
 
 # %%
 # As also shown :ref:`how to on SAXS calculations <howto-saxs>` the structure factor can
@@ -299,12 +299,12 @@ q_rdf, struct_fac_rdf = compute_rdf_structure_factor(
 n_max = 5  # take `n_max` first data points of the structure factor for the fit
 
 # q_max is the maximal q value corresponding to the last point taken for the fit
-q_max = struct_fac.results.q[n_max]
+q_max = diporder_structure_factors.results.scattering_vectors[n_max]
 print(f"q_max = {q_max:.2f} Å")
 
 eps_fit = np.polynomial.Polynomial.fit(
-    x=struct_fac.results.q[:n_max],
-    y=struct_fac.results.struct_factor[:n_max],
+    x=diporder_structure_factors.results.scattering_vectors[:n_max],
+    y=diporder_structure_factors.results.structure_factors[:n_max],
     deg=(0, 2),
     domain=(-q_max, q_max),
 )
@@ -318,8 +318,8 @@ print(
 # Now we can finally plot the structure factor
 
 plt.plot(
-    struct_fac.results.q,
-    struct_fac.results.struct_factor,
+    diporder_structure_factors.results.scattering_vectors,
+    diporder_structure_factors.results.structure_factors,
     label=r"$S_{\hat \mu\hat \mu}$",
 )
 plt.plot(
