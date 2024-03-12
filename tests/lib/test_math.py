@@ -147,17 +147,17 @@ class Test_sfactor(object):
 
         return q, S
 
-    @pytest.mark.parametrize("startq", (0, 0.05))
-    @pytest.mark.parametrize("endq", (0.075, 0.1))
-    def test_sfactor(self, ag, qS, startq, endq):
+    @pytest.mark.parametrize("qmin", (0, 0.05))
+    @pytest.mark.parametrize("qmax", (0.075, 0.1))
+    def test_sfactor(self, ag, qS, qmin, qmax):
         """Test sfactor."""
         q, S = maicos.lib.math.compute_structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
-            startq,
-            endq,
+            qmin,
+            qmax,
             0,  # mimtheta
-            np.pi,  # maxtheta
+            np.pi,  # thetamax
             np.ones(len(ag.positions)),
         )
 
@@ -173,12 +173,12 @@ class Test_sfactor(object):
         S = S[sorted_ind]
 
         # Get indices to slice qS array
-        sel_indices = np.logical_and(startq < qS[0], qS[0] < endq)
+        sel_indices = np.logical_and(qmin < qS[0], qS[0] < qmax)
 
         assert_allclose(q, qS[0][sel_indices], rtol=1e-2)
 
         # Only check S for full q width
-        if startq == 0 and endq == 1:
+        if qmin == 0 and qmax == 1:
             assert_allclose(S, qS[1], rtol=1e-2)
 
     def test_sfactor_angle(self, ag):
@@ -186,10 +186,10 @@ class Test_sfactor(object):
         q, S = maicos.lib.math.compute_structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
-            0,  # startq
-            0.5,  # endq
-            np.pi / 4,  # mintheta
-            np.pi / 2,  # maxtheta
+            0,  # qmin
+            0.5,  # qmax
+            np.pi / 4,  # thetamin
+            np.pi / 2,  # thetamax
             np.ones(len(ag.positions)),
         )
 

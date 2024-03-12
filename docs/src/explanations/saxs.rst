@@ -8,8 +8,8 @@ MD Simulations often complement conventional experiments, such as X-ray crystall
 Nuclear Magnetic Resonance (NMR) spectroscopy and Atomic-Force Microscopy (AFM). X-ray
 crystallography is a method by which the structure of molecules can be resolved. X-rays
 of wavelength 0.1 to 100 Å are scattered by the electrons of atoms. The intensities of
-the scattered rays are often amplified using creating crystals containing a multitude of
-the studied molecule positionally ordered. The molecule is thereby no longer under
+the scattered rays are often amplified using by crystals containing a multitude of the
+studied molecule positionally ordered. The molecule is thereby no longer under
 physiological conditions. However, the study of structures in a solvent should be done
 under physiological conditions (in essence, this implies a disordered, solvated fluid
 system); therefore X-ray crystallography does not represent the ideal method for such
@@ -65,11 +65,12 @@ element.
 Simulations
 -----------
 
-In simulations, the structure factor :math:`S(\boldsymbol{q})` can be extracted directly
-from the positions of the particles. :class:`maicos.Saxs` calculates these
-factors. The calculated scattering intensities can be directly compared to the
-experimental one without any further processing. In the following we derive the
-essential relations. We start with the scattering intensity which is expressed as
+In simulations, the structure factor and scattering intensities
+:math:`S(\boldsymbol{q})` can be extracted directly from the positions of the particles.
+:class:`maicos.Saxs` calculates these factors. The calculated scattering intensities can
+be directly compared to the experimental one without any further processing. In the
+following we derive the essential relations. We start with the scattering intensity
+which is expressed as
 
 .. math::
     I_s(\boldsymbol{q}) = A_s(\boldsymbol{q}) \cdot A_s^*(\boldsymbol{q}) \,,
@@ -95,7 +96,7 @@ The complex conjugate of the amplitude is
 .. math::
     A_s^*(\boldsymbol{q}) = \sum\limits_{j=1}^N f_j(q) \cdot e^{i\boldsymbol{qr}_j} \,.
 
-The intensity therefore can be written as
+The scattering intensity therefore can be written as
 
 .. math::
     I_s (\boldsymbol{q}) = \sum\limits_{j=1}^N f_j(q) e^{-i\boldsymbol{qr}_j}
@@ -115,18 +116,19 @@ particle’s form factor
     I_s (\boldsymbol{q}) = \left[ \sum\limits_{j=1}^N f_j(q) \cos(\boldsymbol{qr}_j) \right ]^2 +
                            \left[ \sum\limits_{j=1}^N f_j(q) \sin(\boldsymbol{qr}_j) \right ]^2 \,.
 
-For isotropic systems containing only one kind of atom the structure factor is
+For systems containing only one kind of atom the structure factor is connected to the
+scattering intensity via
 
 .. math::
-    S(\boldsymbol{q}) = \left\langle \frac{1}{N}\sum\limits_{j=1}^N f_j(q) \cos(\boldsymbol{qr}_j) \right \rangle^2 +
-                        \left\langle \frac{1}{N} \sum\limits_{j=1}^N f_j(q) \sin(\boldsymbol{qr}_j) \right \rangle^2 \,.
+    I_s (\boldsymbol{q}) = [f(q)]^2 S(\boldsymbol{q}) \,.
 
-The structure factor of systems with more than one atom type is the sum of partial
-structure factors normalized by the form factor
+For any system the structure factor can be written as
 
 .. math::
-    S(\boldsymbol{q}) = \left\langle \frac{1}{\sum_{j=1}^N f_j^2(q)}\sum\limits_{j=1}^N f_j(q) \cos(\boldsymbol{qr}_j) \right \rangle^2 +
-                        \left\langle \frac{1}{\sum_{j=1}^N f_j^2(q)} \sum\limits_{j=1}^N f_j(q) \sin(\boldsymbol{qr}_j) \right \rangle^2 \,.
+    S(\boldsymbol{q}) =
+        \left\langle \frac{1}{N}\sum\limits_{j=1}^N \cos(\boldsymbol{qr}_j) \right \rangle^2 +
+        \left\langle \frac{1}{N} \sum\limits_{j=1}^N \sin(\boldsymbol{qr}_j) \right \rangle^2 \,.
+
 
 The limiting value :math:`S(0)` for :math:`q \rightarrow 0` is connected to the
 isothermal compressibility :footcite:p:`hansen_theory_2006` and the element-specific

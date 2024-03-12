@@ -20,7 +20,9 @@ import numpy as np
 _share_path = Path(__file__).parents[1] / "share"
 
 
-#: Translation of atomnames to types/element
+#: Translation of
+#: :py:class:`MDAnalysis.AtomGroup.types <MDAnalysis.core.topologyattrs.Atomtypes>` to
+#: chemical elements.
 atomtypes = {}
 with open(_share_path / "atomtypes.dat") as f:
     for line in f:

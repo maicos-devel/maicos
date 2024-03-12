@@ -16,6 +16,8 @@ Small-angle X-ray scattering (SAXS) can be extracted using MAICoS. To follow thi
 guide, you should download the :download:`topology <water.tpr>` and the
 :download:`trajectory <water.trr>` files of the water system.
 
+For more details on the theory see :ref:`saxs-explanations`.
+
 First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:
 """
 # %%
@@ -61,33 +63,48 @@ saxs = maicos.Saxs(u.atoms).run(stop=30)
 #   small number of analyzed frames, the scattering intensities shown in this tutorial
 #   should not be used to draw any conclusions from the data.
 #
-# Extract the :math:`q` values and the averaged SAXS scattering intensities
-# ``scat_factor`` from the ``results`` attribute:
+# Extract the scattering vectors and the averaged structure factor and SAXS scattering
+# intensities from the ``results`` attribute:
 
-q_vals = saxs.results.q
-scat_factor = saxs.results.scat_factor
+scattering_values = saxs.results.scattering_vectors
+structure_factors = saxs.results.structure_factors
+scattering_intensities = saxs.results.scattering_intensities
 
 # %%
-# The scattering factors are given as a 1D array, let us look at the 10 first lines:
+# The scattering intensities (and structure factors) are given as a 1D array, let us
+# look at the 10 first lines:
 
-print(scat_factor[:10])
+print(scattering_intensities[:10])
 
 # %%
 # By default, the binwidth in the recipocal :math:`(q)` space is :math:`0.1 Å^{-1}`.
 #
-# Plot the structure factors profile using:
+# We now plot the structure factor as well a the scattering intensities together.
 
-fig1, ax1 = plt.subplots()
+fig1, ax1 = plt.subplots(nrows=2, sharex=True, layout="constrained")
 
-ax1.plot(q_vals, scat_factor)
+ax1[0].plot(scattering_values, structure_factors)
+ax1[1].plot(scattering_values, scattering_intensities)
 
-ax1.set_xlabel(r"q (1/Å)")
-ax1.set_ylabel(r"S(q) (arb. units)")
+ax1[-1].set_xlabel(r"q (1/Å)")
+
+ax1[0].set_ylabel(r"structure factor $S(q)$")
+ax1[1].set_ylabel(r"scattering intensities $I(q)$")
+fig1.align_labels()
 
 fig1.show()
 
 
 # %%
+# The structure factor :math:`S(q)` and the scattering intensities :math:`I(q)` are
+# related via
+#
+# .. math::
+#   I(q) = [f(q)]^2 S(q)
+#
+# where :math:`f(q)` are the atomic form factors. We will investigate the relation below
+# in more details.
+#
 # Computing oxygen and hydrogen contributions
 # -------------------------------------------
 #
@@ -99,30 +116,64 @@ saxs_O = maicos.Saxs(group_O).run(stop=30)
 saxs_H = maicos.Saxs(group_H).run(stop=30)
 
 # %%
-# Let us plot the results together with the full scattering intensity. Note that here
-# we access the results directly from the ``results`` attribute without storing them in
-# individual variables before:
+# Let us plot the results for the structure factor, the squared form factor as well
+# scattering intensities together. For computing the form factor we will use
+# :func:`maicos.lib.math.compute_form_factor`. Note that here we access the results
+# directly from the ``results`` attribute without storing them in individual variables
+# before:
 
-fig2, ax2 = plt.subplots()
+fig2, ax2 = plt.subplots(nrows=3, sharex=True, layout="constrained")
 
-ax2.plot(q_vals, scat_factor, label="Water")
-ax2.plot(saxs_O.results.q, saxs_O.results.scat_factor, label="Oxygen")
-ax2.plot(saxs_H.results.q, saxs_H.results.scat_factor, label="Hydrogen")
+# structure factors
+ax2[0].plot(
+    saxs_O.results.scattering_vectors,
+    saxs_O.results.structure_factors,
+    label="Oxygen",
+)
+ax2[0].plot(
+    saxs_H.results.scattering_vectors,
+    saxs_H.results.structure_factors,
+    label="Hydrogen",
+)
 
-ax2.set_xlabel(r"q (1/Å)")
-ax2.set_ylabel(r"S(q) (arb. units)")
-ax2.legend()
+# form factors
+ax2[1].plot(
+    saxs_O.results.scattering_vectors,
+    compute_form_factor(saxs_O.results.scattering_vectors, "O") ** 2,
+)
+ax2[1].plot(
+    saxs_H.results.scattering_vectors,
+    compute_form_factor(saxs_H.results.scattering_vectors, "H") ** 2,
+)
+
+# scattering intensitie
+ax2[2].plot(saxs_O.results.scattering_vectors, saxs_O.results.scattering_intensities)
+ax2[2].plot(saxs_H.results.scattering_vectors, saxs_H.results.scattering_intensities)
+
+ax2[-1].set_xlabel(r"q (1/Å)")
+ax2[0].set_ylabel(r"$S(q)$")
+ax2[1].set_ylabel(r"$f(q)^2$")
+ax2[2].set_ylabel(r"$I(q)$")
+
+ax2[0].legend()
+fig2.align_labels()
 
 fig2.show()
 
 # %%
+# The figure above nicely shows that multiplying the structure factor :math:`S(q)` and
+# the squared form factor :math:`f(q)^2` results in the scattering intensity
+# :math:`I(q)`. Also, it is worth to notice that due to small form factor of hydrogen
+# there is basically no contribution of the hydrogen atoms to the total scattering
+# intensity of water.
+#
 # Connection of the structure factor to the radial distribution function
 # ----------------------------------------------------------------------
 #
 # As in details explained in :ref:`saxs-explanations`, the structure factor can be
-# related to the radial distrubution function (RDF). We denote this structure factor by
-# :math:`S^\mathrm{FT}(q)` since it based on Fourier transforming the RDF. The structure
-# factor which can be directly obtaine from the trajectory is denoted by
+# related to the radial distribution function (RDF). We denote this structure factor by
+# :math:`S^\mathrm{FT}(q)` since it is based on Fourier transforming the RDF. The
+# structure factor which can be directly obtained from the trajectory is denoted by
 # :math:`S^\mathrm{D}(q)`.
 #
 # To relate these two we first calculate the oxygen-oxygen RDF up to half the box length
@@ -151,36 +202,31 @@ q_rdf, struct_factor_rdf = compute_rdf_structure_factor(
 )
 
 # %%
-# Before we can compare we have to normalize the structure factor from the RDF by the
-# form factor using :func:`maicos.lib.math.compute_form_factor`.
-
-struct_factor_rdf *= compute_form_factor(q_rdf, "O") ** 2
-
-# %%
-# Now we can plot everything together and find that the direct evalation from above and
+# Now we can plot everything together and find that the direct evaluation from above and
 # the transformed RDF give the same structure factor.
 
 fig3, ax3 = plt.subplots(2, layout="constrained")
 
 ax3[0].axhline(1, c="gray", ls="dashed")
 ax3[0].plot(r_oo, rdf_oo, label="Oxygen-Oxygen")
-ax3[0].set_xlabel("r / Å")
-ax3[0].set_ylabel("g(r)")
+ax3[0].set_xlabel("r (Å)")
+ax3[0].set_ylabel("radial distribution function")
 ax3[0].set_xlim(0, 10)
 
 ax3[1].plot(q_rdf, struct_factor_rdf, label=r"$S^\mathrm{FT}$")
 ax3[1].plot(
-    saxs_O.results.q,
-    saxs_O.results.scat_factor,
+    saxs_O.results.scattering_vectors,
+    saxs_O.results.structure_factors,
     label=r"$S^\mathrm{D}$",
     ls="dashed",
 )
 
 ax3[1].set_xlabel("q (1/Å)")
-ax3[1].set_ylabel("S(q) (arb. units)")
+ax3[1].set_ylabel("structure factor $S(q)$")
 ax3[1].set_xlim(0, 7)
 
 ax3[1].legend()
 ax3[0].legend()
+fig3.align_labels()
 
 fig3.show()

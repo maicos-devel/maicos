@@ -6,14 +6,14 @@
 #
 # This table is an extended version of the TABLE_ATOMELEMENTS list in the MDAnalysis
 # package.
-             AR             AR
-             BR             BR
-             Br             BR
+             AR             Ar
+             BR             Br
+             Br             Br
               C              C
              C*              C
-             C0             CA
+             C0             Ca
              CA              C
-           CA2+           CA2+
+           CA2+             Ca
              CB              C
              CC              C
            CCHL              C
@@ -35,8 +35,8 @@
             CH3            CH3
             CH4            CH4
              CK              C
-             CL             CL
-            CL-           CL1-
+             CL             Cl
+            CL-             Cl
             CLA              C
              CM              C
            CMET            CH3
@@ -45,16 +45,16 @@
              CR              C
             CR1            CH1
              CT              C
-             CU             CU
-           CU1+           CU1+
-           CU2+           CU1+
+             CU             Cu
+           CU1+             Cu
+           CU2+             Cu
              CV              C
              CW              C
-             Cl           CL1-
+             Cl             Cl
              Cs             CS
             DUM            DUM
-              F             FE
-             FE             FE
+              F             Fe
+             FE             Fe
               H              H
              H1              H
              H2              H
@@ -80,12 +80,12 @@
      HW_tip4pew              H
        HW_tip5p              H
               I              I
-             IB           NA1+
+             IB             Na
               K              K
              Li             Li
            MCH3            DUM
-             MG             MG
-           MG2+           MG2+
+             MG             Mg
+           MG2+             Mg
            MNH3            DUM
              MW            DUM
               N              N
@@ -93,16 +93,16 @@
              N2              N
              N3              N
              NA              N
-            NA+           NA1+
+            NA+             Na
              NB              N
              NC              N
-             NE            NH1
+             NE             NH
          NG2R52              N
              NL            NH3
              NR              N
              NT            NH2
              NZ            NH2
-             Na           NA1+
+             Na             Na
               O              O
              O2              O
              OA              O
@@ -120,9 +120,9 @@
      OW_tip4pew              O
        OW_tip5p              O
               P              P
-             Rb             RB
+             Rb             Rb
               S              S
-             SH             SI
+             SH             Si
              VW            DUM
-           ZN2+           ZN2+
-             Zn           ZN2+
+           ZN2+             Zn
+             Zn             Zn
