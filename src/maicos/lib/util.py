@@ -84,9 +84,6 @@ DOC_DICT = dict(
     ATOMGROUP_PARAMETER="""atomgroup : MDAnalysis.core.groups.AtomGroup
         A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
         performed.""",
-    ATOMGROUPS_PARAMETER="""atomgroups : MDAnalysis.core.groups.AtomGroup or list[MDAnalysis.core.groups.AtomGroup]
-        A :class:`~MDAnalysis.core.groups.AtomGroup` or list thereof for which the
-        calculations are performed.""",  # noqa: E501
     WRAP_COMPOUND_PARAMETER="""wrap_compound : str
         The group which will be kept together through the wrap processes.
         Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
@@ -170,8 +167,9 @@ DOC_DICT = dict(
         frames.""",
     PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
         The function calculating the array weights for the histogram analysis. It must
-        take an ``Atomgroup`` as first argument and a grouping (``"atoms"``,
-        ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``) as second.
+        take an :py:class:`AtomGroup<MDAnalysis.AtomGroup>` as first argument and a
+        grouping (``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``,
+        ``"fragments"``) as second.
         Additional parameters can be given as ``weighting_function_kwargs``. The
         function must return a numpy.ndarray with the same length as the number of group
         members.
@@ -223,14 +221,14 @@ DOC_DICT = dict(
     SPHERE_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
     ${RADIAL_CLASS_PARAMETERS}
     ${BIN_WIDTH_PARAMETER}""",
-    PROFILE_PLANAR_CLASS_PARAMETERS="""${ATOMGROUPS_PARAMETER}
+    PROFILE_PLANAR_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     ${SYM_PARAMETER}
     ${PROFILE_CLASS_PARAMETERS}""",
-    PROFILE_CYLINDER_CLASS_PARAMETERS="""${ATOMGROUPS_PARAMETER}
+    PROFILE_CYLINDER_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
     ${PROFILE_CLASS_PARAMETERS}""",
-    PROFILE_SPHERE_CLASS_PARAMETERS="""${ATOMGROUPS_PARAMETER}
+    PROFILE_SPHERE_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
     ${SPHERE_CLASS_PARAMETERS}
     ${PROFILE_CLASS_PARAMETERS}""",
     ###################
@@ -465,29 +463,26 @@ def charge_neutral(filter: str) -> Callable:
         def charge_check(function):
             @functools.wraps(function)
             def wrapped(self):
-                if hasattr(self, "atomgroup"):
-                    groups = [self.atomgroup]
-                else:
-                    groups = self.atomgroups
-                for group in groups:
-                    if not np.allclose(
-                        group.total_charge(compound=get_compound(group)), 0, atol=1e-4
-                    ):
-                        with warnings.catch_warnings():
-                            warnings.simplefilter(filter)
-                            warnings.warn(
-                                "At least one AtomGroup has free charges. Analysis for "
-                                "systems with free charges could lead to severe "
-                                "artifacts!",
-                                stacklevel=1,
-                            )
-
-                    if not np.allclose(
-                        group.universe.atoms.total_charge(), 0, atol=1e-4
-                    ):
-                        raise ValueError(
-                            "Analysis for non-neutral systems is not supported."
+                if not np.allclose(
+                    self.atomgroup.total_charge(compound=get_compound(self.atomgroup)),
+                    0,
+                    atol=1e-4,
+                ):
+                    with warnings.catch_warnings():
+                        warnings.simplefilter(filter)
+                        warnings.warn(
+                            "At least one AtomGroup has free charges. Analysis for "
+                            "systems with free charges could lead to severe "
+                            "artifacts!",
+                            stacklevel=1,
                         )
+
+                if not np.allclose(
+                    self.atomgroup.universe.atoms.total_charge(), 0, atol=1e-4
+                ):
+                    raise ValueError(
+                        "Analysis for non-neutral systems is not supported."
+                    )
                 return function(self)
 
             return wrapped

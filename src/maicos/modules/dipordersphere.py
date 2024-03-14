@@ -9,7 +9,7 @@
 r"""Module for computing spherical dipolar order parameters."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -41,7 +41,7 @@ class DiporderSphere(ProfileSphereBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         bin_width: float = 1,
         rmin: float = 0,
         rmax: Optional[float] = None,
@@ -65,7 +65,7 @@ class DiporderSphere(ProfileSphereBase):
             )
 
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             jitter=jitter,
             refgroup=refgroup,

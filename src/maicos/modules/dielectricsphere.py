@@ -85,7 +85,6 @@ class DielectricSphere(SphereBase):
 
         super().__init__(
             atomgroup,
-            multi_group=False,
             concfreq=concfreq,
             jitter=jitter,
             refgroup=refgroup,

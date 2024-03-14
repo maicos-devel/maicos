@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.9 (XXXX/XX/XX)
 -----------------
-Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
+Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrtik Stooß
 
+- Remove handling of multiple atomgroups in favor of ``AnalysisCollection`` (!301)
 - Fix openMP detection during setup (!304)
 - :class:`maicos.Saxs` additionally provides structure factor. (!303)
 - Remove default arguments from core classes (!302)

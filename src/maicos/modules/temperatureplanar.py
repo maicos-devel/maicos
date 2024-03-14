@@ -9,7 +9,7 @@
 """Module for computing planar temperature profiles."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -41,7 +41,7 @@ class TemperaturePlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
@@ -60,7 +60,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             raise ValueError("Invalid choice of grouping, must use atoms")
 
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             jitter=jitter,
             concfreq=concfreq,

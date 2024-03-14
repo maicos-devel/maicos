@@ -9,7 +9,7 @@
 """Module for computing planar dielectric profiles."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -41,7 +41,7 @@ class DielectricPlanar(PlanarBase):
 
     Parameters
     ----------
-    ${ATOMGROUPS_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     is_3d : bool
         Use 3d-periodic boundary conditions, i.e., include the dipole correction for
@@ -58,7 +58,7 @@ class DielectricPlanar(PlanarBase):
     ${PLANAR_CLASS_ATTRIBUTES}
     results.eps_par : numpy.ndarray
         Reduced parallel dielectric profile
-        :math:`(\varepsilon_\parallel - 1)` of the selected atomgroups
+        :math:`(\varepsilon_\parallel - 1)` of the selected AtomGroup
     results.deps_par : numpy.ndarray
         Uncertainty of parallel dielectric profile
     results.eps_par_self : numpy.ndarray
@@ -86,7 +86,7 @@ class DielectricPlanar(PlanarBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
@@ -102,10 +102,7 @@ class DielectricPlanar(PlanarBase):
         vcutwidth: float = 0.1,
     ) -> None:
         self._locals = locals()
-        if type(atomgroups) not in (list, tuple):
-            wrap_compound = get_compound(atomgroups)
-        else:  # Get wrap_compound based on fist atom group only
-            wrap_compound = get_compound(atomgroups[0])
+        wrap_compound = get_compound(atomgroup)
 
         if zmin is not None or zmax is not None:
             logger.warn(
@@ -114,8 +111,7 @@ class DielectricPlanar(PlanarBase):
             )
 
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=True,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -131,6 +127,7 @@ class DielectricPlanar(PlanarBase):
 
         self.temperature = temperature
         self.output_prefix = output_prefix
+        self.concfreq = concfreq
         self.vcutwidth = vcutwidth
 
     def _prepare(self) -> None:
@@ -139,15 +136,10 @@ class DielectricPlanar(PlanarBase):
 
         super()._prepare()
 
-        self.comp = []
-        self.inverse_ix = []
-
-        for sel in self.atomgroups:
-            comp = get_compound(sel.atoms)
-            ix = sel.atoms._get_compound_indices(comp)
-            _, inverse_ix = np.unique(ix, return_inverse=True)
-            self.comp.append(comp)
-            self.inverse_ix.append(inverse_ix)
+        self.comp = get_compound(self.atomgroup)
+        ix = self.atomgroup._get_compound_indices(self.comp)
+        _, inverse_ix = np.unique(ix, return_inverse=True)
+        self.inverse_ix = inverse_ix
 
     def _single_frame(self) -> float:
         super()._single_frame()
@@ -161,87 +153,81 @@ class DielectricPlanar(PlanarBase):
         self._obs.M_perp_2 = self._obs.M[self.dim] ** 2
         self._obs.M_par = self._obs.M[self.odims]
 
-        n_ag = self.n_atomgroups
+        self._obs.m_par = np.zeros((self.n_bins, 2))
+        self._obs.mM_par = np.zeros((self.n_bins))
+        self._obs.mm_par = np.zeros((self.n_bins))
+        self._obs.cmM_par = np.zeros((self.n_bins))
+        self._obs.cM_par = np.zeros((self.n_bins, 2))
 
-        self._obs.m_par = np.zeros((self.n_bins, 2, n_ag))
-        self._obs.mM_par = np.zeros((self.n_bins, n_ag))
-        self._obs.mm_par = np.zeros((self.n_bins, n_ag))
-        self._obs.cmM_par = np.zeros((self.n_bins, n_ag))
-        self._obs.cM_par = np.zeros((self.n_bins, 2, n_ag))
-
-        self._obs.m_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.mM_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.mm_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.cmM_perp = np.zeros((self.n_bins, n_ag))
-        self._obs.cM_perp = np.zeros((self.n_bins, n_ag))
+        self._obs.m_perp = np.zeros((self.n_bins))
+        self._obs.mM_perp = np.zeros((self.n_bins))
+        self._obs.mm_perp = np.zeros((self.n_bins))
+        self._obs.cmM_perp = np.zeros((self.n_bins))
+        self._obs.cM_perp = np.zeros((self.n_bins))
 
         # Use polarization density (for perpendicular component)
         # ======================================================
-        for i, sel in enumerate(self.atomgroups):
-            zbins = np.digitize(
-                sel.atoms.positions[:, self.dim], self._obs.bin_edges[1:-1]
+        zbins = np.digitize(
+            self.atomgroup.atoms.positions[:, self.dim], self._obs.bin_edges[1:-1]
+        )
+
+        curQ = np.bincount(
+            zbins, weights=self.atomgroup.atoms.charges, minlength=self.n_bins
+        )
+
+        self._obs.m_perp = -np.cumsum(curQ / self._obs.bin_area)
+        self._obs.mM_perp = self._obs.m_perp * self._obs.M_perp
+        self._obs.mm_perp = self._obs.m_perp**2 * self._obs.bin_volume
+        self._obs.cmM_perp = self._obs.m_perp * (
+            self._obs.M_perp - self._obs.m_perp * self._obs.bin_volume
+        )
+
+        self._obs.cM_perp = self._obs.M_perp - self._obs.m_perp * self._obs.bin_volume
+
+        # Use virtual cutting method (for parallel component)
+        # ===================================================
+        # Move all z-positions to 'center of charge' such that we avoid monopoles in
+        # z-direction (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y
+        # direction)
+        testpos = self.atomgroup.center(
+            weights=np.abs(self.atomgroup.charges), compound=self.comp
+        )[self.inverse_ix, self.dim]
+
+        # Average parallel directions
+        for j, direction in enumerate(self.odims):
+            # At this point we should not use the wrap, which causes unphysical
+            # dipoles at the borders
+            Lx = self._ts.dimensions[direction]
+            Ax = self._ts.dimensions[self.odims[1 - j]] * self._obs.bin_width
+
+            vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
+            x_bin_edges = (np.arange(vbinsx)) * (Lx / vbinsx)
+
+            zpos = np.digitize(testpos, self._obs.bin_edges[1:-1])
+            xbins = np.digitize(
+                self.atomgroup.atoms.positions[:, direction], x_bin_edges[1:]
             )
 
-            curQ = np.bincount(zbins, weights=sel.atoms.charges, minlength=self.n_bins)
+            curQx = np.bincount(
+                zpos + self.n_bins * xbins,
+                weights=self.atomgroup.charges,
+                minlength=vbinsx * self.n_bins,
+            ).reshape(vbinsx, self.n_bins)
 
-            self._obs.m_perp[:, i] = -np.cumsum(curQ / self._obs.bin_area)
-            self._obs.mM_perp[:, i] = self._obs.m_perp[:, i] * self._obs.M_perp
-            self._obs.mm_perp[:, i] = self._obs.m_perp[:, i] ** 2 * self._obs.bin_volume
-            self._obs.cmM_perp[:, i] = self._obs.m_perp[:, i] * (
-                self._obs.M_perp - self._obs.m_perp[:, i] * self._obs.bin_volume
-            )
+            # integral over x, so uniself._ts of area
+            self._obs.m_par[:, j] = -np.cumsum(curQx / Ax, axis=0).mean(axis=0)
 
-            self._obs.cM_perp[:, i] = (
-                self._obs.M_perp - self._obs.m_perp[:, i] * self._obs.bin_volume
-            )
+        # Can not use array for operations below, without extensive reshaping of
+        # each array... Therefore, take first element only since the volume of each
+        # bin is the same in planar geometry.
+        bin_volume = self._obs.bin_volume[0]
 
-            # Use virtual cutting method (for parallel component)
-            # ===================================================
-            # Move all z-positions to 'center of charge' such that we avoid monopoles in
-            # z-direction (compare Eq. 33 in Bonthuis 2012; we only want to cut in x/y
-            # direction)
-            testpos = sel.center(weights=np.abs(sel.charges), compound=self.comp[i])[
-                self.inverse_ix[i], self.dim
-            ]
-
-            # Average parallel directions
-            for j, direction in enumerate(self.odims):
-                # At this point we should not use the wrap, which causes unphysical
-                # dipoles at the borders
-                Lx = self._ts.dimensions[direction]
-                Ax = self._ts.dimensions[self.odims[1 - j]] * self._obs.bin_width
-
-                vbinsx = np.ceil(Lx / self.vcutwidth).astype(int)
-                x_bin_edges = (np.arange(vbinsx)) * (Lx / vbinsx)
-
-                zpos = np.digitize(testpos, self._obs.bin_edges[1:-1])
-                xbins = np.digitize(sel.atoms.positions[:, direction], x_bin_edges[1:])
-
-                curQx = np.bincount(
-                    zpos + self.n_bins * xbins,
-                    weights=self.atomgroups[i].charges,
-                    minlength=vbinsx * self.n_bins,
-                ).reshape(vbinsx, self.n_bins)
-
-                # integral over x, so uniself._ts of area
-                self._obs.m_par[:, j, i] = -np.cumsum(curQx / Ax, axis=0).mean(axis=0)
-
-            # Can not use array for operations below, without extensive reshaping of
-            # each array... Therefore, take first element only since the volume of each
-            # bin is the same in planar geometry.
-            bin_volume = self._obs.bin_volume[0]
-
-            self._obs.mM_par[:, i] = np.dot(self._obs.m_par[:, :, i], self._obs.M_par)
-            self._obs.mm_par[:, i] = (
-                self._obs.m_par[:, :, i] * self._obs.m_par[:, :, i]
-            ).sum(axis=1) * bin_volume
-            self._obs.cmM_par[:, i] = (
-                self._obs.m_par[:, :, i]
-                * (self._obs.M_par - self._obs.m_par[:, :, i] * bin_volume)
-            ).sum(axis=1)
-            self._obs.cM_par[:, :, i] = (
-                self._obs.M_par - self._obs.m_par[:, :, i] * bin_volume
-            )
+        self._obs.mM_par = np.dot(self._obs.m_par, self._obs.M_par)
+        self._obs.mm_par = (self._obs.m_par * self._obs.m_par).sum(axis=1) * bin_volume
+        self._obs.cmM_par = (
+            self._obs.m_par * (self._obs.M_par - self._obs.m_par * bin_volume)
+        ).sum(axis=1)
+        self._obs.cM_par = self._obs.M_par - self._obs.m_par * bin_volume
 
         # Save norm of the total parallel dipole moment for correlation analysis.
         return np.linalg.norm(self._obs.M_par)
@@ -294,34 +280,28 @@ class DielectricPlanar(PlanarBase):
 
         # Parallel component
         # ==================
-        cov_par = np.zeros((self.n_bins, self.n_atomgroups))
-        dcov_par = np.zeros((self.n_bins, self.n_atomgroups))
-        cov_par_self = np.zeros((self.n_bins, self.n_atomgroups))
-        cov_par_coll = np.zeros((self.n_bins, self.n_atomgroups))
+        cov_par = np.zeros((self.n_bins))
+        dcov_par = np.zeros((self.n_bins))
+        cov_par_self = np.zeros((self.n_bins))
+        cov_par_coll = np.zeros((self.n_bins))
 
-        for i in range(self.n_atomgroups):
-            cov_par[:, i] = 0.5 * (
-                self.means.mM_par[:, i]
-                - np.dot(self.means.m_par[:, :, i], self.means.M_par)
-            )
+        cov_par = 0.5 * (
+            self.means.mM_par - np.dot(self.means.m_par, self.means.M_par.T)
+        )
 
-            # Using propagation of uncertainties
-            dcov_par[:, i] = 0.5 * np.sqrt(
-                self.sems.mM_par[:, i] ** 2
-                + np.dot(self.sems.m_par[:, :, i] ** 2, self.means.M_par**2)
-                + np.dot(self.means.m_par[:, :, i] ** 2, self.sems.M_par**2)
-            )
+        # Using propagation of uncertainties
+        dcov_par = 0.5 * np.sqrt(
+            self.sems.mM_par**2
+            + np.dot(self.sems.m_par**2, (self.means.M_par**2).T)
+            + np.dot(self.means.m_par**2, (self.sems.M_par**2).T)
+        )
 
-            cov_par_self[:, i] = 0.5 * (
-                self.means.mm_par[:, i]
-                - np.dot(
-                    self.means.m_par[:, :, i], self.means.m_par[:, :, i].sum(axis=0)
-                )
-            )
-            cov_par_coll[:, i] = 0.5 * (
-                self.means.cmM_par[:, i]
-                - (self.means.m_par[:, :, i] * self.means.cM_par[:, :, i]).sum(axis=1)
-            )
+        cov_par_self = 0.5 * (
+            self.means.mm_par - np.dot(self.means.m_par, self.means.m_par.sum(axis=0))
+        )
+        cov_par_coll = 0.5 * (
+            self.means.cmM_par - (self.means.m_par * self.means.cM_par).sum(axis=1)
+        )
 
         self.results.eps_par = pref * cov_par
         self.results.deps_par = pref * dcov_par
@@ -343,48 +323,40 @@ class DielectricPlanar(PlanarBase):
     def save(self) -> None:
         """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["position [Å]"]
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"ε^-1_⟂ - 1 ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"Δε^-1_⟂ ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"self ε^-1_⟂ - 1 ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"coll. ε^-1_⟂ - 1 ({i+1})")
+        columns.append("ε^-1_⟂ - 1")
+        columns.append("Δε^-1_⟂")
+        columns.append("self ε^-1_⟂ - 1")
+        columns.append("coll. ε^-1_⟂ - 1")
 
-        outdata_perp = np.hstack(
+        outdata_perp = np.vstack(
             [
-                self.results.bin_pos[:, np.newaxis],
+                self.results.bin_pos,
                 self.results.eps_perp,
                 self.results.deps_perp,
                 self.results.eps_perp_self,
                 self.results.eps_perp_coll,
             ]
-        )
+        ).T
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_perp"), outdata_perp, columns=columns
         )
 
         columns = ["position [Å]"]
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"ε_∥ - 1 ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"Δε_∥ ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"self ε_∥ - 1 ({i+1})")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"coll ε_∥ - 1 ({i+1})")
+        columns.append("ε_∥ - 1")
+        columns.append("Δε_∥")
+        columns.append("self ε_∥ - 1")
+        columns.append("coll ε_∥ - 1")
 
-        outdata_par = np.hstack(
+        outdata_par = np.vstack(
             [
-                self.results.bin_pos[:, np.newaxis],
+                self.results.bin_pos,
                 self.results.eps_par,
                 self.results.deps_par,
                 self.results.eps_par_self,
                 self.results.eps_par_coll,
             ]
-        )
+        ).T
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_par"), outdata_par, columns=columns

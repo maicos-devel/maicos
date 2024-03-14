@@ -34,7 +34,7 @@ class PlanarClass(PlanarBase):
 
     def __init__(
         self,
-        atomgroups,
+        atomgroup,
         pos_arg,
         opt_arg="foo",
         dim=2,
@@ -44,7 +44,7 @@ class PlanarClass(PlanarBase):
         refgroup=None,
     ):
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=False,
             jitter=0.0,
             wrap_compound="atoms",
@@ -54,7 +54,6 @@ class PlanarClass(PlanarBase):
             zmax=zmax,
             bin_width=bin_width,
             refgroup=refgroup,
-            multi_group=True,
         )
         self.pos_arg = pos_arg
         self.opt_arg = opt_arg
@@ -336,9 +335,7 @@ class TestPlanarBaseChilds:
             refgroup=None,
         )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = PlanarBase(
-            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
-        ).run()
+        pb_obj = PlanarBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -426,7 +423,7 @@ class TestProfilePlanarBase:
         p = dict(
             weighting_function=self.weights,
             weighting_function_kwargs=None,
-            atomgroups=u.atoms,
+            atomgroup=u.atoms,
             normalization="number",
             dim=2,
             zmin=None,
@@ -486,7 +483,7 @@ class TestProfilePlanarBase:
     )
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
-        params.update(atomgroups=u_dimers.atoms, dim=1, bin_width=1, grouping=grouping)
+        params.update(atomgroup=u_dimers.atoms, dim=1, bin_width=1, grouping=grouping)
         profile = ProfilePlanarBase(**params).run()
         actual = profile.results.profile.flatten()
 
@@ -496,17 +493,6 @@ class TestProfilePlanarBase:
             desired = [1, np.nan, 1]
 
         assert_equal(actual, desired)
-
-    def test_multigroup(self, u, params):
-        """Test analysis for a list of atomgroups."""
-        params.update(atomgroups=[u.atoms, u.atoms])
-        profile = ProfilePlanarBase(**params).run()
-
-        actual = profile.results.profile
-        desired = np.nan * np.ones([profile.n_bins, 2])
-        desired[:10, :] = 1
-
-        assert_allclose(actual, desired)
 
     def test_histogram(self, params):
         """Test the histogram method."""
@@ -544,4 +530,4 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run(stop=1)
 
         selected_bin = profile._single_frame()
-        assert selected_bin == profile._obs.profile[n_bins // 2, 0]
+        assert selected_bin == profile._obs.profile[n_bins // 2]

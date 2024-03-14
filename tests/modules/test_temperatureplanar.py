@@ -43,14 +43,6 @@ class ReferenceAtomGroups:
 class TestTemperatureProfile(ReferenceAtomGroups):
     """Tests for the TemperaturePlanar class."""
 
-    def test_multiple(self, multiple_ags):
-        """Test TemperaturePlanar module on two atom groups.
-
-        Only one frame of the MDAnalysisTests data trajectory is used.
-        """
-        temp = TemperaturePlanar(multiple_ags).run(stop=1)
-        assert_allclose(temp.results.profile[40], [224, 195], rtol=1e1)
-
     @pytest.mark.parametrize("dim", (0, 1, 2))
     def test_dens(self, ag, dim):
         """Test TemperaturePlanar temperature.

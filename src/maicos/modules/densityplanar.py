@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar density profiles."""
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -46,7 +46,7 @@ class DensityPlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dens: str = "mass",
         dim: int = 2,
         zmin: Optional[float] = None,
@@ -63,7 +63,7 @@ class DensityPlanar(ProfilePlanarBase):
     ) -> None:
         self._locals = locals()
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             jitter=jitter,
             concfreq=concfreq,

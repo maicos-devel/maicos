@@ -9,7 +9,7 @@
 """Module for computing cylindrical density profiles."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -41,7 +41,7 @@ class DensityCylinder(ProfileCylinderBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dens: str = "mass",
         dim: int = 2,
         zmin: Optional[float] = None,
@@ -59,7 +59,7 @@ class DensityCylinder(ProfileCylinderBase):
     ) -> None:
         self._locals = locals()
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             jitter=jitter,
             concfreq=concfreq,

@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for planar analysis."""
 import logging
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 import MDAnalysis as mda
 import numpy as np
@@ -27,7 +27,7 @@ class PlanarBase(AnalysisBase):
 
     Parameters
     ----------
-    ${ATOMGROUPS_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${PLANAR_CLASS_PARAMETERS}
     ${WRAP_COMPOUND_PARAMETER}
 
@@ -59,8 +59,7 @@ class PlanarBase(AnalysisBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
-        multi_group: bool,
+        atomgroup: mda.AtomGroup,
         unwrap: bool,
         refgroup: Optional[mda.AtomGroup],
         jitter: float,
@@ -72,8 +71,7 @@ class PlanarBase(AnalysisBase):
         wrap_compound: str,
     ):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=multi_group,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -172,7 +170,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         unwrap: bool,
         refgroup: Optional[mda.AtomGroup],
         jitter: float,
@@ -191,8 +189,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
     ):
         PlanarBase.__init__(
             self,
-            atomgroups=atomgroups,
-            multi_group=True,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -203,11 +200,11 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
             bin_width=bin_width,
             wrap_compound=grouping,  # same as grouping to avoid broken compounds
         )
-        # `AnalysisBase` performs conversions on `atomgroups`.
-        # Take converted `atomgroups` and not the user provided ones.
+        # `AnalysisBase` performs conversions on `atomgroup`.
+        # Take converted `atomgroup` and not the user provided ones.
         ProfileBase.__init__(
             self,
-            atomgroups=self.atomgroups,
+            atomgroup=self.atomgroup,
             grouping=grouping,
             bin_method=bin_method,
             output=output,
@@ -246,7 +243,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         ProfileBase._single_frame(self)
 
         # Take the center bin of the 0th group for correlation analysis.
-        return self._obs.profile[self.n_bins // 2, 0]
+        return self._obs.profile[self.n_bins // 2]
 
     def _conclude(self):
         PlanarBase._conclude(self)

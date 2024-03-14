@@ -18,11 +18,6 @@ from maicos import TemperaturePlanar
 class TestTemperaturProfile(ReferenceAtomGroups):
     """Tests for the TemperaturePlanar class."""
 
-    def test_multiple(self, multiple_ags):
-        """Test temperature."""
-        temp = TemperaturePlanar(multiple_ags).run()
-        assert_allclose(temp.results.profile[40], [223, 259], rtol=1e1)
-
     @pytest.mark.parametrize("dim", (0, 1, 2))
     def test_dens(self, ag, dim):
         """Test mean temperature."""

@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing cylindrical velocity profiles."""
 
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -45,7 +45,7 @@ class VelocityCylinder(ProfileCylinderBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
@@ -71,7 +71,7 @@ class VelocityCylinder(ProfileCylinderBase):
             normalization = "number"
 
         super(VelocityCylinder, self).__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             jitter=jitter,
             concfreq=concfreq,

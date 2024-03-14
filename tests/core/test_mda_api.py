@@ -40,7 +40,6 @@ def override_analysis_base():
     def frame_analysis_init(self, reader):
         super(FrameAnalysis, self).__init__(
             reader.universe.atoms,
-            multi_group=False,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -56,7 +55,6 @@ def override_analysis_base():
     def incomplete_analysis_init(self, reader):
         super(IncompleteAnalysis, self).__init__(
             reader.universe.atoms,
-            multi_group=False,
             unwrap=False,
             refgroup=None,
             jitter=0.0,

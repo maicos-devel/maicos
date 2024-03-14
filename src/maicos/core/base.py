@@ -117,23 +117,18 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     Parameters
     ----------
-    ${ATOMGROUPS_PARAMETER}
-    multi_group : bool
-        Analysis is able to work with list of atomgroups
+    ${ATOMGROUP_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
     ${WRAP_COMPOUND_PARAMETER}
 
 
     Attributes
     ----------
-    ${ATOMGROUP_PARAMETER} (available if `multi_group = False`)
-    ${ATOMGROUPS_PARAMETER} (available if `multi_group = True`)
-    n_atomgroups : int
-        Number of atomngroups (available if `multi_group = True`)
+    ${ATOMGROUP_PARAMETER}
     _universe : MDAnalysis.core.universe.Universe
-        The Universe the atomgroups belong to
+        The Universe the AtomGroup belong to
     _trajectory : MDAnalysis.coordinates.base.ReaderBase
-        The trajectory the atomgroups belong to
+        The trajectory the AtomGroup belong to
     times : numpy.ndarray
         array of Timestep times. Only exists after calling
         :meth:`AnalysisBase.run`
@@ -164,7 +159,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     Raises
     ------
     ValueError
-        If any of the provided AtomGroups (`atomgroups` or `refgroup`) does
+        If any of the provided AtomGroups (`atomgroup` or `refgroup`) does
         not contain any atoms.
 
     Example
@@ -206,8 +201,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         output: str = "outfile.dat",
     ...     ):
     ...         super().__init__(
-    ...             atomgroups=atomgroup,
-    ...             multi_group=False,
+    ...             atomgroup=atomgroup,
     ...             refgroup=None,
     ...             unwrap=False,
     ...             jitter=0.0,
@@ -281,43 +275,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def __init__(
         self,
-        atomgroups: mda.AtomGroup,
-        multi_group: bool,
+        atomgroup: mda.AtomGroup,
         unwrap: bool,
         refgroup: Union[None, mda.AtomGroup],
         jitter: float,
         concfreq: int,
         wrap_compound: str,
     ) -> None:
-        if multi_group:
-            if type(atomgroups) not in (list, tuple):
-                atomgroups = [atomgroups]
-            # Check that all atomgroups are from same universe
-            if len(set([ag.universe for ag in atomgroups])) != 1:
-                raise ValueError("Atomgroups belong to different Universes")
+        self.atomgroup = atomgroup
 
-            # Sort the atomgroups, such that molecules are listed one after the other
-            self.atomgroups = atomgroups
+        if self.atomgroup.n_atoms == 0:
+            raise ValueError("The provided `atomgroup` does not contain any atoms.")
 
-            for i, ag in enumerate(self.atomgroups):
-                if ag.n_atoms == 0:
-                    raise ValueError(
-                        f"The {i+1}. provided `atomgroup`" "does not contain any atoms."
-                    )
-
-            self.n_atomgroups = len(self.atomgroups)
-            self._universe = atomgroups[0].universe
-            self._allow_multiple_atomgroups = True
-        else:
-            self.atomgroup = atomgroups
-
-            if self.atomgroup.n_atoms == 0:
-                raise ValueError(
-                    "The provided `atomgroup` does not contain " "any atoms."
-                )
-
-            self._universe = atomgroups.universe
-            self._allow_multiple_atomgroups = False
+        self._universe = atomgroup.universe
 
         self._trajectory = self._universe.trajectory
         self.refgroup = refgroup
@@ -530,7 +500,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
           - command line arguments that were used to run the module
           - module call including the default arguments
           - number of frames that were analyzed
-          - atomgroups that were analyzed
+          - atomgroup that was analyzed
           - output messages from modules and base classes (if they exist)
         """
         # This method breaks if fname is a Path object. We therefore convert it to a str
@@ -551,14 +521,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         messages = "\n".join(messages_list)
 
         # Get information on the analyzed atomgroup
-        atomgroups = ""
+        atomgroups = f"  (grp) {atomgroup_header(self.atomgroup)}\n"
         if hasattr(self, "refgroup") and self.refgroup is not None:
             atomgroups += f"  (ref) {atomgroup_header(self.refgroup)}\n"
-        if self._allow_multiple_atomgroups:
-            for i, ag in enumerate(self.atomgroups):
-                atomgroups += f"  ({i + 1}) {atomgroup_header(ag)}\n"
-        else:
-            atomgroups += f"  (1) {atomgroup_header(self.atomgroup)}\n"
 
         # We have to check this since only the modules have the _locals attribute,
         # not the base classes. Yet we still want to test output behaviour of the base
@@ -570,7 +535,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             for param in sig.args:
                 if type(self._locals[param]) is str:
                     string = f"{param}='{self._locals[param]}'"
-                elif param == "atomgroup" or param == "atomgroups":
+                elif param == "atomgroup":
                     string = f"{param}=<AtomGroup>"
                 elif param == "refgroup" and self._locals[param] is not None:
                     string = f"{param}=<AtomGroup>"
@@ -739,7 +704,7 @@ class ProfileBase:
 
     Parameters
     ----------
-    ${ATOMGROUPS_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${PROFILE_CLASS_PARAMETERS}
     ${PROFILE_CLASS_PARAMETERS_PRIVATE}
 
@@ -750,7 +715,7 @@ class ProfileBase:
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         grouping: str,
         bin_method: str,
         output: str,
@@ -758,7 +723,7 @@ class ProfileBase:
         weighting_function_kwargs: Union[None, Dict],
         normalization: str,
     ) -> None:
-        self.atomgroups = atomgroups
+        self.atomgroup = atomgroup
         self.grouping = grouping.lower()
         self.bin_method = bin_method.lower()
         self.output = output
@@ -814,27 +779,25 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self) -> Union[None, float]:
-        self._obs.profile = np.zeros((self.n_bins, self.n_atomgroups))  # type: ignore
-        self._obs.bincount = np.zeros((self.n_bins, self.n_atomgroups))  # type: ignore
-        for index, selection in enumerate(self.atomgroups):
-            if self.grouping == "atoms":  # type: ignore
-                positions = selection.atoms.positions
-            else:
-                positions = get_center(
-                    selection.atoms, bin_method=self.bin_method, compound=self.grouping
-                )
+        self._obs.profile = np.zeros(self.n_bins)  # type: ignore
+        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore
 
-            weights = self.weighting_function(selection)
-            profile = self._compute_histogram(positions, weights)
-
-            self._obs.bincount[:, index] = self._compute_histogram(
-                positions, weights=None
+        if self.grouping == "atoms":  # type: ignore
+            positions = self.atomgroup.positions
+        else:
+            positions = get_center(
+                self.atomgroup, bin_method=self.bin_method, compound=self.grouping
             )
 
-            if self.normalization == "volume":
-                profile /= self._obs.bin_volume
+        weights = self.weighting_function(self.atomgroup)
+        profile = self._compute_histogram(positions, weights)
 
-            self._obs.profile[:, index] = profile
+        self._obs.bincount = self._compute_histogram(positions, weights=None)
+
+        if self.normalization == "volume":
+            profile /= self._obs.bin_volume
+
+        self._obs.profile = profile
 
         return None
 
@@ -853,23 +816,19 @@ class ProfileBase:
         """${SAVE_METHOD_DESCRIPTION}"""
         columns = ["positions [Å]"]
 
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"({i + 1}) profile")
-        for i, _ in enumerate(self.atomgroups):
-            columns.append(f"({i + 1}) error")
+        columns.append("profile")
+        columns.append("error")
 
         # Required attribute to use method from `AnalysisBase`
-        self._allow_multiple_atomgroups = True
-
         AnalysisBase.savetxt(
             self,  # type: ignore
             self.output,
-            np.hstack(
+            np.vstack(
                 (
-                    self.results.bin_pos[:, np.newaxis],
+                    self.results.bin_pos,
                     self.results.profile,
                     self.results.dprofile,
                 )
-            ),
+            ).T,
             columns=columns,
         )

@@ -70,7 +70,6 @@ class DiporderStructureFactor(AnalysisBase):
         self._locals = locals()
         super().__init__(
             atomgroup,
-            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
