@@ -117,8 +117,7 @@ class PDFCylinder(CylinderBase):
     ) -> None:
         self.comp_1 = get_compound(g1)
         super(PDFCylinder, self).__init__(
-            atomgroups=g1,
-            multi_group=False,
+            atomgroup=g1,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,

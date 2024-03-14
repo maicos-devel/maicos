@@ -53,13 +53,13 @@ class TestVelocityCylinder(object):
         vel = VelocityCylinder(
             ag_v, vdim=2, bin_width=2, grouping="molecules", refgroup=ag_v
         ).run()
-        assert_allclose(vel.results.profile.T[0], vel_array[data_index])
+        assert_allclose(vel.results.profile, vel_array[data_index])
 
         # Test flux, 10 Molecules
         flux = VelocityCylinder(
             ag_v, vdim=2, bin_width=2, grouping="molecules", flux=True
         ).run()
         assert_allclose(
-            flux.results.profile.T[0],
+            flux.results.profile.T,
             np.nan_to_num(vel_array[data_index] / (bin_volume / 10)),
         )

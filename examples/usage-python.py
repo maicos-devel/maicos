@@ -150,7 +150,7 @@ uncertainity = dplan.results.dprofile
 
 fig, ax = plt.subplots()
 
-ax.errorbar(zcoor, dens[:, 0], 5 * uncertainity[:, 0])
+ax.errorbar(zcoor, dens, 5 * uncertainity)
 
 ax.set_xlabel(r"z coordinate ($\rm Å$)")
 ax.set_ylabel(r"density H2O ($\rm u \cdot Å^{-3}$)")
@@ -173,31 +173,33 @@ maicos.DensityPlanar(group_H2O).run(start=10, stop=13, step=1)
 # By changing the value of the default parameters, one can improve the results, and
 # perform more advanced operations.
 #
-# Let us increase the spacial resolution by reducing the ``bin_width``, and extract two
+# Let us increase the spatial resolution by reducing the ``bin_width``, and extract two
 # profiles instead of one:
 #
 # * one for the oxygen atoms of the water molecules,
 # * one from the hydrogen atoms:
 
-dplan_smaller_bin = maicos.DensityPlanar(
-    [group_O, group_H], bin_width=0.5, unwrap=False
-).run()
+dplan_smaller_bin = []
+for ag in [group_O, group_H]:
+    dplan_smaller_bin.append(
+        maicos.DensityPlanar(ag, bin_width=0.5, unwrap=False).run()
+    )
 
-zcoor_smaller_bin = dplan_smaller_bin.results.bin_pos
-dens_smaller_bin = dplan_smaller_bin.results.profile
+# TODO: Intoduce AnalysisCollection here?
 
-# %%
-# In that case, the ``dens_smaller_bin`` has two columns, one for each group:
+zcoor_smaller_bin_O = dplan_smaller_bin[0].results.bin_pos
+dens_smaller_bin_O = dplan_smaller_bin[0].results.profile
 
-print(dens_smaller_bin[5:15])
+zcoor_smaller_bin_H = dplan_smaller_bin[0].results.bin_pos
+dens_smaller_bin_H = dplan_smaller_bin[0].results.profile
 
 # %%
 # Let us plot the results using two differents :math:`y`-axis:
 
 fig, ax1 = plt.subplots()
 
-ax1.plot(zcoor_smaller_bin, dens_smaller_bin.T[0], label=r"Oxygen")
-ax1.plot(zcoor_smaller_bin, dens_smaller_bin.T[1] * 8, label=r"Hydrogen")
+ax1.plot(zcoor_smaller_bin_O, dens_smaller_bin_O, label=r"Oxygen")
+ax1.plot(zcoor_smaller_bin_H, dens_smaller_bin_H * 8, label=r"Hydrogen")
 
 ax1.set_xlabel(r"z coordinate ($Å$)")
 ax1.set_ylabel(r"density O ($\rm u \cdot Å^{-3}$)")

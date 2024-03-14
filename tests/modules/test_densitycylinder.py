@@ -67,6 +67,6 @@ class TestDensityCylinder(ReferenceAtomGroups):
             ag, bin_width=bin_width, dens="number", refgroup=ag
         ).run()
         assert_allclose(
-            dens.results.profile.T[0],
+            dens.results.profile,
             np.array([0, 0, 3 * n_molecule, 0, 0]) / volume_slices,
         )

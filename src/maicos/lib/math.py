@@ -582,15 +582,20 @@ def symmetrize(
            [ 4.5, 14.5],
            [ 4.5, 14.5]])
     """
-    if inplace:
-        out = m
-    else:
-        out = np.copy(m)
-
+    # The returned array will be of type float
+    out = m.copy().astype("float")
     out += np.flip(m, axis=axis)
     out /= 2
 
-    return out
+    if inplace:
+        # To safely cast the the original array type to float in-place,
+        # first change the dtype to float...
+        m.dtype = np.dtype("float")
+        # ...and then write the new values to the original array.
+        m[...] = out
+        return m
+    else:
+        return out
 
 
 def compute_form_factor(q: float, atom_type: str) -> float:

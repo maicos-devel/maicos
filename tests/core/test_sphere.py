@@ -36,7 +36,7 @@ class SphereClass(SphereBase):
 
     def __init__(
         self,
-        atomgroups,
+        atomgroup,
         pos_arg,
         opt_arg="foo",
         rmin=0,
@@ -44,8 +44,7 @@ class SphereClass(SphereBase):
         bin_width=1,
     ):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=True,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -276,7 +275,6 @@ class TestSphereBase(object):
         warning = "`rmax` is bigger than half the smallest box vector"
         ana_obj = SphereBase(
             ag.atoms,
-            multi_group=False,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -321,9 +319,7 @@ class TestSphereBaseChilds:
             rmax=None,
         )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = SphereBase(
-            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
-        ).run()
+        pb_obj = SphereBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -423,7 +419,7 @@ class TestProfileSphereBase:
             weighting_function=self.weights,
             weighting_function_kwargs=None,
             jitter=0.0,
-            atomgroups=u.atoms,
+            atomgroup=u.atoms,
             normalization="number",
             rmin=0,
             rmax=None,
@@ -469,7 +465,7 @@ class TestProfileSphereBase:
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
         params.update(
-            atomgroups=u_dimers.atoms,
+            atomgroup=u_dimers.atoms,
             bin_width=1,
             rmax=2,
             normalization="None",
@@ -492,7 +488,7 @@ class TestProfileSphereBase:
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
         params.update(
-            atomgroups=u_dimers.atoms,
+            atomgroup=u_dimers.atoms,
             bin_width=1,
             rmax=2,
             bin_method=bin_method,
@@ -506,7 +502,7 @@ class TestProfileSphereBase:
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(
-            atomgroups=u_dimers.atoms,
+            atomgroup=u_dimers.atoms,
             bin_width=1,
             rmax=2,
             unwrap=unwrap,
@@ -544,4 +540,4 @@ class TestProfileSphereBase:
         """Test that the 0th bin is taken for the analysis."""
         profile = ProfileSphereBase(**params).run(stop=1)
         selected_bin = profile._single_frame()
-        assert selected_bin == profile._obs.profile[0, 0]
+        assert selected_bin == profile._obs.profile[0]

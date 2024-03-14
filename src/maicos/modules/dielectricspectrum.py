@@ -94,7 +94,6 @@ class DielectricSpectrum(AnalysisBase):
         wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,
-            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             concfreq=concfreq,

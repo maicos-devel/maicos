@@ -9,7 +9,7 @@
 r"""Module for computing planar dipolar order parameters."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -42,7 +42,7 @@ class DiporderPlanar(ProfilePlanarBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
@@ -70,7 +70,7 @@ class DiporderPlanar(ProfilePlanarBase):
             )
 
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,

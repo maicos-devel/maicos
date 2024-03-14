@@ -100,7 +100,6 @@ class DielectricCylinder(CylinderBase):
 
         super().__init__(
             atomgroup,
-            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,

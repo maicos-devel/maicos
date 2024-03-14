@@ -127,8 +127,8 @@ def multi_class(atomgroup, filter):
 
     @maicos.lib.util.charge_neutral(filter)
     class MultiCharged(AnalysisBase):
-        def __init__(self, atomgroups):
-            self.atomgroups = atomgroups
+        def __init__(self, atomgroup):
+            self.atomgroup = atomgroup
             self.filter = filter
 
         def _prepare(self):
@@ -154,20 +154,10 @@ class TestChargedDecorator(object):
         with pytest.raises(UserWarning):
             single_class(ag.select_atoms("name OW*"), filter="error")._prepare()
 
-    def test_charged_Multi(self, ag):
-        """Test charged multi."""
-        with pytest.raises(UserWarning):
-            multi_class([ag.select_atoms("name OW*"), ag], filter="error")._prepare()
-
     def test_charged_single_warn(self, ag):
         """Test charged single warn."""
         with pytest.warns(UserWarning):
             single_class(ag.select_atoms("name OW*"), filter="default")._prepare()
-
-    def test_charged_Multi_warn(self, ag):
-        """Test charged multi warn."""
-        with pytest.warns(UserWarning):
-            multi_class([ag.select_atoms("name OW*")], filter="default")._prepare()
 
     def test_universe_charged_single(self, ag):
         """Test universe charged single."""

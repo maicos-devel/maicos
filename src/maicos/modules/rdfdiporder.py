@@ -86,7 +86,6 @@ class RDFDiporder(AnalysisBase):
         self._locals = locals()
         super().__init__(
             g1,
-            multi_group=False,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,

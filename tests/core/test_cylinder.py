@@ -35,7 +35,7 @@ class CylinderClass(CylinderBase):
 
     def __init__(
         self,
-        atomgroups,
+        atomgroup,
         pos_arg,
         opt_arg="foo",
         dim=2,
@@ -47,8 +47,7 @@ class CylinderClass(CylinderBase):
         **kwargs,
     ):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=True,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -326,9 +325,7 @@ class TestCylinderBaseChilds:
             bin_width=1,
         )
         ana_obj = Member(ag_single_frame, **params).run()
-        pb_obj = CylinderBase(
-            ag_single_frame, multi_group=False, wrap_compound="atoms", **params
-        ).run()
+        pb_obj = CylinderBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
         assert_equal(ana_obj.results.bin_pos, pb_obj.results.bin_pos)
         assert_equal(ana_obj.n_bins, pb_obj.n_bins)
@@ -432,7 +429,7 @@ class TestProfileCylinderBase:
             weighting_function=self.weights,
             weighting_function_kwargs=None,
             jitter=0.0,
-            atomgroups=u.atoms,
+            atomgroup=u.atoms,
             normalization="number",
             dim=2,
             zmin=None,
@@ -486,7 +483,7 @@ class TestProfileCylinderBase:
     def test_grouping(self, u_dimers, grouping, params):
         """Test profile grouping."""
         params.update(
-            atomgroups=u_dimers.atoms,
+            atomgroup=u_dimers.atoms,
             bin_width=1,
             normalization="None",
             grouping=grouping,
@@ -507,7 +504,7 @@ class TestProfileCylinderBase:
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""
         params.update(
-            atomgroups=u_dimers.atoms,
+            atomgroup=u_dimers.atoms,
             bin_width=1,
             bin_method=bin_method,
             normalization="none",
@@ -542,7 +539,7 @@ class TestProfileCylinderBase:
         """Test that the 0th bin is taken for the analysis."""
         profile = ProfileCylinderBase(**params).run(stop=1)
         selected_bin = profile._single_frame()
-        assert selected_bin == profile._obs.profile[0, 0]
+        assert selected_bin == profile._obs.profile[0]
 
     @pytest.mark.parametrize("dimension", [0, 1, 2])
     def test_range_warning(self, u_dimers, params, caplog, dimension):
@@ -551,7 +548,6 @@ class TestProfileCylinderBase:
         odims = np.roll(np.arange(3), -dimension)[1:]
 
         params = dict(
-            multi_group=True,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -564,7 +560,7 @@ class TestProfileCylinderBase:
             rmax=None,
             bin_width=1,
         )
-        params["atomgroups"] = u_dimers.atoms
+        params["atomgroup"] = u_dimers.atoms
         params["rmax"] = 1.1 * u_dimers.dimensions[odims].min() / 2
         ana_obj = CylinderBase(**params)
         ana_obj._compute_lab_frame_cylinder()

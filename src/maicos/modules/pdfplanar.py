@@ -127,8 +127,7 @@ class PDFPlanar(PlanarBase):
         self._locals = locals()
         self.comp_1 = get_compound(g1)
         super().__init__(
-            atomgroups=g1,
-            multi_group=False,
+            atomgroup=g1,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,

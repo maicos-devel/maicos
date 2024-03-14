@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for cylindrical analysis."""
 import logging
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 import MDAnalysis as mda
 import numpy as np
@@ -30,7 +30,7 @@ class CylinderBase(PlanarBase):
 
     Parameters
     ----------
-    ${ATOMGROUPS_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
     ${WRAP_COMPOUND_PARAMETER}
 
@@ -58,8 +58,7 @@ class CylinderBase(PlanarBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
-        multi_group: bool,
+        atomgroup: mda.AtomGroup,
         unwrap: bool,
         refgroup: Optional[mda.AtomGroup],
         jitter: float,
@@ -73,8 +72,7 @@ class CylinderBase(PlanarBase):
         wrap_compound: str,
     ):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=multi_group,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -168,7 +166,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         unwrap: bool,
         refgroup: Optional[mda.AtomGroup],
         jitter: float,
@@ -188,8 +186,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
     ):
         CylinderBase.__init__(
             self,
-            atomgroups=atomgroups,
-            multi_group=True,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -202,11 +199,11 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
             rmax=rmax,
             wrap_compound=grouping,  # same as grouping to avoid broken compounds
         )
-        # `AnalysisBase` performs conversions on `atomgroups`. Take converted
-        # `atomgroups` and not the user provided ones.
+        # `AnalysisBase` performs conversions on `atomgroup`. Take converted
+        # `atomgroup` and not the user provided ones.
         ProfileBase.__init__(
             self,
-            atomgroups=self.atomgroups,
+            atomgroup=self.atomgroup,
             grouping=grouping,
             bin_method=bin_method,
             output=output,
@@ -247,7 +244,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         ProfileBase._single_frame(self)
 
         # Take the center bin of the zeroth group for correlation analysis.
-        return self._obs.profile[0, 0]
+        return self._obs.profile[0]
 
     def _conclude(self):
         CylinderBase._conclude(self)

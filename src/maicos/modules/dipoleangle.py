@@ -65,7 +65,6 @@ class DipoleAngle(AnalysisBase):
         self.wrap_compound = get_compound(atomgroup)
         super().__init__(
             atomgroup,
-            multi_group=False,
             refgroup=refgroup,
             unwrap=unwrap,
             concfreq=concfreq,

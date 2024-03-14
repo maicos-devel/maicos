@@ -20,7 +20,6 @@ from MDAnalysis.analysis.base import Results
 from MDAnalysis.core._get_readers import get_reader_for
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
-from scipy.signal import find_peaks
 
 from maicos import DensityPlanar, _version
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
@@ -34,10 +33,9 @@ from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 class Output(AnalysisBase):
     """Class creating a file to check the output."""
 
-    def __init__(self, atomgroups):
+    def __init__(self, atomgroup):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=False,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -61,11 +59,10 @@ class FileModuleInput(AnalysisBase):
         # Do nothing, but the run() methods needs to be called
         pass
 
-    def __init__(self, atomgroups, test_input="some_default", refgroup=None):
+    def __init__(self, atomgroup, test_input="some_default", refgroup=None):
         self._locals = locals()
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=False,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=refgroup,
             jitter=0.0,
@@ -77,10 +74,9 @@ class FileModuleInput(AnalysisBase):
 class Series(AnalysisBase):
     """Class creating a random time series to check observables."""
 
-    def __init__(self, atomgroups):
+    def __init__(self, atomgroup):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=False,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -107,10 +103,9 @@ class Frame_types(AnalysisBase):
     - np.int
     """
 
-    def __init__(self, atomgroups):
+    def __init__(self, atomgroup):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=False,
+            atomgroup=atomgroup,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -131,8 +126,7 @@ class Conclude(AnalysisBase):
 
     def __init__(
         self,
-        atomgroups,
-        multi_group=False,
+        atomgroup,
         unwrap=False,
         refgroup=None,
         jitter=0.0,
@@ -141,8 +135,7 @@ class Conclude(AnalysisBase):
         output_prefix="",
     ):
         super().__init__(
-            atomgroups=atomgroups,
-            multi_group=multi_group,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
@@ -193,8 +186,7 @@ class Test_AnalysisBase:
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
         a = AnalysisBase(
-            atomgroups=ag,
-            multi_group=False,
+            atomgroup=ag,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -206,14 +198,12 @@ class Test_AnalysisBase:
         assert a._trajectory == ag.universe.trajectory
         assert a._universe == ag.universe
         assert isinstance(a.results, Results)
-        assert not hasattr(a, "atomgroups")
 
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
             class_obj = AnalysisBase(
-                atomgroups=ag.select_atoms("name foo"),
-                multi_group=False,
+                atomgroup=ag.select_atoms("name foo"),
                 unwrap=False,
                 refgroup=None,
                 jitter=0.0,
@@ -221,52 +211,10 @@ class Test_AnalysisBase:
                 concfreq=0,
             )
             class_obj._prepare()
-
-    def test_empty_atomgroups(self, ag):
-        """Test behaviour for empty atomgroups."""
-        with pytest.raises(ValueError, match="not contain any atoms."):
-            class_obj = AnalysisBase(
-                atomgroups=[ag, ag.select_atoms("name foo")],
-                multi_group=True,
-                unwrap=False,
-                refgroup=None,
-                jitter=0.0,
-                wrap_compound="atoms",
-                concfreq=0,
-            )
-            class_obj._prepare()
-
-    def test_multigroups(self, ag):
-        """Test multiple groups."""
-        a = AnalysisBase(
-            atomgroups=[ag[:10], ag[10:]],
-            multi_group=True,
-            unwrap=False,
-            refgroup=None,
-            jitter=0.0,
-            wrap_compound="atoms",
-            concfreq=0,
-        )
-
-        assert a.n_atomgroups == 2
-        assert a._universe == ag.universe
-
-    def test_different_universes(self, ag):
-        """Test different universes."""
-        with pytest.raises(ValueError, match="Atomgroups belong"):
-            AnalysisBase(
-                atomgroups=[ag, mda.Universe(WATER_TPR_NPT)],
-                multi_group=True,
-                unwrap=False,
-                refgroup=None,
-                jitter=0.0,
-                wrap_compound="atoms",
-                concfreq=0,
-            )
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = Series(atomgroups=ag)
+        ana = Series(atomgroup=ag)
         ana.run()
 
         assert_allclose(ana.sums.observable, np.sum(ana.series))
@@ -314,7 +262,7 @@ class Test_AnalysisBase:
         ana.run()
         ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
         assert "refgroup=<AtomGroup>" in open("test_refgroup.dat").read()
-        assert "atomgroups=<AtomGroup>" in open("test_refgroup.dat").read()
+        assert "atomgroup=<AtomGroup>" in open("test_refgroup.dat").read()
 
         # Test if the default value of the test_input parameter is written
         ana = FileModuleInput(ag)
@@ -412,8 +360,7 @@ class Test_AnalysisBase:
         for ts in u.trajectory:
             ts.dimensions = np.array([4, 4, 1, 90, 90, 90])
         ana_obj = AnalysisBase(
-            atomgroups=u.atoms,
-            multi_group=False,
+            atomgroup=u.atoms,
             jitter=0.0,
             wrap_compound="atoms",
             concfreq=0,
@@ -433,9 +380,8 @@ class Test_AnalysisBase:
         """Test behaviour for empty refgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
             class_obj = AnalysisBase(
-                atomgroups=ag,
+                atomgroup=ag,
                 refgroup=empty_ag,
-                multi_group=False,
                 unwrap=False,
                 jitter=0.0,
                 wrap_compound="atoms",
@@ -447,14 +393,6 @@ class Test_AnalysisBase:
         """Unwrap test for logic only; Actual test in TestProfilePlanarBase."""
         class_obj = Conclude(ag, unwrap=True)
         class_obj.run(stop=1)
-
-    def test_unwrap_multi_one(self, ag):
-        """Unwrap test for multi_group."""
-        Conclude(ag, unwrap=True, multi_group=True).run(stop=1)
-
-    def test_unwrap_multi(self, ag):
-        """Unwrap test for multi_group."""
-        Conclude((ag[:10], ag[10:]), unwrap=True, multi_group=True).run(stop=1)
 
     @pytest.mark.parametrize(
         "data, result", [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)]
@@ -478,8 +416,7 @@ class Test_AnalysisBase:
     def test_banner(self, ag, caplog):
         """Test whether AnalysisBase prints the MAICoS banner."""
         ana_obj = AnalysisBase(
-            atomgroups=ag,
-            multi_group=False,
+            atomgroup=ag,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -506,8 +443,7 @@ class Test_AnalysisBase:
     def test_n_bins(self, ag, caplog):
         """Test `n_bins` logger info."""
         ana_obj = AnalysisBase(
-            atomgroups=ag,
-            multi_group=False,
+            atomgroup=ag,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -530,8 +466,7 @@ class Test_AnalysisBase:
     def test_info_log(self, ag, caplog):
         """Test that logger infos are printed."""
         ana_obj = AnalysisBase(
-            atomgroups=ag,
-            multi_group=False,
+            atomgroup=ag,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -555,10 +490,9 @@ class Test_AnalysisBase:
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
         caplog.set_level(logging.WARN)
         profile = AnalysisBase(
-            atomgroups=ag,
+            atomgroup=ag,
             unwrap=True,
             wrap_compound="atoms",
-            multi_group=False,
             refgroup=None,
             jitter=0.0,
             concfreq=0,
@@ -577,16 +511,18 @@ class Test_AnalysisBase:
         density profile has no peak at a position of 100 (which would be the case
         without jitter).
         """
-        dens = DensityPlanar(ag_single_frame, bin_width=1e-4, jitter=0.01).run()
-        (
-            hist,
-            _,
-        ) = np.histogram(
-            np.diff(dens.results.bin_pos[np.where(dens.results.profile.T[0])]),
-            bins=1000,
-            range=(0, 0.1),
-        )
-        assert find_peaks(hist)[0][0] < 100
+        dens = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.0).run()
+
+        dens_jitter = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.01).run()
+
+        # Make sure that the integral over the jittered profile is the same as
+        # the non-jittered one (up to numerical precision)
+        assert_allclose(dens_jitter.results.profile.sum(), dens.results.profile.sum())
+
+        # Check that unjittered profile has peaks due to rounding (multiple
+        # atoms per bin) and jittered one does not.
+        assert dens.results.profile.nonzero()[0].size != ag_single_frame.n_atoms
+        assert dens_jitter.results.profile.nonzero()[0].size == ag_single_frame.n_atoms
 
     def test_no_dimensions_unwrap_error(self, u_no_cell):
         """Test that an error is raised if `unwrap=True` but no cell is present."""
@@ -595,7 +531,6 @@ class Test_AnalysisBase:
             class_obj = AnalysisBase(
                 u_no_cell.atoms,
                 unwrap=True,
-                multi_group=False,
                 refgroup=None,
                 jitter=0.0,
                 wrap_compound="atoms",
@@ -641,10 +576,9 @@ class TestAnalysisCollection:
         class CustomAnalysis(AnalysisBase):
             """Custom class that is shifting positions in every step by 10."""
 
-            def __init__(self, atomgroups):
+            def __init__(self, atomgroup):
                 super().__init__(
-                    atomgroups=atomgroups,
-                    multi_group=False,
+                    atomgroup=atomgroup,
                     unwrap=False,
                     refgroup=None,
                     jitter=0.0,
@@ -708,8 +642,7 @@ class TestAnalysisCollection:
 
         ana_1 = Conclude(u.atoms, output_prefix="ana1")
         ana_2 = AnalysisBase(
-            atomgroups=u.atoms,
-            multi_group=False,
+            atomgroup=u.atoms,
             unwrap=False,
             refgroup=None,
             jitter=0.0,
@@ -755,7 +688,7 @@ class Test_ProfileBase:
         p = dict(
             weighting_function=lambda x, grouping, a=1: a * x,
             weighting_function_kwargs=None,
-            atomgroups=[u.atoms],
+            atomgroup=u.atoms,
             normalization="number",
             grouping="atoms",
             bin_method="com",
@@ -790,8 +723,8 @@ class Test_ProfileBase:
         params.update(output="foo.dat")
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.zeros(10)
-        profile.results.profile = np.zeros((10, 1))
-        profile.results.dprofile = np.zeros((10, 1))
+        profile.results.profile = np.zeros(10)
+        profile.results.dprofile = np.zeros(10)
         profile.run = lambda x: x
         profile._index = 0
 
@@ -805,8 +738,8 @@ class Test_ProfileBase:
         """Test output."""
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.random.random(10)
-        profile.results.profile = np.random.random((10, 1))
-        profile.results.dprofile = np.random.random((10, 1))
+        profile.results.profile = np.random.random(10)
+        profile.results.dprofile = np.random.random(10)
         profile.run = lambda x: x
         profile._index = 0
 
@@ -815,15 +748,15 @@ class Test_ProfileBase:
 
         assert_allclose(profile.results.bin_pos, res_dens[:, 0], rtol=2)
 
-        assert_allclose(profile.results.profile[:, 0], res_dens[:, 1], rtol=2)
+        assert_allclose(profile.results.profile, res_dens[:, 1], rtol=2)
 
-        assert_allclose(profile.results.dprofile[:, 0], res_dens[:, 2], rtol=2)
+        assert_allclose(profile.results.dprofile, res_dens[:, 2], rtol=2)
 
 
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["multi_group", "atomgroups", "atomgroup", "wrap_compound"]
+    ignored_parameters = ["atomgroup", "wrap_compound"]
 
     @pytest.mark.parametrize("Member", find_cls_members(AnalysisBase, ["maicos"]))
     def test_parameters(self, Member):

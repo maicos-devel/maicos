@@ -134,12 +134,8 @@ class TestDielectricPlanar(object):
         # Check the local dipole moment density by integrating it over the
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
-        assert_allclose(
-            np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume, M_par, rtol=0.1
-        )
-        assert_allclose(
-            np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume, M_perp, rtol=0.1
-        )
+        assert_allclose(np.sum(eps._obs.m_par, axis=0) * bin_volume, M_par, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_perp, axis=0) * bin_volume, M_perp, rtol=0.1)
 
     @pytest.mark.parametrize("selection", (1, 2))
     @pytest.mark.parametrize(
@@ -193,12 +189,12 @@ class TestDielectricPlanar(object):
         # volume and comparing with the total dipole moment of the system.
         bin_volume = eps.means.bin_volume[0]
         assert_allclose(
-            np.sum(eps._obs.m_par[:, :, 0], axis=0) * bin_volume,
+            np.sum(eps._obs.m_par, axis=0) * bin_volume,
             np.multiply(M_par, n_dipoles / selection),
             rtol=0.1,
         )
         assert_allclose(
-            np.sum(eps._obs.m_perp[:, 0], axis=0) * bin_volume,
+            np.sum(eps._obs.m_perp, axis=0) * bin_volume,
             np.multiply(M_perp, n_dipoles / selection),
             rtol=0.1,
         )
@@ -210,11 +206,9 @@ class TestDielectricPlanar(object):
         cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
         assert_equal(eps.results.eps_perp, -eps.results.pref * cov_perp)
 
-        cov_par = 0.5 * (
-            eps.means.mM_par[:, 0] - np.dot(eps.means.m_par[:, :, 0], eps.means.M_par)
-        )
+        cov_par = 0.5 * (eps.means.mM_par - np.dot(eps.means.m_par, eps.means.M_par))
 
-        assert_equal(eps.results.eps_par[:, 0], eps.results.pref * cov_par)
+        assert_equal(eps.results.eps_par, eps.results.pref * cov_par)
 
     def test_unsorted_ags(self, ag_two_frames):
         """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""
@@ -240,9 +234,9 @@ class TestDielectricPlanar(object):
         eps.run()
         eps.save()
         res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
-        assert_allclose(eps.results.eps_perp[:, 0], res_perp[:, 1])
+        assert_allclose(eps.results.eps_perp, res_perp[:, 1])
         res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
-        assert_allclose(eps.results.eps_par[:, 0], res_par[:, 1])
+        assert_allclose(eps.results.eps_par, res_par[:, 1])
 
     def test_output_name(self, ag_two_frames, monkeypatch, tmp_path):
         """Test output name."""
@@ -256,8 +250,8 @@ class TestDielectricPlanar(object):
 
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""
-        eps_sym = DielectricPlanar([ag_two_frames, ag_two_frames[:-30]], sym=True).run()
-        eps = DielectricPlanar([ag_two_frames, ag_two_frames[:-30]], sym=False).run()
+        eps_sym = DielectricPlanar(ag_two_frames, sym=True).run()
+        eps = DielectricPlanar(ag_two_frames, sym=False).run()
 
         # Check that the z column is not changed
         assert_equal(eps.results.bin_pos, eps_sym.results.bin_pos)
@@ -320,20 +314,20 @@ class TestDielectricPlanar(object):
 
         # same for parallel
         eps.n_bins = 1
-        eps.means.mM_par = np.array([[0.4]])
-        eps.sems.mM_par = np.array([[0.3]])
+        eps.means.mM_par = np.array([0.4])
+        eps.sems.mM_par = np.array([0.3])
 
-        eps.means.m_par = np.array([[[0.7], [0.1]]])
-        eps.sems.m_par = np.array([[[10.0], [1e-3]]])
+        eps.means.m_par = np.array([[0.7, 0.1]])
+        eps.sems.m_par = np.array([[10.0, 1e-3]])
 
-        eps.means.mm_par = np.array([[0.4]])
-        eps.sems.mm_par = np.array([[0.3]])
+        eps.means.mm_par = np.array([0.4])
+        eps.sems.mm_par = np.array([0.3])
 
-        eps.means.M_par = np.array([[5], [5]])
-        eps.sems.M_par = np.array([[0.7], [0.1]])
+        eps.means.M_par = np.array([[5, 5]])
+        eps.sems.M_par = np.array([[0.7, 0.1]])
 
-        eps.means.cmM_par = np.array([[0.4]])
-        eps.means.cM_par = np.array([[[5], [5]]])
+        eps.means.cmM_par = np.array([0.4])
+        eps.means.cM_par = np.array([[5, 5]])
 
         # rerun conclude function with changed values
         eps._conclude()
@@ -346,18 +340,18 @@ class TestDielectricPlanar(object):
             eps_par,
             [m_mM, m_M1, m_m1, m_M2, m_m2],
             [
-                eps.sems.mM_par[0, 0],
+                eps.sems.mM_par[0],
                 eps.sems.M_par[0, 0],
-                eps.sems.m_par[0, 0, 0],
-                eps.sems.M_par[1, 0],
-                eps.sems.m_par[0, 1, 0],
+                eps.sems.m_par[0, 0],
+                eps.sems.M_par[0, 1],
+                eps.sems.m_par[0, 1],
             ],
         )(
-            eps.means.mM_par[0, 0],
+            eps.means.mM_par[0],
             eps.means.M_par[0, 0],
-            eps.means.m_par[0, 0, 0],
-            eps.means.M_par[1, 0],
-            eps.means.m_par[0, 1, 0],
+            eps.means.m_par[0, 0],
+            eps.means.M_par[0, 1],
+            eps.means.m_par[0, 1],
         )
 
-        assert_allclose(deps_par[0, 0], deps_par_sympy)
+        assert_allclose(deps_par[0], deps_par_sympy)

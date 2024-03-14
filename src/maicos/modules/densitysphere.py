@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing spherical density profiles."""
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -40,7 +40,7 @@ class DensitySphere(ProfileSphereBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dens: str = "mass",
         bin_width: float = 1,
         rmin: float = 0,
@@ -55,7 +55,7 @@ class DensitySphere(ProfileSphereBase):
     ) -> None:
         self._locals = locals()
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,

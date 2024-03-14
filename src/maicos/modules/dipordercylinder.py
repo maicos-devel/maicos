@@ -9,7 +9,7 @@
 r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 import MDAnalysis as mda
 
@@ -42,7 +42,7 @@ class DiporderCylinder(ProfileCylinderBase):
 
     def __init__(
         self,
-        atomgroups: Union[mda.AtomGroup, List[mda.AtomGroup]],
+        atomgroup: mda.AtomGroup,
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
@@ -74,7 +74,7 @@ class DiporderCylinder(ProfileCylinderBase):
             )
 
         super().__init__(
-            atomgroups=atomgroups,
+            atomgroup=atomgroup,
             unwrap=unwrap,
             refgroup=refgroup,
             jitter=jitter,
