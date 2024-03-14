@@ -15,6 +15,7 @@ v0.9 (XXXX/XX/XX)
 -----------------
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli
 
+- Fix openMP detection during setup (!304)
 - :class:`maicos.Saxs` additionally provides structure factor. (!303)
 - Remove default arguments from core classes (!302)
 - Add an ``AnalaysisCollection`` class to perform multiple analyses on the same

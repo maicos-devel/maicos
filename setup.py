@@ -52,9 +52,9 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
             oldstderr = os.dup(sys.stderr.fileno())
             os.dup2(devnull.fileno(), sys.stderr.fileno())
             objects = cc.compile(
-                [fname], output_dir=tmpdir, extra_postargs=extra_postargs
+                [fname], output_dir=str(tmpdir), extra_postargs=extra_postargs
             )
-            cc.link_executable(objects, tmpdir / "a.out")
+            cc.link_executable(objects, str(tmpdir / "a.out"))
         except Exception:
             return False
         return True
