@@ -38,11 +38,11 @@ class DipoleAngle(AnalysisBase):
     ----------
     results.t : numpy.ndarray
         time (ps).
-    resulst.cos_theta_i : numpy.ndarray
+    results.cos_theta_i : numpy.ndarray
         Average :math:`\cos` between dipole and axis.
-    resulst.cos_theta_ii : numpy.ndarray
+    results.cos_theta_ii : numpy.ndarray
         Average :math:`\cos²` of the dipoles and axis.
-    resulst.cos_theta_ij : numpy.ndarray
+    results.cos_theta_ij : numpy.ndarray
         Product :math:`\cos` of dipole i and cos of dipole j (``i != j``).
 
     References
