@@ -9,7 +9,7 @@ default:
     name: python:$PYTHON_VERSION
 
 variables:
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.12'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 cache:
@@ -25,7 +25,7 @@ cache:
   variables:
     OS_NAME: "linux"
   tags:
-    - linux
+    - saas-linux-medium-amd64
   before_script:
     - *python_setup
 
@@ -43,7 +43,7 @@ cache:
   variables:
     OS_NAME: "windows"
   tags:
-    - windows
+    - saas-windows-medium-amd64
   before_script:
     - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
     - choco install -y python --version=$PYTHON_VERSION --no-progress
