@@ -51,6 +51,7 @@ class DiporderPlanar(ProfilePlanarBase):
         sym: bool = False,
         grouping: str = "residues",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "diporder_planar.dat",
         concfreq: int = 0,
@@ -72,6 +73,7 @@ class DiporderPlanar(ProfilePlanarBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,

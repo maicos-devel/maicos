@@ -80,6 +80,7 @@ class DielectricSpectrum(AnalysisBase):
         atomgroup: mda.AtomGroup,
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = True,
+        pack: bool = True,
         concfreq: int = 0,
         temperature: float = 300,
         output_prefix: str = "",
@@ -95,6 +96,7 @@ class DielectricSpectrum(AnalysisBase):
         super().__init__(
             atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             concfreq=concfreq,
             wrap_compound=wrap_compound,

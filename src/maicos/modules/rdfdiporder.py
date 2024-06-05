@@ -78,6 +78,7 @@ class RDFDiporder(AnalysisBase):
         norm: str = "rdf",
         grouping: str = "residues",
         unwrap: bool = True,
+        pack: bool = True,
         refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
         concfreq: int = 0,
@@ -87,6 +88,7 @@ class RDFDiporder(AnalysisBase):
         super().__init__(
             g1,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             wrap_compound=grouping,

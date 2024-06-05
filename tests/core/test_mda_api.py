@@ -41,6 +41,7 @@ def override_analysis_base():
         super(FrameAnalysis, self).__init__(
             reader.universe.atoms,
             unwrap=False,
+            pack=False,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -56,6 +57,7 @@ def override_analysis_base():
         super(IncompleteAnalysis, self).__init__(
             reader.universe.atoms,
             unwrap=False,
+            pack=False,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",

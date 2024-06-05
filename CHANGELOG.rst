@@ -16,6 +16,7 @@ v0.9 (XXXX/XX/XX)
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrtik Stooß,
 Adyant Agrawal
 
+- Add flag `pack` to turn off the system wrap at every frame (!?)
 - Fix typos in ``DipoleAngle`` (!307)
 - Remove handling of multiple atomgroups in favor of ``AnalysisCollection`` (!301)
 - Fix openMP detection during setup (!304)

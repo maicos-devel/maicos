@@ -55,6 +55,7 @@ class VelocityCylinder(ProfileCylinderBase):
         refgroup: Optional[mda.AtomGroup] = None,
         grouping: str = "atoms",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "velocity.dat",
         concfreq: int = 0,
@@ -73,6 +74,7 @@ class VelocityCylinder(ProfileCylinderBase):
         super(VelocityCylinder, self).__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             jitter=jitter,
             concfreq=concfreq,
             dim=dim,

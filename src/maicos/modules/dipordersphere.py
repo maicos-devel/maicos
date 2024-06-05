@@ -48,6 +48,7 @@ class DiporderSphere(ProfileSphereBase):
         refgroup: Optional[mda.AtomGroup] = None,
         grouping: str = "residues",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "diporder_sphere.dat",
         concfreq: int = 0,
@@ -67,6 +68,7 @@ class DiporderSphere(ProfileSphereBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             jitter=jitter,
             refgroup=refgroup,
             concfreq=concfreq,

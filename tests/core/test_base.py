@@ -18,6 +18,7 @@ import pytest
 from mdacli.libcli import find_cls_members
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.core._get_readers import get_reader_for
+from MDAnalysisTests.core.util import UnWrapUniverse
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
 
@@ -37,6 +38,7 @@ class Output(AnalysisBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -64,6 +66,7 @@ class FileModuleInput(AnalysisBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=refgroup,
             jitter=0.0,
             wrap_compound="atoms",
@@ -78,6 +81,7 @@ class Series(AnalysisBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -107,6 +111,7 @@ class Frame_types(AnalysisBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -128,6 +133,7 @@ class Conclude(AnalysisBase):
         self,
         atomgroup,
         unwrap=False,
+        pack=False,
         refgroup=None,
         jitter=0.0,
         wrap_compound="atoms",
@@ -137,6 +143,7 @@ class Conclude(AnalysisBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             wrap_compound=wrap_compound,
@@ -188,6 +195,7 @@ class Test_AnalysisBase:
         a = AnalysisBase(
             atomgroup=ag,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -205,6 +213,7 @@ class Test_AnalysisBase:
             class_obj = AnalysisBase(
                 atomgroup=ag.select_atoms("name foo"),
                 unwrap=False,
+                pack=True,
                 refgroup=None,
                 jitter=0.0,
                 wrap_compound="atoms",
@@ -344,7 +353,7 @@ class Test_AnalysisBase:
         water's center of mass is not correct. See next test below.
         """
         refgroup = ag.atoms[indices]
-        class_obj = Conclude(ag, refgroup=refgroup, unwrap=True)
+        class_obj = Conclude(ag, refgroup=refgroup, unwrap=True, pack=True)
         class_obj.run(stop=1)
 
         assert_allclose(
@@ -366,6 +375,7 @@ class Test_AnalysisBase:
             concfreq=0,
             refgroup=u.atoms,
             unwrap=True,
+            pack=True,
         )
         ana_obj._setup_frames(ana_obj._trajectory)
         ana_obj._call_prepare()
@@ -383,16 +393,29 @@ class Test_AnalysisBase:
                 atomgroup=ag,
                 refgroup=empty_ag,
                 unwrap=False,
+                pack=True,
                 jitter=0.0,
                 wrap_compound="atoms",
                 concfreq=0,
             )
             class_obj._prepare()
 
-    def test_unwrap(self, ag):
-        """Unwrap test for logic only; Actual test in TestProfilePlanarBase."""
-        class_obj = Conclude(ag, unwrap=True)
+    @pytest.mark.parametrize(
+        "unwrap, pack", [(True, True), (True, False), (False, True), (False, False)]
+    )
+    def test_unwrap_pack(self, unwrap, pack):
+        """Test the pack and unwrap flag."""
+        ag = UnWrapUniverse().atoms
+        class_obj = Conclude(ag, unwrap=unwrap, pack=pack, wrap_compound="residues")
         class_obj.run(stop=1)
+
+        ag_ref = UnWrapUniverse().atoms
+        if unwrap:
+            ag_ref.unwrap(compound="residues")
+        if pack:
+            ag_ref.wrap(compound="residues")
+
+        assert_allclose(ag.positions, ag_ref.positions)
 
     @pytest.mark.parametrize(
         "data, result", [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)]
@@ -418,6 +441,7 @@ class Test_AnalysisBase:
         ana_obj = AnalysisBase(
             atomgroup=ag,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -445,6 +469,7 @@ class Test_AnalysisBase:
         ana_obj = AnalysisBase(
             atomgroup=ag,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -468,6 +493,7 @@ class Test_AnalysisBase:
         ana_obj = AnalysisBase(
             atomgroup=ag,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -492,6 +518,7 @@ class Test_AnalysisBase:
         profile = AnalysisBase(
             atomgroup=ag,
             unwrap=True,
+            pack=True,
             wrap_compound="atoms",
             refgroup=None,
             jitter=0.0,
@@ -531,6 +558,22 @@ class Test_AnalysisBase:
             class_obj = AnalysisBase(
                 u_no_cell.atoms,
                 unwrap=True,
+                pack=True,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
+            class_obj._prepare()
+
+    def test_no_dimensions_pack_error(self, u_no_cell):
+        """Test that an error is raised if `unwrap=True` but no cell is present."""
+        match = "Universe does not have `dimensions` and can't be packed!"
+        with pytest.raises(ValueError, match=match):
+            class_obj = AnalysisBase(
+                u_no_cell.atoms,
+                unwrap=False,
+                pack=True,
                 refgroup=None,
                 jitter=0.0,
                 wrap_compound="atoms",
@@ -580,6 +623,7 @@ class TestAnalysisCollection:
                 super().__init__(
                     atomgroup=atomgroup,
                     unwrap=False,
+                    pack=False,
                     refgroup=None,
                     jitter=0.0,
                     wrap_compound="atoms",
@@ -644,6 +688,7 @@ class TestAnalysisCollection:
         ana_2 = AnalysisBase(
             atomgroup=u.atoms,
             unwrap=False,
+            pack=False,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",

@@ -54,6 +54,7 @@ class VelocityPlanar(ProfilePlanarBase):
         sym: bool = False,
         grouping: str = "atoms",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "velocity.dat",
         concfreq: int = 0,
@@ -72,6 +73,7 @@ class VelocityPlanar(ProfilePlanarBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             jitter=jitter,
             concfreq=concfreq,
             dim=dim,
