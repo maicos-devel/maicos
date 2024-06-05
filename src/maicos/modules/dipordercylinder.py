@@ -52,6 +52,7 @@ class DiporderCylinder(ProfileCylinderBase):
         refgroup: Optional[mda.AtomGroup] = None,
         grouping: str = "residues",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "diporder_cylinder.dat",
         concfreq: int = 0,
@@ -76,6 +77,7 @@ class DiporderCylinder(ProfileCylinderBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,

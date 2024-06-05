@@ -56,6 +56,7 @@ class KineticEnergy(AnalysisBase):
         self,
         atomgroup: mda.AtomGroup,
         unwrap: bool = False,
+        pack: bool = True,
         refgroup: Optional[mda.AtomGroup] = None,
         jitter: float = 0.0,
         concfreq: int = 0,
@@ -68,6 +69,7 @@ class KineticEnergy(AnalysisBase):
         super().__init__(
             atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,

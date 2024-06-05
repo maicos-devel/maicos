@@ -95,6 +95,7 @@ class DielectricPlanar(PlanarBase):
         is_3d: bool = False,
         sym: bool = False,
         unwrap: bool = True,
+        pack: bool = True,
         temperature: float = 300,
         output_prefix: str = "eps",
         concfreq: int = 0,
@@ -113,6 +114,7 @@ class DielectricPlanar(PlanarBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             dim=dim,

@@ -46,6 +46,7 @@ class PlanarClass(PlanarBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             jitter=0.0,
             wrap_compound="atoms",
             concfreq=0,
@@ -326,6 +327,7 @@ class TestPlanarBaseChilds:
         """Test check attr change."""
         params = dict(
             unwrap=False,
+            pack=True,
             jitter=0.0,
             concfreq=0,
             dim=2,
@@ -433,6 +435,7 @@ class TestProfilePlanarBase:
             sym=False,
             grouping="atoms",
             unwrap=False,
+            pack=True,
             bin_method="com",
             concfreq=0,
             output="profile.dat",

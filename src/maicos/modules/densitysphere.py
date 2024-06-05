@@ -48,6 +48,7 @@ class DensitySphere(ProfileSphereBase):
         refgroup: Optional[mda.AtomGroup] = None,
         grouping: str = "atoms",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "density.dat",
         concfreq: int = 0,
@@ -57,6 +58,7 @@ class DensitySphere(ProfileSphereBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,

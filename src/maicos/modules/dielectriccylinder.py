@@ -85,6 +85,7 @@ class DielectricCylinder(CylinderBase):
         zmax: Optional[float] = None,
         vcutwidth: float = 0.1,
         unwrap: bool = True,
+        pack: bool = True,
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -101,6 +102,7 @@ class DielectricCylinder(CylinderBase):
         super().__init__(
             atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             concfreq=concfreq,

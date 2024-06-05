@@ -60,6 +60,7 @@ class DiporderStructureFactor(AnalysisBase):
         grouping: str = "molecules",
         refgroup: Optional[mda.AtomGroup] = None,
         unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
         qmin: float = 0,
@@ -71,6 +72,7 @@ class DiporderStructureFactor(AnalysisBase):
         super().__init__(
             atomgroup,
             unwrap=unwrap,
+            pack=pack,
             refgroup=refgroup,
             jitter=jitter,
             wrap_compound=grouping,

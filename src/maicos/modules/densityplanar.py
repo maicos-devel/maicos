@@ -56,6 +56,7 @@ class DensityPlanar(ProfilePlanarBase):
         sym: bool = False,
         grouping: str = "atoms",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "density.dat",
         concfreq: int = 0,
@@ -65,6 +66,7 @@ class DensityPlanar(ProfilePlanarBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             jitter=jitter,
             concfreq=concfreq,
             dim=dim,

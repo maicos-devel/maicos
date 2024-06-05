@@ -144,6 +144,12 @@ DOC_DICT = dict(
         currently supported in MDAnalysis. In this case, you need to provide unwrapped
         trajectory files directly, and disable unwrap. Trajectories can be unwrapped,
         for example, using the ``trjconv`` command of GROMACS.
+    pack : bool
+        When :obj:`True`, molecules are put back into the unit cell. This is required
+        because MAICoS only takes into account molecules that are inside the unit cell.
+
+        If the input contains molecules that are already packed, speed up the
+        calculation by disabling packing with ``pack=False``.
     refgroup : MDAnalysis.core.groups.AtomGroup
         Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation.
         If ``refgroup`` is provided, the calculation is performed relative to the center

@@ -72,6 +72,7 @@ class DielectricSphere(SphereBase):
         rmin: float = 0,
         rmax: Optional[float] = None,
         unwrap: bool = True,
+        pack: bool = True,
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -92,6 +93,7 @@ class DielectricSphere(SphereBase):
             rmax=rmax,
             bin_width=bin_width,
             unwrap=unwrap,
+            pack=pack,
             wrap_compound=self.comp,
         )
         self.output_prefix = output_prefix

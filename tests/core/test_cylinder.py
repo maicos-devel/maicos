@@ -49,6 +49,7 @@ class CylinderClass(CylinderBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -315,6 +316,7 @@ class TestCylinderBaseChilds:
         params = dict(
             unwrap=False,
             refgroup=None,
+            pack=True,
             jitter=0.0,
             concfreq=0,
             dim=2,
@@ -440,6 +442,7 @@ class TestProfileCylinderBase:
             refgroup=None,
             grouping="atoms",
             unwrap=False,
+            pack=True,
             bin_method="com",
             concfreq=0,
             output="profile.dat",
@@ -549,6 +552,7 @@ class TestProfileCylinderBase:
 
         params = dict(
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",

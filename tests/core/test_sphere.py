@@ -46,6 +46,7 @@ class SphereClass(SphereBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -276,6 +277,7 @@ class TestSphereBase(object):
         ana_obj = SphereBase(
             ag.atoms,
             unwrap=False,
+            pack=True,
             refgroup=None,
             jitter=0.0,
             wrap_compound="atoms",
@@ -311,6 +313,7 @@ class TestSphereBaseChilds:
         """Test check attr change."""
         params = dict(
             unwrap=False,
+            pack=True,
             jitter=0.0,
             concfreq=0,
             bin_width=1,
@@ -427,6 +430,7 @@ class TestProfileSphereBase:
             refgroup=None,
             grouping="atoms",
             unwrap=False,
+            pack=True,
             bin_method="com",
             concfreq=0,
             output="profile.dat",
@@ -506,6 +510,7 @@ class TestProfileSphereBase:
             bin_width=1,
             rmax=2,
             unwrap=unwrap,
+            pack=True,
             bin_method="com",
             normalization="none",
             grouping="molecules",

@@ -204,6 +204,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...             atomgroup=atomgroup,
     ...             refgroup=None,
     ...             unwrap=False,
+    ...             pack=True,
     ...             jitter=0.0,
     ...             wrap_compound="atoms",
     ...             concfreq=concfreq,
@@ -277,6 +278,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self,
         atomgroup: mda.AtomGroup,
         unwrap: bool,
+        pack: bool,
         refgroup: Union[None, mda.AtomGroup],
         jitter: float,
         concfreq: int,
@@ -292,6 +294,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._trajectory = self._universe.trajectory
         self.refgroup = refgroup
         self.unwrap = unwrap
+        self.pack = pack
         self.jitter = jitter
         self.concfreq = concfreq
         if wrap_compound not in [
@@ -314,6 +317,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             raise ValueError(
                 "Universe does not have `dimensions` and can't be unwrapped!"
             )
+
+        if self.pack and self._universe.dimensions is None:
+            raise ValueError("Universe does not have `dimensions` and can't be packed!")
 
         if self.unwrap and self.wrap_compound == "atoms":
             logger.warning(
@@ -392,7 +398,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         # If universe has a cell we wrap the compound into the primary unit cell to
         # use all compounds for the analysis.
-        if self._universe.dimensions is not None:
+        if self.pack and self._universe.dimensions is not None:
             self._universe.atoms.wrap(compound=self.wrap_compound)
 
         if self.jitter != 0.0:

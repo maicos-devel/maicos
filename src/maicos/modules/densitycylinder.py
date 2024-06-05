@@ -52,6 +52,7 @@ class DensityCylinder(ProfileCylinderBase):
         refgroup: Optional[mda.AtomGroup] = None,
         grouping: str = "atoms",
         unwrap: bool = True,
+        pack: bool = True,
         bin_method: str = "com",
         output: str = "density.dat",
         concfreq: int = 0,
@@ -61,6 +62,7 @@ class DensityCylinder(ProfileCylinderBase):
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
+            pack=pack,
             jitter=jitter,
             concfreq=concfreq,
             dim=dim,
