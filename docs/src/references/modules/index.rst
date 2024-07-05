@@ -12,29 +12,8 @@ Discord_.
 .. _`Gitlab`: https://gitlab.com/maicos-devel/maicos/-/issues
 .. _`Discord`: https://discord.gg/mnrEQWVAed
 
-
-.. modules are sorted in alphabetical order
-
 .. toctree::
    :maxdepth: 1
+   :glob:
 
-   densitycylinder
-   densityplanar
-   densitysphere
-   dielectriccylinder
-   dielectricplanar
-   dielectricspectrum
-   dielectricsphere
-   dipoleangle
-   dipordercylinder
-   diporderplanar
-   dipordersphere
-   diporderstructurefactor
-   kineticenergy
-   pdfcylinder
-   pdfplanar
-   rdfdiporder
-   saxs
-   temperatureplanar
-   velocitycylinder
-   velocityplanar
+   ./*

@@ -16,6 +16,7 @@ v0.9 (XXXX/XX/XX)
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrtik Stooß,
 Adyant Agrawal
 
+- Use glob for find modules in docs (!312)
 - Distributing tests across multiple CPUs (!309)
 - Use Python 3.11 as default in CI (!310)
 - Add flag `pack` to turn off the system wrap at every frame (!308)
