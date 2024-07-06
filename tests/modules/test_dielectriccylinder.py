@@ -13,6 +13,7 @@ from pathlib import Path
 import MDAnalysis as mda
 import numpy as np
 import pytest
+import sympy as sp
 from numpy.testing import assert_allclose
 
 from maicos import DielectricCylinder
@@ -22,10 +23,12 @@ sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
     DIPOLE_GRO,
     DIPOLE_ITP,
+    WATER_2F_TRR_NPT,
     WATER_GRO_NPT,
     WATER_TPR_NPT,
     WATER_TRR_NPT,
 )
+from util import error_prop  # noqa: E402
 
 
 class TestDielectricCylinder(object):
@@ -69,6 +72,12 @@ class TestDielectricCylinder(object):
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
+        return u.atoms
+
+    @pytest.fixture()
+    def ag_two_frames(self):
+        """Import MDA universe, single frame."""
+        u = mda.Universe(WATER_TPR_NPT, WATER_2F_TRR_NPT)
         return u.atoms
 
     @pytest.mark.parametrize("selection", (1, 2))
@@ -221,3 +230,54 @@ class TestDielectricCylinder(object):
             assert result == (
                 warning in "".join([rec.message for rec in caplog.records])
             )
+
+    def test_error_propagation(self, ag_two_frames):
+        """Test the analytic error propagation"""
+        eps = DielectricCylinder(ag_two_frames).run()
+
+        # set values and error for testing error propagation
+        eps.means.mM_z = 0.4
+        eps.sems.mM_z = 0.2
+
+        eps.means.m_z = 1.3
+        eps.sems.m_z = 0.6
+
+        eps.means.M_z = 0.3
+        eps.sems.M_z = 0.1
+
+        eps.means.mM_r = 0.4
+        eps.sems.mM_r = 0.2
+
+        eps.means.m_r = 1.3
+        eps.sems.m_r = 0.6
+
+        eps.means.M_r = 0.3
+        eps.sems.M_r = 0.1
+
+        # rerun conclude function with changed values
+        eps._conclude()
+
+        # do sympy errors
+        mM_z, m_z, M_z = sp.symbols("mM_z m_z M_z")
+        eps_z = (mM_z - m_z * M_z) * eps.pref
+
+        deps_z_sympy = error_prop(
+            eps_z,
+            [mM_z, m_z, M_z],
+            [eps.sems.mM_z, eps.sems.m_z, eps.sems.M_z],
+        )(eps.means.mM_z, eps.means.m_z, eps.means.M_z)
+
+        assert_allclose(deps_z_sympy, eps.results.deps_z)
+
+        # same for radial
+        mM_r, m_r, M_r = sp.symbols("mM_r, m_r, M_r")
+        cov_r_sympy = mM_r - m_r * M_r
+
+        dcov_r_sympy = error_prop(
+            cov_r_sympy, [mM_r, m_r, M_r], [eps.sems.mM_r, eps.sems.m_r, eps.sems.M_r]
+        )(eps.means.mM_r, eps.means.m_r, eps.means.M_r)
+
+        deps_r_sympy = (
+            2 * np.pi * eps._obs.L * eps.pref * eps.results.bin_pos * dcov_r_sympy
+        )
+        assert_allclose(deps_r_sympy, eps.results.deps_r)

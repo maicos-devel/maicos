@@ -327,7 +327,7 @@ class TestDielectricPlanar(object):
         eps.sems.M_par = np.array([[0.7, 0.1]])
 
         eps.means.cmM_par = np.array([0.4])
-        eps.means.cM_par = np.array([[5, 5]])
+        eps.means.cM_par = np.array([5, 5])
 
         # rerun conclude function with changed values
         eps._conclude()
@@ -354,4 +354,4 @@ class TestDielectricPlanar(object):
             eps.means.m_par[0, 1],
         )
 
-        assert_allclose(deps_par[0], deps_par_sympy)
+        assert_allclose(deps_par, deps_par_sympy)
