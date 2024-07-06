@@ -206,6 +206,8 @@ class DielectricCylinder(CylinderBase):
         # Convert from ~e^2/m to ~base units
         pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
 
+        self.pref = pref
+
         if not self.single:
             # A factor of 2 pi L cancels out in the final expression because here M_z is
             # the total dipole moment in z-direction, not the radial integral of the
@@ -213,12 +215,12 @@ class DielectricCylinder(CylinderBase):
             cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
             cov_r = self.means.mM_r - self.means.m_r * self.means.M_r
 
-            dcov_z = 0.5 * np.sqrt(
+            dcov_z = np.sqrt(
                 self.sems.mM_z**2
                 + self.sems.m_z**2 * self.means.M_z**2
                 + self.means.m_z**2 * self.sems.M_z**2
             )
-            dcov_r = 0.5 * np.sqrt(
+            dcov_r = np.sqrt(
                 self.sems.mM_r**2
                 + self.sems.m_r**2 * self.means.M_r**2
                 + self.means.m_r**2 * self.sems.M_r**2

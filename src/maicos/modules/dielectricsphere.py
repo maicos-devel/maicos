@@ -152,9 +152,10 @@ class DielectricSphere(SphereBase):
         # Convert from ~e^2/m to ~base units
         pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
 
+        self.pref = pref
         cov_rad = self.means.mM_r - self.means.m_r * self.means.M_r
 
-        dcov_rad = 0.5 * np.sqrt(
+        dcov_rad = np.sqrt(
             self.sems.mM_r**2
             + self.sems.m_r**2 * self.means.M_r**2
             + self.means.m_r**2 * self.sems.M_r**2
