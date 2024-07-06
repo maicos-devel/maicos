@@ -329,8 +329,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             )
             self.unwrap = False
 
-        if self.refgroup is not None and self.refgroup.n_atoms == 0:
-            raise ValueError("The provided `refgroup` does not contain any atoms.")
+        if self.refgroup is not None:
+            if self.refgroup.n_atoms == 0:
+                raise ValueError("The provided `refgroup` does not contain any atoms.")
+            if not self.pack:
+                raise ValueError(
+                    "Disabling `pack` with a `refgroup` is not allowed. Shifting "
+                    "atoms probably outside of the primary cell withput packing them "
+                    "back may lead to sever problems during the analysis!"
+                )
 
         self.module_has_save = callable(getattr(self.__class__, "save", None))
         super().__init__(trajectory=self._trajectory)

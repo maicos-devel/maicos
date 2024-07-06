@@ -581,6 +581,21 @@ class Test_AnalysisBase:
             )
             class_obj._prepare()
 
+    def test_refgroup_pack_error(self, ag_single_frame):
+        """Test that an error is raised if a refgroup is present an pack is disabled."""
+        match = "Disabling `pack` with a `refgroup` is not allowed."
+        with pytest.raises(ValueError, match=match):
+            class_obj = AnalysisBase(
+                ag_single_frame,
+                unwrap=False,
+                pack=False,
+                refgroup=ag_single_frame,
+                jitter=0.0,
+                wrap_compound="atoms",
+                concfreq=0,
+            )
+            class_obj._prepare()
+
     def test_no_dimensions_run(self, u_no_cell):
         """Test that an analysis can be run for a universe without cell information."""
         class_obj = Conclude(u_no_cell.atoms)
