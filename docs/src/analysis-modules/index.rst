@@ -1,6 +1,6 @@
 .. _userdoc-analysis-modules:
 
-Analysis Modules
+Analysis modules
 ################
 
 This is a list of all analysis modules provided by MAICoS. Note that we do not have an

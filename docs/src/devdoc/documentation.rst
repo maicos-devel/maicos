@@ -23,7 +23,7 @@ Structure
 ---------
 
 Most of the content of the documentation is written in ``.rst`` files located within
-``docs/src/``. The content in the :ref:`userdoc-references` section is directly
+``docs/src/``. The content in the :ref:`userdoc_api-documentation` section is directly
 generated from the documentation string of the source code located in ``src/maicos``
 thanks to `Sphinx`_ and `Autodoc`_.
 

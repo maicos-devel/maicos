@@ -1,7 +1,7 @@
-.. _userdoc-explanations:
+.. _userdoc-concepts-explanations:
 
-Explanations
-============
+Concepts & explanations
+=======================
 
 This section provides the theory behind some of the most complex analysis modules and
 explains the general design of MAICoS. Its purpose is to provide more clarity and
