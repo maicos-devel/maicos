@@ -237,12 +237,13 @@ class DielectricPlanar(PlanarBase):
     def _conclude(self) -> None:
         super()._conclude()
 
-        pref = 1 / scipy.constants.epsilon_0
-        pref /= scipy.constants.Boltzmann * self.temperature
+        self._pref = 1 / scipy.constants.epsilon_0
+        self._pref /= scipy.constants.Boltzmann * self.temperature
         # Convert from ~e^2/m to ~base units
-        pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
+        self._pref /= (
+            scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
+        )
 
-        self.results.pref = pref
         self.results.V = self.means.bin_volume.sum()
 
         # Perpendicular component
@@ -264,20 +265,22 @@ class DielectricPlanar(PlanarBase):
         cov_perp_coll = self.means.cmM_perp - self.means.m_perp * self.means.cM_perp
 
         if not self.is_3d:
-            self.results.eps_perp = -pref * cov_perp
-            self.results.eps_perp_self = -pref * cov_perp_self
-            self.results.eps_perp_coll = -pref * cov_perp_coll
-            self.results.deps_perp = pref * dcov_perp
+            self.results.eps_perp = -self._pref * cov_perp
+            self.results.eps_perp_self = -self._pref * cov_perp_self
+            self.results.eps_perp_coll = -self._pref * cov_perp_coll
+            self.results.deps_perp = self._pref * dcov_perp
 
         else:
-            self.results.eps_perp = -cov_perp / (pref**-1 + var_perp / self.results.V)
-            self.results.deps_perp = pref * dcov_perp
-
-            self.results.eps_perp_self = (-pref * cov_perp_self) / (
-                1 + pref / self.results.V * var_perp
+            self.results.eps_perp = -cov_perp / (
+                self._pref**-1 + var_perp / self.results.V
             )
-            self.results.eps_perp_coll = (-pref * cov_perp_coll) / (
-                1 + pref / self.results.V * var_perp
+            self.results.deps_perp = self._pref * dcov_perp
+
+            self.results.eps_perp_self = (-self._pref * cov_perp_self) / (
+                1 + self._pref / self.results.V * var_perp
+            )
+            self.results.eps_perp_coll = (-self._pref * cov_perp_coll) / (
+                1 + self._pref / self.results.V * var_perp
             )
 
         # Parallel component
@@ -305,10 +308,10 @@ class DielectricPlanar(PlanarBase):
             self.means.cmM_par - (self.means.m_par * self.means.cM_par).sum(axis=1)
         )
 
-        self.results.eps_par = pref * cov_par
-        self.results.deps_par = pref * dcov_par
-        self.results.eps_par_self = pref * cov_par_self
-        self.results.eps_par_coll = pref * cov_par_coll
+        self.results.eps_par = self._pref * cov_par
+        self.results.deps_par = self._pref * dcov_par
+        self.results.eps_par_self = self._pref * cov_par_self
+        self.results.eps_par_coll = self._pref * cov_par_coll
 
         if self.sym:
             symmetrize(self.results.eps_perp, axis=0, inplace=True)

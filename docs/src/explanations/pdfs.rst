@@ -103,7 +103,7 @@ For discretized calculation we count the number of atoms per ring as illustrated
 
 
 The sketch shows an atom :math:`i` from group :math:`g_1`  at the origin in blue.
-Around the atom a ring volume with average distance :math:`r` from atom `i`
+Around the atom a ring volume with average distance :math:`r` from atom :math:`i`
 is shaded in light red.
 Atoms :math:`j` from group :math:`g_2` are counted in this volume.
 

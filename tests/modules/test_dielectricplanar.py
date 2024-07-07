@@ -204,11 +204,11 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(ag_two_frames).run()
 
         cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
-        assert_equal(eps.results.eps_perp, -eps.results.pref * cov_perp)
+        assert_equal(eps.results.eps_perp, -eps._pref * cov_perp)
 
         cov_par = 0.5 * (eps.means.mM_par - np.dot(eps.means.m_par, eps.means.M_par))
 
-        assert_equal(eps.results.eps_par, eps.results.pref * cov_par)
+        assert_equal(eps.results.eps_par, eps._pref * cov_par)
 
     def test_unsorted_ags(self, ag_two_frames):
         """Tests for inputs that don't have ordered atoms (i.e. LAMMPS)."""
@@ -302,7 +302,7 @@ class TestDielectricPlanar(object):
         deps_perp = eps.results.deps_perp
 
         m_mM, m_M, m_m = sp.symbols("m_mM m_M m_m")
-        eps_perp = 1 - (m_mM - m_m * m_M) * eps.results.pref
+        eps_perp = 1 - (m_mM - m_m * m_M) * eps._pref
 
         deps_perp_sympy = error_prop(
             eps_perp,
@@ -334,7 +334,7 @@ class TestDielectricPlanar(object):
         deps_par = eps.results.deps_par
 
         m_mM, m_M1, m_m1, m_M2, m_m2 = sp.symbols("m_mM m_M1 m_m1 m_M2 m_m2")
-        eps_par = 0.5 * (m_mM - (m_m1 * m_M1 + m_m2 * m_M2)) * eps.results.pref
+        eps_par = 0.5 * (m_mM - (m_m1 * m_M1 + m_m2 * m_M2)) * eps._pref
 
         deps_par_sympy = error_prop(
             eps_par,

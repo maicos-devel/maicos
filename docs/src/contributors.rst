@@ -15,7 +15,7 @@ History
 
 MAICoS was first developed in `Roland Netz`_'s group at the Freie University of
 Berlin by `Alexander Schlaich`_ and `Philip Loche`_, and is now mostly developed
-and maintained at the `Institute for Computational Physics`.
+and maintained at the *Institute for Computational Physics*.
 
 .. _Roland Netz: https://www.physik.fu-berlin.de/en/einrichtungen/ag/ag-netz/index.html
 .. _Philip Loche: https://people.epfl.ch/philip.loche

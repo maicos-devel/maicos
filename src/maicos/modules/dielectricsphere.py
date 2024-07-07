@@ -147,12 +147,13 @@ class DielectricSphere(SphereBase):
     def _conclude(self) -> None:
         super()._conclude()
 
-        pref = 1 / scipy.constants.epsilon_0
-        pref /= scipy.constants.Boltzmann * self.temperature
+        self._pref = 1 / scipy.constants.epsilon_0
+        self._pref /= scipy.constants.Boltzmann * self.temperature
         # Convert from ~e^2/m to ~base units
-        pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
+        self._pref /= (
+            scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
+        )
 
-        self.pref = pref
         cov_rad = self.means.mM_r - self.means.m_r * self.means.M_r
 
         dcov_rad = np.sqrt(
@@ -162,9 +163,11 @@ class DielectricSphere(SphereBase):
         )
 
         self.results.eps_rad = 1 - (
-            4 * np.pi * self.results.bin_pos**2 * pref * cov_rad
+            4 * np.pi * self.results.bin_pos**2 * self._pref * cov_rad
         )
-        self.results.deps_rad = 4 * np.pi * self.results.bin_pos**2 * pref * dcov_rad
+        self.results.deps_rad = (
+            4 * np.pi * self.results.bin_pos**2 * self._pref * dcov_rad
+        )
 
     @render_docs
     def save(self) -> None:

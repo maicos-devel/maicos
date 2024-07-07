@@ -14,6 +14,9 @@ from MDAnalysisTests.analysis.test_base import (
     TIMES_ERR,
     FrameAnalysis,
     IncompleteAnalysis,
+    Test_Results,
+    test_frame_bool_fail,
+    test_verbose,
 )
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_almost_equal, assert_equal
@@ -22,9 +25,9 @@ from maicos.core import AnalysisBase
 
 
 # Remove specific functions/classes we don't want or can test because of a different API
-del Test_Results  # noqa: F821
-del test_verbose  # noqa: F821
-del test_frame_bool_fail  # noqa: F821
+del Test_Results
+del test_verbose
+del test_frame_bool_fail
 
 
 @pytest.fixture(autouse=True)
@@ -150,7 +153,7 @@ def test_frame_slice(run_kwargs, frames, u_xtc):
     assert_equal(an.frames, frames, err_msg=FRAMES_ERR)
 
 
-def test_frame_bool_fail(u_xtc):
+def test_boolean_frame_fail(u_xtc):
     """Test failure when providing bolean frames argument."""
     an = FrameAnalysis(u_xtc.trajectory)
     frames = [True, True, False]
