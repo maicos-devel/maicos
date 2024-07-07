@@ -86,9 +86,9 @@ class TestVelocityPlanar(ReferenceAtomGroups):
 
         All 9 combinations of dim and vdim are tested.
         """
-        myvel = np.zeros(3)
+        myvel = [0.0, 0.0, 0.0]
         myvel[dim] += 1
-        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=tuple(myvel))
         vel = VelocityPlanar(
             ag_v, vdim=vdim, bin_width=ag_v.dimensions[dim], grouping="molecules"
         ).run()
@@ -112,9 +112,9 @@ class TestVelocityPlanar(ReferenceAtomGroups):
 
         All 9 combinations of dim and vdim are tested.
         """
-        myvel = np.zeros(3)
+        myvel = [0.0, 0.0, 0.0]
         myvel[dim] += 1
-        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=tuple(myvel))
         vel = VelocityPlanar(
             ag_v, vdim=vdim, bin_width=ag_v.dimensions[dim], grouping="atoms"
         ).run()
@@ -138,9 +138,9 @@ class TestVelocityPlanar(ReferenceAtomGroups):
 
         All 9 combinations of dim and vdim are tested.
         """
-        myvel = np.zeros(3)
+        myvel = [0.0, 0.0, 0.0]
         myvel[dim] += 1
-        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=tuple(myvel))
         vol = np.prod(ag_v.dimensions[:3])
         vel = VelocityPlanar(
             ag_v, vdim=vdim, bin_width=ag_v.dimensions[dim], grouping="atoms", flux=True

@@ -16,6 +16,7 @@ v0.9 (XXXX/XX/XX)
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrtik Stooß,
 Adyant Agrawal
 
+- Improve code quality by extending linting checks (!313)
 - Added tests of the analytical error propagation (!292)
 - Raise an error if ``pack`` is ``True`` and ``refgroup`` is not ``None`` (!311)
 - Use glob for find modules in docs (!312)

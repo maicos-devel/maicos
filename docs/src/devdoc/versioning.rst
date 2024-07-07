@@ -1,7 +1,7 @@
 Version information
 ===================
 
-The version information in `maicos.__version__` indicates the release of MAICoS using
+The version information in ``maicos.__version__`` indicates the release of MAICoS using
 `semantic versioning`_.
 
 In brief:

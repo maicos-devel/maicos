@@ -196,7 +196,7 @@ class TestDielectricSphere(object):
         cov_rad_sympy = mM_r - m_r * M_r
 
         eps_rad_sympy = 1 - (
-            4 * np.pi * eps.results.bin_pos[0] ** 2 * eps.pref * cov_rad_sympy
+            4 * np.pi * eps.results.bin_pos[0] ** 2 * eps._pref * cov_rad_sympy
         )
 
         deps_rad_sympy = error_prop(

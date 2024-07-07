@@ -89,7 +89,7 @@ class TestDiporderPlanar(ReferenceAtomGroups):
     )
     def test_DiporderPlanar_3_water_0(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 0."""
-        ag = line_of_water_molecules(n_molecules=3, angle_deg=0)
+        ag = line_of_water_molecules(n_molecules=3, angle_deg=0.0)
         dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
         assert_allclose(np.mean(dip.results.profile.flatten()), output, atol=1e-3)
 
@@ -98,6 +98,6 @@ class TestDiporderPlanar(ReferenceAtomGroups):
     )
     def test_DiporderPlanar_3_water_90(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 90."""
-        ag = line_of_water_molecules(n_molecules=3, angle_deg=90)
+        ag = line_of_water_molecules(n_molecules=3, angle_deg=90.0)
         dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
         assert_allclose(dip.results.profile.mean(), output, atol=1e-6)

@@ -56,7 +56,7 @@ class TestDipoleAngle(ReferenceAtomGroups):
         saved_data = np.loadtxt("dipangle.dat")
         assert_allclose(saved_data[1], -0.0821, rtol=1e-3)
 
-    @pytest.mark.parametrize("angle", (0, 30, 60, 90, 180, 272.15))
+    @pytest.mark.parametrize("angle", (0.0, 30.0, 60.0, 90.0, 180.0, 272.15))
     def test_orientation_single_molecule_cos(self, angle):
         """Test DipoleAngle module on a single molecule.
 
@@ -73,7 +73,7 @@ class TestDipoleAngle(ReferenceAtomGroups):
             atol=1e-16,
         )
 
-    @pytest.mark.parametrize("angle", (0, 30, 60, 90, 180, 272.15))
+    @pytest.mark.parametrize("angle", (0.0, 30.0, 60.0, 90.0, 180.0, 272.15))
     def test_orientation_single_molecule_cos2(self, angle):
         """Test DipoleAngle module on a single molecule.
 

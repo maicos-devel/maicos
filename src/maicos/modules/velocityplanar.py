@@ -49,7 +49,7 @@ class VelocityPlanar(ProfilePlanarBase):
         dim: int = 2,
         zmin: Optional[float] = None,
         zmax: Optional[float] = None,
-        bin_width: int = 1,
+        bin_width: float = 1.0,
         refgroup: Optional[mda.AtomGroup] = None,
         sym: bool = False,
         grouping: str = "atoms",

@@ -45,10 +45,10 @@ def error_prop(f, variables, errors):
 
 def line_of_water_molecules(
     n_molecules: int = 1,
-    distance: float = 10,
-    angle_deg: Union[float, List[float]] = 0,
-    axis_rotation: Tuple[float] = (0, 1, 0),
-    myvel: Tuple[float] = (0, 0, 0),
+    distance: float = 10.0,
+    angle_deg: Union[float, List[float]] = 0.0,
+    axis_rotation: Tuple[float, float, float] = (0.0, 1.0, 0.0),
+    myvel: Tuple[float, float, float] = (0.0, 0.0, 0.0),
 ):
     """
     Create an MDAnalysis universe with regularly spaced molecules.
@@ -76,14 +76,22 @@ def line_of_water_molecules(
 
     # set the orientation of the molecules
     rotations = []
-    if type(angle_deg) in [float, int]:
-        angle_deg = n_molecules * [angle_deg]
-    elif len(angle_deg) != n_molecules:
+    if type(angle_deg) is float:
+        angle_deg_list = n_molecules * [angle_deg]
+    elif type(angle_deg) is list:
+        angle_deg_list = angle_deg
+    else:
         raise ValueError(
-            f"Length of {len(angle_deg)} is not the same a n_molecules {n_molecules}."
+            f"type of angle_deg ({type(angle_deg)}) is neither a list or float!"
         )
 
-    for _n, angle in zip(range(n_molecules), angle_deg):
+    if len(angle_deg_list) != n_molecules:
+        raise ValueError(
+            f"Length of {len(angle_deg_list)} is not the same a n_molecules "
+            f"{n_molecules}."
+        )
+
+    for _n, angle in zip(range(n_molecules), angle_deg_list):
         rotations.append([angle, axis_rotation])
 
     # multiply molecules and apply translation and rotations

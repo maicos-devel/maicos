@@ -131,9 +131,9 @@ class TestPDFCylinder(object):
 
     def test_count_z(self):
         """Test whether the PDF molecule counts in a line are correct."""
-        g2 = line_of_water_molecules(5, 1)
+        g2 = line_of_water_molecules(n_molecules=5, distance=1.0)
         g2.translate([0, 0, 0.5])
-        g1 = line_of_water_molecules(1, 1)
+        g1 = line_of_water_molecules(n_molecules=1, distance=1.0)
         # Merge the two groups into one universe
         g = mda.Merge(g1, g2)
         g.dimensions = (20, 20, 20, 90, 90, 90)

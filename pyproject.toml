@@ -60,7 +60,6 @@ dependencies = [
     "scipy>=1.0.0",
     "tqdm>=4.60.0",
     "typing_extensions",
-    "sympy",
 ]
 dynamic = ["version"]
 
@@ -95,7 +94,7 @@ known_first_party = "maicos"
 skip = "src/maicos/_version.py"
 
 [tool.black]
-exclude = "src/maicos/_version.py"
+exclude = '(?x)(src/maicos/_version.py | docs/src/examples)'
 
 [tool.pytest.ini_options]
 testpaths = "tests"
@@ -112,6 +111,10 @@ versionfile_build = "maicos/_version.py"
 tag_prefix = "v"
 
 [tool.mypy]
+exclude = [
+    "docs/src/examples"
+]
+follow_imports = 'skip'
 ignore_missing_imports = true
 
 [tool.coverage.paths]

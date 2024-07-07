@@ -165,7 +165,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     Example
     -------
     To write your own analysis module you can use the example given below. As with all
-    MAICoS modules, this inherits from the :class:`maicos.core.base.AnalysisBase` class.
+    MAICoS modules, this inherits from the :class:`AnalysisBase
+    <maicos.core.base.AnalysisBase>` class.
 
     The example will calculate the average box volume and stores the result within the
     ``result`` object of the class.

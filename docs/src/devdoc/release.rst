@@ -27,7 +27,7 @@ Versioneer (optional)
 
     python3 -m versioneer install --vendor
 
-   Revert the changes in `src/maicos/__init__.py`
+   Revert the changes in ``src/maicos/__init__.py``
 
 6. Commit changes
 

@@ -70,7 +70,7 @@ class TestKineticEnergy(ReferenceAtomGroups):
         ke = KineticEnergy(ag, refpoint="COC").run(stop=1)
         assert_allclose(ke.results.rot, 584.17, rtol=1e-1)
 
-    @pytest.mark.parametrize("vel", (0, 1, 2))
+    @pytest.mark.parametrize("vel", (0.0, 1.0, 2.0))
     def test_ke_single_molecule(self, vel):
         """Test KineticEnergy module using a single molecule.
 
@@ -80,7 +80,7 @@ class TestKineticEnergy(ReferenceAtomGroups):
         The expected result corresponds to the 0.5*m*v**2 (in kJ/mol) where m is the
         mass of a single water molecule.
         """
-        ag = line_of_water_molecules(n_molecules=1, myvel=np.array([0, 0, vel]))
+        ag = line_of_water_molecules(n_molecules=1, myvel=np.array([0.0, 0.0, vel]))
         vol = np.prod(ag.dimensions[:3])
         ke = KineticEnergy(ag, refpoint="COM").run()
 

@@ -201,12 +201,12 @@ class DielectricCylinder(CylinderBase):
     def _conclude(self) -> None:
         super()._conclude()
 
-        pref = 1 / scipy.constants.epsilon_0
-        pref /= scipy.constants.Boltzmann * self.temperature
+        self._pref = 1 / scipy.constants.epsilon_0
+        self._pref /= scipy.constants.Boltzmann * self.temperature
         # Convert from ~e^2/m to ~base units
-        pref /= scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
-
-        self.pref = pref
+        self._pref /= (
+            scipy.constants.angstrom / (scipy.constants.elementary_charge) ** 2
+        )
 
         if not self.single:
             # A factor of 2 pi L cancels out in the final expression because here M_z is
@@ -232,14 +232,14 @@ class DielectricCylinder(CylinderBase):
             dcov_z = self.sems.mM_z
             dcov_r = self.sems.mM_r
 
-        self.results.eps_z = pref * cov_z
-        self.results.deps_z = pref * dcov_z
+        self.results.eps_z = self._pref * cov_z
+        self.results.deps_z = self._pref * dcov_z
 
         self.results.eps_r = -(
-            2 * np.pi * self._obs.L * pref * self.results.bin_pos * cov_r
+            2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * cov_r
         )
         self.results.deps_r = (
-            2 * np.pi * self._obs.L * pref * self.results.bin_pos * dcov_r
+            2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * dcov_r
         )
 
     @render_docs

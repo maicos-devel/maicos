@@ -11,7 +11,6 @@ import sys
 from pathlib import Path
 
 import MDAnalysis as mda
-import numpy as np
 import pytest
 from MDAnalysisTests.datafiles import TPR, TRR
 from numpy.testing import assert_allclose
@@ -59,8 +58,8 @@ class TestTemperatureProfile(ReferenceAtomGroups):
         Create a universe made of one single molecule. A velocity of 1 along dim is
         given to the molecule.
         """
-        myvel = np.zeros(3)
+        myvel = [0.0, 0.0, 0.0]
         myvel[dim] += 1
-        ag_v = line_of_water_molecules(n_molecules=1, myvel=myvel)
+        ag_v = line_of_water_molecules(n_molecules=1, myvel=tuple(myvel))
         temp = TemperaturePlanar(ag_v, bin_width=ag_v.dimensions[dim]).run()
         assert_allclose(temp.results.profile.mean(), 3.611, rtol=1e-1)
