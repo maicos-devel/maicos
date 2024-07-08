@@ -82,8 +82,8 @@ which will be discussed in detail below:
    :class:`AnalysisBase <maicos.core.base.AnalysisBase>` if the ``single_frame`` method
    of the used class returns a value to perform the analysis on. You can find general
    info about which class uses which observable for the analysis below, and more
-   detailed information in the :ref:`userdoc-references`. The correlation time gets
-   calculated using the :func:`correlation time function
+   detailed information in the :ref:`userdoc_api-documentation`. The correlation time
+   gets calculated using the :func:`correlation time function
    <maicos.lib.math.correlation_time>`. The generation of warnings for the users gets
    handled by the :func:`correlation analysis
    function<maicos.lib.util.correlation_analysis>`.
@@ -129,5 +129,6 @@ density profiles as done in :ref:`DensityPlanar`, atomic or molecular velocities
 :ref:`VelocityPlanar`, or the dipolar orientations as used by the :ref:`DiporderPlanar`
 class.
 
-More details on each base class are given in the :ref:`userdoc_api`. For detailed
-information on the physical principles of each module consider the following sections.
+More details on each base class are given in the :ref:`userdoc_api-documentation`. For
+detailed information on the physical principles of each module consider the following
+sections.
