@@ -61,8 +61,8 @@ cache:
     - export HOMEBREW_NO_INSTALL_CLEANUP=1
     - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
-    - python$PYTHON_VERSION -m pip install virtualenv || brew install virtualenv
-    - python$PYTHON_VERSION -m virtualenv venv || /opt/homebrew/bin/virtualenv venv
+    - python$PYTHON_VERSION -m pip install virtualenv --break-system-packages
+    - python$PYTHON_VERSION -m virtualenv venv
     - source venv/bin/activate
     - *python_setup
 
