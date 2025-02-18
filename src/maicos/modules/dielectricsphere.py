@@ -108,34 +108,30 @@ class DielectricSphere(SphereBase):
 
     def _single_frame(self) -> float:
         super()._single_frame()
+
+        # Precalculate the bins each atom belongs to.
         rbins = np.digitize(self.pos_sph[:, 0], self._obs.bin_edges[1:-1])
+
+        # Calculate the charge per bin for the selected atomgroup.
         curQ_rad = np.bincount(
             rbins[self.atomgroup.ix],
             weights=self.atomgroup.charges,
             minlength=self.n_bins,
         )
 
-        self._obs.m_r = (
-            -np.cumsum(
-                (curQ_rad / self._obs.bin_volume)
-                * self._obs.bin_pos**2
-                * self._obs.bin_width
-            )
-            / self._obs.bin_pos**2
-        )
+        # In literature, the charge density is integrated along the radial direction to
+        # get the dipole moment density. We can rewrite the integral by identifying:
+        # q(a) = 4 * pi * int_0^a * r^2 * ρ(r) dr,
+        # where q(a) is the charge enclosed within a sphere of radius a. This allows us
+        # to avoid numerical errors.
+        self._obs.m_r = -np.cumsum(curQ_rad) / 4 / np.pi / self._obs.bin_pos**2
 
         curQ_rad_tot = np.bincount(
             rbins, weights=self._universe.atoms.charges, minlength=self.n_bins
         )
 
-        self._obs.m_r_tot = (
-            -np.cumsum(
-                (curQ_rad_tot / self._obs.bin_volume)
-                * self._obs.bin_pos**2
-                * self._obs.bin_width
-            )
-            / self._obs.bin_pos**2
-        )
+        # Same as above, but for the total charge density.
+        self._obs.m_r_tot = -np.cumsum(curQ_rad_tot) / 4 / np.pi / self._obs.bin_pos**2
 
         # This is not really the systems dipole moment, but it keeps the Nomenclature
         # consistent with the DielectricPlanar module.
