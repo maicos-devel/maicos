@@ -273,18 +273,29 @@ class TestPlanarBase(object):
         planar_class_obj = PlanarClass(ag, dim=dim, bin_width=bin_width_in, pos_arg=42)
         planar_class_obj.run(stop=5)
 
+        dimension = ag.universe.dimensions[dim].astype(np.float64)
+
         bin_pos = np.linspace(
-            -ag.universe.dimensions[dim] / 2,
-            ag.universe.dimensions[dim] / 2,
+            -dimension / 2,
+            dimension / 2,
             planar_class_obj.n_bins,
             endpoint=False,
         )
         bin_pos += planar_class_obj.means.bin_width / 2
 
-        # Small numbers != 0 are problematic for `assert_allclose`...
-        bin_pos[np.abs(bin_pos) < 1e-15] = 0
+        assert_allclose(planar_class_obj.results.bin_pos, bin_pos, atol=1e-15)
 
-        assert_allclose(planar_class_obj.results.bin_pos, bin_pos)
+    def test_bin_prec(self, ag):
+        """Test precision of bin related arrays (should be float64)."""
+        planar_class_obj = PlanarClass(ag, pos_arg=42)
+        planar_class_obj.run(stop=1)
+
+        assert planar_class_obj.results.bin_pos.dtype == np.float64
+
+        assert planar_class_obj._obs.bin_width.dtype == np.float64
+        assert planar_class_obj._obs.bin_edges.dtype == np.float64
+        assert planar_class_obj._obs.bin_area.dtype == np.float64
+        assert planar_class_obj._obs.bin_volume.dtype == np.float64
 
     @pytest.mark.parametrize("zmin", (-1, 0, 1))
     @pytest.mark.parametrize("zmax", (2, 3, 4))
@@ -296,10 +307,7 @@ class TestPlanarBase(object):
         bin_pos = np.linspace(zmin, zmax, planar_class_obj.n_bins, endpoint=False)
         bin_pos += planar_class_obj.means.bin_width / 2
 
-        # Small numbers != 0 are problematic for `assert_allclose`...
-        bin_pos[np.abs(bin_pos) < 1e-15] = 0
-
-        assert_allclose(planar_class_obj.results.bin_pos, bin_pos)
+        assert_allclose(planar_class_obj.results.bin_pos, bin_pos, atol=1e-15)
 
 
 class TestPlanarBaseChilds:
@@ -469,6 +477,13 @@ class TestProfilePlanarBase:
 
         # TODO: Add test for error and standard deviation.
         # Needs analytical estimaton of the error
+
+    def test_profile_precision(self, u, params):
+        """Test profile precision."""
+        params.update(bin_width=0.01)
+        profile = ProfilePlanarBase(**params).run()
+
+        assert profile.results.profile.dtype == np.float64
 
     def test_sym(self, u, params):
         """Test profile symmetrization."""

@@ -190,6 +190,18 @@ class TestSphereBase(object):
         with pytest.raises(ValueError, match="can not be smaller than"):
             sphere_class_obj._prepare()
 
+    def test_bin_prec(self, ag):
+        """Test precision of bin related arrays (should be float64)."""
+        sphere_class_obj = SphereClass(ag, pos_arg=42)
+        sphere_class_obj.run(stop=1)
+
+        assert sphere_class_obj.results.bin_pos.dtype == np.float64
+
+        assert sphere_class_obj._obs.bin_width.dtype == np.float64
+        assert sphere_class_obj._obs.bin_edges.dtype == np.float64
+        assert sphere_class_obj._obs.bin_area.dtype == np.float64
+        assert sphere_class_obj._obs.bin_volume.dtype == np.float64
+
     @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
     def test_results_bin_pos(self, ag, bin_width_in):
         """Test bin positions."""
@@ -198,13 +210,15 @@ class TestSphereBase(object):
 
         rmax = ag.universe.dimensions.min() / 2
 
-        bin_pos = np.linspace(0, rmax, sphere_class_obj.n_bins, endpoint=False)
+        bin_pos = np.linspace(
+            0, rmax, sphere_class_obj.n_bins, endpoint=False, dtype=np.float64
+        )
         bin_pos += sphere_class_obj.means.bin_width / 2
 
         assert_allclose(sphere_class_obj.results.bin_pos, bin_pos)
 
     def test_bin_volume(self, ag):
-        """Test correct volume of ach bin."""
+        """Test correct volume of each bin."""
         sphere_class_obj = SphereClass(ag, bin_width=1, rmax=3, pos_arg=42)
         sphere_class_obj.run(stop=5)
         bin_volume = 4 * np.pi * np.array([1**3 - 0**3, 2**3 - 1**3, 3**3 - 2**3]) / 3

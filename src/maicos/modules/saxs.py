@@ -149,7 +149,7 @@ class Saxs(AnalysisBase):
                 element = tables.atomtypes[atom_type]
             except KeyError:
                 raise KeyError(
-                    f"No suitable element for {atom_type!r} found. You can change the "
+                    f"No suitable element for '{atom_type}' found. You can change the "
                     f"`types` of the input `atomgroup` to match the known elements in "
                     "`maicos.lib.tables.atomtypes`."
                 )

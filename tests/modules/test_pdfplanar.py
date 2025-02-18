@@ -133,9 +133,10 @@ class TestPDFPlanar(object):
     def test_single_atom_com(self, get_universe):
         """Test whether the com of single atoms is correct."""
         pdfplanar = self.run_pdf_OO(get_universe)
-        assert_equal(
+        assert_allclose(
             pdfplanar.g1.center_of_mass(compound=get_compound(pdfplanar.g1)),
             self._molecule_positions()[0:2],
+            atol=1e-15,
         )
 
     def test_n_g1_total_OO(self, get_universe):

@@ -13,9 +13,10 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.9 (XXXX/XX/XX)
 -----------------
-Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrtik Stooß,
+Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrik Stooß,
 Adyant Agrawal
 
+- Update to Numpy 2.0 and MDAnalysis version 2.8.0 (!319)
 - Update virtualenv setup in CI (!316)
 - Split document section "Reference guide" into "Analysis Modules" and "API
   Documentation" (#132, !314)

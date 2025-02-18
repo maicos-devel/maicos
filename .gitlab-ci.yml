@@ -9,7 +9,7 @@ default:
     name: python:$PYTHON_VERSION
 
 variables:
-  PYTHON_VERSION: '3.11'  # switch to 3.12 once flake issues with 3.12.4 are resolved
+  PYTHON_VERSION: '3.13'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 cache:
@@ -32,12 +32,12 @@ cache:
 .tested_python_versions:
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.9', '3.12']
+      - PYTHON_VERSION: ['3.10', '3.13']
 
 .supported_python_versions:
   parallel:
     matrix:
-      - PYTHON_VERSION: ['3.9', '3.10', '3.11', '3.12']
+      - PYTHON_VERSION: ['3.10', '3.11', '3.12', '3.13']
 
 .windows:
   variables:
@@ -46,7 +46,8 @@ cache:
     - saas-windows-medium-amd64
   before_script:
     - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-    - choco install -y python --version=$PYTHON_VERSION --no-progress
+    - $pkg = "python$($env:PYTHON_VERSION.Replace('.', ''))"
+    - choco install -y $pkg --no-progress
     - RefreshEnv
     - *python_setup
 
@@ -61,9 +62,8 @@ cache:
     - export HOMEBREW_NO_INSTALL_CLEANUP=1
     - brew install --force python@$PYTHON_VERSION
     - export PATH="/usr/local/opt/python@${PYTHON_VERSION}/libexec/bin:$PATH"
-    - python$PYTHON_VERSION -m pip install virtualenv --break-system-packages
-    - python$PYTHON_VERSION -m virtualenv venv
-    - source venv/bin/activate
+    - python$PYTHON_VERSION -m venv .venv
+    - source .venv/bin/activate
     - *python_setup
 
 ###########################

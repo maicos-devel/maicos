@@ -539,7 +539,6 @@ class Test_AnalysisBase:
         without jitter).
         """
         dens = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.0).run()
-
         dens_jitter = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.01).run()
 
         # Make sure that the integral over the jittered profile is the same as
