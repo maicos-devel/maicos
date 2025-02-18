@@ -102,7 +102,9 @@ class CylinderBase(PlanarBase):
                 "in the radial direction. This will lead to artifacts at the edges."
             )
             self.rmax = self._rmax
-
+        # enforce calculations in double precision
+        self.rmin = np.float64(self.rmin)
+        self.rmax = np.float64(self.rmax)
         # Transform into cylinder coordinates
         self.pos_cyl = transform_cylinder(
             self._universe.atoms.positions, origin=self.box_center, dim=self.dim

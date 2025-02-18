@@ -6,28 +6,50 @@ monkeypatching which explain in detail below in code.
 """
 
 import MDAnalysis as mda
-import numpy as np
 import pytest
 from MDAnalysisTests.analysis.test_base import *  # noqa: F401, F403
 from MDAnalysisTests.analysis.test_base import (
-    FRAMES_ERR,
-    TIMES_ERR,
     FrameAnalysis,
     IncompleteAnalysis,
-    Test_Results,
+    test_analysis_class,
+    test_AnalysisFromFunction,
+    test_AnalysisFromFunction_args_content,
     test_frame_bool_fail,
+    test_frame_slice_parallel,
+    test_frames_times,
+    test_incompatible_n_workers,
+    test_instance_serial_backend,
+    test_parallelizable_transformations,
+    test_progressbar_multiprocessing,
+    test_reset_n_parts_to_n_frames,
+    test_rewind,
+    test_start_stop_step_parallel,
     test_verbose,
+    test_warn_nparts_nworkers,
 )
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
-from numpy.testing import assert_almost_equal, assert_equal
 
 from maicos.core import AnalysisBase
 
 
 # Remove specific functions/classes we don't want or can test because of a different API
-del Test_Results
 del test_verbose
 del test_frame_bool_fail
+
+# Remove parallel tests because we don't support parallelization, yet...
+del test_incompatible_n_workers
+del test_reset_n_parts_to_n_frames
+del test_parallelizable_transformations
+del test_instance_serial_backend
+del test_warn_nparts_nworkers
+del test_progressbar_multiprocessing
+del test_start_stop_step_parallel
+del test_frame_slice_parallel
+del test_rewind
+del test_frames_times
+del test_AnalysisFromFunction
+del test_analysis_class
+del test_AnalysisFromFunction_args_content
 
 
 @pytest.fixture(autouse=True)
@@ -112,67 +134,21 @@ def test_verbose_progressbar_run_with_kwargs(u, capsys):
     assert "custom: 100%" in actual
 
 
-# The original tests below define the universe directlty inside their functions. We can
-# not overwrite this. We copied them and changed the logic manually for now.
-#
-# TODO: Remove these reimplementataions once PR #4459 in MDAnalysis is merged and a new
-# version of MDAnalysisTests is released.
-
-
 @pytest.mark.parametrize(
-    "run_kwargs, frames",
+    "run_kwargs",
     [
-        ({"frames": [4, 5, 6, 7, 8, 9]}, np.arange(4, 10)),
-        ({"frames": [0, 2, 4, 6, 8]}, np.arange(0, 10, 2)),
-        ({"frames": [4, 6, 8]}, np.arange(4, 10, 2)),
-        ({"frames": [0, 3, 4, 3, 5]}, [0, 3, 4, 3, 5]),
-        (
-            {
-                "frames": [
-                    True,
-                    True,
-                    False,
-                    True,
-                    False,
-                    True,
-                    True,
-                    False,
-                    True,
-                    False,
-                ]
-            },
-            (0, 1, 3, 5, 6, 8),
-        ),
+        ({"start": 4, "frames": [4, 5, 6, 7, 8, 9]}),
+        ({"stop": 6, "frames": [0, 1, 2, 3, 4, 5]}),
+        ({"step": 2, "frames": [0, 2, 4, 6, 8]}),
+        ({"start": 4, "stop": 7, "frames": [4, 5, 6]}),
+        ({"stop": 6, "step": 2, "frames": [0, 2, 4, 6]}),
+        ({"start": 4, "step": 2, "frames": [4, 6, 8]}),
+        ({"start": 0, "stop": 0, "step": 0, "frames": [4, 6, 8]}),
     ],
 )
-def test_frame_slice(run_kwargs, frames, u_xtc):
-    """Test ``frame`` argument to ``run()`` method."""
-    an = FrameAnalysis(u_xtc.trajectory).run(**run_kwargs)
-    assert an.n_frames == len(frames)
-    assert_equal(an.found_frames, frames)
-    assert_equal(an.frames, frames, err_msg=FRAMES_ERR)
-
-
-def test_boolean_frame_fail(u_xtc):
-    """Test failure when providing bolean frames argument."""
-    an = FrameAnalysis(u_xtc.trajectory)
-    frames = [True, True, False]
-    msg = "boolean index did not match indexed array along (axis|dimension) 0"
-    with pytest.raises(IndexError, match=msg):
-        an.run(frames=frames)
-
-
-def test_rewind(u_xtc):
-    """Test that ``ts`` property is unchanged."""
-    FrameAnalysis(u_xtc.trajectory).run(frames=[0, 2, 3, 5, 9])
-    assert_equal(u_xtc.trajectory.ts.frame, 0)
-
-
-def test_frames_times(u_xtc):
-    """Tets that times are correct."""
-    an = FrameAnalysis(u_xtc.trajectory).run(start=1, stop=8, step=2)
-    frames = np.array([1, 3, 5, 7])
-    assert an.n_frames == len(frames)
-    assert_equal(an.found_frames, frames)
-    assert_equal(an.frames, frames, err_msg=FRAMES_ERR)
-    assert_almost_equal(an.times, frames * 100, decimal=4, err_msg=TIMES_ERR)
+def test_frame_fail(u, run_kwargs):
+    """Test that frames cannot be combined with start/stop/step."""
+    an = FrameAnalysis(u.trajectory)
+    msg = "start/stop/step cannot be combined with frames"
+    with pytest.raises(ValueError, match=msg):
+        an.run(**run_kwargs)

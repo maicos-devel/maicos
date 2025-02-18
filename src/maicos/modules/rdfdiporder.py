@@ -114,7 +114,7 @@ class RDFDiporder(AnalysisBase):
         supported_norms = ["rdf", "density", "none"]
         if self.norm not in supported_norms:
             raise ValueError(
-                f"{self.norm!r} is an invalid `norm`. "
+                f"'{self.norm}' is an invalid `norm`. "
                 f"Choose from: {', '.join(supported_norms)}"
             )
 

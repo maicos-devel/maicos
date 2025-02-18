@@ -32,193 +32,188 @@ DOC_DICT = dict(
     #####################
     SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
     DENSITY_DESCRIPTION=r"""Calculations are carried out for
-    ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
-    :math:`(\rm e \cdot Å^{-3})` density profiles along certain cartesian axes ``[x, y,
-    z]`` of the simulation cell. Cell dimensions are allowed to fluctuate in time.
+``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
+:math:`(\rm e \cdot Å^{-3})` density profiles along certain cartesian axes ``[x, y,
+z]`` of the simulation cell. Cell dimensions are allowed to fluctuate in time.
 
-    For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
-    centers (i.e., center of mass), taking into account periodic boundary conditions,
-    are calculated. For these calculations molecules will be unwrapped/made whole.
-    Trajectories containing already whole molecules can be run with ``unwrap=False`` to
-    gain a speedup. For grouping with respect to atoms, the `unwrap` option is always
-    ignored.""",
+For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
+centers (i.e., center of mass), taking into account periodic boundary conditions,
+are calculated. For these calculations molecules will be unwrapped/made whole.
+Trajectories containing already whole molecules can be run with ``unwrap=False`` to
+gain a speedup. For grouping with respect to atoms, the `unwrap` option is always
+ignored.""",
     DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
-    :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
-    dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
+:math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
+dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
-    refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
-    :ref:`general-design` section.""",
+refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
+:ref:`general-design` section.""",
     CORRELATION_INFO_PLANAR=r"""For the correlation analysis the central bin
-    (:math:`N \backslash 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
+(:math:`N \backslash 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
     CORRELATION_INFO_RADIAL="""For the correlation analysis the 0th bin of the 0th's
-    group profile is used. ${CORRELATION_INFO}""",
+group profile is used. ${CORRELATION_INFO}""",
     RUN_METHOD_DESCRIPTION="""Iterate over the trajectory.
 
-    Parameters
-    ----------
-    start : int
-        start frame of analysis
-    stop : int
-        stop frame of analysis
-    step : int
-        number of frames to skip between each analysed frame
-    frames : array_like
-        array of integers or booleans to slice trajectory; ``frames`` can only be
-        used *instead* of ``start``, ``stop``, and ``step``. Setting *both*
-        ``frames`` and at least one of ``start``, ``stop``, ``step`` to a
-        non-default value will raise a :exc:`ValueError`.
-    verbose : bool
-        Turn on verbosity
-    progressbar_kwargs : dict
-        ProgressBar keywords with custom parameters regarding progress bar position,
-        etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
+Parameters
+----------
+start : int
+    start frame of analysis
+stop : int
+    stop frame of analysis
+step : int
+    number of frames to skip between each analysed frame
+frames : array_like
+    array of integers or booleans to slice trajectory; ``frames`` can only be
+    used *instead* of ``start``, ``stop``, and ``step``. Setting *both*
+    ``frames`` and at least one of ``start``, ``stop``, ``step`` to a
+    non-default value will raise a :exc:`ValueError`.
+verbose : bool
+    Turn on verbosity
+progressbar_kwargs : dict
+    ProgressBar keywords with custom parameters regarding progress bar position,
+    etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
 
-    Returns
-    -------
-    self : object
-        analysis object
-    """,
+Returns
+-------
+self : object
+    analysis object
+""",
     ##########################
     # SINGLE PARAMETER SECTION
     ##########################
     ATOMGROUP_PARAMETER="""atomgroup : MDAnalysis.core.groups.AtomGroup
-        A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
-        performed.""",
+    A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
+    performed.""",
     WRAP_COMPOUND_PARAMETER="""wrap_compound : str
-        The group which will be kept together through the wrap processes.
-        Allowed values are: ``"atoms"``, ``"group"``, ``"residues"``,
-        ``"segments"``, ``"molecules"``, or ``"fragments"``.""",
+    The group which will be kept together through the wrap processes. Allowed values
+    are: ``"atoms"``, ``"group"``, ``"residues"``,
+``"segments"``, ``"molecules"``, or ``"fragments"``.""",
     DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``}
-        density type to be calculated.""",
+    density type to be calculated.""",
     TEMPERATURE_PARAMETER="""temperature : float
-        Reference temperature (K)""",
+    Reference temperature (K)""",
     BIN_WIDTH_PARAMETER="""bin_width : float
-        Width of the bins (in Å).""",
+    Width of the bins (in Å).""",
     DIM_PARAMETER="""dim : {0, 1, 2}
-        Dimension for binning (``x=0``, ``y=1``, ``z=1``).""",
+    Dimension for binning (``x=0``, ``y=1``, ``z=1``).""",
     VDIM_PARAMETER="""    vdim : {0, 1, 2}
-        Dimension for velocity binning (``x=0``, ``y=1``, ``z=1``).""",
+    Dimension for velocity binning (``x=0``, ``y=1``, ``z=1``).""",
     PDIM_PLANAR_PARAMETER="""pdim : {0, 1, 2}
-        direction of the projection""",
+    direction of the projection""",
     PDIM_RADIAL_PARAMETER="""pdim : {``"r"``, ``"z"``}
-        direction of the projection""",
+    direction of the projection""",
     FLUX_PARAMETER=r"""flux : bool
-        Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
+    Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
     GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
-        Atom grouping for the calculations.
+    Atom grouping for the calculations.
 
-        The possible grouping options are the atom positions (in the case where
-        ``grouping="atoms"``) or the center of mass of the specified grouping unit (in
-        the case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
-        ``"fragments"``).""",  # noqa: E501
+    The possible grouping options are the atom positions (in the case where
+    ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
+    case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
+    ``"fragments"``).""",  # noqa: E501
     OUTPUT_PARAMETER="""output : str
-        Output filename.""",
+    Output filename.""",
     OUTPUT_PREFIX_PARAMETER="""output_prefix : str
-        Prefix for output files.""",
+    Prefix for output files.""",
     SYM_PARAMETER="""sym : bool
-        Symmetrize the profile. Only works in combination with
-        ``refgroup``.""",
+Sy  mmetrize the profile. Only works in combination with ``refgroup``.""",
     BIN_METHOD_PARAMETER="""bin_method : {``"com"``, ``"cog"``, ``"coc"``}
-        Method for the position binning.
+    Method for the position binning.
 
-        The possible options are center of mass (``"com"``),
-        center of geometry (``"cog"``), and center of charge (``"coc"``).""",
+    The possible options are center of mass (``"com"``), center of geometry (``"cog"``),
+    and center of charge (``"coc"``).""",
     ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P0"``, ``"cos_theta"``, ``"cos_2_theta"``}
-        Order parameter to be calculated:
-            - ``"P0"``: total dipole moment projected on an axis
-            - ``"cos_theta"``: cosine of the dipole moment with an axis
-            - ``"cos_2_theta"``: squred cosine with an axis.""",  # noqa: E501
+    Order parameter to be calculated:
+        - ``"P0"``: total dipole moment projected on an axis
+        - ``"cos_theta"``: cosine of the dipole moment with an axis
+        - ``"cos_2_theta"``: squred cosine with an axis.""",  # noqa: E501
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################
     BASE_CLASS_PARAMETERS="""unwrap : bool
-        When :obj:`True`, molecules that are broken due to the periodic boundary
-        conditions are made whole.
+    When :obj:`True`, molecules that are broken due to the periodic boundary conditions
+    are made whole.
 
-        If the input contains molecules that are already whole, speed up the calculation
-        by disabling unwrap. To do so, use the flag ``-no-unwrap`` when using MAICoS
-        from the command line, or use ``unwrap=False`` when using MAICoS from the Python
-        interpreter.
+    If the input contains molecules that are already whole, speed up the calculation by
+    disabling unwrap. To do so, use the flag ``-no-unwrap`` when using MAICoS from the
+    command line, or use ``unwrap=False`` when using MAICoS from the Python interpreter.
 
-        Note: Molecules containing virtual sites (e.g. TIP4P water models) are not
-        currently supported in MDAnalysis. In this case, you need to provide unwrapped
-        trajectory files directly, and disable unwrap. Trajectories can be unwrapped,
-        for example, using the ``trjconv`` command of GROMACS.
-    pack : bool
-        When :obj:`True`, molecules are put back into the unit cell. This is required
-        because MAICoS only takes into account molecules that are inside the unit cell.
+    Note: Molecules containing virtual sites (e.g. TIP4P water models) are not currently
+    supported in MDAnalysis. In this case, you need to provide unwrapped trajectory
+    files directly, and disable unwrap. Trajectories can be unwrapped, for example,
+    using the ``trjconv`` command of GROMACS.
+pack : bool
+    When :obj:`True`, molecules are put back into the unit cell. This is required
+    because MAICoS only takes into account molecules that are inside the unit cell.
 
-        If the input contains molecules that are already packed, speed up the
-        calculation by disabling packing with ``pack=False``.
-    refgroup : MDAnalysis.core.groups.AtomGroup
-        Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation.
-        If ``refgroup`` is provided, the calculation is performed relative to the center
-        of mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are
-        performed with respect to the center of the (changing) box.
-    jitter : float
-        Magnitude of the random noise to add to the atomic positions.
+    If the input contains molecules that are already packed, speed up the calculation by
+    disabling packing with ``pack=False``.
+refgroup : MDAnalysis.core.groups.AtomGroup
+    Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation. If
+    ``refgroup`` is provided, the calculation is performed relative to the center of
+    mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are performed
+    with respect to the center of the (changing) box.
+jitter : float
+    Magnitude of the random noise to add to the atomic positions.
 
-        A jitter can be used to stabilize the aliasing effects sometimes appearing when
-        histogramming data. The jitter value should be about the precision of the
-        trajectory. In that case, using jitter will not alter the results of the
-        histogram. If ``jitter = 0.0`` (default), the original atomic positions are kept
-        unchanged.
+    A jitter can be used to stabilize the aliasing effects sometimes appearing when
+    histogramming data. The jitter value should be about the precision of the
+    trajectory. In that case, using jitter will not alter the results of the histogram.
+    If ``jitter = 0.0`` (default), the original atomic positions are kept unchanged.
 
-        You can estimate the precision of the positions in your trajectory with
-        :func:`maicos.lib.util.trajectory_precision`. Note that if the precision is not
-        the same for all frames, the smallest precision should be used.
-    concfreq : int
-        When concfreq (for conclude frequency) is larger than ``0``, the conclude
-        function is called and the output files are written every ``concfreq``
-        frames.""",
+    You can estimate the precision of the positions in your trajectory with
+    :func:`maicos.lib.util.trajectory_precision`. Note that if the precision is not the
+    same for all frames, the smallest precision should be used.
+concfreq : int
+    When concfreq (for conclude frequency) is larger than ``0``, the conclude function
+    is called and the output files are written every ``concfreq`` frames.""",
     PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
-        The function calculating the array weights for the histogram analysis. It must
-        take an :py:class:`AtomGroup<MDAnalysis.AtomGroup>` as first argument and a
-        grouping (``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``,
-        ``"fragments"``) as second.
-        Additional parameters can be given as ``weighting_function_kwargs``. The
-        function must return a numpy.ndarray with the same length as the number of group
-        members.
-    weighting_function_kwargs : dict
-        Additional keyword arguments for ``weighting_function``
-    normalization : {``"none"``, ``"number"``, ``"volume"``}
-        The normalization of the profile performed in every frame. If :obj:`None`, no
-        normalization is performed. If `number`, the histogram is divided by the number
-        of occurences in each bin. If `volume`, the profile is divided by the volume of
-        each bin.""",
+    The function calculating the array weights for the histogram analysis. It must take
+    an :py:class:`AtomGroup<MDAnalysis.AtomGroup>` as first argument and a grouping
+    (``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``) as
+    second. Additional parameters can be given as ``weighting_function_kwargs``. The
+    function must return a numpy.ndarray with the same length as the number of group
+    members.
+weighting_function_kwargs : dict
+    Additional keyword arguments for ``weighting_function``
+normalization : {``"none"``, ``"number"``, ``"volume"``}
+    The normalization of the profile performed in every frame. If :obj:`None`, no
+    normalization is performed. If `number`, the histogram is divided by the number of
+    occurences in each bin. If `volume`, the profile is divided by the volume of each
+    bin.""",
     Q_SPACE_PARAMETERS="""qmin : float
-        Starting q (1/Å)
-    qmax : float
-        Ending q (1/Å)
-    dq : float
-        bin_width (1/Å)""",
+    Starting q (1/Å)
+qmax : float
+    Ending q (1/Å)
+dq : float
+    bin_width (1/Å)""",
     PLANAR_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
-    ${DIM_PARAMETER}
-    zmin : float
-        Minimal coordinate for evaluation (in Å) with respect to the center of mass of
-        the refgroup.
+${DIM_PARAMETER}
+zmin : float
+    Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
+    refgroup.
 
-        If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
-        account.
-    zmax : float
-        Maximal coordinate for evaluation (in Å) with respect to the center of mass of
-        the refgroup.
+    If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
+    account.
+zmax : float
+    Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
+    refgroup.
 
-        If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
-        account.
-    ${BIN_WIDTH_PARAMETER}""",
+    If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
+    account.
+${BIN_WIDTH_PARAMETER}""",
     RADIAL_CLASS_PARAMETERS="""rmin : float
-        Minimal radial coordinate relative to the center of mass of the refgroup for
-        evaluation (in Å).
-    rmax : float
-        Maximal radial coordinate relative to the center of mass of the refgroup for
-        evaluation (in Å).
+    Minimal radial coordinate relative to the center of mass of the refgroup for
+    evaluation (in Å).
+rmax : float
+    Maximal radial coordinate relative to the center of mass of the refgroup for
+    evaluation (in Å).
 
-        If ``rmax=None``, the box extension is taken.""",
+    If ``rmax=None``, the box extension is taken.""",
     PDF_PARAMETERS="""g1 : MDAnalysis.core.groups.AtomGroup
-        First AtomGroup.
-    g2 : MDAnalysis.core.groups.AtomGroup
-        Second AtomGroup.""",
+    First AtomGroup.
+g2 : MDAnalysis.core.groups.AtomGroup
+    Second AtomGroup.""",
     PROFILE_CLASS_PARAMETERS="""${GROUPING_PARAMETER}
     ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}""",
@@ -241,13 +236,13 @@ DOC_DICT = dict(
     # ATTRIBUTE SECTION
     ###################
     PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
-        Bin positions (in Å) ranging from ``zmin`` to ``zmax``.""",
+    Bin positions (in Å) ranging from ``zmin`` to ``zmax``.""",
     RADIAL_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
-        Bin positions (in Å) ranging from ``rmin`` to ``rmax``.""",
+    Bin positions (in Å) ranging from ``rmin`` to ``rmax``.""",
     PROFILE_CLASS_ATTRIBUTES="""results.profile : numpy.ndarray
-        Calculated profile.
-    results.dprofile : numpy.ndarray
-        Estimated profile's uncertainity.""",
+    Calculated profile.
+results.dprofile : numpy.ndarray
+    Estimated profile's uncertainity.""",
     CYLINDER_CLASS_ATTRIBUTES="${RADIAL_CLASS_ATTRIBUTES}",
     SPHERE_CLASS_ATTRIBUTES="${RADIAL_CLASS_ATTRIBUTES}",
     PROFILE_PLANAR_CLASS_ATTRIBUTES="""${PLANAR_CLASS_ATTRIBUTES}
@@ -651,7 +646,7 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
         weights = atomgroup.charges.__abs__()
     else:
         raise ValueError(
-            f"{bin_method!r} is an unknown binning "
+            f"'{bin_method}' is an unknown binning "
             f"method. Use 'cog', 'com' or 'coc'."
         )
 
@@ -722,7 +717,7 @@ def unit_vectors_cylinder(
         unit_vectors[dim] += 1
     else:
         raise ValueError(
-            f"{pdim!r} is an unknown direction for the projection. Use 'r' or 'z'."
+            f"'{pdim}' is an unknown direction for the projection. Use 'r' or 'z'."
         )
 
     return unit_vectors

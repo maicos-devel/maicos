@@ -29,12 +29,12 @@ class TestVelocityCylinder(object):
         """Set velocity array for test_vel_cylinder."""
         array = []
         array.append([1, np.nan, np.nan, np.nan, np.nan])  # rad=0
-        array.append([np.nan, 1, np.nan, np.nan, np.nan])  # rad=2
+        array.append([np.nan, 1, np.nan, np.nan, np.nan])  # rad=3
         array.append([np.nan, np.nan, 1, np.nan, np.nan])  # rad=5
         array.append([np.nan, np.nan, np.nan, 1, np.nan])  # rad=7.5
         return array
 
-    @pytest.mark.parametrize("radius, data_index", [(0, 0), (2, 1), (5, 2), (7.5, 3)])
+    @pytest.mark.parametrize("radius, data_index", [(0, 0), (3, 1), (5, 2), (7.5, 3)])
     def test_vel_cylinder(self, vel_array, radius, data_index):
         """Test VelocityCylinder module.
 

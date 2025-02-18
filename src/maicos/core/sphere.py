@@ -97,6 +97,9 @@ class SphereBase(AnalysisBase):
                 "in the radial direction. This will lead to artifacts at the edges."
             )
             self.rmax = self._rmax
+        # enforce calculations in double precision
+        self.rmin = np.float64(self.rmin)
+        self.rmax = np.float64(self.rmax)
         # Transform into spherical coordinates
         self.pos_sph = transform_sphere(
             self._universe.atoms.positions, origin=self.box_center

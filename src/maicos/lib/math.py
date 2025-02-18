@@ -371,13 +371,13 @@ def new_mean(old_mean: float, data: float, length: int) -> float:
     The mean of a data set can easily be calculated from the data points. However this
     requires one to keep all data points on hand until the end of the calculation.
 
-    >>> np.mean([1, 3, 5, 7])
+    >>> print(np.mean([1, 3, 5, 7]))
     4.0
 
     Alternatively, one can update an existing mean, this requires only knowledge of the
     total number of samples.
 
-    >>> new_mean(np.mean([1, 3, 5]), data=7, length=4)
+    >>> print(new_mean(np.mean([1, 3, 5]), data=7, length=4))
     4.0
     """
     return ((length - 1) * old_mean + data) / length
@@ -426,18 +426,20 @@ def new_variance(
     --------
     The data set ``[1, 5, 5, 1]`` has a variance of ``4.0``
 
-    >>> np.var([1, 5, 5, 1])
+    >>> print(np.var([1, 5, 5, 1]))
     4.0
 
     Knowing the total number of data points, this operation can be performed
     iteratively.
 
-    >>> new_variance(
-    ...     old_variance=np.var([1, 5, 5]),
-    ...     old_mean=np.mean([1, 5, 5]),
-    ...     new_mean=np.mean([1, 5, 5, 1]),
-    ...     data=1,
-    ...     length=4,
+    >>> print(
+    ...     new_variance(
+    ...         old_variance=np.var([1, 5, 5]),
+    ...         old_mean=np.mean([1, 5, 5]),
+    ...         new_mean=np.mean([1, 5, 5, 1]),
+    ...         data=1,
+    ...         length=4,
+    ...     )
     ... )
     4.0
     """

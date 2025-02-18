@@ -59,6 +59,11 @@ class _Runner:
 
         logger.info("Choosing frames to analyze")
         for analysis_object in analysis_instances:
+            if frames is not None and not all(
+                opt is None for opt in [start, stop, step]
+            ):
+                raise ValueError("start/stop/step cannot be combined with frames")
+
             analysis_object._setup_frames(
                 analysis_object._trajectory,
                 start=start,
@@ -266,12 +271,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     >>> na = NewAnalysis(u.atoms)
     >>> _ = na.run(start=0, stop=10)
-    >>> round(na.results.volume, 2)
+    >>> print(round(na.results.volume, 2))
     362631.65
 
     Results can also be accessed by key
 
-    >>> round(na.results["volume"], 2)
+    >>> print(round(na.results["volume"], 2))
     362631.65
     """
 
@@ -387,7 +392,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _call_single_frame(self, ts, current_frame_index) -> None:
         """Base method wrapping all single_frame logic into a single call."""
-        compatible_types = [np.ndarray, float, int, list, np.float_, np.int_]
+        compatible_types = [
+            np.ndarray,
+            float,
+            int,
+            list,
+            np.float32,
+            np.float64,
+            np.int32,
+            np.int64,
+        ]
         self._frame_index = current_frame_index
         self._index = self._frame_index + 1
 
@@ -758,14 +772,14 @@ class ProfileBase:
         normalizations = ["none", "volume", "number"]
         if self.normalization not in normalizations:
             raise ValueError(
-                f"Normalization {self.normalization!r} not supported. "
+                f"Normalization '{self.normalization}' not supported. "
                 f"Use {', '.join(normalizations)}."
             )
 
         groupings = ["atoms", "segments", "residues", "molecules", "fragments"]
         if self.grouping not in groupings:
             raise ValueError(
-                f"{self.grouping!r} is not a valid option for "
+                f"'{self.grouping}' is not a valid option for "
                 f"grouping. Use {', '.join(groupings)}."
             )
 

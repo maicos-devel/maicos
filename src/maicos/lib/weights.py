@@ -37,7 +37,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     """
     if grouping not in ["atoms", "residues", "segments", "molecules", "fragments"]:
         raise ValueError(
-            f"{grouping!r} grouping is not supported. "
+            f"'{grouping}' grouping is not supported. "
             "Use `atoms`, `residues`, `segments`, `molecules` or `fragments`."
         )
 
@@ -61,7 +61,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
             return atomgroup.total_charge(compound=grouping)
     else:
         raise ValueError(
-            f"{dens!r} density type is not supported. "
+            f"'{dens}' density type is not supported. "
             "Use `mass`, `number` or `charge`."
         )
 
@@ -87,7 +87,7 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     """
     if grouping != "atoms":
         raise NotImplementedError(
-            f"Temperature calculations of {grouping!r} is not supported. Use 'atoms' "
+            f"Temperature calculations of '{grouping}' is not supported. Use 'atoms' "
             "instead.'"
         )
 
@@ -139,7 +139,7 @@ def diporder_weights(
             weights *= weights
     else:
         raise ValueError(
-            f"{order_parameter!r} not supported. "
+            f"'{order_parameter}' not supported. "
             "Use 'P0', 'cos_theta' or 'cos_2_theta'."
         )
 

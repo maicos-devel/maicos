@@ -41,7 +41,7 @@ class PlanarBase(AnalysisBase):
          Maximal coordinate for evaluation (Å) with in the lab frame, where 0
          corresponds to the origin of the cell.
     _obs.L : float
-        Average length (in Å) along the chosen dimension in the current frame.
+        Length (in Å) along the chosen dimension in the current frame.
     _obs.bin_pos : numpy.ndarray, (n_bins)
         Central bin positions (in Å) of each bin (in Å) in the current frame.
     _obs.bin_width : float
@@ -53,7 +53,7 @@ class PlanarBase(AnalysisBase):
         :math:`L_x \cdot L_y / N_\mathrm{bins}` where :math:`L_x` and :math:`L_y` are
         the box lengths perpendicular to the dimension of evaluations given by `dim`.
         :math:`N_\mathrm{bins}` is the number of bins.
-    results.bin_volume : numpy.ndarray, (n_bins)
+    _obs.bin_volume : numpy.ndarray, (n_bins)
         Volume of an cuboid of each bin (in Å^3) in the current frame.
     """
 
@@ -108,6 +108,9 @@ class PlanarBase(AnalysisBase):
             self.zmax = self._universe.dimensions[self.dim]
         else:
             self.zmax = self.box_center[self.dim] + self._zmax
+        # enforce calculations in double precision
+        self.zmin = np.float64(self.zmin)
+        self.zmax = np.float64(self.zmax)
 
     def _prepare(self):
         """Prepare the planar analysis."""
@@ -144,7 +147,7 @@ class PlanarBase(AnalysisBase):
         # the cylindrical and spherical classes, where `bin_area` and `bin_volume` is
         # different in each bin.
         self._obs.bin_area = np.ones(self.n_bins) * np.prod(
-            self._universe.dimensions[self.odims]
+            np.float64(self._universe.dimensions[self.odims])
         )
         self._obs.bin_volume = self._obs.bin_area * self._obs.bin_width
 

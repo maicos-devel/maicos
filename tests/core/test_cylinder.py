@@ -207,6 +207,18 @@ class TestCylinderBase(object):
         with pytest.raises(ValueError, match="can not be smaller than"):
             cylinder_class_obj._prepare()
 
+    def test_bin_prec(self, ag):
+        """Test precision of bin related arrays (should be float64)."""
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42)
+        cylinder_class_obj.run(stop=1)
+
+        assert cylinder_class_obj.results.bin_pos.dtype == np.float64
+
+        assert cylinder_class_obj._obs.bin_width.dtype == np.float64
+        assert cylinder_class_obj._obs.bin_edges.dtype == np.float64
+        assert cylinder_class_obj._obs.bin_area.dtype == np.float64
+        assert cylinder_class_obj._obs.bin_volume.dtype == np.float64
+
     @pytest.mark.parametrize("dim", (0, 1, 2))
     @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
     def test_bin_pos(self, ag, dim, bin_width_in):
@@ -217,7 +229,9 @@ class TestCylinderBase(object):
         cylinder_class_obj.run(stop=5)
         rmax = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
 
-        bin_pos = np.linspace(0, rmax, cylinder_class_obj.n_bins, endpoint=False)
+        bin_pos = np.linspace(
+            0, rmax, cylinder_class_obj.n_bins, endpoint=False, dtype=np.float64
+        )
         bin_pos += cylinder_class_obj.means.bin_width / 2
 
         assert_allclose(cylinder_class_obj.results.bin_pos, bin_pos)
