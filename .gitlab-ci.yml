@@ -233,5 +233,7 @@ pypi:
   only:
     - tags
   needs:
-    - tests:windows
+    - build-wheel:macos
+    - build-wheel:linux
+    - build-wheel:windows
   when: manual
