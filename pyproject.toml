@@ -29,7 +29,7 @@ maintainers = [
     {name = "Alexander Schlaich"}
 ]
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["Science", "Molecular Dynamics", "Confined Systems", "MDAnalysis"]
 license = {text = "GPL-3.0-or-later"}
 classifiers = [

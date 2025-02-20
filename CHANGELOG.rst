@@ -11,8 +11,11 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v1.0 (XXXX/XX/XX)
------------------
+v0.10 (XXXX/XX/XX)
+------------------
+Philip Loche
+
+- Bump minimal Python version to 3.10 (!320)
 
 v0.9 (2025/02/19)
 -----------------
