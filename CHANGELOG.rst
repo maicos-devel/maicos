@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 v0.10 (XXXX/XX/XX)
 ------------------
-Philip Loche
+Philip Loche, Henrik Stooß
 
+- Make sure box dimensions are always float64, reduced output precision (#137, !321)
 - Bump minimal Python version to 3.10 (!320)
 
 v0.9 (2025/02/19)

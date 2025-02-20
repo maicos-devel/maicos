@@ -349,9 +349,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         super().__init__(trajectory=self._trajectory)
 
     @property
+    def box_lengths(self) -> np.ndarray:
+        """Lengths of the simulation cell vectors."""
+        return self._universe.dimensions[:3].astype(np.float64)
+
+    @property
     def box_center(self) -> np.ndarray:
         """Center of the simulation cell."""
-        return self._universe.dimensions[:3] / 2
+        return self.box_lengths / 2
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins"""
@@ -602,10 +607,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         )
 
         if columns is not None:
-            header += "|".join([f"{i:^26}" for i in columns])[2:]
+            header += "|".join([f"{i:^23}" for i in columns])[3:]
 
         fname = "{}{}".format(fname, (not fname.endswith(".dat")) * ".dat")
-        np.savetxt(fname, X, header=header, fmt="% .18e ", encoding="utf8")
+        np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
 
 
 class AnalysisCollection(_Runner):

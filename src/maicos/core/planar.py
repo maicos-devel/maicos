@@ -105,7 +105,7 @@ class PlanarBase(AnalysisBase):
             self.zmin = self.box_center[self.dim] + self._zmin
 
         if self._zmax is None:
-            self.zmax = self._universe.dimensions[self.dim]
+            self.zmax = self.box_lengths[self.dim]
         else:
             self.zmax = self.box_center[self.dim] + self._zmax
         # enforce calculations in double precision
@@ -147,7 +147,7 @@ class PlanarBase(AnalysisBase):
         # the cylindrical and spherical classes, where `bin_area` and `bin_volume` is
         # different in each bin.
         self._obs.bin_area = np.ones(self.n_bins) * np.prod(
-            np.float64(self._universe.dimensions[self.odims])
+            self.box_lengths[self.odims]
         )
         self._obs.bin_volume = self._obs.bin_area * self._obs.bin_width
 
