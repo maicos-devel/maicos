@@ -600,6 +600,34 @@ class Test_AnalysisBase:
         class_obj = Conclude(u_no_cell.atoms)
         class_obj.run(stop=1)
 
+    def test_box_center(self, ag):
+        """Test that the box center is calculated correctly."""
+        actual = ag.universe.dimensions[:3] / 2
+        class_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+        assert_allclose(class_obj.box_center, actual)
+
+    def box_prec(self, ag):
+        """Test that the box precision is set correctly."""
+        class_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+        assert class_obj.box_dimensions.dtype == np.float64
+        assert class_obj.box_center.dtype == np.float64
+
 
 class TestAnalysisCollection:
     """Test functions for the AnalysisCollection class."""

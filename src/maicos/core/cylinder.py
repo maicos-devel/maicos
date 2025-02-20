@@ -91,7 +91,7 @@ class CylinderBase(PlanarBase):
 
     def _compute_lab_frame_cylinder(self):
         """Compute lab limit `rmax`."""
-        box_half = self._universe.dimensions[self.odims].min() / 2
+        box_half = self.box_lengths[self.odims].min() / 2
         if self._rmax is None:
             self.rmax = box_half
         elif self._rmax <= box_half:
