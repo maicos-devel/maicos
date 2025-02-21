@@ -15,6 +15,7 @@ v0.10 (XXXX/XX/XX)
 ------------------
 Philip Loche, Henrik Stooß
 
+- Fix wrong mapping of sodium element in ``atomtypes.dat`` (!323)
 - Switch to the ruff linter (!322)
 - Make sure box dimensions are always float64, reduced output precision (#137, !321)
 - Bump minimal Python version to 3.10 (!320)
