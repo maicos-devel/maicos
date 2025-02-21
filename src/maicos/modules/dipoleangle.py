@@ -1,14 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing dipole angle timeseries."""
-
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -48,6 +45,7 @@ class DipoleAngle(AnalysisBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     def __init__(
@@ -55,7 +53,7 @@ class DipoleAngle(AnalysisBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         concfreq: int = 0,
         grouping: str = "residues",
         pdim: int = 2,
@@ -114,7 +112,7 @@ class DipoleAngle(AnalysisBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         self.savetxt(
             self.output,
             np.vstack(

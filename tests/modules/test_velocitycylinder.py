@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the VelocityCylinder class."""
+
 import sys
 from pathlib import Path
 
@@ -16,15 +16,14 @@ from numpy.testing import assert_allclose
 
 from maicos import VelocityCylinder
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from util import circle_of_water_molecules  # noqa: E402
 
 
-class TestVelocityCylinder(object):
+class TestVelocityCylinder:
     """Tests for the VelocityCylinder class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def vel_array(self):
         """Set velocity array for test_vel_cylinder."""
         array = []
@@ -34,7 +33,9 @@ class TestVelocityCylinder(object):
         array.append([np.nan, np.nan, np.nan, 1, np.nan])  # rad=7.5
         return array
 
-    @pytest.mark.parametrize("radius, data_index", [(0, 0), (3, 1), (5, 2), (7.5, 3)])
+    @pytest.mark.parametrize(
+        ("radius", "data_index"), [(0, 0), (3, 1), (5, 2), (7.5, 3)]
+    )
     def test_vel_cylinder(self, vel_array, radius, data_index):
         """Test VelocityCylinder module.
 

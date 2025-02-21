@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DiporderPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -18,7 +18,6 @@ from numpy.testing import assert_allclose
 
 from maicos import DiporderPlanar
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from util import line_of_water_molecules  # noqa: E402
 
@@ -26,13 +25,13 @@ from util import line_of_water_molecules  # noqa: E402
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
@@ -42,7 +41,7 @@ class ReferenceAtomGroups:
 class TestDiporderPlanar(ReferenceAtomGroups):
     """Tests for the DiporderPlanar class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def result_dict(self):
         """Results dictionary for test_Diporder_trajectory."""
         res = {}
@@ -85,7 +84,7 @@ class TestDiporderPlanar(ReferenceAtomGroups):
         )
 
     @pytest.mark.parametrize(
-        "order_parameter, output", [("P0", 0), ("cos_theta", 1), ("cos_2_theta", 1)]
+        ("order_parameter", "output"), [("P0", 0), ("cos_theta", 1), ("cos_2_theta", 1)]
     )
     def test_DiporderPlanar_3_water_0(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 0."""
@@ -94,7 +93,7 @@ class TestDiporderPlanar(ReferenceAtomGroups):
         assert_allclose(np.mean(dip.results.profile.flatten()), output, atol=1e-3)
 
     @pytest.mark.parametrize(
-        "order_parameter, output", [("P0", 0), ("cos_theta", 0), ("cos_2_theta", 0)]
+        ("order_parameter", "output"), [("P0", 0), ("cos_theta", 0), ("cos_2_theta", 0)]
     )
     def test_DiporderPlanar_3_water_90(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 90."""

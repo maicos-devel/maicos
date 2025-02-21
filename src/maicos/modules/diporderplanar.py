@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,14 +8,12 @@
 r"""Module for computing planar dipolar order parameters."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +35,17 @@ class DiporderPlanar(ProfilePlanarBase):
     Attributes
     ----------
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         bin_width: float = 1,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         sym: bool = False,
         grouping: str = "residues",
         unwrap: bool = True,
@@ -60,10 +58,7 @@ class DiporderPlanar(ProfilePlanarBase):
         jitter: float = 0.0,
     ) -> None:
         self._locals = locals()
-        if order_parameter == "P0":
-            normalization = "volume"
-        else:
-            normalization = "number"
+        normalization = "volume" if order_parameter == "P0" else "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_planar(

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Test for lib."""
+
 import sys
 from pathlib import Path
 
@@ -18,21 +18,20 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos.lib.math
 import maicos.lib.util
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP, WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
 
 
-class Test_sfactor(object):
+class Test_sfactor:
     """Tests for the sfactor."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def qS(self):
         """Define q and S."""
         q = np.array(
@@ -147,8 +146,8 @@ class Test_sfactor(object):
 
         return q, S
 
-    @pytest.mark.parametrize("qmin", (0, 0.05))
-    @pytest.mark.parametrize("qmax", (0.075, 0.1))
+    @pytest.mark.parametrize("qmin", [0, 0.05])
+    @pytest.mark.parametrize("qmax", [0.075, 0.1])
     def test_sfactor(self, ag, qS, qmin, qmax):
         """Test sfactor."""
         q, S = maicos.lib.math.compute_structure_factor(
@@ -301,8 +300,8 @@ def test_symmetrize_inplace():
 
 
 @pytest.mark.parametrize(
-    ("vector1, vector2, subtract_mean, result"),
-    (
+    ("vector1", "vector2", "subtract_mean", "result"),
+    [
         (
             np.vstack((np.linspace(0, 10, 20), np.linspace(10, 20, 20))),
             None,
@@ -321,7 +320,7 @@ def test_symmetrize_inplace():
             True,
             0.0,
         ),
-    ),
+    ],
 )
 def test_scalarprod(vector1, vector2, subtract_mean, result):
     """Tests for scalar product."""
@@ -330,8 +329,8 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
 
 
 @pytest.mark.parametrize(
-    ("vector1, vector2, subtract_mean, result"),
-    (
+    ("vector1", "vector2", "subtract_mean", "result"),
+    [
         (np.linspace(0, 20, 50), None, False, 78.23),
         (
             np.linspace(0, 20, 50),
@@ -340,7 +339,7 @@ def test_scalarprod(vector1, vector2, subtract_mean, result):
             1294.73,
         ),
         (np.linspace(0, 20, 50), None, True, -21.76),
-    ),
+    ],
 )
 def test_corr(vector1, vector2, subtract_mean, result):
     """Tests for correlation."""
@@ -349,8 +348,8 @@ def test_corr(vector1, vector2, subtract_mean, result):
 
 
 @pytest.mark.parametrize(
-    ("vector1, vector2, subtract_mean, result"),
-    (
+    ("vector1", "vector2", "subtract_mean", "result"),
+    [
         (
             2 * generate_correlated_data(int(1e7), 5) + 2,
             None,
@@ -363,7 +362,7 @@ def test_corr(vector1, vector2, subtract_mean, result):
             False,
             np.mean(4 * (1 - np.arange(0, 6) / 5) + 4),
         ),
-    ),
+    ],
 )
 def test_corr2(vector1, vector2, subtract_mean, result):
     """Tests for correlation function."""
@@ -374,8 +373,8 @@ def test_corr2(vector1, vector2, subtract_mean, result):
 
 
 @pytest.mark.parametrize(
-    ("vector, method, result"),
-    (
+    ("vector", "method", "result"),
+    [
         (
             generate_correlated_data(int(1e6), 5),
             "sokal",
@@ -396,7 +395,7 @@ def test_corr2(vector1, vector2, subtract_mean, result):
             "chodera",
             np.sum(1 - np.arange(1, 10) / 10),
         ),
-    ),
+    ],
 )
 def test_correlation_time(vector, method, result):
     """Tests for correlation_time."""
@@ -448,8 +447,8 @@ def test_new_variance():
     assert_allclose(var, np.std(series) ** 2, rtol=1e-6)
 
 
-@pytest.mark.parametrize("dim", (0, 1, 2))
-@pytest.mark.parametrize("weight", ("mass", "none"))
+@pytest.mark.parametrize("dim", [0, 1, 2])
+@pytest.mark.parametrize("weight", ["mass", "none"])
 def test_center_cluster(dim, weight):
     """Tests for pbc com."""
     e_z = np.isin([0, 1, 2], dim)
@@ -484,7 +483,7 @@ def test_center_cluster(dim, weight):
 
 
 @pytest.mark.parametrize(
-    "vec1, vec2, box, length",
+    ("vec1", "vec2", "box", "length"),
     [
         ([0, 0, 0], [1, 1, 1], [10, 10, 10], np.sqrt(3)),
         ([0, 0, 0], [9, 9, 9], [10, 10, 10], np.sqrt(3)),

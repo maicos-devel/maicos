@@ -1,13 +1,11 @@
-#!/usr/bin/env python -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8
 # -*-
 #
-# Copyright (c) 2024 Authors and contributors (see the AUTHORS.rst file for the full
+# Copyright (c) 2025 Authors and contributors (see the AUTHORS.rst file for the full
 # list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper functions for mathematical and physical operations."""
-from typing import Optional, Tuple, Union
 
 import MDAnalysis as mda
 import numpy as np
@@ -16,16 +14,14 @@ from scipy.fftpack import dst
 from . import tables
 from ._cmath import compute_structure_factor  # noqa: F401
 
-
 # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
 dt_dk_tolerance = 1e-8
 
 
 def FT(
     t: np.ndarray, x: np.ndarray, indvar: bool = True
-) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-    """
-    Discrete Fourier transformation using fast Fourier transformation (FFT).
+) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+    """Discrete Fourier transformation using fast Fourier transformation (FFT).
 
     Parameters
     ----------
@@ -66,10 +62,11 @@ def FT(
     See Also
     --------
     :func:`iFT` : For the inverse fourier transform.
+
     """
     a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
-    if (abs((t[1:] - t[:-1] - dt)) > dt_dk_tolerance).any():
+    if (abs(t[1:] - t[:-1] - dt) > dt_dk_tolerance).any():
         raise RuntimeError("Time series not equally spaced!")
     N = len(t)
 
@@ -82,13 +79,12 @@ def FT(
 
     if indvar:
         return k, xf2
-    else:
-        return xf2
+    return xf2
 
 
 def iFT(
     k: np.ndarray, xf: np.ndarray, indvar: bool = True
-) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
     """Inverse Fourier transformation using fast Fourier transformation (FFT).
 
     Takes the frequency series and the function as arguments. By default, returns the
@@ -119,9 +115,10 @@ def iFT(
     See Also
     --------
     :func:`FT` : For the Fourier transform.
+
     """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
-    if (abs((k[1:] - k[:-1] - dk)) > dt_dk_tolerance).any():
+    if (abs(k[1:] - k[:-1] - dk) > dt_dk_tolerance).any():
         raise RuntimeError("Time series not equally spaced!")
     N = len(k)
     x = np.fft.ifftshift(np.fft.ifft(xf))
@@ -132,12 +129,11 @@ def iFT(
         x2 = x * np.exp(-1j * t * (N - 1) * dk / 2.0) * N * dk / (2 * np.pi)
     if indvar:
         return t, x2
-    else:
-        return x2
+    return x2
 
 
 def correlation(
-    a: np.ndarray, b: Optional[np.ndarray] = None, subtract_mean: bool = False
+    a: np.ndarray, b: np.ndarray | None = None, subtract_mean: bool = False
 ) -> np.ndarray:
     """Calculate correlation or autocorrelation.
 
@@ -158,12 +154,13 @@ def correlation(
     -------
     numpy.ndarray
         The correlation or autocorrelation function.
+
     """
     meana = int(subtract_mean) * np.mean(
         a
     )  # essentially an if statement for subtracting mean
     a2 = np.append(
-        a - meana, np.zeros(2 ** int(np.ceil((np.log(len(a)) / np.log(2)))) - len(a))
+        a - meana, np.zeros(2 ** int(np.ceil(np.log(len(a)) / np.log(2))) - len(a))
     )  # round up to a power of 2
     data_a = np.append(a2, np.zeros(len(a2)))  # pad with an equal number of zeros
     fra = np.fft.fft(data_a)  # FT the data
@@ -175,19 +172,18 @@ def correlation(
         meanb = int(subtract_mean) * np.mean(b)
         b2 = np.append(
             b - meanb,
-            np.zeros(2 ** int(np.ceil((np.log(len(b)) / np.log(2)))) - len(b)),
+            np.zeros(2 ** int(np.ceil(np.log(len(b)) / np.log(2))) - len(b)),
         )
         data_b = np.append(b2, np.zeros(len(b2)))
         frb = np.fft.fft(data_b)
         sf = np.conj(fra) * frb
-    cor = np.real(np.fft.ifft(sf)[: len(a)]) / np.array(
+    return np.real(np.fft.ifft(sf)[: len(a)]) / np.array(
         range(len(a), 0, -1)
     )  # inverse FFT and normalization
-    return cor
 
 
 def scalar_prod_corr(
-    a: np.ndarray, b: Optional[np.ndarray] = None, subtract_mean: bool = False
+    a: np.ndarray, b: np.ndarray | None = None, subtract_mean: bool = False
 ) -> np.ndarray:
     """Give the corr. function of the scalar product of two vector timeseries.
 
@@ -288,6 +284,7 @@ def correlation_time(
     References
     ----------
     .. footbibliography::
+
     """
     if mintime > len(timeseries):
         raise ValueError(
@@ -379,17 +376,18 @@ def new_mean(old_mean: float, data: float, length: int) -> float:
 
     >>> print(new_mean(np.mean([1, 3, 5]), data=7, length=4))
     4.0
+
     """
     return ((length - 1) * old_mean + data) / length
 
 
 def new_variance(
-    old_variance: Union[float, np.ndarray],
-    old_mean: Union[float, np.ndarray],
-    new_mean: Union[float, np.ndarray],
-    data: Union[float, np.ndarray],
+    old_variance: float | np.ndarray,
+    old_mean: float | np.ndarray,
+    new_mean: float | np.ndarray,
+    data: float | np.ndarray,
     length: int,
-) -> Union[float, np.ndarray]:
+) -> float | np.ndarray:
     r"""Calculate the variance of a timeseries iteratively.
 
     The variance of a timeseries :math:`x_n` can be calculated iteratively by using the
@@ -442,6 +440,7 @@ def new_variance(
     ...     )
     ... )
     4.0
+
     """
     S_old = old_variance * (length - 1)
     S_new = S_old + (data - old_mean) * (data - new_mean)
@@ -498,6 +497,7 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
        x 1       2 |
        |           |
        +-----------+
+
     """
     theta = (ag.positions / ag.universe.dimensions[:3]) * 2 * np.pi
     xi = (np.cos(theta) * weights[:, None]).sum(axis=0) / weights.sum()
@@ -507,7 +507,7 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 
 
 def symmetrize(
-    m: np.ndarray, axis: Union[None, int, Tuple[int]] = None, inplace: bool = False
+    m: np.ndarray, axis: None | int | tuple[int] = None, inplace: bool = False
 ) -> np.ndarray:
     """Symmeterize an array.
 
@@ -583,6 +583,7 @@ def symmetrize(
            [ 4.5, 14.5],
            [ 4.5, 14.5],
            [ 4.5, 14.5]])
+
     """
     # The returned array will be of type float
     out = m.copy().astype("float")
@@ -596,8 +597,7 @@ def symmetrize(
         # ...and then write the new values to the original array.
         m[...] = out
         return m
-    else:
-        return out
+    return out
 
 
 def compute_form_factor(q: float, atom_type: str) -> float:
@@ -627,6 +627,7 @@ def compute_form_factor(q: float, atom_type: str) -> float:
     -------
     float
         The calculated form factor for the specified atom type and q.
+
     """
     element = tables.atomtypes[atom_type]
 
@@ -676,6 +677,7 @@ def transform_cylinder(
     -------
     numpy.ndarray
         Positions in cylinder coordinates (r, phi, z)
+
     """
     trans_positions = np.zeros(positions.shape)
 
@@ -712,6 +714,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     -------
     numpy.ndarray
         Positions in spherical coordinates (:math:`r`, phi, theta)
+
     """
     trans_positions = np.zeros(positions.shape)
 
@@ -731,7 +734,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
 
 def compute_rdf_structure_factor(
     rdf: np.ndarray, r: np.ndarray, density: float
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     r"""Computes the structure factor based on the radial distribution function (RDF).
 
     The structure factor :math:`S(q)` based on the RDF :math:`g(r)` is given by
@@ -760,6 +763,7 @@ def compute_rdf_structure_factor(
         array of q points
     struct_factor : numpy.ndarray
         structure factor
+
     """
     dr = r[1] - r[0]
     q = np.pi / r[-1] * np.arange(1, len(r) + 1)

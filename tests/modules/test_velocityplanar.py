@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the VelocityPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ from numpy.testing import assert_allclose
 
 from maicos import VelocityPlanar
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 from util import line_of_water_molecules  # noqa: E402
@@ -26,20 +25,18 @@ from util import line_of_water_molecules  # noqa: E402
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def vel_frame1_TRR(self):
-        """
-        Set velocity array for test_vel_trr.
+        """Set velocity array for test_vel_trr.
 
         The values of the array correspond to the averaged components of the velocity
         along all 3 dimensions of space, respectively. Only the first frame is
         considered.
         """
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
-        v_array_1 = u.atoms.velocities.mean(axis=0)
-        return v_array_1
+        return u.atoms.velocities.mean(axis=0)
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
@@ -59,8 +56,8 @@ class TestVelocityPlanar(ReferenceAtomGroups):
         with pytest.raises(ValueError, match="Dimension can only"):
             VelocityPlanar(ag, dim=3, vdim=2)
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("vdim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("vdim", [0, 1, 2])
     def test_vel_trr(self, ag, dim, vdim, vel_frame1_TRR):
         """Test VelocityPlanar module using WATER_TPR_NPT data.
 
@@ -71,8 +68,8 @@ class TestVelocityPlanar(ReferenceAtomGroups):
         )
         assert_allclose(vel.results.profile.mean(), vel_frame1_TRR[vdim], rtol=1e-2)
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("vdim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("vdim", [0, 1, 2])
     def test_vel_grouping_molecules(self, dim, vdim):
         """Test VelocityPlanar module using grouping by molecules.
 
@@ -96,11 +93,10 @@ class TestVelocityPlanar(ReferenceAtomGroups):
             vel.results.profile.mean(), np.identity(3)[dim][vdim], rtol=1e-6
         )
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("vdim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("vdim", [0, 1, 2])
     def test_vel_grouping_atoms(self, dim, vdim):
-        """
-        Test VelocityPlanar module using grouping by atoms.
+        """Test VelocityPlanar module using grouping by atoms.
 
         Create a universe with one single water molecule with a given velocity of 1
         along dim.
@@ -120,11 +116,10 @@ class TestVelocityPlanar(ReferenceAtomGroups):
         ).run()
         assert_allclose(vel.results.profile.mean(), np.identity(3)[dim][vdim])
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("vdim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("vdim", [0, 1, 2])
     def test_flux(self, dim, vdim):
-        """
-        Test flux measurement with VelocityPlanar module .
+        """Test flux measurement with VelocityPlanar module .
 
         Create a universe with one single water molecule with a given velocity of 1
         along dim.

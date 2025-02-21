@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the PDFCylinder class."""
+
 import sys
 from pathlib import Path
 
@@ -17,16 +17,15 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import PDFCylinder
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 from util import circle_of_water_molecules, line_of_water_molecules  # noqa: E402
 
 
-class TestPDFCylinder(object):
+class TestPDFCylinder:
     """Tests for the PDFCylinder class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def spce_water(self):
         """Return a universe with 1 water molecule."""
         return mda.Universe(SPCE_ITP, SPCE_GRO)
@@ -52,7 +51,7 @@ class TestPDFCylinder(object):
         assert ana_obj.dmax == L
 
     def test_origin_shape_error(self, spce_water):
-        """Test error raise when origin paramater has wrong shape"""
+        """Test error raise when origin paramater has wrong shape."""
         match = r"Origin has length \(1,\) but only \(3,\) is allowed."
         with pytest.raises(ValueError, match=match):
             PDFCylinder(spce_water.atoms, origin=np.array([1]))
@@ -91,7 +90,7 @@ class TestPDFCylinder(object):
             PDFCylinder(spce_water.atoms, bin_width_pdf_phi=-1)._prepare()
 
     @pytest.mark.parametrize(
-        "dim, results",
+        ("dim", "results"),
         [
             (0, [0, 1, 2, 3, 4, 5]),
             (1, [0, 2, 4, 6, 8, 10]),
@@ -201,7 +200,7 @@ class TestPDFCylinder(object):
         assert_allclose(ana_obj._obs.count_phi[0], [2, 2, 2])
 
     @pytest.mark.parametrize(
-        "name, output",
+        ("name", "output"),
         [
             ("foo", ["z_foo.dat", "phi_foo.dat"]),
             ("bar.dat", ["z_bar.dat", "phi_bar.dat"]),
@@ -219,6 +218,6 @@ class TestPDFCylinder(object):
 
     def test_wrong_bin_method(self, spce_water):
         """Test grouping for a non existing bin_method."""
+        ana_obj = PDFCylinder(spce_water.atoms, bin_method="foo")
         with pytest.raises(ValueError, match="is an unknown binning"):
-            ana_obj = PDFCylinder(spce_water.atoms, bin_method="foo")
             ana_obj._prepare()

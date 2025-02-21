@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 """Module for computing planar dielectric profiles."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +16,6 @@ import scipy.constants
 from ..core import PlanarBase
 from ..lib.math import symmetrize
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -82,16 +79,17 @@ class DielectricPlanar(PlanarBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         bin_width: float = 0.5,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         is_3d: bool = False,
         sym: bool = False,
         unwrap: bool = True,
@@ -156,16 +154,16 @@ class DielectricPlanar(PlanarBase):
         self._obs.M_par = self._obs.M[self.odims]
 
         self._obs.m_par = np.zeros((self.n_bins, 2))
-        self._obs.mM_par = np.zeros((self.n_bins))
-        self._obs.mm_par = np.zeros((self.n_bins))
-        self._obs.cmM_par = np.zeros((self.n_bins))
+        self._obs.mM_par = np.zeros(self.n_bins)
+        self._obs.mm_par = np.zeros(self.n_bins)
+        self._obs.cmM_par = np.zeros(self.n_bins)
         self._obs.cM_par = np.zeros((self.n_bins, 2))
 
-        self._obs.m_perp = np.zeros((self.n_bins))
-        self._obs.mM_perp = np.zeros((self.n_bins))
-        self._obs.mm_perp = np.zeros((self.n_bins))
-        self._obs.cmM_perp = np.zeros((self.n_bins))
-        self._obs.cM_perp = np.zeros((self.n_bins))
+        self._obs.m_perp = np.zeros(self.n_bins)
+        self._obs.mM_perp = np.zeros(self.n_bins)
+        self._obs.mm_perp = np.zeros(self.n_bins)
+        self._obs.cmM_perp = np.zeros(self.n_bins)
+        self._obs.cM_perp = np.zeros(self.n_bins)
 
         # Use polarization density (for perpendicular component)
         # ======================================================
@@ -285,10 +283,10 @@ class DielectricPlanar(PlanarBase):
 
         # Parallel component
         # ==================
-        cov_par = np.zeros((self.n_bins))
-        dcov_par = np.zeros((self.n_bins))
-        cov_par_self = np.zeros((self.n_bins))
-        cov_par_coll = np.zeros((self.n_bins))
+        cov_par = np.zeros(self.n_bins)
+        dcov_par = np.zeros(self.n_bins)
+        cov_par_self = np.zeros(self.n_bins)
+        cov_par_coll = np.zeros(self.n_bins)
 
         cov_par = 0.5 * (
             self.means.mM_par - np.dot(self.means.m_par, self.means.M_par.T)
@@ -326,7 +324,7 @@ class DielectricPlanar(PlanarBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         columns = ["position [Å]"]
         columns.append("ε^-1_⟂ - 1")
         columns.append("Δε^-1_⟂")

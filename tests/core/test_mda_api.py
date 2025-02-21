@@ -31,7 +31,6 @@ from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 
 from maicos.core import AnalysisBase
 
-
 # Remove specific functions/classes we don't want or can test because of a different API
 del test_verbose
 del test_frame_bool_fail

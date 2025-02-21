@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -19,7 +18,7 @@ from maicos import __all__ as available_modules
 @pytest.mark.skipif(
     sys.platform == "win32", reason="CLI not yet available on platform Windows"
 )
-class Test_parse_args(object):
+class Test_parse_args:
     """Tests for the parse argurment."""
 
     def test_required_args(self):
@@ -37,7 +36,7 @@ class Test_parse_args(object):
         """Test available modules."""
         subprocess.check_call(["maicos", module, "--help"])
 
-    @pytest.mark.parametrize("args", ("version", "help"))
+    @pytest.mark.parametrize("args", ["version", "help"])
     def test_extra_options(self, args):
         """Test extra options."""
         subprocess.check_call(["maicos", "--" + args])

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2022 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 r"""Module for computing 1D cylindrical pair distribution functions."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +16,6 @@ from MDAnalysis.lib.distances import capped_distance
 from ..core import CylinderBase
 from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,35 +86,36 @@ class PDFCylinder(CylinderBase):
         Angular PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
     results.z_pdf: numpy.ndarray
         Axial PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
+
     """
 
     def __init__(
         self,
         g1: mda.AtomGroup,
-        g2: Optional[mda.AtomGroup] = None,
+        g2: mda.AtomGroup | None = None,
         bin_width_pdf_z: float = 0.3,
         bin_width_pdf_phi: float = 0.1,
         drwidth: float = 0.1,
-        dmin: Optional[float] = None,
-        dmax: Optional[float] = None,
+        dmin: float | None = None,
+        dmax: float | None = None,
         density: bool = False,
-        origin: Optional[np.ndarray] = None,
+        origin: np.ndarray | None = None,
         bin_method: str = "com",
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         jitter: float = 0.0,
         concfreq: int = 0,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         rmin: float = 0,
-        rmax: Optional[float] = None,
+        rmax: float | None = None,
         bin_width: float = 1,
         output: str = "pdf.dat",
     ) -> None:
         self.comp_1 = get_compound(g1)
-        super(PDFCylinder, self).__init__(
+        super().__init__(
             atomgroup=g1,
             refgroup=refgroup,
             unwrap=unwrap,
@@ -150,8 +148,7 @@ class PDFCylinder(CylinderBase):
             raise ValueError(
                 f"Origin has length {origin.shape} but only (3,) is allowed."
             )
-        else:
-            self.origin = origin
+        self.origin = origin
 
         self.comp_2 = get_compound(self.g2)
         self.nbins_pdf_phi = 100
@@ -353,10 +350,7 @@ class PDFCylinder(CylinderBase):
         super()._conclude()
 
         # Calculate the density of g2.
-        if self.density:
-            g2_density = self.means.n_g2 / self.means.bin_volume
-        else:
-            g2_density = 1
+        g2_density = self.means.n_g2 / self.means.bin_volume if self.density else 1
 
         # Normalising volume for the angular PDF. This is 2(R*dR*2dz*2dphi),
         # where R is the radius of the bin center, dR is the width of the pdf bin.
@@ -401,7 +395,7 @@ class PDFCylinder(CylinderBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         columns = ["r [Å]"]
         for r in self.results.bin_pos:
             columns.append(f"pdf at {r:.2f} Å [Å^-3]")

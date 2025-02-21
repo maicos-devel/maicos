@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the base modules."""
+"""Tests for the cylinder base classes."""
+
 import inspect
 import logging
 import sys
@@ -23,7 +23,6 @@ import maicos
 from maicos.core import CylinderBase, ProfileCylinderBase
 from maicos.lib.math import transform_cylinder
 from maicos.lib.weights import density_weights
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -78,16 +77,16 @@ class CylinderClass(CylinderBase):
         self.calculated_results = True
 
 
-class TestCylinderBase(object):
+class TestCylinderBase:
     """Tests for the TestPlanarBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR, in_memory=True)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def cylinder_class_obj(self, ag):
         """Planar class object."""
         return CylinderBase(ag, pos_arg=42)
@@ -100,19 +99,19 @@ class TestCylinderBase(object):
 
     def test_wrong_rlims(self, ag):
         """Test wrong r limits."""
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmax=1, rmin=2)
         with pytest.raises(ValueError, match="can not be smaller"):
-            cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmax=1, rmin=2)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", (0, -0.5, "x"))
+    @pytest.mark.parametrize("bin_width", [0, -0.5, "x"])
     def test_wrong_bin_width(self, ag, bin_width):
         """Test bin_width error."""
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42, bin_width=bin_width)
         with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
-            cylinder_class_obj = CylinderClass(ag, pos_arg=42, bin_width=bin_width)
             cylinder_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", (1, 7.75, 125))
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_bin_width(self, ag, dim, bin_width):
         """Test bin_width."""
         cylinder_class_obj = CylinderClass(
@@ -219,8 +218,8 @@ class TestCylinderBase(object):
         assert cylinder_class_obj._obs.bin_area.dtype == np.float64
         assert cylinder_class_obj._obs.bin_volume.dtype == np.float64
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("bin_width_in", [0.1, 0.775])
     def test_bin_pos(self, ag, dim, bin_width_in):
         """Test bin positions."""
         cylinder_class_obj = CylinderClass(
@@ -263,7 +262,7 @@ class TestCylinderBase(object):
         R = ag.universe.dimensions[cylinder_class_obj.odims].min() / 2
         assert cylinder_class_obj.means.R == R
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_compute_lab_frame_cylinder_default(self, ag, dim):
         """Test lab frame values with default values."""
         cls = CylinderClass(ag, pos_arg=42, dim=dim)
@@ -275,7 +274,7 @@ class TestCylinderBase(object):
         )
         assert cls.rmax == ag.universe.dimensions[cls.odims].min() / 2
 
-    @pytest.mark.parametrize("rmax", (1, 2, 4.5))
+    @pytest.mark.parametrize("rmax", [1, 2, 4.5])
     def test_compute_lab_frame_cylinder(self, ag, rmax):
         """Test lab frame values with explicit values."""
         p_obj = CylinderClass(ag, **{"pos_arg": 42, "rmax": rmax})
@@ -309,7 +308,7 @@ class TestCylinderBase(object):
 class TestCylinderBaseChilds:
     """Tests for the CylindereBase child classes."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA univers."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
@@ -356,7 +355,7 @@ class TestCylinderBaseChilds:
 class TestProfileCylinderBase:
     """Test the ProfileCylinderBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def u(self):
         """Generate a universe containing 125 atoms at random positions.
 
@@ -402,7 +401,7 @@ class TestProfileCylinderBase:
 
         return universe
 
-    @pytest.fixture()
+    @pytest.fixture
     def u_dimers(self):
         """Generate a universe containing two dimers with a dipole moment.
 
@@ -438,10 +437,10 @@ class TestProfileCylinderBase:
         """Scalable weights for profile calculations."""
         return scale * density_weights(ag, grouping, dens="number")
 
-    @pytest.fixture()
+    @pytest.fixture
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(
+        return dict(
             weighting_function=self.weights,
             weighting_function_kwargs=None,
             jitter=0.0,
@@ -461,7 +460,6 @@ class TestProfileCylinderBase:
             concfreq=0,
             output="profile.dat",
         )
-        return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):
@@ -508,15 +506,12 @@ class TestProfileCylinderBase:
         profile = ProfileCylinderBase(**params).run()
         actual = profile.results.profile.flatten()
 
-        if grouping == "atoms":
-            desired = [2, 2]
-        else:
-            desired = [2, 0]
+        desired = [2, 2] if grouping == "atoms" else [2, 0]
 
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize(
-        "bin_method, desired", [("cog", [1, 1]), ("com", [2, 0]), ("coc", [1, 1])]
+        ("bin_method", "desired"), [("cog", [1, 1]), ("com", [2, 0]), ("coc", [1, 1])]
     )
     def test_bin_method(self, u_dimers, bin_method, desired, params):
         """Test different bin methods."""

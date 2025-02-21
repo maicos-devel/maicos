@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the base modules."""
+"""Tests for the planar base classes."""
 
 import inspect
 import logging
@@ -22,7 +21,6 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos
 from maicos.core import CylinderBase, PlanarBase, ProfilePlanarBase
 from maicos.lib.weights import density_weights
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -72,16 +70,16 @@ class PlanarClass(PlanarBase):
         self.calculated_results = True
 
 
-class TestPlanarBase(object):
+class TestPlanarBase:
     """Tests for the TestPlanarBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def planar_class_obj(self, ag):
         """Planar class object."""
         return PlanarClass(ag, pos_arg=42)
@@ -92,30 +90,29 @@ class TestPlanarBase(object):
         assert planar_class_obj.pos_arg == 42
         assert planar_class_obj.opt_arg == "bar"
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_dim(self, ag, dim):
         """Test dim."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
         assert planar_class_obj.dim == dim
 
-    @pytest.mark.parametrize("dim, odims", [(0, (1, 2)), (1, (2, 0)), (2, (0, 1))])
+    @pytest.mark.parametrize(("dim", "odims"), [(0, (1, 2)), (1, (2, 0)), (2, (0, 1))])
     def test_odim(self, ag, dim, odims):
         """Test odims."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
         planar_class_obj._prepare()
         assert_equal(planar_class_obj.odims, odims)
 
-    @pytest.mark.parametrize("dim", (3, "x", -1))
+    @pytest.mark.parametrize("dim", [3, "x", -1])
     def test_wrong_dim(self, ag, dim):
         """Test dim."""
         with pytest.raises(ValueError, match="Dimension can only be x=0, y=1 or z=2."):
-            planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
-            planar_class_obj._prepare()
+            PlanarClass(ag, pos_arg=42, dim=dim)
 
     def test_wrong_zlims(self, ag):
         """Test wrong z limits."""
+        planar_class_obj = PlanarClass(ag, pos_arg=42, zmax=-1, zmin=0)
         with pytest.raises(ValueError, match="can not be smaller"):
-            planar_class_obj = PlanarClass(ag, pos_arg=42, zmax=-1, zmin=0)
             planar_class_obj._prepare()
 
     def test_box_center(self, ag):
@@ -123,7 +120,7 @@ class TestPlanarBase(object):
         planar_class_obj = PlanarClass(ag, pos_arg=42)
         assert_equal(planar_class_obj.box_center, ag.universe.dimensions[:3] / 2)
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_compute_lab_frame_planar_default(self, ag, dim):
         """Test lab frame values with default values."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
@@ -132,9 +129,9 @@ class TestPlanarBase(object):
         assert planar_class_obj.zmin == 0
         assert planar_class_obj.zmax == ag.universe.dimensions[dim]
 
-    @pytest.mark.parametrize("lim", ("zmin", "zmax"))
-    @pytest.mark.parametrize("pos", (-2, -1, 0, 1, 2, 4.5))
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("lim", ["zmin", "zmax"])
+    @pytest.mark.parametrize("pos", [-2, -1, 0, 1, 2, 4.5])
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_compute_lab_frame_planar(self, ag, lim, pos, dim):
         """Test lab frame values with explicit values."""
         p_obj = PlanarClass(ag, **{"pos_arg": 42, "dim": dim, lim: pos})
@@ -142,15 +139,15 @@ class TestPlanarBase(object):
 
         assert getattr(p_obj, lim) == p_obj.box_center[dim] + pos
 
-    @pytest.mark.parametrize("bin_width", (0, -0.5, "x"))
+    @pytest.mark.parametrize("bin_width", [0, -0.5, "x"])
     def test_wrong_bin_width(self, ag, bin_width):
         """Test bin_width."""
+        planar_class_obj = PlanarClass(ag, pos_arg=42, bin_width=bin_width)
         with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
-            planar_class_obj = PlanarClass(ag, pos_arg=42, bin_width=bin_width)
             planar_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", (1, 7.75, 125))
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_bin_width(self, ag, dim, bin_width):
         """Test bin_width."""
         planar_class_obj = PlanarClass(
@@ -165,7 +162,7 @@ class TestPlanarBase(object):
             planar_class_obj.means.L / planar_class_obj.n_bins,
         )
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_bin_edges(self, ag, dim):
         """Test edges of the bins."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim).run(stop=1)
@@ -248,7 +245,7 @@ class TestPlanarBase(object):
         planar_class_obj._trajectory = ag.universe.trajectory
         planar_class_obj.run()
 
-        assert planar_class_obj.means.L == ag.universe.dimensions[2]
+        assert ag.universe.dimensions[2] == planar_class_obj.means.L
 
     def test_zmin_zmax(self, ag):
         """Test zmin zmax."""
@@ -266,8 +263,8 @@ class TestPlanarBase(object):
         with pytest.raises(ValueError, match="can not be smaller or equal"):
             planar_class_obj._prepare()
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
-    @pytest.mark.parametrize("bin_width_in", (1, 7.75))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
+    @pytest.mark.parametrize("bin_width_in", [1, 7.75])
     def test_bin_pos(self, ag, dim, bin_width_in):
         """Test bin positions."""
         planar_class_obj = PlanarClass(ag, dim=dim, bin_width=bin_width_in, pos_arg=42)
@@ -297,8 +294,8 @@ class TestPlanarBase(object):
         assert planar_class_obj._obs.bin_area.dtype == np.float64
         assert planar_class_obj._obs.bin_volume.dtype == np.float64
 
-    @pytest.mark.parametrize("zmin", (-1, 0, 1))
-    @pytest.mark.parametrize("zmax", (2, 3, 4))
+    @pytest.mark.parametrize("zmin", [-1, 0, 1])
+    @pytest.mark.parametrize("zmax", [2, 3, 4])
     def test_results_bin_pos_zmin_zmax(self, ag, zmin, zmax):
         """Test the bin positions for non default zmin and zmax."""
         planar_class_obj = PlanarClass(ag, zmin=zmin, zmax=zmax, pos_arg=42)
@@ -313,7 +310,7 @@ class TestPlanarBase(object):
 class TestPlanarBaseChilds:
     """Tests for the PlanarBase child classes."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA univers."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
@@ -357,7 +354,7 @@ class TestPlanarBaseChilds:
 class TestProfilePlanarBase:
     """Test the ProfilePlanarBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def u(self):
         """Generate a universe containing 125 atoms at random positions.
 
@@ -395,7 +392,7 @@ class TestProfilePlanarBase:
 
         return universe
 
-    @pytest.fixture()
+    @pytest.fixture
     def u_dimers(self):
         """Generate a universe containing two dimers with a dipole moment."""
         universe = mda.Universe.empty(
@@ -427,10 +424,10 @@ class TestProfilePlanarBase:
         """Scalable weights for profile calculations."""
         return scale * density_weights(ag, grouping, dens="number")
 
-    @pytest.fixture()
+    @pytest.fixture
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        p = dict(
+        return dict(
             weighting_function=self.weights,
             weighting_function_kwargs=None,
             atomgroup=u.atoms,
@@ -449,7 +446,6 @@ class TestProfilePlanarBase:
             output="profile.dat",
             jitter=False,
         )
-        return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):
@@ -505,10 +501,7 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
         actual = profile.results.profile.flatten()
 
-        if grouping == "atoms":
-            desired = [1, 1, 1]
-        else:
-            desired = [1, np.nan, 1]
+        desired = [1, 1, 1] if grouping == "atoms" else [1, np.nan, 1]
 
         assert_equal(actual, desired)
 

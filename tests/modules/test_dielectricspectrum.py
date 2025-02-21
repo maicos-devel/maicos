@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricSpectrum class."""
+
 import sys
 from pathlib import Path
 
@@ -17,15 +17,14 @@ from numpy.testing import assert_allclose
 
 from maicos import DielectricSpectrum
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 
 
-class TestDielectricSpectrum(object):
+class TestDielectricSpectrum:
     """Tests for the DielectricSpectrum class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
@@ -38,10 +37,14 @@ class TestDielectricSpectrum(object):
         ds = DielectricSpectrum(ag)
         ds.run()
         ds.save()
-        open("susc.dat")
-        open("P_tseries.npy")
-        open("tseries.npy")
-        open("V.txt")
+        with open("susc.dat"):
+            pass
+        with open("P_tseries.npy"):
+            pass
+        with open("tseries.npy"):
+            pass
+        with open("V.txt"):
+            pass
 
     def test_output_name_prefix(self, ag, monkeypatch, tmp_path):
         """Test output name with custom prefix."""
@@ -50,10 +53,14 @@ class TestDielectricSpectrum(object):
         ds = DielectricSpectrum(ag, output_prefix="foo")
         ds.run()
         ds.save()
-        open("foo_susc.dat")
-        open("foo_P_tseries.npy")
-        open("foo_tseries.npy")
-        open("foo_V.txt")
+        with open("foo_susc.dat"):
+            pass
+        with open("foo_P_tseries.npy"):
+            pass
+        with open("foo_tseries.npy"):
+            pass
+        with open("foo_V.txt"):
+            pass
 
     def test_output_name_binned(self, ag, monkeypatch, tmp_path):
         """Test output name of binned data."""
@@ -66,11 +73,16 @@ class TestDielectricSpectrum(object):
         ds = DielectricSpectrum(ag, bins=5, binafter=0, segs=5)
         ds.run()
         ds.save()
-        open("susc.dat")
-        open("susc_binned.dat")
-        open("P_tseries.npy")
-        open("tseries.npy")
-        open("V.txt")
+        with open("susc.dat"):
+            pass
+        with open("susc_binned.dat"):
+            pass
+        with open("P_tseries.npy"):
+            pass
+        with open("tseries.npy"):
+            pass
+        with open("V.txt"):
+            pass
 
     def test_output(self, ag, monkeypatch, tmp_path):
         """Test output values by comparing with magic numbers."""

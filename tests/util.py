@@ -1,21 +1,19 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper and utilities functions for testing."""
+
 import logging
 import sys
 from pathlib import Path
-from typing import List, Tuple, Union
 
 import MDAnalysis as mda
 import numpy as np
 import sympy as sp
-
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +23,7 @@ from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
 def error_prop(f, variables, errors):
-    """
-    Analytic error propagation.
+    """Analytic error propagation.
 
     This function takes a sympy expression, its variables, and
     the corresponding error values as inputs and returns the analytic
@@ -46,12 +43,11 @@ def error_prop(f, variables, errors):
 def line_of_water_molecules(
     n_molecules: int = 1,
     distance: float = 10.0,
-    angle_deg: Union[float, List[float]] = 0.0,
-    axis_rotation: Tuple[float, float, float] = (0.0, 1.0, 0.0),
-    myvel: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    angle_deg: float | list[float] = 0.0,
+    axis_rotation: tuple[float, float, float] = (0.0, 1.0, 0.0),
+    myvel: tuple[float, float, float] = (0.0, 0.0, 0.0),
 ):
-    """
-    Create an MDAnalysis universe with regularly spaced molecules.
+    """Create an MDAnalysis universe with regularly spaced molecules.
 
     The molecules are placed along a line `distance` apart, have an orientation
     controlled by `angle_deg` and `axis_rotation`. All the molecules have the same
@@ -59,10 +55,18 @@ def line_of_water_molecules(
 
     Parameters
     ----------
+    n_molecules : int
+        number of molecules to create.
+    distance : float
+        distance between the molecules.
     angle_deg : float, List[float]
         angle by which the molecules will be rotated. If `angle_deg` is float all
         molecules will be rotated by the same angle. If List[float] each molecule will
         be rotated by a different angle.
+    axis_rotation : tuple[float, float, float]
+        axis of rotation.
+    myvel : tuple[float, float, float]
+        velocity of the molecules.
     """
     # import molecule topology
     fluid = []
@@ -91,11 +95,11 @@ def line_of_water_molecules(
             f"{n_molecules}."
         )
 
-    for _n, angle in zip(range(n_molecules), angle_deg_list):
+    for _n, angle in zip(range(n_molecules), angle_deg_list, strict=True):
         rotations.append([angle, axis_rotation])
 
     # multiply molecules and apply translation and rotations
-    for molecule, rotation, position in zip(fluid, rotations, positions):
+    for molecule, rotation, position in zip(fluid, rotations, positions, strict=True):
         molecule.atoms.rotateby(rotation[0], rotation[1])
         molecule.atoms.translate(position)
 
@@ -124,8 +128,7 @@ def circle_of_water_molecules(
     radius=5,
     bin_width=1,
 ):
-    """
-    Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
+    """Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
 
     Molecules are placed on a circle of radius `radius` around the box center. The box
     dimensions are set to 20x20x20. The radius must be smaller than 10!
@@ -152,7 +155,7 @@ def circle_of_water_molecules(
         rotations.append([angle_deg, axis_rotation])
 
     # multiply molecules and apply translation and rotations
-    for molecule, rotation, position in zip(fluid, rotations, positions):
+    for molecule, rotation, position in zip(fluid, rotations, positions, strict=True):
         molecule.atoms.rotateby(rotation[0], rotation[1])
         molecule.atoms.translate(position)
 

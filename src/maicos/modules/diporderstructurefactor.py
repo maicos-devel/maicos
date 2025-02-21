@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing structure factor for dipoles."""
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -51,6 +49,7 @@ class DiporderStructureFactor(AnalysisBase):
         length of binned q-vectors
     results.structure_factors : numpy.ndarray
         Structure factor
+
     """
 
     def __init__(
@@ -58,7 +57,7 @@ class DiporderStructureFactor(AnalysisBase):
         atomgroup: mda.AtomGroup,
         bin_method: str = "com",
         grouping: str = "molecules",
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
@@ -162,7 +161,7 @@ class DiporderStructureFactor(AnalysisBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         self.savetxt(
             self.output,
             np.vstack(

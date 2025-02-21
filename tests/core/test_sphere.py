@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the base modules."""
+"""Tests for the spherical base classes."""
 
 import inspect
 import logging
@@ -24,7 +23,6 @@ import maicos
 from maicos.core import ProfileSphereBase, SphereBase
 from maicos.lib.math import transform_sphere
 from maicos.lib.weights import density_weights
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -71,16 +69,16 @@ class SphereClass(SphereBase):
         self.calculated_results = True
 
 
-class TestSphereBase(object):
+class TestSphereBase:
     """Tests for the TestPlanarBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR, in_memory=True)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def sphere_class_obj(self, ag):
         """Planar class object."""
         return SphereClass(ag, pos_arg=42)
@@ -93,18 +91,18 @@ class TestSphereBase(object):
 
     def test_wrong_rlims(self, ag):
         """Test wrong r limits."""
+        sphere_class_obj = SphereClass(ag, pos_arg=42, rmax=1, rmin=2)
         with pytest.raises(ValueError, match="can not be smaller"):
-            sphere_class_obj = SphereClass(ag, pos_arg=42, rmax=1, rmin=2)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", (0, -0.5, "x"))
+    @pytest.mark.parametrize("bin_width", [0, -0.5, "x"])
     def test_wrong_bin_width(self, ag, bin_width):
         """Test bin_width error."""
+        sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width)
         with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
-            sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width)
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", (1, 7.75, 125))
+    @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
     def test_bin_width(self, ag, bin_width):
         """Test bin_width."""
         sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width).run()
@@ -202,7 +200,7 @@ class TestSphereBase(object):
         assert sphere_class_obj._obs.bin_area.dtype == np.float64
         assert sphere_class_obj._obs.bin_volume.dtype == np.float64
 
-    @pytest.mark.parametrize("bin_width_in", (0.1, 0.775))
+    @pytest.mark.parametrize("bin_width_in", [0.1, 0.775])
     def test_results_bin_pos(self, ag, bin_width_in):
         """Test bin positions."""
         sphere_class_obj = SphereClass(ag, bin_width=bin_width_in, pos_arg=42)
@@ -257,7 +255,7 @@ class TestSphereBase(object):
 
         assert cls.rmax == ag.universe.dimensions.min() / 2
 
-    @pytest.mark.parametrize("rmax", (1, 2, 4.5))
+    @pytest.mark.parametrize("rmax", [1, 2, 4.5])
     def test_compute_lab_frame_sphere(self, ag, rmax):
         """Test lab frame values with explicit values."""
         p_obj = SphereClass(ag, **{"pos_arg": 42, "rmax": rmax})
@@ -307,7 +305,7 @@ class TestSphereBase(object):
 class TestSphereBaseChilds:
     """Tests for the CylindereBase child classes."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA univers."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
@@ -348,7 +346,7 @@ class TestSphereBaseChilds:
 class TestProfileSphereBase:
     """Test the ProfileSphereBase class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def u(self):
         """Generate a universe containing 125 atoms at random positions.
 
@@ -397,7 +395,7 @@ class TestProfileSphereBase:
 
         return universe
 
-    @pytest.fixture()
+    @pytest.fixture
     def u_dimers(self):
         """Generate a universe containing two dimers with a dipole moment."""
         universe = mda.Universe.empty(
@@ -429,10 +427,10 @@ class TestProfileSphereBase:
         """Scalable weights for profile calculations."""
         return scale * density_weights(ag, grouping, dens="number")
 
-    @pytest.fixture()
+    @pytest.fixture
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        p = dict(
+        return dict(
             weighting_function=self.weights,
             weighting_function_kwargs=None,
             jitter=0.0,
@@ -449,7 +447,6 @@ class TestProfileSphereBase:
             concfreq=0,
             output="profile.dat",
         )
-        return p
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):
@@ -492,15 +489,12 @@ class TestProfileSphereBase:
         profile = ProfileSphereBase(**params).run()
         actual = profile.results.profile.flatten()
 
-        if grouping == "atoms":
-            desired = [4, 0]
-        else:
-            desired = [2, 0]
+        desired = [4, 0] if grouping == "atoms" else [2, 0]
 
         assert_equal(actual, desired)
 
     @pytest.mark.parametrize(
-        "bin_method, desired",
+        ("bin_method", "desired"),
         [("cog", [np.nan, 1]), ("com", [1, np.nan]), ("coc", [np.nan, 1])],
     )
     def test_bin_method(self, u_dimers, bin_method, desired, params):
@@ -516,7 +510,7 @@ class TestProfileSphereBase:
         actual = profile.results.profile.flatten()
         assert_equal(actual, desired)
 
-    @pytest.mark.parametrize("unwrap, desired", [(False, [2, 0]), (True, [2, 0])])
+    @pytest.mark.parametrize(("unwrap", "desired"), [(False, [2, 0]), (True, [2, 0])])
     def test_unwrap(self, u_dimers, unwrap, desired, params):
         """Test making molecules whole."""
         params.update(

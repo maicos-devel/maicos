@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricCylinder class."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ import sympy as sp
 from numpy.testing import assert_allclose
 
 from maicos import DielectricCylinder
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
@@ -31,7 +30,7 @@ from data import (  # noqa: E402
 from util import error_prop  # noqa: E402
 
 
-class TestDielectricCylinder(object):
+class TestDielectricCylinder:
     """Tests for the DielectricCylinder class.
 
     Number of times DielectricCylinder broke: ||
@@ -62,25 +61,25 @@ class TestDielectricCylinder(object):
 
     """
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_two_frames(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_2F_TRR_NPT)
         return u.atoms
 
-    @pytest.mark.parametrize("selection", (1, 2))
+    @pytest.mark.parametrize("selection", [1, 2])
     def test_radial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
@@ -111,10 +110,7 @@ class TestDielectricCylinder(object):
             -dipole.atoms.center_of_mass() + dipole.dimensions[:3] / 2
         )
 
-        if selection == 2:
-            n = int(len(dipole.atoms) / selection)
-        else:
-            n = len(dipole.atoms)
+        n = int(len(dipole.atoms) / selection) if selection == 2 else len(dipole.atoms)
         # very fine binning to get the correct value for the dipole
         eps = DielectricCylinder(dipole.atoms[:n], bin_width=0.001, vcutwidth=0.001)
         eps.run()
@@ -135,7 +131,7 @@ class TestDielectricCylinder(object):
         # geometry)
         assert_allclose(np.sum(eps._obs.m_z), 0, rtol=0.1)
 
-    @pytest.mark.parametrize("selection", (1, 2))
+    @pytest.mark.parametrize("selection", [1, 2])
     def test_axial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
@@ -167,10 +163,7 @@ class TestDielectricCylinder(object):
             -dipole.atoms.center_of_mass() + dipole.dimensions[:3] / 2
         )
 
-        if selection == 2:
-            n = int(len(dipole.atoms) / selection)
-        else:
-            n = len(dipole.atoms)
+        n = int(len(dipole.atoms) / selection) if selection == 2 else len(dipole.atoms)
 
         # very fine binning to get the correct value for the dipole
         eps = DielectricCylinder(dipole.atoms[:n], bin_width=1, vcutwidth=0.001)
@@ -192,9 +185,9 @@ class TestDielectricCylinder(object):
         eps = DielectricCylinder(ag_single_frame)
         eps.run()
         eps.save()
-        res_z = np.loadtxt("{}_z.dat".format(eps.output_prefix))
+        res_z = np.loadtxt(f"{eps.output_prefix}_z.dat")
         assert_allclose(eps.results["eps_z"], res_z[:, 1], rtol=1e-1)
-        res_r = np.loadtxt("{}_r.dat".format(eps.output_prefix))
+        res_r = np.loadtxt(f"{eps.output_prefix}_r.dat")
         assert_allclose(eps.results["eps_r"], res_r[:, 1], rtol=1e-2)
 
     def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
@@ -204,8 +197,10 @@ class TestDielectricCylinder(object):
         eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
         eps.run()
         eps.save()
-        open("foo_z.dat")
-        open("foo_r.dat")
+        with open("foo_z.dat"):
+            pass
+        with open("foo_r.dat"):
+            pass
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""
@@ -219,7 +214,7 @@ class TestDielectricCylinder(object):
         ag = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp").atoms
         for i in range(16):
             # Only warn if user sets the ranges
-            result = False if i == 0 else True
+            result = i != 0
             # Check all possible combinations of set ranges
             bitmask = f"{i:04b}"
             zmin = float(bitmask[0]) if bitmask[0] != "0" else None
@@ -232,7 +227,7 @@ class TestDielectricCylinder(object):
             )
 
     def test_error_propagation(self, ag_two_frames):
-        """Test the analytic error propagation"""
+        """Test the analytic error propagation."""
         eps = DielectricCylinder(ag_two_frames).run()
 
         # set values and error for testing error propagation

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DiporderPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -17,20 +17,19 @@ from numpy.testing import assert_allclose
 
 from maicos import DiporderSphere
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 
 
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
@@ -40,7 +39,7 @@ class ReferenceAtomGroups:
 class TestDiporderSphere(ReferenceAtomGroups):
     """Tests for the DiporderSphere class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def result_dict(self):
         """Results dictionary for test_DiporderSphere_trajectory."""
         res = {}

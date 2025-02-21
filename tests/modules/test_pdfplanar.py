@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the PDFPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -18,17 +18,16 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import PDFPlanar
 from maicos.lib.util import get_compound
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402
 
 
-class TestPDFPlanar(object):
+class TestPDFPlanar:
     """Tests for the PDFPlanar class."""
 
     def _molecule_positions(self):
         """Positions of 16 molecules in bcc configuration."""
-        positions = [
+        return [
             [0, 0, 0],
             [10, 0, 0],
             [0, 10, 0],
@@ -46,16 +45,15 @@ class TestPDFPlanar(object):
             [15, 15, 5],
             [15, 15, 15],
         ]
-        return positions
 
-    @pytest.fixture()
+    @pytest.fixture
     def get_universe(self):
         """Get a test universe with 16 water molecules bcc configuration."""
         fluid = []
         for _n in range(16):
             fluid.append(mda.Universe(SPCE_ITP, SPCE_GRO, topology_format="itp"))
 
-        for molecule, position in zip(fluid, self._molecule_positions()):
+        for molecule, position in zip(fluid, self._molecule_positions(), strict=True):
             molecule.atoms.translate(position)
         u = mda.Merge(*[molecule.atoms for molecule in fluid])
 
@@ -180,7 +178,7 @@ class TestPDFPlanar(object):
         return pdfplanar
 
     @pytest.mark.parametrize(
-        "bin_method, count", [("com", 24), ("coc", 16), ("cog", 16)]
+        ("bin_method", "count"), [("com", 24), ("coc", 16), ("cog", 16)]
     )
     def test_bin_method(self, get_universe, bin_method, count):
         """Test bin_methods."""
@@ -196,7 +194,7 @@ class TestPDFPlanar(object):
         """Test that range is larger thanhalf of the cell length."""
         L = min(get_universe.universe.dimensions[:2]) / 2
         pdfplanar = self.run_pdf(get_universe)
+        pdfplanar.dmax = L + 0.1
 
         with pytest.raises(ValueError, match="exceeds half of the box"):
-            pdfplanar.dmax = L + 0.1
             pdfplanar.run()

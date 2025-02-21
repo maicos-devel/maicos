@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -34,6 +33,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     ------
     ValueError
         if grouping or dens parameter is not supported.
+
     """
     if grouping not in ["atoms", "residues", "segments", "molecules", "fragments"]:
         raise ValueError(
@@ -48,22 +48,19 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
         else:
             numbers = getattr(atomgroup, f"n_{grouping}")
         return np.ones(numbers)
-    elif dens == "mass":
+    if dens == "mass":
         if grouping == "atoms":
             masses = atomgroup.masses
         else:
             masses = atomgroup.total_mass(compound=grouping)
         return masses
-    elif dens == "charge":
+    if dens == "charge":
         if grouping == "atoms":
             return atomgroup.charges
-        else:
-            return atomgroup.total_charge(compound=grouping)
-    else:
-        raise ValueError(
-            f"'{dens}' density type is not supported. "
-            "Use `mass`, `number` or `charge`."
-        )
+        return atomgroup.total_charge(compound=grouping)
+    raise ValueError(
+        f"'{dens}' density type is not supported. Use `mass`, `number` or `charge`."
+    )
 
 
 @render_docs
@@ -84,6 +81,7 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     ------
     NotImplementedError
         Currently only works for `grouping='atoms'`
+
     """
     if grouping != "atoms":
         raise NotImplementedError(
@@ -114,6 +112,7 @@ def diporder_weights(
         Callable that returns unit vectors on which the projection is performed.
         Returned unit_vectors can either be of shape (3,) or of shape (n, 3). For a
         shape of (3,) the same unit vector is used for all calculations.
+
     """
     dipoles = atomgroup.dipole_vector(compound=grouping)
 
@@ -122,7 +121,7 @@ def diporder_weights(
     # Extend unit_vectors to be of the same length as of dipoles
     if unit_vectors.shape == (3,):
         np.tile(unit_vectors, len(dipoles)).reshape(len(dipoles), 3)
-    elif not unit_vectors.shape == (len(dipoles), 3):
+    elif unit_vectors.shape != (len(dipoles), 3):
         raise ValueError(
             f"Returned unit vectors have shape {unit_vectors.shape}. But only shape "
             f"(3,) or {(len(dipoles), 3)} is allowed."
@@ -175,6 +174,7 @@ def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.n
     -------
     numpy.ndarray
         1D array of calculated weights. The length depends on the grouping.
+
     """
     atom_vels = atomgroup.velocities[:, vdim]
 

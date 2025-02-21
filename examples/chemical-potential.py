@@ -1,14 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""
-.. _howto-chemical-potential:
-
+r""".. _howto-chemical-potential:
 
 Ideal component of the chemical potential
 =========================================
@@ -57,7 +54,7 @@ Density modules. We will exemplify this in the following example using the
 :class:`maicos.DensityPlanar` module.
 
 First we'll import every module we need.
-"""
+"""  # noqa: D415
 # %%
 
 import MDAnalysis as mda
@@ -65,7 +62,6 @@ import numpy as np
 from scipy import constants as const
 
 import maicos
-
 
 # %%
 # Now we define a function that calculates :math:`\mu` according to the equation above.
@@ -90,10 +86,9 @@ def mu(rho: np.ndarray, T: float, m: float) -> np.ndarray:
 
     if np.all(rho > 0):
         return RT * np.log(rho * db**3)
-    elif np.any(rho == 0):
+    if np.any(rho == 0):
         return np.float64("-inf") * np.ones(rho.shape)
-    else:
-        return np.float64("nan") * np.ones(rho.shape)
+    return np.float64("nan") * np.ones(rho.shape)
 
 
 # %%
@@ -118,8 +113,7 @@ def dmu(rho: np.ndarray, drho: np.ndarray, T: float) -> np.ndarray:
 
     if np.all(rho > 0):
         return RT * (drho / rho)
-    else:
-        return np.float64("nan") * np.ones(rho.shape)
+    return np.float64("nan") * np.ones(rho.shape)
 
 
 # %%

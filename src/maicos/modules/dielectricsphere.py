@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 """Module for calculating spherical dielectric profiles."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -17,7 +15,6 @@ import scipy.constants
 
 from ..core import SphereBase
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +55,7 @@ class DielectricSphere(SphereBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     def __init__(
@@ -66,11 +64,11 @@ class DielectricSphere(SphereBase):
         bin_width: float = 0.1,
         temperature: float = 300,
         output_prefix: str = "eps_sph",
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         concfreq: int = 0,
         jitter: float = 0.0,
         rmin: float = 0,
-        rmax: Optional[float] = None,
+        rmax: float | None = None,
         unwrap: bool = True,
         pack: bool = True,
     ) -> None:
@@ -167,7 +165,7 @@ class DielectricSphere(SphereBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,14 +8,12 @@
 r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
 from ..lib.util import render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,18 +35,19 @@ class DiporderCylinder(ProfileCylinderBase):
     Attributes
     ----------
     ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         bin_width: float = 1,
         rmin: float = 0,
-        rmax: Optional[float] = None,
-        refgroup: Optional[mda.AtomGroup] = None,
+        rmax: float | None = None,
+        refgroup: mda.AtomGroup | None = None,
         grouping: str = "residues",
         unwrap: bool = True,
         pack: bool = True,
@@ -60,10 +58,7 @@ class DiporderCylinder(ProfileCylinderBase):
         order_parameter: str = "P0",
         jitter: float = 0.0,
     ) -> None:
-        if order_parameter == "P0":
-            normalization = "volume"
-        else:
-            normalization = "number"
+        normalization = "volume" if order_parameter == "P0" else "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_cylinder(

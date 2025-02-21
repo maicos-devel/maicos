@@ -1,7 +1,7 @@
 # distutils: language = c
 # cython: language_level=3
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the file AUTHORS for the full list of names)
 #
 # Released under the GNU Public Licence, v2 or any higher version

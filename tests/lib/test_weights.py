@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.weights
 from maicos.lib.util import unit_vectors_planar
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
@@ -120,7 +119,7 @@ class Testdiporder_weights:
     correctly.
     """
 
-    @pytest.mark.parametrize("pdim, P0", [(0, 0), (1, 0), (2, 0.491608)])
+    @pytest.mark.parametrize(("pdim", "P0"), [(0, 0), (1, 0), (2, 0.491608)])
     def test_P0(self, ag_spce, pdim, P0):
         """Test calculation of the projection of the dipole moment."""
 
@@ -136,7 +135,7 @@ class Testdiporder_weights:
 
         assert_allclose(diporder_weights, np.array([P0]))
 
-    @pytest.mark.parametrize("pdim, cos_theta", [(0, 0), (1, 0), (2, 1)])
+    @pytest.mark.parametrize(("pdim", "cos_theta"), [(0, 0), (1, 0), (2, 1)])
     def test_cos_theta(self, ag_spce, pdim, cos_theta):
         """Test calculation of the cos of the dipole moment and a unit vector."""
 
