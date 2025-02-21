@@ -1,14 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar velocity profiles."""
-
-from typing import Optional
 
 import MDAnalysis as mda
 
@@ -41,16 +38,17 @@ class VelocityPlanar(ProfilePlanarBase):
     Attributes
     ----------
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         bin_width: float = 1.0,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         sym: bool = False,
         grouping: str = "atoms",
         unwrap: bool = True,
@@ -65,10 +63,7 @@ class VelocityPlanar(ProfilePlanarBase):
         self._locals = locals()
         if vdim not in [0, 1, 2]:
             raise ValueError("Velocity dimension can only be x=0, y=1 or z=2.")
-        if flux:
-            normalization = "volume"
-        else:
-            normalization = "number"
+        normalization = "volume" if flux else "number"
 
         super().__init__(
             atomgroup=atomgroup,

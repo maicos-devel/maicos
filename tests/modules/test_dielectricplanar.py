@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ import sympy as sp
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DielectricPlanar
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -39,7 +38,7 @@ def dipoles(positions, orientations):
     template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
 
     dipoles = []
-    for position, orientation in zip(positions, orientations):
+    for position, orientation in zip(positions, orientations, strict=True):
         position = np.array(position)
         orientation = np.array(orientation)
         dipole = template.copy()
@@ -59,7 +58,7 @@ def dipoles(positions, orientations):
     return u.atoms
 
 
-class TestDielectricPlanar(object):
+class TestDielectricPlanar:
     """Tests for the DielectricPlanar class.
 
     Number of times DielectricPlanar broke: ||||
@@ -90,26 +89,26 @@ class TestDielectricPlanar(object):
           longer counted in the histogram.
     """
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_two_frames(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_2F_TRR_NPT)
         return u.atoms
 
     @pytest.mark.parametrize(
-        "orientation, M_par, M_perp",
-        (
+        ("orientation", "M_par", "M_perp"),
+        [
             ([0, 0, 1], [0, 0], 1),
             ([1, 0, 0], [1, 0], 0),
             ([0, 1, 0], [0, 1], 0),
             ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),
-        ),
+        ],
     )
     def test_single_dipole_orientations(self, orientation, M_par, M_perp):
         """Test the dipole density with a single dipole.
@@ -137,15 +136,15 @@ class TestDielectricPlanar(object):
         assert_allclose(np.sum(eps._obs.m_par, axis=0) * bin_volume, M_par, rtol=0.1)
         assert_allclose(np.sum(eps._obs.m_perp, axis=0) * bin_volume, M_perp, rtol=0.1)
 
-    @pytest.mark.parametrize("selection", (1, 2))
+    @pytest.mark.parametrize("selection", [1, 2])
     @pytest.mark.parametrize(
-        "orientation, M_par, M_perp",
-        (
+        ("orientation", "M_par", "M_perp"),
+        [
             ([0, 0, 1], [0, 0], 1),
             ([1, 0, 0], [1, 0], 0),
             ([0, 1, 0], [0, 1], 0),
             ([1, 1, 1], [1 / np.sqrt(3), 1 / np.sqrt(3)], 1 / np.sqrt(3)),
-        ),
+        ],
     )
     def test_multiple_dipole_orientations(self, selection, orientation, M_par, M_perp):
         """Test the dipole moment density with multiple dipoles.
@@ -175,10 +174,7 @@ class TestDielectricPlanar(object):
         n_dipoles = len(pos)
         dipole = dipoles(pos, [orientation] * n_dipoles)
 
-        if selection == 2:
-            n = int(len(dipole) / selection) + 1
-        else:
-            n = len(dipole)
+        n = int(len(dipole) / selection) + 1 if selection == 2 else len(dipole)
         # very fine binning to get the correct value for the dipole
         eps = DielectricPlanar(dipole[:n], bin_width=0.01, vcutwidth=0.01)
         eps.run()
@@ -233,9 +229,9 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(ag_two_frames)
         eps.run()
         eps.save()
-        res_perp = np.loadtxt("{}_perp.dat".format(eps.output_prefix))
+        res_perp = np.loadtxt(f"{eps.output_prefix}_perp.dat")
         assert_allclose(eps.results.eps_perp, res_perp[:, 1])
-        res_par = np.loadtxt("{}_par.dat".format(eps.output_prefix))
+        res_par = np.loadtxt(f"{eps.output_prefix}_par.dat")
         assert_allclose(eps.results.eps_par, res_par[:, 1])
 
     def test_output_name(self, ag_two_frames, monkeypatch, tmp_path):
@@ -245,8 +241,10 @@ class TestDielectricPlanar(object):
         eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
         eps.run()
         eps.save()
-        open("foo_perp.dat")
-        open("foo_par.dat")
+        with open("foo_perp.dat"):
+            pass
+        with open("foo_par.dat"):
+            pass
 
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""
@@ -272,7 +270,7 @@ class TestDielectricPlanar(object):
             assert_equal(A, eps_sym.results[d])
 
     @pytest.mark.parametrize(
-        "zmin, zmax, result",
+        ("zmin", "zmax", "result"),
         [(1, None, True), (None, 1, True), (1, 1, True), (None, None, False)],
     )
     def test_range_warning(self, caplog, zmin, zmax, result):

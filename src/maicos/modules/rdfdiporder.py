@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing Radial Distribution functions for dipoles."""
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -65,12 +63,13 @@ class RDFDiporder(AnalysisBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     def __init__(
         self,
         g1: mda.AtomGroup,
-        g2: Optional[mda.AtomGroup] = None,
+        g2: mda.AtomGroup | None = None,
         bin_width: float = 0.1,
         rmin: float = 0.0,
         rmax: float = 15.0,
@@ -79,7 +78,7 @@ class RDFDiporder(AnalysisBase):
         grouping: str = "residues",
         unwrap: bool = True,
         pack: bool = True,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         jitter: float = 0.0,
         concfreq: int = 0,
         output: str = "diporderrdf.dat",
@@ -181,7 +180,7 @@ class RDFDiporder(AnalysisBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         columns = ["r (Å)", "rdf"]
         if self.norm in ["rdf", "density"]:
             columns[1] += " (Å^3)"

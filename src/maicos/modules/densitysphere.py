@@ -1,21 +1,19 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing spherical density profiles."""
+
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +34,7 @@ class DensitySphere(ProfileSphereBase):
     Attributes
     ----------
     ${PROFILE_SPHERE_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
@@ -44,8 +43,8 @@ class DensitySphere(ProfileSphereBase):
         dens: str = "mass",
         bin_width: float = 1,
         rmin: float = 0,
-        rmax: Optional[float] = None,
-        refgroup: Optional[mda.AtomGroup] = None,
+        rmax: float | None = None,
+        refgroup: mda.AtomGroup | None = None,
         grouping: str = "atoms",
         unwrap: bool = True,
         pack: bool = True,

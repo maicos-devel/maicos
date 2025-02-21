@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for planar analysis."""
+
 import logging
-from typing import Callable, Dict, Optional, Union
+from collections.abc import Callable
 
 import MDAnalysis as mda
 import numpy as np
@@ -16,7 +16,6 @@ import numpy as np
 from ..lib.math import symmetrize
 from ..lib.util import render_docs
 from .base import AnalysisBase, ProfileBase
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +54,7 @@ class PlanarBase(AnalysisBase):
         :math:`N_\mathrm{bins}` is the number of bins.
     _obs.bin_volume : numpy.ndarray, (n_bins)
         Volume of an cuboid of each bin (in Å^3) in the current frame.
+
     """
 
     def __init__(
@@ -62,12 +62,12 @@ class PlanarBase(AnalysisBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         dim: int,
-        zmin: Union[None, float],
-        zmax: Union[None, float],
+        zmin: None | float,
+        zmax: None | float,
         bin_width: float,
         wrap_compound: str,
     ):
@@ -83,8 +83,7 @@ class PlanarBase(AnalysisBase):
 
         if dim not in [0, 1, 2]:
             raise ValueError("Dimension can only be x=0, y=1 or z=2.")
-        else:
-            self.dim = dim
+        self.dim = dim
 
         # These values are requested by the user, but the actual ones are calculated
         # during runtime in the lab frame
@@ -130,8 +129,8 @@ class PlanarBase(AnalysisBase):
                 self.n_bins = int(np.ceil(L / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
-        except TypeError:
-            raise ValueError("Binwidth must be a number.")
+        except TypeError as err:
+            raise ValueError("Binwidth must be a number.") from err
 
     def _single_frame(self):
         """Single frame for the planar analysis."""
@@ -171,6 +170,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
     Attributes
     ----------
     ${PROFILE_PLANAR_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
@@ -178,19 +178,19 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         dim: int,
-        zmin: Union[None, float],
-        zmax: Union[None, float],
+        zmin: None | float,
+        zmax: None | float,
         bin_width: float,
         sym: bool,
         grouping: str,
         bin_method: str,
         output: str,
         weighting_function: Callable,
-        weighting_function_kwargs: Union[None, Dict],
+        weighting_function_kwargs: None | dict,
         normalization: str,
     ):
         PlanarBase.__init__(
@@ -227,16 +227,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         ProfileBase._prepare(self)
 
         if self.sym and self.refgroup is None:
-            raise ValueError(
-                "For symmetrization the `refgroup` argument is " "required."
-            )
+            raise ValueError("For symmetrization the `refgroup` argument is required.")
 
-        logger.info(
-            f"Computing {self.grouping} profile along " f"{'XYZ'[self.dim]}-axes."
-        )
+        logger.info(f"Computing {self.grouping} profile along {'XYZ'[self.dim]}-axes.")
 
     def _compute_histogram(
-        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+        self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = positions[:, self.dim]
         hist, _ = np.histogram(

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -17,12 +16,9 @@ from datetime import datetime
 from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
-from typing import Dict, List
-
 import tomli
 
 import maicos
-
 
 ROOT = Path("../../")
 
@@ -89,7 +85,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: List[str] = []
+exclude_patterns: list[str] = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "tango"
@@ -112,7 +108,7 @@ html_title = "    "
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
-html_static_path: List[str] = []
+html_static_path: list[str] = []
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -153,7 +149,7 @@ htmlhelp_basename = "MAICoSdoc"
 
 # -- Options for LaTeX output ------------------------------------------------
 
-latex_elements: Dict[str, str] = {
+latex_elements: dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

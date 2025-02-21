@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""
-.. _howto-spatial-dipole-dipole-correlations:
+r""".. _howto-spatial-dipole-dipole-correlations:
 
 Calculating and interpreting dipolar pair correlation functions
 ===============================================================
@@ -19,7 +17,7 @@ functions are connected to each other and electrostatic properties like the diel
 constant :math:`\varepsilon` and the Kirkwood factor :math:`g_K`.
 
 We start by importing the necessarary modules
-"""
+"""  # noqa: D415
 # %%
 
 import matplotlib.pyplot as plt
@@ -30,7 +28,6 @@ from MDAnalysis.analysis.dielectric import DielectricConstant
 
 import maicos
 from maicos.lib.math import compute_rdf_structure_factor
-
 
 # %%
 # Our example system is :math:`N=512` rigid SPC/E water molecules simulated in an NVT
@@ -125,6 +122,7 @@ def kirkwood_factor_KF(
         dipole moment of a molecule (eÅ)
     temperature : float
         temperature of the simulation K
+
     """
     dipole_moment_sq = (
         molecular_dipole_moment
@@ -356,6 +354,7 @@ def dielectric_constant_struc_fact(S_0: float, molecular_dipole_moment: float) -
         the q -> 0 limit if the dipololar structure factor
     molecular_dipole_moment : float
         dipole moment of a molecule (eÅ)
+
     """
     dipole_moment_sq = (
         molecular_dipole_moment

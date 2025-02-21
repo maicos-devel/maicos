@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -18,7 +17,7 @@ from maicos import TemperaturePlanar
 class TestTemperaturProfile(ReferenceAtomGroups):
     """Tests for the TemperaturePlanar class."""
 
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_dens(self, ag, dim):
         """Test mean temperature."""
         dens = TemperaturePlanar(ag, dim=dim).run()

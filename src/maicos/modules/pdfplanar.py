@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 r"""Module for computing 2D planar pair distribution functions."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -17,7 +15,6 @@ from MDAnalysis.lib.distances import capped_distance
 
 from ..core import PlanarBase
 from ..lib.util import get_center, get_compound, render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -103,26 +100,27 @@ class PDFPlanar(PlanarBase):
         distances to which the PDF is calculated with shape (pdf_nbins) (Å)
     results.pdf: np.ndrray
         PDF with shape (pdf_nbins, n_bins) (1/Å^3)
+
     """
 
     def __init__(
         self,
         g1: mda.AtomGroup,
-        g2: Optional[mda.AtomGroup] = None,
+        g2: mda.AtomGroup | None = None,
         pdf_bin_width: float = 0.3,
         dzheight: float = 0.1,
         dmin: float = 0.0,
-        dmax: Optional[float] = None,
+        dmax: float | None = None,
         bin_method: str = "com",
         output: str = "pdf.dat",
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         concfreq: int = 0,
         jitter: float = 0.0,
         dim: int = 2,
-        zmin: Optional[float] = None,
-        zmax: Optional[float] = None,
+        zmin: float | None = None,
+        zmax: float | None = None,
         bin_width: float = 1,
     ) -> None:
         self._locals = locals()
@@ -178,8 +176,8 @@ class PDFPlanar(PlanarBase):
                 )
             else:
                 raise ValueError("PDF bin_width must be a positive number.")
-        except TypeError:
-            raise ValueError("PDF bin_width must be a number.")
+        except TypeError as err:
+            raise ValueError("PDF bin_width must be a number.") from err
 
         if self.bin_method not in ["cog", "com", "coc"]:
             raise ValueError(
@@ -284,7 +282,7 @@ class PDFPlanar(PlanarBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         columns = ["r [Å]"]
         for z in self.results.bin_pos:
             columns.append(f"pdf at {z:.2f} Å [Å^-3]")

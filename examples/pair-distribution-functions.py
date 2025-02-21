@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""
+""".. _howto-pair-distribution-functions:
+
 Pair distribution functions
 ===========================
 
@@ -25,7 +25,7 @@ downloaded under :download:`topology <graphene_water.tpr>` and
 From these files you can create a MDAnalysis universe object.
 
 We begin by importing the necessary modules.
-"""
+"""  # noqa: D415
 # %%
 
 import matplotlib.pyplot as plt
@@ -33,7 +33,6 @@ import MDAnalysis as mda
 import numpy as np
 
 import maicos
-
 
 # %%
 #

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Check if the CHANGELOG has been modified with respect to the main branch."""
 import os
+
 import git
 
 
 class ChangelogError(Exception):
     """Changelog error."""
+
     pass
 
 
@@ -16,7 +18,7 @@ repo = git.Repo(repo_path)
 
 file = repo.git.show(f"origin/main:{changelog}")
 
-with open(os.path.join(repo_path, changelog), 'r') as f:
+with open(os.path.join(repo_path, changelog)) as f:
     workfile = f.read()
 
 if "CI_OPEN_MERGE_REQUESTS" in os.environ and file.strip() == workfile.strip():

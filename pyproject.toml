@@ -20,18 +20,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "maicos"
-description = "Analyse molecular dynamics simulations of interfacial and confined systems."
 authors = [{name = "MAICoS Developer Team"}]
-maintainers = [
-    {name = "Philip Loche"},
-    {name = "Henrik Stooß"},
-    {name = "Alexander Schlaich"}
-]
-readme = "README.rst"
-requires-python = ">=3.10"
-keywords = ["Science", "Molecular Dynamics", "Confined Systems", "MDAnalysis"]
-license = {text = "GPL-3.0-or-later"}
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -53,12 +42,31 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Shells",
 ]
+description = "Analyse molecular dynamics simulations of interfacial and confined systems."
+dynamic = ["version"]
+keywords = [
+    "Science",
+    "Molecular Dynamics",
+    "Confined Systems",
+    "MDAnalysis",
+]
+license = {text = "GPL-3.0-or-later"}
+maintainers = [
+    {name = "Philip Loche"},
+    {name = "Henrik Stooß"},
+    {name = "Alexander Schlaich"}
+]
+name = "maicos"
+readme = "README.rst"
+requires-python = ">=3.10"
 dependencies = [
     "mdacli>=0.1.28",
     "MDAnalysis>=2.8.0",
     "typing_extensions",
 ]
-dynamic = ["version"]
+
+[project.optional-dependencies]
+examples = ["matplotlib"]
 
 [project.urls]
 homepage = "https://www.maicos-analysis.org"
@@ -69,36 +77,69 @@ issues = "https://gitlab.com/maicos-devel/maicos/-/issues"
 discord = "https://discord.gg/mnrEQWVAed"
 twitter = "https://twitter.com/maicos_analysis"
 
-[project.optional-dependencies]
-examples = [
-    "matplotlib",
-]
-
 [project.scripts]
 maicos = "maicos.__main__:main"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-# configuration for the isort module
-[tool.isort]
-profile = "black"
-line_length = 88
-indent = 4
-include_trailing_comma = true
-lines_after_imports = 2
-known_first_party = "maicos"
-skip = "src/maicos/_version.py"
-
-[tool.black]
-exclude = '(?x)(src/maicos/_version.py | docs/src/examples)'
-
-[tool.pytest.ini_options]
-testpaths = "tests"
 
 [tool.check-manifest]
 # ignore files missing in VCS
 ignore = ["src/maicos/lib/_cmath.c"]
+
+[tool.mypy]
+exclude = ["docs/src/examples"]
+follow_imports = 'skip'
+ignore_missing_imports = true
+
+[tool.coverage.paths]
+source = ["src/maicos", "*/site-packages"]
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+exclude_lines = ["if __name__ == .__main__.:"]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+
+[tool.ruff]
+exclude = ["versioneer.py", "docs/src/examples/**", "src/maicos/_version.py"]
+line-length = 88
+
+[tool.ruff.lint]
+# See https://docs.astral.sh/ruff/rules for additional details
+extend-select = [
+    "B",  # Pyflakes checks (e.g., unused imports, undefined variables)
+    "D",  # PEP 257 docstring conventions (e.g., formatting, consistency)
+    "E",  # Pycodestyle errors (e.g., indentation, whitespace, syntax)
+    "UP",  # PyUpgrade rules (e.g., upgrading to modern Python syntax)
+    "I",  # Import conventions (e.g., sorting imports, duplicate imports)
+    "SIM",  # Simplification suggestions (e.g., refactoring redundant code)
+    "PT",  # Pytest style rules (e.g., avoiding assert in tests)
+    "RET",  # Return statements consistency (e.g., avoiding multiple return paths)
+    "W",  # Warnings about style (e.g., trailing whitespace, blank lines)
+    "Q",  # Quotes consistency (e.g., single vs. double quotes)
+]
+
+ignore = [
+    "D107",  # Missing docstring in __init__
+    "D203",  # 1 blank line required before class docstring
+    "D213",  # Multi-line docstring summary should start at the second line
+    "D400",  # First line should end with a period
+    "D401",  # First line should be in imperative mood
+    "D413",  # Missing blank line after last section
+    "D417",  # Missing argument description in the docstring for {definition}: {name}
+]
+
+# [tool.ruff.lint.per-file-ignores]
+# "**/{tests,docs,examples}/*" = ["D1"]  # Don't require any docstrings in these directories
+
+[tool.ruff.lint.isort]
+known-first-party = ["maicos"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.versioneer]
 VCS = "git"
@@ -106,23 +147,3 @@ style = "pep440"
 versionfile_source = "src/maicos/_version.py"
 versionfile_build = "maicos/_version.py"
 tag_prefix = "v"
-
-[tool.mypy]
-exclude = [
-    "docs/src/examples"
-]
-follow_imports = 'skip'
-ignore_missing_imports = true
-
-[tool.coverage.paths]
-source = [
-    "src/maicos",
-    "*/site-packages",
-]
-
-[tool.coverage.report]
-skip_covered = true
-show_missing = true
-exclude_lines = [
-    "if __name__ == .__main__.:",
-]

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the base modules."""
+
 import inspect
 import logging
 import sys
@@ -24,7 +24,6 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, _version
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -169,23 +168,23 @@ class Conclude(AnalysisBase):
 class Test_AnalysisBase:
     """Tests for the Analysis base class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe of single frame."""
         return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT, in_memory=True).atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def empty_ag(self):
         """Define an empty atomgroup."""
         u = mda.Universe.empty(0)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def u_no_cell(self):
         """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
         return mda.Universe(PSF, DCD)
@@ -210,7 +209,7 @@ class Test_AnalysisBase:
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
-            class_obj = AnalysisBase(
+            AnalysisBase(
                 atomgroup=ag.select_atoms("name foo"),
                 unwrap=False,
                 pack=True,
@@ -219,7 +218,6 @@ class Test_AnalysisBase:
                 wrap_compound="atoms",
                 concfreq=0,
             )
-            class_obj._prepare()
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
@@ -242,12 +240,17 @@ class Test_AnalysisBase:
 
         # Simple check if a single message gets written to the output file
         ana.savetxt("foo", data, columns=["First", "Second"])
-        assert ana.OUTPUT in open("foo.dat").read()
+
+        with open("foo.dat") as f:
+            assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
         sub_ana.savetxt("foo2", data, columns=["First", "Second"])
-        foo = open("foo2.dat", "r").readlines()
+
+        with open("foo2.dat") as f:
+            foo = f.readlines()
+
         for i, line in enumerate(foo):
             if ana.OUTPUT in line:
                 assert sub_ana.OUTPUT in foo[i + 1]
@@ -264,42 +267,55 @@ class Test_AnalysisBase:
         ana = FileModuleInput(ag)
         ana.run()
         ana.savetxt("test.dat", np.random.rand(10, 2))
-        assert "Module input:    FileModuleInput(" in open("test.dat").read()
+
+        with open("test.dat") as f:
+            assert "Module input:    FileModuleInput(" in f.read()
 
         # Test if the refgroup name is written correctly
         ana = FileModuleInput(ag, refgroup=ag)
         ana.run()
         ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
-        assert "refgroup=<AtomGroup>" in open("test_refgroup.dat").read()
-        assert "atomgroup=<AtomGroup>" in open("test_refgroup.dat").read()
+
+        with open("test_refgroup.dat") as f:
+            assert "refgroup=<AtomGroup>" in f.read()
+        with open("test_refgroup.dat") as f:
+            assert "atomgroup=<AtomGroup>" in f.read()
 
         # Test if the default value of the test_input parameter is written
         ana = FileModuleInput(ag)
         ana.run()
         ana.savetxt("test_default.dat", np.random.rand(10, 2))
-        assert "test_input='some_default'" in open("test_default.dat").read()
-        assert "refgroup=None" in open("test_default.dat").read()
-        print(open("test_default.dat").read())
-        assert (
-            ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
-            "progressbar_kwargs=None)" in open("test_default.dat").read()
-        )
+
+        with open("test_default.dat") as f:
+            assert "test_input='some_default'" in f.read()
+
+        with open("test_default.dat") as f:
+            assert "refgroup=None" in f.read()
+
+        with open("test_default.dat") as f:
+            assert (
+                ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
+                "progressbar_kwargs=None)" in f.read()
+            )
 
         # Test if the set test_input parameter is written correctly
         ana = FileModuleInput(ag, test_input="some_other_value")
         ana.run()
         ana.savetxt("test_nondefault.dat", np.random.rand(10, 2))
-        assert "test_input='some_other_value'" in open("test_nondefault.dat").read()
+
+        with open("test_nondefault.dat") as f:
+            assert "test_input='some_other_value'" in f.read()
 
         ana.run(step=2, stop=7, start=5, verbose=True)
         ana.savetxt("test_run.dat", np.random.rand(10, 2))
-        assert (
-            ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
-            "progressbar_kwargs=None)" in open("test_run.dat").read()
-        )
+        with open("test_run.dat") as f:
+            assert (
+                ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
+                "progressbar_kwargs=None)" in f.read()
+            )
 
     @pytest.mark.parametrize(
-        "concfreq, files",
+        ("concfreq", "files"),
         [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
     )
     def test_conclude_multi_frame(self, ag, monkeypatch, tmp_path, concfreq, files):
@@ -316,16 +332,13 @@ class Test_AnalysisBase:
             assert len(list(tmp_path.iterdir())) == 0
         # check that the _conclude method is running
         # the expected number of times
-        if concfreq != 0:
-            conclude_count = np.ceil(conclude.n_frames / concfreq)
-        else:
-            conclude_count = 1
+        conclude_count = np.ceil(conclude.n_frames / concfreq) if concfreq != 0 else 1
         assert conclude.conclude_count == conclude_count
         # check that no more files than the expected
         # ones have been written
         assert len(files) == len(list(tmp_path.iterdir()))
 
-    @pytest.mark.parametrize("concfreq, file", [(0, []), (50, ["out_1"])])
+    @pytest.mark.parametrize(("concfreq", "file"), [(0, []), (50, ["out_1"])])
     def test_conclude_single_frame(
         self, ag_single_frame, monkeypatch, tmp_path, concfreq, file
     ):
@@ -361,7 +374,7 @@ class Test_AnalysisBase:
         )
 
     def test_refgroup_nomass(self, caplog):
-        """Test warning and succesful ref_weights"""
+        """Test warning and succesful ref_weights."""
         u = mda.Universe.empty(2)
         positions = np.array([[1, 2, 3], [3, 2, 1]])
         u.trajectory = get_reader_for(positions)(positions, order="fac", n_atoms=2)
@@ -389,7 +402,7 @@ class Test_AnalysisBase:
     def test_empty_refgroup(self, ag, empty_ag):
         """Test behaviour for empty refgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
-            class_obj = AnalysisBase(
+            AnalysisBase(
                 atomgroup=ag,
                 refgroup=empty_ag,
                 unwrap=False,
@@ -398,10 +411,9 @@ class Test_AnalysisBase:
                 wrap_compound="atoms",
                 concfreq=0,
             )
-            class_obj._prepare()
 
     @pytest.mark.parametrize(
-        "unwrap, pack", [(True, True), (True, False), (False, True), (False, False)]
+        ("unwrap", "pack"), [(True, True), (True, False), (False, True), (False, False)]
     )
     def test_unwrap_pack(self, unwrap, pack):
         """Test the pack and unwrap flag."""
@@ -418,7 +430,8 @@ class Test_AnalysisBase:
         assert_allclose(ag.positions, ag_ref.positions)
 
     @pytest.mark.parametrize(
-        "data, result", [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)]
+        ("data", "result"),
+        [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)],
     )
     def test_frame_dict_types(self, ag, data, result):
         """Check supported types for the frame Dict."""
@@ -554,7 +567,7 @@ class Test_AnalysisBase:
         """Test that an error is raised if `unwrap=True` but no cell is present."""
         match = "Universe does not have `dimensions` and can't be unwrapped!"
         with pytest.raises(ValueError, match=match):
-            class_obj = AnalysisBase(
+            AnalysisBase(
                 u_no_cell.atoms,
                 unwrap=True,
                 pack=True,
@@ -563,13 +576,12 @@ class Test_AnalysisBase:
                 wrap_compound="atoms",
                 concfreq=0,
             )
-            class_obj._prepare()
 
     def test_no_dimensions_pack_error(self, u_no_cell):
         """Test that an error is raised if `unwrap=True` but no cell is present."""
         match = "Universe does not have `dimensions` and can't be packed!"
         with pytest.raises(ValueError, match=match):
-            class_obj = AnalysisBase(
+            AnalysisBase(
                 u_no_cell.atoms,
                 unwrap=False,
                 pack=True,
@@ -578,13 +590,12 @@ class Test_AnalysisBase:
                 wrap_compound="atoms",
                 concfreq=0,
             )
-            class_obj._prepare()
 
     def test_refgroup_pack_error(self, ag_single_frame):
         """Test that an error is raised if a refgroup is present an pack is disabled."""
         match = "Disabling `pack` with a `refgroup` is not allowed."
         with pytest.raises(ValueError, match=match):
-            class_obj = AnalysisBase(
+            AnalysisBase(
                 ag_single_frame,
                 unwrap=False,
                 pack=False,
@@ -593,7 +604,6 @@ class Test_AnalysisBase:
                 wrap_compound="atoms",
                 concfreq=0,
             )
-            class_obj._prepare()
 
     def test_no_dimensions_run(self, u_no_cell):
         """Test that an analysis can be run for a universe without cell information."""
@@ -756,10 +766,10 @@ class Test_ProfileBase:
     `ProfileCylinderBase` and `ProfileSphereBase` for simple physical system.
     """
 
-    @pytest.fixture()
+    @pytest.fixture
     def u(self):
         """Simple empty Universe."""
-        universe = mda.Universe.empty(
+        return mda.Universe.empty(
             n_atoms=10,
             n_residues=10,
             n_segments=10,
@@ -767,12 +777,10 @@ class Test_ProfileBase:
             residue_segindex=np.arange(10),
         )
 
-        return universe
-
-    @pytest.fixture()
+    @pytest.fixture
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        p = dict(
+        return dict(
             weighting_function=lambda x, grouping, a=1: a * x,
             weighting_function_kwargs=None,
             atomgroup=u.atoms,
@@ -781,18 +789,17 @@ class Test_ProfileBase:
             bin_method="com",
             output="profile.dat",
         )
-        return p
 
     def test_wrong_normalization(self, params):
         """Test a wrong normalization string."""
+        params.update(normalization="foo")
         with pytest.raises(ValueError, match="'foo' not supported"):
-            params.update(normalization="foo")
             ProfileBase(**params)._prepare()
 
     def test_wrong_grouping(self, params):
         """Test a wrong grouping."""
+        params.update(grouping="foo")
         with pytest.raises(ValueError, match="'foo' is not a valid option"):
-            params.update(grouping="foo")
             ProfileBase(**params)._prepare()
 
     def test_weighting_function_kwargs(self, params):
@@ -857,5 +864,5 @@ class TestPlanarBaseChilds:
 
             try:
                 mod_sig.parameters[param.name]
-            except KeyError:
-                raise KeyError(f"{param.name} is not a parameter of {Member}!")
+            except KeyError as err:
+                raise KeyError(f"{param.name} is not a parameter of {Member}!") from err

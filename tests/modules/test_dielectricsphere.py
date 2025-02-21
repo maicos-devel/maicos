@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DielectricSphere class."""
+
 import sys
 from pathlib import Path
 
@@ -19,7 +19,6 @@ from util import error_prop
 
 from maicos import DielectricSphere
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
     DIPOLE_GRO,
@@ -31,7 +30,7 @@ from data import (  # noqa: E402
 )
 
 
-class TestDielectricSphere(object):
+class TestDielectricSphere:
     """Tests for the DielectricSphere class.
 
     Number of times DielectricSphere broke: |
@@ -57,25 +56,25 @@ class TestDielectricSphere(object):
           and check the result.
     """
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_two_frames(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_2F_TRR_NPT)
         return u.atoms
 
-    @pytest.mark.parametrize("selection", (1, 2))
+    @pytest.mark.parametrize("selection", [1, 2])
     def test_radial_dipole_orientations(self, selection):
         """Check radial dipole moment density.
 
@@ -122,10 +121,7 @@ class TestDielectricSphere(object):
             -dipole.atoms.center_of_mass() + dipole.dimensions[:3] / 2
         )
 
-        if selection == 2:
-            n = int(len(dipole.atoms) / selection)
-        else:
-            n = len(dipole.atoms)
+        n = int(len(dipole.atoms) / selection) if selection == 2 else len(dipole.atoms)
 
         # very fine binning to get the correct value for the dipole
         eps = DielectricSphere(dipole.atoms[:n], bin_width=0.001)
@@ -154,7 +150,7 @@ class TestDielectricSphere(object):
         eps = DielectricSphere(ag_single_frame)
         eps.run()
         eps.save()
-        res_rad = np.loadtxt("{}_rad.dat".format(eps.output_prefix))
+        res_rad = np.loadtxt(f"{eps.output_prefix}_rad.dat")
         assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
 
     def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
@@ -164,10 +160,11 @@ class TestDielectricSphere(object):
         eps = DielectricSphere(ag_single_frame, output_prefix="foo")
         eps.run()
         eps.save()
-        open("foo_rad.dat")
+        with open("foo_rad.dat"):
+            pass
 
     @pytest.mark.parametrize(
-        "rmin, rmax, result",
+        ("rmin", "rmax", "result"),
         [(1, None, True), (0, 1, True), (1, 1, True), (0, None, False)],
     )
     def test_range_warning(self, caplog, rmin, rmax, result):
@@ -178,7 +175,7 @@ class TestDielectricSphere(object):
         assert result == (warning in "".join([rec.message for rec in caplog.records]))
 
     def test_error_calculation(self, ag_two_frames):
-        """Test the analytic error propagation"""
+        """Test the analytic error propagation."""
         eps = DielectricSphere(ag_two_frames).run()
         eps.means.mM_r = 0.6
         eps.sems.mM_r = 0.2

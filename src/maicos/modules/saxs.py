@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 r"""Module for computing Saxs structure factors and scattering intensities."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +16,6 @@ from ..core import AnalysisBase
 from ..lib import tables
 from ..lib.math import compute_form_factor, compute_structure_factor
 from ..lib.util import render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +81,7 @@ class Saxs(AnalysisBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     def __init__(
@@ -91,7 +89,7 @@ class Saxs(AnalysisBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         jitter: float = 0.0,
         concfreq: int = 0,
         bin_spectrum: bool = True,
@@ -147,23 +145,23 @@ class Saxs(AnalysisBase):
         for atom_type in np.unique(self.atomgroup.types).astype(str):
             try:
                 element = tables.atomtypes[atom_type]
-            except KeyError:
+            except KeyError as err:
                 raise KeyError(
                     f"No suitable element for '{atom_type}' found. You can change the "
                     f"`types` of the input `atomgroup` to match the known elements in "
                     "`maicos.lib.tables.atomtypes`."
-                )
+                ) from err
             if element == "DUM":
                 continue
 
-            group = self.atomgroup.select_atoms("type {}*".format(atom_type))
+            group = self.atomgroup.select_atoms(f"type {atom_type}*")
 
             self.groups.append(group)
             # Actual weights (form factors) are applied in post processing after
             self.weights.append(np.ones(group.n_atoms))
             self.atom_types.append(atom_type)
 
-            logger.info("{:>14} --> {:>5}".format(atom_type, element))
+            logger.info(f"{atom_type:>14} --> {element:>5}")
 
         if self.bin_spectrum:
             self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))
@@ -296,7 +294,7 @@ class Saxs(AnalysisBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         if self.bin_spectrum:
             self.savetxt(
                 self.output,
@@ -319,9 +317,8 @@ class Saxs(AnalysisBase):
                 ]
             )
 
-            boxinfo = (
-                "box_x = {0:.3f} Å, box_y = {1:.3f} Å, "
-                "box_z = {2:.3f} Å\n".format(*self.box)
+            boxinfo = "box_x = {:.3f} Å, box_y = {:.3f} Å, box_z = {:.3f} Å\n".format(
+                *self.box
             )
             self.savetxt(
                 self.output,

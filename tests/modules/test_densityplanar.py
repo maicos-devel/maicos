@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the DensityPlanar class."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ from MDAnalysisTests.datafiles import TPR, TRR
 from numpy.testing import assert_allclose
 
 from maicos import DensityPlanar
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
@@ -34,25 +33,25 @@ from data import (  # noqa: E402
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe, single frame."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def multiple_ags(self):
         """Import MDA universe, multiple ags."""
         u = mda.Universe(TPR, TRR)
         return [u.select_atoms("resname SOL"), u.select_atoms("resname MET")]
 
-    @pytest.fixture()
+    @pytest.fixture
     def multiple_ags_mu(self):
         """Import MDA universe, multiple ags mu."""
         u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
@@ -62,32 +61,32 @@ class ReferenceAtomGroups:
             u.select_atoms("resname CL"),
         ]
 
-    @pytest.fixture()
+    @pytest.fixture
     def mica_water(self):
         """Import MDA universe, water components of a slab system."""
         u = mda.Universe(MICA_TPR, MICA_XTC)
         return u.select_atoms("resname SOL")
 
-    @pytest.fixture()
+    @pytest.fixture
     def mica_surface(self):
         """Import MDA universe, surface component of a slab system."""
         u = mda.Universe(MICA_TPR, MICA_XTC)
         return u.select_atoms("resname SURF")
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_no_masses(self):
         """Atom group with no mass."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
         u.del_TopologyAttr("masses")
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def multiple_res_ag(self):
         """Import MDA universe, multiple resname atom group."""
         u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
         return [u.select_atoms("resname NA or resname CL")]
 
-    @pytest.fixture()
+    @pytest.fixture
     def mult_res_mult_atoms_ag(self):
         """Import MDA universe, multiple resname atom group."""
         u = mda.Universe(SALT_WATER_TPR, SALT_WATER_GRO)
@@ -98,9 +97,9 @@ class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the DensityPlanar class."""
 
     @pytest.mark.parametrize(
-        "dens_type, mean", (("mass", 0.588), ("number", 0.097), ("charge", 0))
+        ("dens_type", "mean"), [("mass", 0.588), ("number", 0.097), ("charge", 0)]
     )
-    @pytest.mark.parametrize("dim", (0, 1, 2))
+    @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_dens(self, ag, dens_type, mean, dim):
         """Test density."""
         dens = DensityPlanar(ag, dens=dens_type, dim=dim).run()

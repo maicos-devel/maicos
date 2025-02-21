@@ -1,26 +1,26 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Small helper and utilities functions that don't fit anywhere else."""
+
 import functools
 import logging
 import re
 import sys
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
-
 
 logger = logging.getLogger(__name__)
 
@@ -283,6 +283,7 @@ def render_docs(func: Callable) -> Callable:
     -------
     Callable
         callable with replaced phrase
+
     """
     return _render_docs(func, doc_dict=DOC_DICT)
 
@@ -302,13 +303,14 @@ def correlation_analysis(timeseries: np.ndarray) -> float:
     -------
     corrtime: float
         Estimated correlation time of `timeseries`.
+
     """
     if np.any(np.isnan(timeseries)):
         # Fail silently if there are NaNs in the timeseries. This is the case if the
         # feature is not implemented for the given analysis. It could also be because of
         # a bug, but that is not our business.
         return -1
-    elif len(timeseries) <= 4:
+    if len(timeseries) <= 4:
         warnings.warn(
             "Your trajectory is too short to estimate a correlation time. Use the "
             "calculated error estimates with caution.",
@@ -355,17 +357,17 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     ------
     AttributeError
         `atomgroup` is missing any connection information"
+
     """
     if hasattr(atomgroup, "molnums"):
         return "molecules"
-    elif hasattr(atomgroup, "fragments"):
+    if hasattr(atomgroup, "fragments"):
         logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
-    elif hasattr(atomgroup, "residues"):
+    if hasattr(atomgroup, "residues"):
         logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
-    else:
-        raise AttributeError("Missing any connection information in `atomgroup`.")
+    raise AttributeError("Missing any connection information in `atomgroup`.")
 
 
 def get_cli_input() -> str:
@@ -375,10 +377,11 @@ def get_cli_input() -> str:
     -------
     str
         A string representing the command line input in a proper format.
+
     """
     program_name = Path(sys.argv[0]).name
     # Add additional quotes for connected arguments.
-    arguments = ['"{}"'.format(arg) if " " in arg else arg for arg in sys.argv[1:]]
+    arguments = [f'"{arg}"' if " " in arg else arg for arg in sys.argv[1:]]
     return "{} {}".format(program_name, " ".join(arguments))
 
 
@@ -397,6 +400,7 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
     -------
     str
         A string containing the AtomGroup information.
+
     """
     if not hasattr(AtomGroup, "types"):
         logger.warning(
@@ -458,6 +462,7 @@ def charge_neutral(filter: str) -> Callable:
     filter : str
         Filter type to control warning filter. Common values are: "error" or "default"
         See `warnings.simplefilter` for more options.
+
     """
 
     def inner(original_class):
@@ -501,12 +506,16 @@ def unwrap_refgroup(original_class):
     def unwrap_check(function):
         @functools.wraps(function)
         def unwrap_check(self):
-            if hasattr(self, "unwrap") and hasattr(self, "refgroup"):
-                if not self.unwrap and self.refgroup is not None:
-                    raise ValueError(
-                        "Analysis using `unwrap=False` and `refgroup != None` can lead "
-                        "to broken molecules and severe errors."
-                    )
+            if (
+                hasattr(self, "unwrap")
+                and hasattr(self, "refgroup")
+                and not self.unwrap
+                and self.refgroup is not None
+            ):
+                raise ValueError(
+                    "Analysis using `unwrap=False` and `refgroup != None` can lead "
+                    "to broken molecules and severe errors."
+                )
             return function(self)
 
         return unwrap_check
@@ -535,6 +544,7 @@ def trajectory_precision(
 
         If the trajectory has a high precision, its resolution will not be detected, and
         a value of 1e-4 is returned.
+
     """
     # The threshold will limit the precision of the detection. Using a value that is too
     # low will end up costing a lot of memory. 1e-4 is enough to safely detect the
@@ -558,9 +568,7 @@ def trajectory_precision(
             hist2,
             bin_edges,
         ) = np.histogram(np.diff(z[np.where(hist1)]), bins=1000, range=(0, 0.1))
-        if len(find_peaks(hist2)[0]) == 0:
-            precision[ts.frame] = 1e-4
-        elif bin_edges[find_peaks(hist2)[0][0]] <= 5e-4:
+        if len(find_peaks(hist2)[0]) == 0 or bin_edges[find_peaks(hist2)[0][0]] <= 5e-4:
             precision[ts.frame] = 1e-4
         else:
             precision[ts.frame] = bin_edges[find_peaks(hist2)[0][0]]
@@ -593,6 +601,7 @@ def citation_reminder(*dois: str) -> str:
     -------
     cite : str
         formatted citation reminders
+
     """
     cite = ""
     for doi in dois:
@@ -637,6 +646,7 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
     ------
     ValueError
         If the provided ``bin_method`` is not one of {``"com"``, ``"cog"``, ``"coc"``}.
+
     """  # noqa: E501
     if bin_method == "cog":
         weights = None
@@ -646,8 +656,7 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
         weights = atomgroup.charges.__abs__()
     else:
         raise ValueError(
-            f"'{bin_method}' is an unknown binning "
-            f"method. Use 'cog', 'com' or 'coc'."
+            f"'{bin_method}' is an unknown binning method. Use 'cog', 'com' or 'coc'."
         )
 
     return atomgroup.center(weights=weights, compound=compound)
@@ -669,6 +678,7 @@ def unit_vectors_planar(
     -------
     numpy.ndarray
         the unit vector
+
     """
     unit_vectors = np.zeros(3)
     unit_vectors[pdim] += 1
@@ -699,6 +709,7 @@ def unit_vectors_cylinder(
     numpy.ndarray
         Array of the calculated unit vectors with shape (3,) for `pdim='z'` and shape
         (3,n) for `pdim='r'`. The length of `n` depends on the grouping.
+
     """
     # We do NOT transform ``unit_vectors`` into cylindrical coordinates, because all
     # scalar products in ``dipolar_weights`` will be performed cartesian coordinates!
@@ -731,7 +742,7 @@ def unit_vectors_sphere(
 
     Parameters
     ----------
-    ATOMGROUP_PARAMETER
+    ${ATOMGROUP_PARAMETER}
     ${GROUPING_PARAMETER}
     ${BIN_METHOD_PARAMETER}
 
@@ -740,7 +751,8 @@ def unit_vectors_sphere(
     numpy.ndarray
         Array of the calculated unit vectors with shape (3,n). The length of `n`
         depends on the grouping.
-    """  # noqa: 501
+
+    """
     # We do NOT transform ``unit_vectors`` into spherical coordinates, because all
     # scalar products in ``dipolar_weights`` will be performed cartesian coordinates!
     unit_vectors = get_center(
@@ -768,6 +780,7 @@ def maicos_banner(version: str = "", frame_char: str = "-") -> str:
     -------
     banner : str
         formatted banner
+
     """
     banner = rf"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
+
 import inspect
 import logging
 import warnings
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -32,7 +32,6 @@ from ..lib.util import (
     render_docs,
 )
 
-
 __version__ = get_versions()["version"]
 del get_versions
 
@@ -47,13 +46,13 @@ class _Runner:
 
     def _run(
         self,
-        analysis_instances: Tuple["AnalysisBase", ...],
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        step: Optional[int] = None,
-        frames: Optional[int] = None,
-        verbose: Optional[bool] = None,
-        progressbar_kwargs: Optional[dict] = None,
+        analysis_instances: tuple["AnalysisBase", ...],
+        start: int | None = None,
+        stop: int | None = None,
+        step: int | None = None,
+        frames: int | None = None,
+        verbose: bool | None = None,
+        progressbar_kwargs: dict | None = None,
     ) -> Self:
         self._run_locals = locals()
 
@@ -247,8 +246,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         '''
     ...         self.results.volume = self.volume / self.n_frames
     ...         logger.info(
-    ...             "Average volume of the simulation box "
-    ...             f"{self.results.volume:.2f} Å³"
+    ...             f"Average volume of the simulation box {self.results.volume:.2f} Å³"
     ...         )
     ...
     ...     def save(self) -> None:
@@ -259,7 +257,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         self.savetxt(
     ...             self.output, np.array([self.results.volume]), columns="volume / Å³"
     ...         )
-    ...
 
 
     Afterwards the new analysis can be run like this
@@ -278,6 +275,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     >>> print(round(na.results["volume"], 2))
     362631.65
+
     """
 
     def __init__(
@@ -285,7 +283,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Union[None, mda.AtomGroup],
+        refgroup: None | mda.AtomGroup,
         jitter: float,
         concfreq: int,
         wrap_compound: str,
@@ -359,7 +357,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         return self.box_lengths / 2
 
     def _prepare(self) -> None:
-        """Set things up before the analysis loop begins"""
+        """Set things up before the analysis loop begins."""
         pass  # pylint: disable=unnecessary-pass
 
     def _call_prepare(self) -> None:
@@ -388,8 +386,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         logger.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
 
-    def _single_frame(self) -> Union[None, float]:
-        """Calculate data from a single frame of trajectory
+    def _single_frame(self) -> None | float:
+        """Calculate data from a single frame of trajectory.
 
         Don't worry about normalising, just deal with a single frame.
         """
@@ -438,13 +436,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
         try:
-            for key in self._obs.keys():
+            for key in self._obs:
                 if type(self._obs[key]) is list:
                     self._obs[key] = np.array(self._obs[key])
                 old_mean = self.means[key]  # type: ignore
                 old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
                 self.means[key] = new_mean(  # type: ignore
-                    self.means[key], self._obs[key], self._index  # type: ignore
+                    self.means[key],  # type: ignore
+                    self._obs[key],
+                    self._index,  # type: ignore
                 )  # type: ignore
                 self.sems[key] = np.sqrt(  # type: ignore
                     new_variance(
@@ -458,7 +458,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 )
                 self.sums[key] += self._obs[key]  # type: ignore
 
-        except AttributeError:
+        except AttributeError as err:
             with logging_redirect_tqdm():
                 logger.info("Preparing error estimation.")
             # the means and sems are not yet defined. We initialize the means with
@@ -467,9 +467,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.sums = self._obs.copy()
             self.means = self._obs.copy()
             self.sems = Results()
-            for key in self._obs.keys():
+            for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
-                    raise TypeError(f"Obervable {key} has uncompatible type.")
+                    raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 self.sems[key] = np.zeros(np.shape(self._obs[key]))
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
@@ -495,12 +495,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     @render_docs
     def run(
         self,
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        step: Optional[int] = None,
-        frames: Optional[int] = None,
-        verbose: Optional[bool] = None,
-        progressbar_kwargs: Optional[dict] = None,
+        start: int | None = None,
+        stop: int | None = None,
+        step: int | None = None,
+        frames: int | None = None,
+        verbose: bool | None = None,
+        progressbar_kwargs: dict | None = None,
     ) -> Self:
         """Iterate over the trajectory."""
         return _Runner._run(
@@ -515,7 +515,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         )
 
     def savetxt(
-        self, fname: str, X: np.ndarray, columns: Optional[List[str]] = None
+        self, fname: str, X: np.ndarray, columns: list[str] | None = None
     ) -> None:
         """Save to text.
 
@@ -548,9 +548,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # remove those duplicates.
         messages_list = []
         for cls in self.__class__.mro()[-3::-1]:
-            if hasattr(cls, "OUTPUT"):
-                if cls.OUTPUT not in messages_list:
-                    messages_list.append(cls.OUTPUT)
+            if hasattr(cls, "OUTPUT") and cls.OUTPUT not in messages_list:
+                messages_list.append(cls.OUTPUT)
         messages = "\n".join(messages_list)
 
         # Get information on the analyzed atomgroup
@@ -568,9 +567,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             for param in sig.args:
                 if type(self._locals[param]) is str:
                     string = f"{param}='{self._locals[param]}'"
-                elif param == "atomgroup":
-                    string = f"{param}=<AtomGroup>"
-                elif param == "refgroup" and self._locals[param] is not None:
+                elif (
+                    param == "atomgroup"
+                    or param == "refgroup"
+                    and self._locals[param] is not None
+                ):
                     string = f"{param}=<AtomGroup>"
                 else:
                     string = f"{param}={self._locals[param]}"
@@ -670,6 +671,7 @@ class AnalysisCollection(_Runner):
     access them. You can also save all results of the analysis within one call:
 
     >>> collection.save()
+
     """
 
     def __init__(self, *analysis_instances: AnalysisBase) -> None:
@@ -694,14 +696,14 @@ class AnalysisCollection(_Runner):
     @render_docs
     def run(
         self,
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        step: Optional[int] = None,
-        frames: Optional[int] = None,
-        verbose: Optional[bool] = None,
-        progressbar_kwargs: Optional[dict] = None,
+        start: int | None = None,
+        stop: int | None = None,
+        step: int | None = None,
+        frames: int | None = None,
+        verbose: bool | None = None,
+        progressbar_kwargs: dict | None = None,
     ) -> Self:
-        """${RUN_METHOD_DESCRIPTION}"""
+        """${RUN_METHOD_DESCRIPTION}"""  # noqa: D415
         return _Runner._run(
             self,
             analysis_instances=self._analysis_instances,
@@ -744,6 +746,7 @@ class ProfileBase:
     Attributes
     ----------
     ${PROFILE_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
@@ -753,7 +756,7 @@ class ProfileBase:
         bin_method: str,
         output: str,
         weighting_function: Callable,
-        weighting_function_kwargs: Union[None, Dict],
+        weighting_function_kwargs: None | dict,
         normalization: str,
     ) -> None:
         self.atomgroup = atomgroup
@@ -793,7 +796,7 @@ class ProfileBase:
             self.unwrap = True
 
     def _compute_histogram(
-        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+        self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         """Calculate histogram based on positions.
 
@@ -808,10 +811,11 @@ class ProfileBase:
         -------
         hist : numpy.ndarray
             histogram
+
         """
         raise NotImplementedError("Only implemented in child classes.")
 
-    def _single_frame(self) -> Union[None, float]:
+    def _single_frame(self) -> None | float:
         self._obs.profile = np.zeros(self.n_bins)  # type: ignore
         self._obs.bincount = np.zeros(self.n_bins)  # type: ignore
 
@@ -846,7 +850,7 @@ class ProfileBase:
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         columns = ["positions [Å]"]
 
         columns.append("profile")

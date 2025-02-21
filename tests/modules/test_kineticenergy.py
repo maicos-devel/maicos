@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the KineticEnergy class."""
+
 import sys
 from pathlib import Path
 
@@ -17,7 +17,6 @@ from numpy.testing import assert_allclose, assert_raises
 
 from maicos import KineticEnergy
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_TPR_NVE, WATER_TRR_NVE  # noqa: E402
 from util import line_of_water_molecules  # noqa: E402
@@ -26,7 +25,7 @@ from util import line_of_water_molecules  # noqa: E402
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NVE, WATER_TRR_NVE)
@@ -70,7 +69,7 @@ class TestKineticEnergy(ReferenceAtomGroups):
         ke = KineticEnergy(ag, refpoint="COC").run(stop=1)
         assert_allclose(ke.results.rot, 584.17, rtol=1e-1)
 
-    @pytest.mark.parametrize("vel", (0.0, 1.0, 2.0))
+    @pytest.mark.parametrize("vel", [0.0, 1.0, 2.0])
     def test_ke_single_molecule(self, vel):
         """Test KineticEnergy module using a single molecule.
 

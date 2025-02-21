@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -21,7 +20,7 @@ from maicos import RDFDiporder
 class TestRDFDiporder:
     """Test the RDFDiporder class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def u(self):
         """Generate a universe containing 100 dimers at random positions.
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for cylindrical analysis."""
+
 import logging
-from typing import Callable, Dict, Optional, Union
+from collections.abc import Callable
 
 import MDAnalysis as mda
 import numpy as np
@@ -17,7 +17,6 @@ from ..lib.math import transform_cylinder
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import PlanarBase
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +53,7 @@ class CylinderBase(PlanarBase):
         Volume of an hollow cylinder of each bin (in Å^3) in the current frame.
         Calculated via :math:`\pi L \left( r_{i+1}^2 - r_i^2 \right)` where `i` is the
         index of the bin.
+
     """
 
     def __init__(
@@ -61,15 +61,15 @@ class CylinderBase(PlanarBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         dim: int,
-        zmin: Union[None, float],
-        zmax: Union[None, float],
+        zmin: None | float,
+        zmax: None | float,
         bin_width: float,
         rmin: float,
-        rmax: Union[None, float],
+        rmax: None | float,
         wrap_compound: str,
     ):
         super().__init__(
@@ -117,10 +117,10 @@ class CylinderBase(PlanarBase):
         self._compute_lab_frame_cylinder()
 
         if self.rmin < 0:
-            raise ValueError("Only values for `rmin` larger or equal 0 are " "allowed.")
+            raise ValueError("Only values for `rmin` larger or equal 0 are allowed.")
 
         if self._rmax is not None and self._rmax <= self.rmin:
-            raise ValueError("`rmax` can not be smaller than or equal " "to `rmin`!")
+            raise ValueError("`rmax` can not be smaller than or equal to `rmin`!")
 
         try:
             if self._bin_width > 0:
@@ -128,8 +128,8 @@ class CylinderBase(PlanarBase):
                 self.n_bins = int(np.ceil(R / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
-        except TypeError:
-            raise ValueError("Binwidth must be a number.")
+        except TypeError as err:
+            raise ValueError("Binwidth must be a number.") from err
 
     def _single_frame(self):
         """Single frame for the cylinder analysis."""
@@ -166,6 +166,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
     Attributes
     ----------
     ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
@@ -173,20 +174,20 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         dim: int,
-        zmin: Union[None, float],
-        zmax: Union[None, float],
+        zmin: None | float,
+        zmax: None | float,
         bin_width: float,
         rmin: float,
-        rmax: Union[None, float],
+        rmax: None | float,
         grouping: str,
         bin_method: str,
         output: str,
         weighting_function: Callable,
-        weighting_function_kwargs: Union[None, Dict],
+        weighting_function_kwargs: None | dict,
         normalization: str,
     ):
         CylinderBase.__init__(
@@ -223,12 +224,11 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         ProfileBase._prepare(self)
 
         logger.info(
-            f"Computing {self.grouping} radial profile along "
-            f"{'XYZ'[self.dim]}-axes."
+            f"Computing {self.grouping} radial profile along {'XYZ'[self.dim]}-axes."
         )
 
     def _compute_histogram(
-        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+        self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = transform_cylinder(positions, self.box_center, self.dim)
         # Use the 2D histogram function to perform the selection in the z dimension.
@@ -241,9 +241,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         )
 
         # Reshape into 1D array
-        hist = hist[:, 0]
-
-        return hist
+        return hist[:, 0]
 
     def _single_frame(self) -> float:
         CylinderBase._single_frame(self)

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""
-.. _howto-dielectric:
+""".. _howto-dielectric:
 
 Dielectric profile calculation
 ==============================
@@ -34,7 +32,7 @@ downloaded under :download:`topology <graphene_water.tpr>` and :download:`trajec
 <graphene_water.xtc>`, respectively.
 
 From these files you can create a MDAnalysis universe object.
-"""
+"""  # noqa: D415
 # %%
 
 import matplotlib.pyplot as plt
@@ -42,7 +40,6 @@ import MDAnalysis as mda
 import numpy as np
 
 import maicos
-
 
 u = mda.Universe("graphene_water.tpr", "graphene_water.xtc")
 

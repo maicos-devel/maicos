@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
+
 import sys
 import warnings
 from pathlib import Path
@@ -21,15 +21,14 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
 from util import circle_of_water_molecules  # noqa: E402
 
 
 @pytest.mark.parametrize(
-    "u, compound",
-    (
+    ("u", "compound"),
+    [
         (UnWrapUniverse(), "molecules"),
         (
             UnWrapUniverse(have_molnums=False, have_bonds=True),
@@ -39,7 +38,7 @@ from util import circle_of_water_molecules  # noqa: E402
             UnWrapUniverse(have_molnums=False, have_bonds=False),
             "residues",
         ),
-    ),
+    ],
 )
 def test_get_compound(u, compound):
     """Tests check compound."""
@@ -76,7 +75,7 @@ def test_banner():
 
 
 @pytest.mark.parametrize(
-    "doc, new_doc",
+    ("doc", "new_doc"),
     [
         ("${TEST}", "test"),
         (None, None),
@@ -140,10 +139,10 @@ def multi_class(atomgroup, filter):
     return MultiCharged(atomgroup)
 
 
-class TestChargedDecorator(object):
+class TestChargedDecorator:
     """Test charged decorator."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
@@ -199,22 +198,22 @@ class TestWrapRefgroup:
 
     @pytest.mark.parametrize(
         "kwargs",
-        (
+        [
             {},
             {"unwrap": True, "refgroup": None},
             {"unwrap": False, "refgroup": None},
             {"unwrap": True, "refgroup": "foo"},
-        ),
+        ],
     )
     def test_noerror(self, kwargs):
         """Decorator should raise an error otherwise."""
         unwrap_refgroup_class(**kwargs)._prepare()
 
 
-class TestTrajectoryPrecision(object):
+class TestTrajectoryPrecision:
     """Test the detection of the trajectory precision."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def trj(self):
         """Import MDA universe trajectory."""
         return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT).trajectory
@@ -224,7 +223,7 @@ class TestTrajectoryPrecision(object):
         assert_equal(maicos.lib.util.trajectory_precision(trj), np.float32(0.01))
 
 
-class TestCitationReminder(object):
+class TestCitationReminder:
     """Test the detection of the trajectory precision."""
 
     def test_single_citation(self):
@@ -245,7 +244,7 @@ class TestCitationReminder(object):
         assert dois[1] in maicos.lib.util.citation_reminder(*dois)
 
 
-class TestCorrelationAnalysis(object):
+class TestCorrelationAnalysis:
     """Test the calculation of the correlation of the data."""
 
     def test_short_data(self):

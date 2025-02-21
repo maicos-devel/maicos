@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the SAXS modules."""
+
 import sys
 from pathlib import Path
 
@@ -20,14 +20,13 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import Saxs
 from maicos.lib.math import compute_form_factor, compute_rdf_structure_factor
 
-
 sys.path.append(str(Path(__file__).parents[1]))
 
 
 class ReferenceAtomGroups:
     """Super class with methods reference AtomGroups for tests."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
@@ -37,13 +36,13 @@ class ReferenceAtomGroups:
 class TestSaxs(ReferenceAtomGroups):
     """Tests for the Saxs class."""
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    @pytest.fixture()
+    @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)

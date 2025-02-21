@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for spherical analysis."""
+
 import logging
-from typing import Callable, Dict, Optional, Union
+from collections.abc import Callable
 
 import MDAnalysis as mda
 import numpy as np
@@ -17,7 +17,6 @@ from ..lib.math import transform_sphere
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +54,7 @@ class SphereBase(AnalysisBase):
         volume of a spherical shell of each bins (in Å^3) of the current frame.
         Calculated via :math:`4\pi/3 \left(r_{i+1}^3 - r_i^3 \right)` where `i` is the
         index of the bin.
+
     """
 
     def __init__(
@@ -62,11 +62,11 @@ class SphereBase(AnalysisBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         rmin: float,
-        rmax: Union[None, float],
+        rmax: None | float,
         bin_width: float,
         wrap_compound: str,
     ):
@@ -110,10 +110,10 @@ class SphereBase(AnalysisBase):
         self._compute_lab_frame_sphere()
 
         if self.rmin < 0:
-            raise ValueError("Only values for `rmin` larger or equal 0 are " "allowed.")
+            raise ValueError("Only values for `rmin` larger or equal 0 are allowed.")
 
         if self._rmax is not None and self._rmax <= self.rmin:
-            raise ValueError("`rmax` can not be smaller than or equal " "to `rmin`!")
+            raise ValueError("`rmax` can not be smaller than or equal to `rmin`!")
 
         try:
             if self._bin_width > 0:
@@ -121,8 +121,8 @@ class SphereBase(AnalysisBase):
                 self.n_bins = int(np.ceil(R / self._bin_width))
             else:
                 raise ValueError("Binwidth must be a positive number.")
-        except TypeError:
-            raise ValueError("Binwidth must be a number.")
+        except TypeError as err:
+            raise ValueError("Binwidth must be a number.") from err
 
     def _single_frame(self):
         """Single frame for the sphercial analysis."""
@@ -158,6 +158,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
     Attributes
     ----------
     ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+
     """
 
     def __init__(
@@ -165,17 +166,17 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         atomgroup: mda.AtomGroup,
         unwrap: bool,
         pack: bool,
-        refgroup: Optional[mda.AtomGroup],
+        refgroup: mda.AtomGroup | None,
         jitter: float,
         concfreq: int,
         rmin: float,
-        rmax: Union[None, float],
+        rmax: None | float,
         bin_width: float,
         grouping: str,
         bin_method: str,
         output: str,
         weighting_function: Callable,
-        weighting_function_kwargs: Optional[Dict],
+        weighting_function_kwargs: dict | None,
         normalization: str,
     ):
         SphereBase.__init__(
@@ -211,7 +212,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         logger.info(f"Computing {self.grouping} radial profile.")
 
     def _compute_histogram(
-        self, positions: np.ndarray, weights: Optional[np.ndarray] = None
+        self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = transform_sphere(positions, origin=self.box_center)[:, 0]
         hist, _ = np.histogram(

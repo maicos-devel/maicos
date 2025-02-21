@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -10,6 +9,7 @@
 
 Credit to MDAnalysis setup.py.
 """
+
 import os
 import shutil
 import sys
@@ -23,14 +23,12 @@ from setuptools import Extension, setup
 
 import versioneer
 
-
 VERSION = versioneer.get_version()
 is_release = "+" not in VERSION
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
-    """
-    Check for function.
+    """Check for function.
 
     Credit to MDAnalysis setup.py.
     """
@@ -41,16 +39,17 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
             fname = tmpdir / "funcname.c"
             with open(fname, "w") as f:
                 if include is not None:
-                    f.write("#include {0!s}\n".format(include))
+                    f.write(f"#include {include!s}\n")
                 f.write("int main(void) {\n")
-                f.write("    {0!s};\n".format(funcname))
+                f.write(f"    {funcname!s};\n")
                 f.write("}\n")
             # Redirect stderr to /dev/null to hide any error messages from the compiler.
             # This will have to be changed if we ever have to check for a function on
             # Windows.
-            devnull = open("/dev/null", "w")
             oldstderr = os.dup(sys.stderr.fileno())
-            os.dup2(devnull.fileno(), sys.stderr.fileno())
+            with open("/dev/null", "w") as devnull:
+                os.dup2(devnull.fileno(), sys.stderr.fileno())
+
             objects = cc.compile(
                 [fname], output_dir=str(tmpdir), extra_postargs=extra_postargs
             )
@@ -61,14 +60,11 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
     finally:
         if oldstderr is not None:
             os.dup2(oldstderr, sys.stderr.fileno())
-        if devnull is not None:
-            devnull.close()
         shutil.rmtree(tmpdir)
 
 
 def detect_openmp():
-    """
-    Support for OpenMP parallelization.
+    """Support for OpenMP parallelization.
 
     Check if this compiler support OpenMP parallelization. Credit to MDAnalysis
     setup.py.
@@ -95,10 +91,7 @@ def detect_openmp():
 if __name__ == "__main__":
     # Windows automatically handles math library linking and will not build if we try to
     # specify one
-    if os.name == "nt":
-        mathlib = []
-    else:
-        mathlib = ["m"]
+    mathlib = [] if os.name == "nt" else ["m"]
 
     has_openmp = detect_openmp()
     use_cython = not is_release or bool(os.getenv("USE_CYTHON"))
@@ -126,7 +119,7 @@ if __name__ == "__main__":
         for ext in extensions:
             for source in ext.sources:
                 if not (Path(source).exists() and os.access(source, os.R_OK)):
-                    raise IOError(
+                    raise OSError(
                         f"Source file '{source}' not found. This might be caused by a "
                         "missing Cython install, or a failed/disabled Cython build."
                     )

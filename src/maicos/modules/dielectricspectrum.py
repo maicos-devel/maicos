@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
-# Copyright (c) 2024 Authors and contributors
+# Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -9,7 +8,6 @@
 """Module for computing dielectric spectra for bulk systems."""
 
 import logging
-from typing import Optional
 
 import MDAnalysis as mda
 import numpy as np
@@ -18,7 +16,6 @@ import scipy.constants
 from ..core import AnalysisBase
 from ..lib.math import FT, iFT
 from ..lib.util import bin, charge_neutral, citation_reminder, get_compound, render_docs
-
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +67,7 @@ class DielectricSpectrum(AnalysisBase):
     References
     ----------
     .. footbibliography::
+
     """
 
     # TODO: set up script to calc spectrum at intervals while calculating polarization
@@ -78,14 +76,14 @@ class DielectricSpectrum(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        refgroup: Optional[mda.AtomGroup] = None,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         concfreq: int = 0,
         temperature: float = 300,
         output_prefix: str = "",
         segs: int = 20,
-        df: Optional[float] = None,
+        df: float | None = None,
         bins: int = 200,
         binafter: float = 20,
         nobin: bool = False,
@@ -225,8 +223,7 @@ class DielectricSpectrum(AnalysisBase):
             f" {self.seglen * self.dt:.0f} ps"
         )
         logger.info(
-            f"Frequency spacing:    "
-            f"~ {self.segs / (self.n_frames * self.dt):.5f} THz"
+            f"Frequency spacing:    ~ {self.segs / (self.n_frames * self.dt):.5f} THz"
         )
 
         # Bin data if there are too many points:
@@ -243,19 +240,15 @@ class DielectricSpectrum(AnalysisBase):
             self.results.dsusc_binned = bin(self.results.dsusc, bins)
 
             logger.info(
-                f"Binning data above datapoint " f"{self.binafter} in log-spaced bins"
+                f"Binning data above datapoint {self.binafter} in log-spaced bins"
             )
-            logger.info(
-                f"Binned data consists of " f"{len(self.results.susc)} datapoints"
-            )
+            logger.info(f"Binned data consists of {len(self.results.susc)} datapoints")
         # data is binned
-        logger.info(
-            f"Not binning data: there are " f"{len(self.results.susc)} datapoints"
-        )
+        logger.info(f"Not binning data: there are {len(self.results.susc)} datapoints")
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""
+        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
         with open(self.output_prefix + "V.txt", "w") as Vfile:
