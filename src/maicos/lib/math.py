@@ -610,26 +610,31 @@ def compute_form_factor(q: float, atom_type: str) -> float:
 
     The coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and :math:`c` are also
     known as Cromer-Mann X-ray scattering factors and are documented in
-    :footcite:t:`princeInternationalTablesCrystallography2004`.
-
-    For determining the elements :obj:`maicos.lib.tables.atomtypes` is used and the
-    Cromer-Mann X-ray scattering factors are stored in
-    :obj:`maicos.lib.tables.CM_parameters`.
+    :footcite:t:`princeInternationalTablesCrystallography2004` and taken from
+    https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php.
+    and stored stored in :obj:`maicos.lib.tables.CM_parameters`.
 
     Parameters
     ----------
     q : float
         The magnitude of the scattering vector in reciprocal angstroms (1/Å).
     atom_type : str
-        The type of the atom for which the form factor is calculated.
+        The type of the atom for which the form factor is calculated. The ``atom_type``
+        is attempted to be converted into an element using
+        :obj:`maicos.lib.tables.atomtypes`. If no suitable element is found, it is taken
+        as is.
 
     Returns
     -------
     float
-        The calculated form factor for the specified atom type and q.
+        The calculated form factor for the specified atom type and q in units of
+        electrons.
 
     """
-    element = tables.atomtypes[atom_type]
+    if atom_type in tables.atomtypes:
+        element = tables.atomtypes[atom_type]
+    else:
+        element = atom_type
 
     if element == "CH1":
         form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
@@ -647,6 +652,7 @@ def compute_form_factor(q: float, atom_type: str) -> float:
         form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
     else:
         form_factor = tables.CM_parameters[element].c
+        # q / (4 * pi) = sin(theta) / lambda
         q2 = (q / (4 * np.pi)) ** 2
         for i in range(4):
             form_factor += tables.CM_parameters[element].a[i] * np.exp(

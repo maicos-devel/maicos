@@ -556,3 +556,73 @@ def test_transform_cylinder():
 
     # z component
     assert_equal(pos_cyl[:, 2], sel.positions[:, 2])
+
+
+def test_form_factor():
+    """Regression test for the form factor as function q.
+
+    Reference values for hydrogen are taken from Table 6.1.1.1 in
+    https://it.iucr.org/Cb/ch6o1v0001/
+    """
+    reference_values = np.array(
+        [
+            [0.00, 1.000],
+            [0.01, 0.998],
+            [0.02, 0.991],
+            [0.03, 0.980],
+            [0.04, 0.966],
+            [0.05, 0.947],
+            [0.06, 0.925],
+            [0.07, 0.900],
+            [0.08, 0.872],
+            [0.09, 0.842],
+            [0.10, 0.811],
+            [0.22, 0.424],
+            [0.46, 0.090],
+        ]
+    )
+
+    sin_theta = reference_values[:, 0]
+    q = 4 * np.pi * sin_theta
+    desired = reference_values[:, 1]
+
+    assert_allclose(
+        actual=maicos.lib.math.compute_form_factor(q, "H"),
+        desired=desired,
+        rtol=5e-3,
+    )
+
+
+@pytest.mark.parametrize(
+    ("atom_type", "n_electrons"),
+    [
+        ("C", 6),
+        ("O", 8),
+        ("CH1", 7),
+        ("CH2", 8),
+        ("CH3", 9),
+        ("NH1", 8),
+        ("NH2", 9),
+        ("NH3", 10),
+    ],
+)
+def test_form_factor_zero(atom_type, n_electrons):
+    """Test that the form factor for q=0 is same as the number of electrons."""
+    assert_allclose(
+        actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
+        desired=n_electrons,
+        rtol=1e-2,
+    )
+
+
+def test_form_factor_unknown_type():
+    """Test that an unknown atom_type works well.
+
+    Cval is unknown by our atom_types dictionary and will be used as is for the form
+    factor. It is known in the sfactor table because it is a carbon atom.
+    """
+    assert_allclose(
+        actual=maicos.lib.math.compute_form_factor(0.0, "Cval"),
+        desired=6,
+        rtol=1e-2,
+    )

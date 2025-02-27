@@ -10,6 +10,7 @@
 The tables are dictionaries that are indexed by elements.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -27,14 +28,27 @@ with open(_share_path / "atomtypes.dat") as f:
             elements = line.split()
             atomtypes[elements[0]] = elements[1]
 
+
+@dataclass
+class CMParameter:
+    """Cromer-Mann X-ray scattering factor parameters."""
+
+    a: np.ndarray
+    b: np.ndarray
+    c: float
+
+
 #: Cromer-Mann X-ray scattering factors computed from numerical
-#: Hartree-Fock wave functions. See Acta Cryst. A 24 (1968) p. 321
+#: Hartree-Fock wave functions. See https://it.iucr.org/Cb/ch6o1v0001/
 CM_parameters = {}
 with open(_share_path / "sfactor.dat") as f:
     for line in f:
         if line[0] != "#":
-            elements = line.split()
-            CM_parameters[elements[0]] = type("CM_parameter", (object,), {})()
-            CM_parameters[elements[0]].a = np.array(elements[2:6], dtype=np.double)
-            CM_parameters[elements[0]].b = np.array(elements[6:10], dtype=np.double)
-            CM_parameters[elements[0]].c = float(elements[10])
+            params = line.split()
+            element = params[0]
+
+            CM_parameters[element] = CMParameter(
+                a=np.array(params[1:5], dtype=np.double),
+                b=np.array(params[5:9], dtype=np.double),
+                c=float(params[9]),
+            )
