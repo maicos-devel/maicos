@@ -11,10 +11,11 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.10 (XXXX/XX/XX)
-------------------
+Unreleased
+----------
 Philip Loche, Henrik Stooß
 
+- Add additional elements for SAXS calculations (!325)
 - Fix wrong mapping of sodium element in ``atomtypes.dat`` (!323)
 - Switch to the ruff linter (!322)
 - Make sure box dimensions are always float64, reduced output precision (#137, !321)

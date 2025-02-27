@@ -11,9 +11,9 @@
              Br             Br
               C              C
              C*              C
-             C0             Ca
-             CA              C
-           CA2+             Ca
+             C0              C
+             CA             Ca
+           CA2+           Ca2+
              CB              C
              CC              C
            CCHL              C
@@ -36,7 +36,7 @@
             CH4            CH4
              CK              C
              CL             Cl
-            CL-             Cl
+            CL-           Cl1-
             CLA              C
              CM              C
            CMET            CH3
@@ -46,12 +46,12 @@
             CR1            CH1
              CT              C
              CU             Cu
-           CU1+             Cu
-           CU2+             Cu
+           CU1+           Cu1+
+           CU2+           Cu2+
              CV              C
              CW              C
              Cl             Cl
-             Cs             CS
+             Cs             Cs
             DUM            DUM
               F             Fe
              FE             Fe
@@ -85,15 +85,18 @@
              Li             Li
            MCH3            DUM
              MG             Mg
-           MG2+             Mg
+           MG2+           Mg2+
            MNH3            DUM
              MW            DUM
               N              N
+            NH1            NH1
+            NH2            NH2
+            NH3            NH3
              N*              N
              N2              N
              N3              N
              NA             Na
-            NA+             Na
+            NA+           Na1+
              NB              N
              NC              N
              NE             NH
@@ -103,7 +106,7 @@
              NT            NH2
              NZ            NH2
              Na             Na
-            Na+             Na
+            Na+           Na1+
               O              O
              O2              O
              OA              O
@@ -125,5 +128,5 @@
               S              S
              SH             Si
              VW            DUM
-           ZN2+             Zn
+           ZN2+           Zn2+
              Zn             Zn
