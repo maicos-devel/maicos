@@ -24,7 +24,7 @@ ROOT = Path("../../")
 
 # -- Project information -----------------------------------------------------
 
-with open(ROOT / "pyproject.toml", "rb") as fp:
+with Path(ROOT / "pyproject.toml").open(mode="rb") as fp:
     project_dict = tomli.load(fp)["project"]
 
 project = project_dict["name"]

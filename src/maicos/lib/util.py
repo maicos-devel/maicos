@@ -664,7 +664,9 @@ def get_center(atomgroup: mda.AtomGroup, bin_method: str, compound: str) -> np.n
 
 @render_docs
 def unit_vectors_planar(
-    atomgroup: mda.AtomGroup, grouping: str, pdim: int
+    atomgroup: mda.AtomGroup,  # noqa: ARG001
+    grouping: str,  # noqa: ARG001
+    pdim: int,
 ) -> np.ndarray:
     """Calculate unit vectors in planar geometry.
 

@@ -104,7 +104,7 @@ class DielectricPlanar(PlanarBase):
         wrap_compound = get_compound(atomgroup)
 
         if zmin is not None or zmax is not None:
-            logger.warn(
+            logger.warning(
                 "Setting `zmin` and `zmax` might cut off molecules. This will lead to "
                 "severe artifacts in the dielectric profiles."
             )

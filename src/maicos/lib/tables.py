@@ -22,7 +22,7 @@ _share_path = Path(__file__).parents[1] / "share"
 #: :py:class:`MDAnalysis.AtomGroup.types <MDAnalysis.core.topologyattrs.Atomtypes>` to
 #: chemical elements.
 atomtypes = {}
-with open(_share_path / "atomtypes.dat") as f:
+with Path(_share_path / "atomtypes.dat").open() as f:
     for line in f:
         if line[0] != "#":
             elements = line.split()
@@ -41,7 +41,7 @@ class CMParameter:
 #: Cromer-Mann X-ray scattering factors computed from numerical
 #: Hartree-Fock wave functions. See https://it.iucr.org/Cb/ch6o1v0001/
 CM_parameters = {}
-with open(_share_path / "sfactor.dat") as f:
+with Path(_share_path / "sfactor.dat").open() as f:
     for line in f:
         if line[0] != "#":
             params = line.split()

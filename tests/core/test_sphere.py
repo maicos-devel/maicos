@@ -471,7 +471,7 @@ class TestProfileSphereBase:
 
         assert_allclose(actual, desired, rtol=1e-2)
 
-        # TODO: Add test for error and standard deviation.
+        # TODO(@PicoCentauri): Add test for error and standard deviation.
         # Needs analytical estimaton of the error
 
     @pytest.mark.parametrize(

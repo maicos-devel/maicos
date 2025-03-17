@@ -37,7 +37,7 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
     try:
         try:
             fname = tmpdir / "funcname.c"
-            with open(fname, "w") as f:
+            with Path(fname).open(mode="w") as f:
                 if include is not None:
                     f.write(f"#include {include!s}\n")
                 f.write("int main(void) {\n")
@@ -47,7 +47,7 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
             # This will have to be changed if we ever have to check for a function on
             # Windows.
             oldstderr = os.dup(sys.stderr.fileno())
-            with open("/dev/null", "w") as devnull:
+            with Path("/dev/null", "w").open() as devnull:
                 os.dup2(devnull.fileno(), sys.stderr.fileno())
 
             objects = cc.compile(
@@ -69,7 +69,7 @@ def detect_openmp():
     Check if this compiler support OpenMP parallelization. Credit to MDAnalysis
     setup.py.
     """
-    print("Attempting to autodetect OpenMP support... ", end="")
+    print("Attempting to autodetect OpenMP support... ", end="")  # noqa: T201
     compiler = new_compiler()
     customize_compiler(compiler)
     compiler.add_library("gomp")
@@ -82,9 +82,9 @@ def detect_openmp():
         extra_postargs=extra_postargs,
     )
     if hasopenmp:
-        print("Compiler supports OpenMP")
+        print("Compiler supports OpenMP")  # noqa: T201
     else:
-        print("Did not detect OpenMP support.")
+        print("Did not detect OpenMP support.")  # noqa: T201
     return hasopenmp
 
 

@@ -162,7 +162,7 @@ class Conclude(AnalysisBase):
 
     def save(self) -> None:
         """Save a file named after the current number of frames."""
-        open(f"{self.output_prefix}out_{self._index}", "w").close()
+        Path(f"{self.output_prefix}out_{self._index}").open(mode="w").close()
 
 
 class Test_AnalysisBase:
@@ -241,14 +241,14 @@ class Test_AnalysisBase:
         # Simple check if a single message gets written to the output file
         ana.savetxt("foo", data, columns=["First", "Second"])
 
-        with open("foo.dat") as f:
+        with Path("foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
         sub_ana.savetxt("foo2", data, columns=["First", "Second"])
 
-        with open("foo2.dat") as f:
+        with Path("foo2.dat").open() as f:
             foo = f.readlines()
 
         for i, line in enumerate(foo):
@@ -268,7 +268,7 @@ class Test_AnalysisBase:
         ana.run()
         ana.savetxt("test.dat", np.random.rand(10, 2))
 
-        with open("test.dat") as f:
+        with Path("test.dat").open() as f:
             assert "Module input:    FileModuleInput(" in f.read()
 
         # Test if the refgroup name is written correctly
@@ -276,9 +276,9 @@ class Test_AnalysisBase:
         ana.run()
         ana.savetxt("test_refgroup.dat", np.random.rand(10, 2))
 
-        with open("test_refgroup.dat") as f:
+        with Path("test_refgroup.dat").open() as f:
             assert "refgroup=<AtomGroup>" in f.read()
-        with open("test_refgroup.dat") as f:
+        with Path("test_refgroup.dat").open() as f:
             assert "atomgroup=<AtomGroup>" in f.read()
 
         # Test if the default value of the test_input parameter is written
@@ -286,13 +286,13 @@ class Test_AnalysisBase:
         ana.run()
         ana.savetxt("test_default.dat", np.random.rand(10, 2))
 
-        with open("test_default.dat") as f:
+        with Path("test_default.dat").open() as f:
             assert "test_input='some_default'" in f.read()
 
-        with open("test_default.dat") as f:
+        with Path("test_default.dat").open() as f:
             assert "refgroup=None" in f.read()
 
-        with open("test_default.dat") as f:
+        with Path("test_default.dat").open() as f:
             assert (
                 ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
                 "progressbar_kwargs=None)" in f.read()
@@ -303,12 +303,12 @@ class Test_AnalysisBase:
         ana.run()
         ana.savetxt("test_nondefault.dat", np.random.rand(10, 2))
 
-        with open("test_nondefault.dat") as f:
+        with Path("test_nondefault.dat").open() as f:
             assert "test_input='some_other_value'" in f.read()
 
         ana.run(step=2, stop=7, start=5, verbose=True)
         ana.savetxt("test_run.dat", np.random.rand(10, 2))
-        with open("test_run.dat") as f:
+        with Path("test_run.dat").open() as f:
             assert (
                 ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
                 "progressbar_kwargs=None)" in f.read()
@@ -527,7 +527,7 @@ class Test_AnalysisBase:
 
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
-        caplog.set_level(logging.WARN)
+        caplog.set_level(logging.WARNING)
         profile = AnalysisBase(
             atomgroup=ag,
             unwrap=True,
@@ -715,7 +715,7 @@ class TestAnalysisCollection:
                 self._trajectory = trajectory
 
         # Create collection for common trajectory loop with inconsistent trajectory
-        with pytest.raises(AttributeError, match="not a child of `AnalysisBase`"):
+        with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
             AnalysisCollection(CustomAnalysis(u.trajectory))
 
     def test_save(self, u, monkeypatch, tmp_path):
@@ -781,7 +781,7 @@ class Test_ProfileBase:
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
         return dict(
-            weighting_function=lambda x, grouping, a=1: a * x,
+            weighting_function=lambda x, grouping, a=1: a * x,  # noqa: ARG005
             weighting_function_kwargs=None,
             atomgroup=u.atoms,
             normalization="number",

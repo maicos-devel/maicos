@@ -686,7 +686,7 @@ class AnalysisCollection(_Runner):
                     "`analysis_instances` do not have the same trajectory."
                 )
             if not isinstance(analysis_object, AnalysisBase):
-                raise AttributeError(
+                raise TypeError(
                     f"Analysis object {analysis_object} is "
                     "not a child of `AnalysisBase`."
                 )

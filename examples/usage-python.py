@@ -182,7 +182,7 @@ for ag in [group_O, group_H]:
         maicos.DensityPlanar(ag, bin_width=0.5, unwrap=False).run()
     )
 
-# TODO: Intoduce AnalysisCollection here?
+# TODO(@PicoCentauri): Intoduce AnalysisCollection here?
 
 zcoor_smaller_bin_O = dplan_smaller_bin[0].results.bin_pos
 dens_smaller_bin_O = dplan_smaller_bin[0].results.profile

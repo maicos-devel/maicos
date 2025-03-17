@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the RDFDiporder class."""
 
+from pathlib import Path
+
 import MDAnalysis as mda
 import numpy as np
 import pytest
@@ -101,7 +103,7 @@ class TestRDFDiporder:
         rdf.run(stop=1)
         rdf.save()
 
-        with open("foo.dat") as f:
+        with Path("foo.dat").open() as f:
             out = f.read()
 
         if norm in ["rdf", "density"]:

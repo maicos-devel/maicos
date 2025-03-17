@@ -197,9 +197,9 @@ class TestDielectricCylinder:
         eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
         eps.run()
         eps.save()
-        with open("foo_z.dat"):
+        with Path("foo_z.dat").open():
             pass
-        with open("foo_r.dat"):
+        with Path("foo_r.dat").open():
             pass
 
     def test_singleline(self, ag):
