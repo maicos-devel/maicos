@@ -7,14 +7,12 @@ default:
     expire_in: 1 week
   image:
     name: python:$PYTHON_VERSION
+  cache: []
 
 variables:
   PYTHON_VERSION: '3.13'
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-cache:
-  paths:
-    - .cache/pip
 
 .python_setup: &python_setup
   - python --version; pip --version
