@@ -42,6 +42,13 @@ class Saxs(AnalysisBase):
     for changing cells the same Miller indices correspond to different scattering
     vectors.
 
+    .. warning::
+
+        Please be aware that in simulations where the box vectors change, the q-vectors
+        will differ between frames. Artifacts can arise when the data contains poorly
+        sampled q-vectors.
+
+
     Analyzed scattering vectors :math:`q` can be restricted by a minimal and maximal
     angle with the z-axis. For ``0`` and ``180``, all possible vectors are taken into
     account. To obtain the scattering intensities, the structure factor is normalized by
@@ -224,21 +231,16 @@ class Saxs(AnalysisBase):
                     bins=self.n_bins,
                     range=(self.qmin, self.qmax),
                 )
-                structure_factors_binned, _ = np.histogram(
+                structure_factors, _ = np.histogram(
                     weights=structure_factors, **histogram_kwargs
                 )
-                scattering_intensities_binned, _ = np.histogram(
+                scattering_intensities, _ = np.histogram(
                     weights=scattering_intensities, **histogram_kwargs
                 )
-                bincount, _ = np.histogram(weights=None, **histogram_kwargs)
-                with np.errstate(invalid="ignore"):
-                    structure_factors_binned /= bincount
-                    scattering_intensities_binned /= bincount
+                self._obs.bincount, _ = np.histogram(weights=None, **histogram_kwargs)
+                self._obs.structure_factors += structure_factors
+                self._obs.scattering_intensities += scattering_intensities
 
-                self._obs.structure_factors += np.nan_to_num(structure_factors_binned)
-                self._obs.scattering_intensities += np.nan_to_num(
-                    scattering_intensities_binned
-                )
             else:
                 self._obs.structure_factors += structure_factors
                 self._obs.scattering_intensities += scattering_intensities
@@ -251,8 +253,10 @@ class Saxs(AnalysisBase):
                 np.arange(self.qmin, self.qmax, self.dq) + 0.5 * self.dq
             )
 
-            structure_factors = self.means.structure_factors
-            scattering_intensities = self.means.scattering_intensities
+            structure_factors = self.sums.structure_factors / self.sums.bincount
+            scattering_intensities = (
+                self.sums.scattering_intensities / self.sums.bincount
+            )
 
         else:
             miller_indices = np.array(list(np.ndindex(tuple(self.max_n))))
@@ -276,7 +280,7 @@ class Saxs(AnalysisBase):
             scattering_intensities = scattering_intensities[argsort]
 
         # remove zeros
-        nonzeros = np.where(structure_factors != 0)[0]
+        nonzeros = np.invert(np.isnan(structure_factors))
         scattering_vectors = scattering_vectors[nonzeros]
         structure_factors = structure_factors[nonzeros]
         scattering_intensities = scattering_intensities[nonzeros]
