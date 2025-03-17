@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Disable tests for PMDA API (!326)
 - Add additional elements for SAXS calculations (!325)
 - Fix wrong mapping of sodium element in ``atomtypes.dat`` (!323)
 - Switch to the ruff linter (!322)
