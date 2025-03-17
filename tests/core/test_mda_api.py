@@ -19,6 +19,7 @@ from MDAnalysisTests.analysis.test_base import (
     test_frames_times,
     test_incompatible_n_workers,
     test_instance_serial_backend,
+    test_n_workers_conflict_raises_value_error,
     test_parallelizable_transformations,
     test_progressbar_multiprocessing,
     test_reset_n_parts_to_n_frames,
@@ -36,19 +37,20 @@ del test_verbose
 del test_frame_bool_fail
 
 # Remove parallel tests because we don't support parallelization, yet...
-del test_incompatible_n_workers
-del test_reset_n_parts_to_n_frames
-del test_parallelizable_transformations
-del test_instance_serial_backend
-del test_warn_nparts_nworkers
-del test_progressbar_multiprocessing
-del test_start_stop_step_parallel
-del test_frame_slice_parallel
-del test_rewind
-del test_frames_times
-del test_AnalysisFromFunction
 del test_analysis_class
+del test_AnalysisFromFunction
 del test_AnalysisFromFunction_args_content
+del test_frame_slice_parallel
+del test_frames_times
+del test_incompatible_n_workers
+del test_instance_serial_backend
+del test_n_workers_conflict_raises_value_error
+del test_parallelizable_transformations
+del test_progressbar_multiprocessing
+del test_reset_n_parts_to_n_frames
+del test_rewind
+del test_start_stop_step_parallel
+del test_warn_nparts_nworkers
 
 
 @pytest.fixture(autouse=True)
