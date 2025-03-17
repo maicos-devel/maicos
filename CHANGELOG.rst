@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Fix averaging of structure factors and add informations about NpT and SAXS (!315)
 - Disable tests for PMDA API (!326)
 - Add additional elements for SAXS calculations (!325)
 - Fix wrong mapping of sodium element in ``atomtypes.dat`` (!323)
