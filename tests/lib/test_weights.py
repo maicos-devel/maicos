@@ -96,7 +96,7 @@ def test_diporder_pair_weights_single(ag_spce):
     assert_allclose(weights, 1)
 
 
-def test_diporder_pair_weights_line(ag_spce):
+def test_diporder_pair_weights_line():
     """Test that the weight of the same molecules is equal to one 1."""
     ag = line_of_water_molecules(n_molecules=4, angle_deg=[0.0, 45.0, 90.0, 180.0])
     weights = maicos.lib.weights.diporder_pair_weights(ag, ag, compound="residues")
@@ -176,7 +176,7 @@ class Testdiporder_weights:
     def test_wrong_unit_vector_shape(self, ag_spce):
         """Test raise for a wrong shape of provided unit vector."""
 
-        def get_unit_vectors(atomgroup, grouping):
+        def get_unit_vectors(atomgroup, grouping):  # noqa: ARG001
             return np.zeros([10, 4])
 
         match = (

@@ -241,9 +241,9 @@ class TestDielectricPlanar:
         eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
         eps.run()
         eps.save()
-        with open("foo_perp.dat"):
+        with Path("foo_perp.dat").open():
             pass
-        with open("foo_par.dat"):
+        with Path("foo_par.dat").open():
             pass
 
     def test_sym(self, ag_two_frames):

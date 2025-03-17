@@ -8,6 +8,7 @@
 """Module for computing dielectric spectra for bulk systems."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -70,9 +71,9 @@ class DielectricSpectrum(AnalysisBase):
 
     """
 
-    # TODO: set up script to calc spectrum at intervals while calculating polarization
-    # for very big-data trajectories
-    # TODO: merge with molecular version?
+    # TODO(@hejamu): set up script to calc spectrum at intervals while calculating
+    # polarization for very big-data trajectories
+    # TODO(@PicoCentauri): merge with molecular version?
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -251,7 +252,7 @@ class DielectricSpectrum(AnalysisBase):
         """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
-        with open(self.output_prefix + "V.txt", "w") as Vfile:
+        with Path(self.output_prefix + "V.txt").open(mode="w") as Vfile:
             Vfile.write(str(self.results.V))
 
         np.save(self.output_prefix + "P_tseries.npy", self.results.P)
@@ -271,7 +272,7 @@ class DielectricSpectrum(AnalysisBase):
             columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)", "Δ imag(χ)"],
         )
 
-        logger.info("Susceptibility data saved as " + suscfilename)
+        logger.info("Susceptibility data saved as {suscfilename}")
 
         if not (self.nobin or self.seglen <= self.bins):
             suscfilename = "{}{}".format(self.output_prefix, "susc_binned.dat")
@@ -289,4 +290,4 @@ class DielectricSpectrum(AnalysisBase):
                 columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)", "Δ imag(χ)"],
             )
 
-            logger.info("Binned susceptibility data saved as " + suscfilename)
+            logger.info("Binned susceptibility data saved as {suscfilename}")

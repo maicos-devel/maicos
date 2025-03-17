@@ -160,7 +160,7 @@ class TestDielectricSphere:
         eps = DielectricSphere(ag_single_frame, output_prefix="foo")
         eps.run()
         eps.save()
-        with open("foo_rad.dat"):
+        with Path("foo_rad.dat").open():
             pass
 
     @pytest.mark.parametrize(

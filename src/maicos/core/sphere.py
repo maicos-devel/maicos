@@ -92,7 +92,7 @@ class SphereBase(AnalysisBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logger.warn(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )

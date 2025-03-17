@@ -97,7 +97,7 @@ class CylinderBase(PlanarBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logger.warn(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -224,7 +224,9 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         ProfileBase._prepare(self)
 
         logger.info(
-            f"Computing {self.grouping} radial profile along {'XYZ'[self.dim]}-axes."
+            "Computing %s radial profile along %s-axes.",
+            self.grouping,
+            "XYZ"[self.dim],
         )
 
     def _compute_histogram(

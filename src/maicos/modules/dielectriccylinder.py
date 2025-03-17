@@ -91,7 +91,7 @@ class DielectricCylinder(CylinderBase):
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
         if zmin is not None or zmax is not None or rmin != 0 or rmax is not None:
-            logger.warn(
+            logger.warning(
                 "Setting `rmin` and `rmax` (as well as `zmin` and `zmax`) might cut "
                 "off molecules. This will lead to severe artifacts in the dielectric "
                 "profiles."

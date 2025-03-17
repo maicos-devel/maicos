@@ -37,13 +37,13 @@ class TestDielectricSpectrum:
         ds = DielectricSpectrum(ag)
         ds.run()
         ds.save()
-        with open("susc.dat"):
+        with Path("susc.dat").open():
             pass
-        with open("P_tseries.npy"):
+        with Path("P_tseries.npy").open():
             pass
-        with open("tseries.npy"):
+        with Path("tseries.npy").open():
             pass
-        with open("V.txt"):
+        with Path("V.txt").open():
             pass
 
     def test_output_name_prefix(self, ag, monkeypatch, tmp_path):
@@ -53,13 +53,13 @@ class TestDielectricSpectrum:
         ds = DielectricSpectrum(ag, output_prefix="foo")
         ds.run()
         ds.save()
-        with open("foo_susc.dat"):
+        with Path("foo_susc.dat").open():
             pass
-        with open("foo_P_tseries.npy"):
+        with Path("foo_P_tseries.npy").open():
             pass
-        with open("foo_tseries.npy"):
+        with Path("foo_tseries.npy").open():
             pass
-        with open("foo_V.txt"):
+        with Path("foo_V.txt").open():
             pass
 
     def test_output_name_binned(self, ag, monkeypatch, tmp_path):
@@ -73,15 +73,15 @@ class TestDielectricSpectrum:
         ds = DielectricSpectrum(ag, bins=5, binafter=0, segs=5)
         ds.run()
         ds.save()
-        with open("susc.dat"):
+        with Path("susc.dat").open():
             pass
-        with open("susc_binned.dat"):
+        with Path("susc_binned.dat").open():
             pass
-        with open("P_tseries.npy"):
+        with Path("P_tseries.npy").open():
             pass
-        with open("tseries.npy"):
+        with Path("tseries.npy").open():
             pass
-        with open("V.txt"):
+        with Path("V.txt").open():
             pass
 
     def test_output(self, ag, monkeypatch, tmp_path):

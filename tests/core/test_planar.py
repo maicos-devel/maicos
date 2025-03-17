@@ -471,10 +471,10 @@ class TestProfilePlanarBase:
 
         assert_allclose(actual, desired, rtol=1e-2)
 
-        # TODO: Add test for error and standard deviation.
+        # TODO(@PicoCentauri): Add test for error and standard deviation.
         # Needs analytical estimaton of the error
 
-    def test_profile_precision(self, u, params):
+    def test_profile_precision(self, params):
         """Test profile precision."""
         params.update(bin_width=0.01)
         profile = ProfilePlanarBase(**params).run()

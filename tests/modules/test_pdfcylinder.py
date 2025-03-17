@@ -56,7 +56,7 @@ class TestPDFCylinder:
         with pytest.raises(ValueError, match=match):
             PDFCylinder(spce_water.atoms, origin=np.array([1]))
 
-    # TODO: Do the same for phi
+    # TODO(@kirafischer): Do the same for phi
     @pytest.mark.parametrize("dim", [0, 1, 2])
     @pytest.mark.parametrize("dmin", [0, 10])
     def test_pdf_bin_width_calculation(self, spce_water, dim, dmin):
@@ -136,7 +136,6 @@ class TestPDFCylinder:
         # Merge the two groups into one universe
         g = mda.Merge(g1, g2)
         g.dimensions = (20, 20, 20, 90, 90, 90)
-        print(g.atoms.positions)
         # Select the two groups
         g1 = g.atoms[:3]
         g2 = g.atoms[3:]

@@ -115,7 +115,7 @@ class PlanarBase(AnalysisBase):
         """Prepare the planar analysis."""
         self._compute_lab_frame_planar()
 
-        # TODO: There are much more wrong combinations of zmin and zmax...
+        # TODO(@hejamu): There are much more wrong combinations of zmin and zmax...
         if (
             self._zmax is not None
             and self._zmin is not None
