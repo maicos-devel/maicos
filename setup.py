@@ -47,7 +47,7 @@ def hasfunction(cc, funcname, include=None, extra_postargs=None):
             # This will have to be changed if we ever have to check for a function on
             # Windows.
             oldstderr = os.dup(sys.stderr.fileno())
-            with Path("/dev/null", "w").open() as devnull:
+            with Path("/dev/null").open(mode="w") as devnull:
                 os.dup2(devnull.fileno(), sys.stderr.fileno())
 
             objects = cc.compile(
