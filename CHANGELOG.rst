@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Add errorbars for binned q-values in SAXS module (!328)
 - Fix averaging of structure factors and add informations about NpT and SAXS (!315)
 - Disable tests for PMDA API (!326)
 - Add additional elements for SAXS calculations (!325)

@@ -84,6 +84,13 @@ class Saxs(AnalysisBase):
         structure factors :math:`S(q)`
     results.scattering_intensities : numpy.ndarray
         scattering intensities :math:`I(q)`
+    results.dstruture_factors : numpy.ndarray
+        standard error of the structure factors :math:`S(q)`
+        (only available if ``bin_spectrum==True``).
+        structure factors :math:`S(q)`
+    results.dscattering_intensities : numpy.ndarray
+        standard error of the scattering intensities :math:`I(q)`
+        (only available if ``bin_spectrum==True``).
 
     References
     ----------
@@ -252,11 +259,12 @@ class Saxs(AnalysisBase):
             scattering_vectors = (
                 np.arange(self.qmin, self.qmax, self.dq) + 0.5 * self.dq
             )
-
             structure_factors = self.sums.structure_factors / self.sums.bincount
             scattering_intensities = (
                 self.sums.scattering_intensities / self.sums.bincount
             )
+            dstructure_factors = self.sems.structure_factors
+            dscattering_intensities = self.sems.scattering_intensities
 
         else:
             miller_indices = np.array(list(np.ndindex(tuple(self.max_n))))
@@ -284,14 +292,23 @@ class Saxs(AnalysisBase):
         scattering_vectors = scattering_vectors[nonzeros]
         structure_factors = structure_factors[nonzeros]
         scattering_intensities = scattering_intensities[nonzeros]
+        if self.bin_spectrum:
+            dstructure_factors = dstructure_factors[nonzeros]
+            dscattering_intensities = dscattering_intensities[nonzeros]
 
         # normalize
         structure_factors /= self.atomgroup.n_atoms
         scattering_intensities /= self.atomgroup.n_atoms
+        if self.bin_spectrum:
+            dstructure_factors /= self.atomgroup.n_atoms
+            dscattering_intensities /= self.atomgroup.n_atoms
 
         self.results.scattering_vectors = scattering_vectors
         self.results.structure_factors = structure_factors
         self.results.scattering_intensities = scattering_intensities
+        if self.bin_spectrum:
+            self.results.dstructure_factors = dstructure_factors
+            self.results.dscattering_intensities = dscattering_intensities
 
         if not self.bin_spectrum:
             self.results.miller_indices = miller_indices[nonzeros]
@@ -307,9 +324,17 @@ class Saxs(AnalysisBase):
                         self.results.scattering_vectors,
                         self.results.structure_factors,
                         self.results.scattering_intensities,
+                        self.results.dstructure_factors,
+                        self.results.dscattering_intensities,
                     ]
                 ).T,
-                columns=["q (1/Å)", "S(q) (arb. units)", "I(q) (arb. units)"],
+                columns=[
+                    "q (1/Å)",
+                    "S(q) (arb. units)",
+                    "I(q) (arb. units)",
+                    "ΔS(q)",
+                    "ΔI(q)",
+                ],
             )
         else:
             out = np.hstack(
