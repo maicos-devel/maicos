@@ -29,6 +29,7 @@ v0.9 (2025/02/19)
 Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrik Stooß,
 Adyant Agrawal
 
+- Removed doubled entry for hydrogen in ``sfactors.dat`` (!329)
 - Rewrite integrals in ``DielectricCylinder`` and ``DielectricSphere`` to avoid
   numerical inaccuracies from rectangle integration method (!317)
 - Update to Numpy 2.0 and MDAnalysis version 2.8.0 (!319)
