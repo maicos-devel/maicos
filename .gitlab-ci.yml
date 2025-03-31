@@ -50,7 +50,7 @@ variables:
     - *python_setup
 
 .macos:
-  image: macos-13-xcode-14
+  image: macos-15-xcode-16
   variables:
     OS_NAME: "macos"
   tags:
