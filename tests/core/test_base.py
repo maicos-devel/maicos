@@ -429,6 +429,14 @@ class Test_AnalysisBase:
 
         assert_allclose(ag.positions, ag_ref.positions)
 
+        ag_ref = UnWrapUniverse().atoms
+        if unwrap:
+            ag_ref.unwrap(compound="residues")
+        if pack:
+            ag_ref.wrap(compound="residues")
+
+        assert_allclose(ag.positions, ag_ref.positions)
+
     @pytest.mark.parametrize(
         ("data", "result"),
         [([1, 2], 1.5), ([float(1), float(2)], 1.5), ([[1], [2]], 1.5)],
@@ -501,7 +509,7 @@ class Test_AnalysisBase:
 
         assert "Using 10 bins." in [rec.message for rec in caplog.records]
 
-    def test_info_log(self, ag, caplog):
+    def test_info_log_verbose(self, ag, caplog):
         """Test that logger infos are printed."""
         ana_obj = AnalysisBase(
             atomgroup=ag,
@@ -521,9 +529,13 @@ class Test_AnalysisBase:
         caplog.set_level(logging.INFO)
         ana_obj.run(stop=1)
 
+        preparation_msg = "Starting preparation"
+        analysis_msg = "Starting analysis loop over 1 trajectory frames."
+
+        # INFO log messages should always be in the logger
         messages = [rec.message for rec in caplog.records]
-        assert "Starting preparation" in messages
-        assert "Starting analysis loop over 1 trajectory frames." in messages
+        assert preparation_msg in messages
+        assert analysis_msg in messages
 
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""

@@ -7,15 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 r"""Module for computing spherical dipolar order parameters."""
 
-import logging
-
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
 from ..lib.util import render_docs, unit_vectors_sphere
 from ..lib.weights import diporder_weights
-
-logger = logging.getLogger(__name__)
 
 
 @render_docs

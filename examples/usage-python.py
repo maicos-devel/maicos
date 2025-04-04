@@ -37,6 +37,9 @@ To start, let us first import Matplotlib, MDAnalysis and MAICoS
 """  # noqa: D415
 # %%
 
+import logging
+import sys
+
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 
@@ -265,12 +268,25 @@ fig.show()
 # Additional Options
 # ------------------
 #
-# Use ``verbose=True`` to display a progress bar:
+# Use ``verbose=True`` to display extra informations and a progress bar:
 
 dplan_verbose = maicos.DensityPlanar(group_H2O)
 dplan_verbose.run(verbose=True)
 
 # %%
+# MAICoS uses Python's `standard logging library
+# <https://docs.python.org/3/library/logging.html>`_ to display additional informations
+# during the analysis of your trajectory. If you also want to show the `DEBUG` messages
+# you can configure the logger accordingly.
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+dplan_verbose.run(verbose=True)
+logging.disable(logging.WARNING)
+
+# %%
+# For additional options take a look at the `HOWTO
+# <https://docs.python.org/3/howto/logging.html>`_ for the logging library.
+#
 # To analyse only a subpart of a trajectory file, for instance to analyse only frames 2,
 # 4, 6, 8, and 10, use the ``start``, ``stop``, and ``step`` keywords as follow:
 

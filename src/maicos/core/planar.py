@@ -17,8 +17,6 @@ from ..lib.math import symmetrize
 from ..lib.util import render_docs
 from .base import AnalysisBase, ProfileBase
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class PlanarBase(AnalysisBase):
@@ -229,7 +227,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         if self.sym and self.refgroup is None:
             raise ValueError("For symmetrization the `refgroup` argument is required.")
 
-        logger.info(f"Computing {self.grouping} profile along {'XYZ'[self.dim]}-axes.")
+        logging.info(f"Computing {self.grouping} profile along {'XYZ'[self.dim]}-axes.")
 
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None

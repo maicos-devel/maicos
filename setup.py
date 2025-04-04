@@ -120,8 +120,10 @@ if __name__ == "__main__":
             for source in ext.sources:
                 if not (Path(source).exists() and os.access(source, os.R_OK)):
                     raise OSError(
-                        f"Source file '{source}' not found. This might be caused by a "
+                        f"Source file {source!r} not found. This might be caused by a "
                         "missing Cython install, or a failed/disabled Cython build."
+                        "Cython build can be forced by setting the enviroment variable"
+                        "`USE_CYTHON` to true."
                     )
 
     setup(cmdclass=versioneer.get_cmdclass(), version=VERSION, ext_modules=extensions)

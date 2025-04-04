@@ -18,8 +18,6 @@ from ..core import AnalysisBase
 from ..lib.math import FT, iFT
 from ..lib.util import bin, charge_neutral, citation_reminder, get_compound, render_docs
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 @charge_neutral(filter="error")
@@ -111,7 +109,7 @@ class DielectricSpectrum(AnalysisBase):
 
     def _prepare(self) -> None:
         # Print the Shane Carlson citation
-        logger.info(citation_reminder("10.1021/acs.jpca.0c04063"))
+        logging.info(citation_reminder("10.1021/acs.jpca.0c04063"))
 
         if len(self.output_prefix) > 0:
             self.output_prefix += "_"
@@ -145,7 +143,7 @@ class DielectricSpectrum(AnalysisBase):
         pref /= scipy.constants.k * self.temperature
         pref /= scipy.constants.epsilon_0
 
-        logger.info("Calculating susceptibility and errors...")
+        logging.info("Calculating susceptibility and errors...")
 
         # if t too short to simply truncate
         if len(self.results.t) < 2 * self.seglen:
@@ -169,7 +167,7 @@ class DielectricSpectrum(AnalysisBase):
 
         # loop over segs
         for s in range(0, self.segs):
-            logger.info(f"\rSegment {s + 1} of {self.segs}")
+            logging.info(f"\rSegment {s + 1} of {self.segs}")
             ss = 0 + 0j
 
             # loop over x, y, z
@@ -219,11 +217,11 @@ class DielectricSpectrum(AnalysisBase):
         # regime: Now nu represents positive f instead of omega
         self.results.nu = self.results.nu[self.seglen :] / (2 * np.pi)
 
-        logger.info(
+        logging.info(
             f"Length of segments:    {self.seglen} frames,"
             f" {self.seglen * self.dt:.0f} ps"
         )
-        logger.info(
+        logging.info(
             f"Frequency spacing:    ~ {self.segs / (self.n_frames * self.dt):.5f} THz"
         )
 
@@ -240,12 +238,12 @@ class DielectricSpectrum(AnalysisBase):
             self.results.susc_binned = bin(self.results.susc, bins)
             self.results.dsusc_binned = bin(self.results.dsusc, bins)
 
-            logger.info(
+            logging.info(
                 f"Binning data above datapoint {self.binafter} in log-spaced bins"
             )
-            logger.info(f"Binned data consists of {len(self.results.susc)} datapoints")
+            logging.info(f"Binned data consists of {len(self.results.susc)} datapoints")
         # data is binned
-        logger.info(f"Not binning data: there are {len(self.results.susc)} datapoints")
+        logging.info(f"Not binning data: there are {len(self.results.susc)} datapoints")
 
     @render_docs
     def save(self) -> None:
@@ -272,7 +270,7 @@ class DielectricSpectrum(AnalysisBase):
             columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)", "Δ imag(χ)"],
         )
 
-        logger.info("Susceptibility data saved as {suscfilename}")
+        logging.info("Susceptibility data saved as {suscfilename}")
 
         if not (self.nobin or self.seglen <= self.bins):
             suscfilename = "{}{}".format(self.output_prefix, "susc_binned.dat")
@@ -290,4 +288,4 @@ class DielectricSpectrum(AnalysisBase):
                 columns=["ν [THz]", "real(χ)", " Δ real(χ)", "imag(χ)", "Δ imag(χ)"],
             )
 
-            logger.info("Binned susceptibility data saved as {suscfilename}")
+            logging.info("Binned susceptibility data saved as {suscfilename}")

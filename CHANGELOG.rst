@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Add example on how-to use logger within Python (!305)
 - Add errorbars for binned q-values in SAXS module (!328)
 - Fix averaging of structure factors and add informations about NpT and SAXS (!315)
 - Disable tests for PMDA API (!326)

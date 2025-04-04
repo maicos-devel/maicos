@@ -12,10 +12,12 @@ import logging
 import warnings
 from collections.abc import Callable
 from datetime import datetime
+from tempfile import NamedTemporaryFile
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
 import numpy as np
+from mdacli.logger import setup_logging
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -35,8 +37,6 @@ from ..lib.util import (
 __version__ = get_versions()["version"]
 del get_versions
 
-logger = logging.getLogger(__name__)
-
 
 class _Runner:
     """Private Runner class that provides a common ``run`` method.
@@ -55,14 +55,22 @@ class _Runner:
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         self._run_locals = locals()
+        # Create a tempory file to surpress warning when calling `setup_logging`.
+        tempfile = NamedTemporaryFile()  # noqa SIM115
 
-        logger.info("Choosing frames to analyze")
+        level = logging.INFO if verbose else logging.WARNING
+
+        with setup_logging(
+            logobj=logging.getLogger(__name__),
+            logfile=tempfile.name + ".log",
+            level=level,
+        ):
+            logging.info("Choosing frames to analyze")
+
+        if frames is not None and not all(opt is None for opt in [start, stop, step]):
+            raise ValueError("start/stop/step cannot be combined with frames")
+
         for analysis_object in analysis_instances:
-            if frames is not None and not all(
-                opt is None for opt in [start, stop, step]
-            ):
-                raise ValueError("start/stop/step cannot be combined with frames")
-
             analysis_object._setup_frames(
                 analysis_object._trajectory,
                 start=start,
@@ -71,8 +79,8 @@ class _Runner:
                 frames=frames,
             )
 
-        logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
-        logger.info("Starting preparation")
+        logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
+        logging.info("Starting preparation")
 
         for analysis_object in analysis_instances:
             analysis_object._call_prepare()
@@ -93,10 +101,11 @@ class _Runner:
                 analysis_object._call_single_frame(ts=ts, current_frame_index=i)
                 ts = ts_original
 
-        logger.info("Finishing up")
+        logging.info("Finishing up")
         for analysis_object in analysis_instances:
             analysis_object._call_conclude()
 
+        tempfile.close()
         return self
 
 
@@ -186,8 +195,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     Creating a logger makes debugging easier.
 
-    >>> logger = logging.getLogger(__name__)
-
     In the following the analysis module itself. Due to the similar structure of all
     MAICoS modules you can render the parameters using the
     :func:`maicos.lib.util.render_docs` decorator. The decorator will replace special
@@ -245,7 +252,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         Called at the end of the run() method to finish everything up.
     ...         '''
     ...         self.results.volume = self.volume / self.n_frames
-    ...         logger.info(
+    ...         logging.info(
     ...             f"Average volume of the simulation box {self.results.volume:.2f} Å³"
     ...         )
     ...
@@ -326,7 +333,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             raise ValueError("Universe does not have `dimensions` and can't be packed!")
 
         if self.unwrap and self.wrap_compound == "atoms":
-            logger.warning(
+            logging.warning(
                 "Unwrapping in combination with the "
                 "`wrap_compound='atoms` is superfluous. "
                 "`unwrap` will be set to `False`."
@@ -367,7 +374,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 not hasattr(self.refgroup, "masses")
                 or np.sum(self.refgroup.masses) == 0
             ):
-                logger.warning(
+                logging.warning(
                     "No masses available in refgroup, falling back "
                     "to center of geometry"
                 )
@@ -380,11 +387,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         # Log bin information if a spatial analysis is run.
         if hasattr(self, "n_bins"):
-            logger.info(f"Using {self.n_bins} bins.")
+            logging.info(f"Using {self.n_bins} bins.")
 
         self.timeseries = np.zeros(self.n_frames)
 
-        logger.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
+        logging.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
 
     def _single_frame(self) -> None | float:
         """Calculate data from a single frame of trajectory.
@@ -460,7 +467,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         except AttributeError as err:
             with logging_redirect_tqdm():
-                logger.info("Preparing error estimation.")
+                logging.info("Preparing error estimation.")
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).

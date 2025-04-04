@@ -17,8 +17,6 @@ from ..lib import tables
 from ..lib.math import compute_form_factor, compute_structure_factor
 from ..lib.util import render_docs
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class Saxs(AnalysisBase):
@@ -155,7 +153,7 @@ class Saxs(AnalysisBase):
         self.weights = []
         self.atom_types = []
 
-        logger.info("\nMap the following atomtypes:")
+        logging.info("\nMap the following atomtypes:")
         for atom_type in np.unique(self.atomgroup.types).astype(str):
             try:
                 element = tables.atomtypes[atom_type]
@@ -175,7 +173,7 @@ class Saxs(AnalysisBase):
             self.weights.append(np.ones(group.n_atoms))
             self.atom_types.append(atom_type)
 
-            logger.info(f"{atom_type:>14} --> {element:>5}")
+            logging.info(f"{atom_type:>14} --> {element:>5}")
 
         if self.bin_spectrum:
             self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))

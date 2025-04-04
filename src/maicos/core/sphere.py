@@ -18,8 +18,6 @@ from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class SphereBase(AnalysisBase):
@@ -92,7 +90,7 @@ class SphereBase(AnalysisBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logger.warning(
+            logging.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -209,7 +207,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         SphereBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logger.info(f"Computing {self.grouping} radial profile.")
+        logging.info(f"Computing {self.grouping} radial profile.")
 
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None

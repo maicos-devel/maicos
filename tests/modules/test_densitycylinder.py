@@ -19,7 +19,7 @@ from maicos import DensityCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
-from util import circle_of_water_molecules  # noqa: E402=
+from util import circle_of_water_molecules  # noqa: E402
 
 
 class ReferenceAtomGroups:

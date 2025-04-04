@@ -22,8 +22,6 @@ from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
 
-logger = logging.getLogger(__name__)
-
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(
@@ -362,10 +360,10 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     if hasattr(atomgroup, "molnums"):
         return "molecules"
     if hasattr(atomgroup, "fragments"):
-        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
+        logging.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
     if hasattr(atomgroup, "residues"):
-        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
+        logging.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
     raise AttributeError("Missing any connection information in `atomgroup`.")
 
@@ -403,7 +401,7 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
 
     """
     if not hasattr(AtomGroup, "types"):
-        logger.warning(
+        logging.warning(
             "AtomGroup does not contain atom types. Not writing AtomGroup information "
             "to output."
         )
