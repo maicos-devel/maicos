@@ -139,6 +139,7 @@ ignore = [
     "TRY003", # Avoid specifying long messages outside the exception class
     "TD003", # Missing issue link for this TODO
     "G004", # f-strings in log messages
+    "LOG015", # Logging using root logger #TODO(@PicoCentauri): Check this
 ]
 
 [tool.ruff.lint.per-file-ignores]

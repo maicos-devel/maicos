@@ -7,15 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing cylindrical density profiles."""
 
-import logging
-
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
-
-logger = logging.getLogger(__name__)
 
 
 @render_docs

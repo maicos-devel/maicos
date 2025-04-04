@@ -7,16 +7,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper and utilities functions for testing."""
 
-import logging
 import sys
 from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
 import sympy as sp
-
-logger = logging.getLogger(__name__)
-
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import SPCE_GRO, SPCE_ITP  # noqa: E402

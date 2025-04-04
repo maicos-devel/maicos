@@ -17,8 +17,6 @@ from ..core import PlanarBase
 from ..lib.math import symmetrize
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 @charge_neutral(filter="error")
@@ -104,7 +102,7 @@ class DielectricPlanar(PlanarBase):
         wrap_compound = get_compound(atomgroup)
 
         if zmin is not None or zmax is not None:
-            logger.warning(
+            logging.warning(
                 "Setting `zmin` and `zmax` might cut off molecules. This will lead to "
                 "severe artifacts in the dielectric profiles."
             )
@@ -132,7 +130,7 @@ class DielectricPlanar(PlanarBase):
 
     def _prepare(self) -> None:
         # Print Alex Schlaich citation
-        logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
+        logging.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 
         super()._prepare()
 

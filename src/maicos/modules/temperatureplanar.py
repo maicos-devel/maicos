@@ -7,15 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar temperature profiles."""
 
-import logging
-
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import temperature_weights
-
-logger = logging.getLogger(__name__)
 
 
 @render_docs

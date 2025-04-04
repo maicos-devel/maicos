@@ -16,8 +16,6 @@ from MDAnalysis.lib.distances import capped_distance
 from ..core import PlanarBase
 from ..lib.util import get_center, get_compound, render_docs
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class PDFPlanar(PlanarBase):
@@ -155,12 +153,12 @@ class PDFPlanar(PlanarBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logger.info("Compute pair distribution function.")
+        logging.info("Compute pair distribution function.")
 
         half_of_box_size = min(self.box_center)
         if self.dmax is None:
             self.dmax = min(self.box_center)
-            logger.info(
+            logging.info(
                 "Setting maximum range of PDF to half the box size ({self.range[1]} Å)."
             )
         elif self.dmax > min(self.box_center):
@@ -185,7 +183,7 @@ class PDFPlanar(PlanarBase):
                 "`coc`."
             )
 
-        logger.info(f"Using {self.pdf_nbins} pdf bins.")
+        logging.info(f"Using {self.pdf_nbins} pdf bins.")
 
         # Empty histogram self.count to store the PDF.
         self.edges = np.histogram(

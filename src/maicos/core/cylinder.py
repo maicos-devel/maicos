@@ -18,8 +18,6 @@ from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import PlanarBase
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class CylinderBase(PlanarBase):
@@ -97,7 +95,7 @@ class CylinderBase(PlanarBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logger.warning(
+            logging.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -223,7 +221,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         CylinderBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logger.info(
+        logging.info(
             "Computing %s radial profile along %s-axes.",
             self.grouping,
             "XYZ"[self.dim],

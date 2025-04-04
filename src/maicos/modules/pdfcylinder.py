@@ -17,8 +17,6 @@ from ..core import CylinderBase
 from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
 
-logger = logging.getLogger(__name__)
-
 
 @render_docs
 class PDFCylinder(CylinderBase):
@@ -160,7 +158,7 @@ class PDFCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logger.info("Compute pair distribution function.")
+        logging.info("Compute pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center
@@ -195,7 +193,7 @@ class PDFCylinder(CylinderBase):
                 "`coc`."
             )
 
-        logger.info(
+        logging.info(
             f"Using {self.nbins_pdf_phi} pdf bins in phi direction and "
             f"{self.nbins_pdf_z} in z direction."
         )
