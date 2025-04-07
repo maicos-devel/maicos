@@ -24,7 +24,6 @@ from setuptools import Extension, setup
 import versioneer
 
 VERSION = versioneer.get_version()
-is_release = "+" not in VERSION
 
 
 def hasfunction(cc, funcname, include=None, extra_postargs=None):
@@ -94,7 +93,8 @@ if __name__ == "__main__":
     mathlib = [] if os.name == "nt" else ["m"]
 
     has_openmp = detect_openmp()
-    use_cython = not is_release or bool(os.getenv("USE_CYTHON"))
+    # If we are building a source distribution, the c code is already generated
+    use_cython = not Path("./setup.cfg").exists()
     source_suffix = ".pyx" if use_cython else ".c"
 
     pre_exts = [
@@ -115,15 +115,10 @@ if __name__ == "__main__":
         extensions = cythonize(pre_exts, force=True)
     else:
         extensions = pre_exts
-        # Let's check early for missing .c files
+        # Let's check early for missing .pyx files
         for ext in extensions:
             for source in ext.sources:
                 if not (Path(source).exists() and os.access(source, os.R_OK)):
-                    raise OSError(
-                        f"Source file {source!r} not found. This might be caused by a "
-                        "missing Cython install, or a failed/disabled Cython build."
-                        "Cython build can be forced by setting the enviroment variable"
-                        "`USE_CYTHON` to true."
-                    )
+                    raise OSError(f"Source file {source!r} not found.")
 
     setup(cmdclass=versioneer.get_cmdclass(), version=VERSION, ext_modules=extensions)
