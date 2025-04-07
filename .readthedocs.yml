@@ -12,9 +12,6 @@ build:
     python: "3.13"
   apt_packages:
     - gnuplot
-  jobs:
-    pre_install:
-      - export USE_CYTHON=True
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:

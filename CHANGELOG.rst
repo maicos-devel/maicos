@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Make cython logic in setup.py more robust (!330)
 - Add example on how-to use logger within Python (!305)
 - Add errorbars for binned q-values in SAXS module (!328)
 - Fix averaging of structure factors and add informations about NpT and SAXS (!315)
