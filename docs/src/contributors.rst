@@ -15,12 +15,13 @@ History
 
 MAICoS was first developed in `Roland Netz`_'s group at the Freie University of
 Berlin by `Alexander Schlaich`_ and `Philip Loche`_, and is now mostly developed
-and maintained at the *Institute for Computational Physics*.
+and maintained at the `Institute for Physics of functional Materials`_ (Hamburg University of Technology).
 
 .. _Roland Netz: https://www.physik.fu-berlin.de/en/einrichtungen/ag/ag-netz/index.html
 .. _Philip Loche: https://people.epfl.ch/philip.loche
-.. _Alexander Schlaich:  https://www.simtech.uni-stuttgart.de/exc/people/Schlaich-00004/
-.. _Institute for Computational Physics: https://www.simtech.uni-stuttgart.de/exc/research/junior-research-groups/multiscale-materials-modeling/
+.. _Alexander Schlaich:  https://tuhh.de/ipfm/people/schlaich
+.. _Institute for Computational Physics: https://www.icp.uni-stuttgart.de/
 .. _EXC 2075: https://www.simtech.uni-stuttgart.de/exc/
+.. _Institute for Physics of functional Materials: https://www.tuhh.de/ipfm/
 
 .. include:: ../../AUTHORS.rst

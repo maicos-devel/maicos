@@ -9,7 +9,7 @@ Maintainers
 - Henrik Stooß
 
 .. _Philip Loche: https://people.epfl.ch/philip.loche
-.. _Alexander Schlaich:  https://www.simtech.uni-stuttgart.de/exc/people/Schlaich-00004/
+.. _Alexander Schlaich:  https://tuhh.de/ipfm/people/schlaich
 
 Developers
 ----------
