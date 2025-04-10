@@ -29,17 +29,35 @@ DOC_DICT = dict(
     # DESCRIPTION SECTION
     #####################
     SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
-    DENSITY_DESCRIPTION=r"""Calculations are carried out for
+    DENSITY_DESCRIPTION_1=r"""Calculations are carried out for
 ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
-:math:`(\rm e \cdot Å^{-3})` density profiles along certain cartesian axes ``[x, y,
-z]`` of the simulation cell. Cell dimensions are allowed to fluctuate in time.
+:math:`(\rm e \cdot Å^{-3})` density profiles """,
+    DENSITY_DESCRIPTION_2="""Cell dimensions are allowed to fluctuate in time.
 
 For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
 centers (i.e., center of mass), taking into account periodic boundary conditions,
 are calculated. For these calculations molecules will be unwrapped/made whole.
 Trajectories containing already whole molecules can be run with ``unwrap=False`` to
-gain a speedup. For grouping with respect to atoms, the `unwrap` option is always
+gain a speedup. For grouping with respect to atoms, the ``unwrap`` option is always
 ignored.""",
+    PLANAR_DESCRIPTION="""along certain cartesian axes ``[x, y, z]`` of the simulation
+cell.""",
+    CYLINDRICAL_DESCRIPTION="""along the radial axis in a cylindrical coordinate system,
+with principal axis along ``[x, y, z]`` axes of the simulation cell. The origin of the
+coordinate system defaults to the box center, but can be set to dynamically follow the
+center of mass of a reference group via ``refgroup``""",
+    SPHERICAL_DESCRIPTION="""along radial axis in spherical coordinate system. The
+origin of the coordinate system defaults to the box center, but can be set to
+dynamically follow the center of mass of a reference group via `refgroup`.""",
+    DENSITY_PLANAR_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+${PLANAR_DESCRIPTION}
+${DENSITY_DESCRIPTION_2}""",
+    DENSITY_CYLINDER_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+${CYLINDRICAL_DESCRIPTION}
+${DENSITY_DESCRIPTION_2}""",
+    DENSITY_SPHERE_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+${SPHERICAL_DESCRIPTION}
+${DENSITY_DESCRIPTION_2}""",
     DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
 :math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
 dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
@@ -114,7 +132,7 @@ self : object
     OUTPUT_PREFIX_PARAMETER="""output_prefix : str
     Prefix for output files.""",
     SYM_PARAMETER="""sym : bool
-Sy  mmetrize the profile. Only works in combination with ``refgroup``.""",
+    Symmetrize the profile. Only works in combination with ``refgroup``.""",
     BIN_METHOD_PARAMETER="""bin_method : {``"com"``, ``"cog"``, ``"coc"``}
     Method for the position binning.
 

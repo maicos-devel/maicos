@@ -13,8 +13,9 @@ The rules for MAICoS' CHANGELOG file:
 
 Unreleased
 ----------
-Philip Loche, Henrik Stooß
+Philip Loche, Henrik Stooß, Kira Fischer
 
+- Improve documentation of density modules (!333)
 - Make cython logic in setup.py more robust (!330)
 - Add example on how-to use logger within Python (!305)
 - Add errorbars for binned q-values in SAXS module (!328)

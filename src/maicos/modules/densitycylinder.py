@@ -18,7 +18,7 @@ from ..lib.weights import density_weights
 class DensityCylinder(ProfileCylinderBase):
     r"""Cylindrical partial density profiles.
 
-    ${DENSITY_DESCRIPTION}
+    ${DENSITY_CYLINDER_DESCRIPTION}
 
     ${CORRELATION_INFO_RADIAL}
 

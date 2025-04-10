@@ -18,7 +18,7 @@ from ..lib.weights import density_weights
 class DensityPlanar(ProfilePlanarBase):
     r"""Cartesian partial density profiles.
 
-    ${DENSITY_DESCRIPTION}
+    ${DENSITY_PLANAR_DESCRIPTION}
 
     ${CORRELATION_INFO_PLANAR}
 
