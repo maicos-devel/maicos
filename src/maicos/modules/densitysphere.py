@@ -18,7 +18,7 @@ from ..lib.weights import density_weights
 class DensitySphere(ProfileSphereBase):
     r"""Spherical partial density profiles.
 
-    ${DENSITY_DESCRIPTION}
+    ${DENSITY_SPHERE_DESCRIPTION}
 
     ${CORRELATION_INFO_RADIAL}
 
