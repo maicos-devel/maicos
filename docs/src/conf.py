@@ -53,8 +53,9 @@ bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
 
 sphinx_gallery_conf = {
-    "filename_pattern": "/*",
+    "filename_pattern": r"/*\.py",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
+    "example_extensions": {".py", ".sh"},
     "examples_dirs": ["../../examples"],
     "gallery_dirs": ["examples"],
     "min_reported_time": 60,

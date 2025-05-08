@@ -11,6 +11,6 @@ This sections describes MAICoS, how to install it, and its most basic commands.
     maicos
     installation
     ../examples/usage-python
-    usage-bash
+    ../examples/usage-bash
     units
     changelog
