@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
+- Render bash usage with sphinx-gallery (!334)
 - Improve documentation of density modules (!333)
 - Make cython logic in setup.py more robust (!330)
 - Add example on how-to use logger within Python (!305)
