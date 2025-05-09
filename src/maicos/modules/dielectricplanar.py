@@ -23,6 +23,12 @@ from ..lib.util import charge_neutral, citation_reminder, get_compound, render_d
 class DielectricPlanar(PlanarBase):
     r"""Planar dielectric profiles.
 
+    Computes the parallel :math:`\varepsilon_\parallel(z)` and inverse perpendicular
+    (:math:`\varepsilon_\perp^{-1}(r)`) components of the planar dielectric tensor
+    :math:`\varepsilon`. The components are binned along the cartesian :math:`z`
+    direction yielding the component normal to the surface and defined by the ``dim``
+    parameter.
+
     For usage please refer to :ref:`How-to: Dielectric constant<howto-dielectric>` and
     for details on the theory see :ref:`dielectric-explanations`.
 
@@ -53,26 +59,26 @@ class DielectricPlanar(PlanarBase):
     ${PLANAR_CLASS_ATTRIBUTES}
     results.eps_par : numpy.ndarray
         Reduced parallel dielectric profile
-        :math:`(\varepsilon_\parallel - 1)` of the selected AtomGroup
+        :math:`(\varepsilon_\parallel(z) - 1)` of the selected AtomGroup
     results.deps_par : numpy.ndarray
         Uncertainty of parallel dielectric profile
     results.eps_par_self : numpy.ndarray
         Reduced self contribution of parallel dielectric profile
-        :math:`(\varepsilon_{\parallel,\mathrm{self}} - 1)`
+        :math:`(\varepsilon_{\parallel,\mathrm{self}}(z) - 1)`
     results.eps_par_coll : numpy.ndarray
         Reduced collective contribution of parallel dielectric profile
-        :math:`(\varepsilon_{\parallel,\mathrm{coll}} - 1)`
+        :math:`(\varepsilon_{\parallel,\mathrm{coll}}(z) - 1)`
     results.eps_perp : numpy.ndarray
         Reduced inverse perpendicular dielectric profile
-        :math:`(\varepsilon^{-1}_\perp - 1)`
+        :math:`(\varepsilon^{-1}_\perp(z) - 1)`
     results.deps_perp : numpy.ndarray
         Uncertainty of inverse perpendicular dielectric profile
     results.eps_perp_self : numpy.ndarray
         Reduced self contribution of the inverse perpendicular dielectric
-        profile :math:`(\varepsilon^{-1}_{\perp,\mathrm{self}} - 1)`
+        profile :math:`(\varepsilon^{-1}_{\perp,\mathrm{self}}(z) - 1)`
     results.eps_perp_coll : numpy.ndarray
         Reduced collective contribution of the inverse perpendicular dielectric profile
-        :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}} - 1)`
+        :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}}(z) - 1)`
 
     References
     ----------

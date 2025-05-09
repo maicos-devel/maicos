@@ -15,8 +15,9 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
+- Improve documentation of dielectric modules (!335)
 - Improve loogging messages (!331)
-- Make ``project.license`` a simple string according to PEP639 (!335)
+- Make ``project.license`` a simple string according to PEP639 (!337)
 - Render bash usage with sphinx-gallery (!334)
 - Improve documentation of density modules (!333)
 - Make cython logic in setup.py more robust (!330)
