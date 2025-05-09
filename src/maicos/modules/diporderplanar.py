@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 r"""Module for computing planar dipolar order parameters."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -83,3 +85,7 @@ class DiporderPlanar(ProfilePlanarBase):
             },
             normalization=normalization,
         )
+
+    def _prepare(self):
+        logging.info("Analysis of the cartesian dipolar order parameters.")
+        super()._prepare()

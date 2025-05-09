@@ -131,6 +131,8 @@ class Saxs(AnalysisBase):
         self.output = output
 
     def _prepare(self) -> None:
+        logging.info("Analysis of small angle X-ray scattering intensities (SAXS).")
+
         self.thetamin = min(self.thetamin, self.thetamax)
         self.thetamax = max(self.thetamin, self.thetamax)
 

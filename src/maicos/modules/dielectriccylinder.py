@@ -116,6 +116,10 @@ class DielectricCylinder(CylinderBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self) -> None:
+        logging.info(
+            "Analysis of the axial and inverse radial "
+            "components of the cylindrical dielectric tensor."
+        )
         # Print Philip Loche citation
         logging.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 

@@ -22,7 +22,7 @@ import maicos.lib.util
 from maicos.core.base import AnalysisBase
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 from util import circle_of_water_molecules  # noqa: E402
 
 
@@ -137,6 +137,79 @@ def multi_class(atomgroup, filter):
             inner_func(self)
 
     return MultiCharged(atomgroup)
+
+
+class ModuleInput(AnalysisBase):
+    """Class creating an output file to check the module input reporting."""
+
+    def _single_frame(self):
+        # Do nothing, but the run() methods needs to be called
+        pass
+
+    def __init__(self, atomgroup, test_input="some_default", refgroup=None):
+        self._locals = locals()
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=refgroup,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+
+@pytest.fixture
+def ag():
+    """Import MDA universe."""
+    u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
+    return u.atoms
+
+
+def test_get_module_input_str(ag):
+    """Test to get the module input."""
+    # Test if the module name is written correctly
+    ana = ModuleInput(ag)
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert "ModuleInput(" in module_input
+
+    # Test if the refgroup name is written correctly
+    ana = ModuleInput(ag, refgroup=ag)
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert "refgroup=<AtomGroup>" in module_input
+    assert "atomgroup=<AtomGroup>" in module_input
+
+    # Test if the default value of the test_input parameter is written
+    ana = ModuleInput(ag)
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert "test_input='some_default'" in module_input
+
+    assert "refgroup=None" in module_input
+
+    assert (
+        ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
+        "progressbar_kwargs=None)" in module_input
+    )
+
+    # Test if the set test_input parameter is written correctly
+    ana = ModuleInput(ag, test_input="some_other_value")
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert "test_input='some_other_value'" in module_input
+
+    ana.run(step=2, stop=7, start=5, verbose=True)
+    module_input = maicos.lib.util.get_module_input_str(ana)
+    assert (
+        ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
+        "progressbar_kwargs=None)" in module_input
+    )
 
 
 class TestChargedDecorator:

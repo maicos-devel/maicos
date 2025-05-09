@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 r"""Module for computing cylindrical dipolar order parameters."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
@@ -88,3 +90,7 @@ class DiporderCylinder(ProfileCylinderBase):
             },
             normalization=normalization,
         )
+
+    def _prepare(self):
+        logging.info("Analysis of the cylindrical dipolar order parameters.")
+        super()._prepare()

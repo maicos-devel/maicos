@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar velocity profiles."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -84,3 +86,7 @@ class VelocityPlanar(ProfilePlanarBase):
             weighting_function_kwargs={"vdim": vdim},
             normalization=normalization,
         )
+
+    def _prepare(self):
+        logging.info("Analysis of the velocity profile.")
+        super()._prepare()

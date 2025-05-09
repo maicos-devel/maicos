@@ -222,9 +222,8 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         ProfileBase._prepare(self)
 
         logging.info(
-            "Computing %s radial profile along %s-axes.",
-            self.grouping,
-            "XYZ"[self.dim],
+            f"""Profile along the radial axis in a cylindrical coordinate system,"""
+            f""" with the {"xyz"[self.dim]}-axis as cylindrical axis."""
         )
 
     def _compute_histogram(

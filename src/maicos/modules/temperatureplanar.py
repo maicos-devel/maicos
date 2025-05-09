@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing planar temperature profiles."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -73,3 +75,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             weighting_function_kwargs=None,
             normalization="number",
         )
+
+    def _prepare(self):
+        logging.info("Analysis of temperature profiles.")
+        super()._prepare()

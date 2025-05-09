@@ -207,7 +207,10 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         SphereBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(f"Computing {self.grouping} radial profile.")
+        logging.info(
+            """Profile along the radial coordinate in a spherical """
+            """coordinate system."""
+        )
 
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None

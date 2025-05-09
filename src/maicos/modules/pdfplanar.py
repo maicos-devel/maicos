@@ -153,7 +153,7 @@ class PDFPlanar(PlanarBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logging.info("Compute pair distribution function.")
+        logging.info("Analysis of the planar pair distribution function.")
 
         half_of_box_size = min(self.box_center)
         if self.dmax is None:

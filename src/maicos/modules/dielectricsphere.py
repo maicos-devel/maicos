@@ -97,6 +97,10 @@ class DielectricSphere(SphereBase):
         self.temperature = temperature
 
     def _prepare(self) -> None:
+        logging.info(
+            "Analysis of the inverse radial component "
+            "of the spherical dielectric tensor."
+        )
         # Print the Christian Schaaf citation
         logging.info(citation_reminder("10.1103/PhysRevE.92.032718"))
 

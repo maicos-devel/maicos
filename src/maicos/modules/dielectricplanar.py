@@ -129,6 +129,10 @@ class DielectricPlanar(PlanarBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self) -> None:
+        logging.info(
+            "Analysis of the parallel and inverse perpendicular "
+            "components of the planar dielectric tensor."
+        )
         # Print Alex Schlaich citation
         logging.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 

@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing cylindrical velocity profiles."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
@@ -86,3 +88,7 @@ class VelocityCylinder(ProfileCylinderBase):
             weighting_function_kwargs={"vdim": vdim},
             normalization=normalization,
         )
+
+    def _prepare(self):
+        logging.info("Analysis of the velocity profile.")
+        super()._prepare()

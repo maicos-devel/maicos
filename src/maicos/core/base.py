@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
 
-import inspect
 import logging
 import warnings
 from collections.abc import Callable
@@ -30,6 +29,7 @@ from ..lib.util import (
     correlation_analysis,
     get_center,
     get_cli_input,
+    get_module_input_str,
     maicos_banner,
     render_docs,
 )
@@ -65,10 +65,12 @@ class _Runner:
             logfile=tempfile.name + ".log",
             level=level,
         ):
-            logging.info("Choosing frames to analyze")
+            logging.debug("Choosing frames to analyze")
 
         if frames is not None and not all(opt is None for opt in [start, stop, step]):
             raise ValueError("start/stop/step cannot be combined with frames")
+
+        logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
 
         for analysis_object in analysis_instances:
             analysis_object._setup_frames(
@@ -78,9 +80,6 @@ class _Runner:
                 step=step,
                 frames=frames,
             )
-
-        logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
-        logging.info("Starting preparation")
 
         for analysis_object in analysis_instances:
             analysis_object._call_prepare()
@@ -101,7 +100,8 @@ class _Runner:
                 analysis_object._call_single_frame(ts=ts, current_frame_index=i)
                 ts = ts_original
 
-        logging.info("Finishing up")
+        logging.debug("Concluding analysis.")
+
         for analysis_object in analysis_instances:
             analysis_object._call_conclude()
 
@@ -193,12 +193,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     >>> from maicos.core import AnalysisBase
     >>> from maicos.lib.util import render_docs
 
-    Creating a logger makes debugging easier.
+    Adding logging messages to your code makes debugging easier.
 
-    In the following the analysis module itself. Due to the similar structure of all
-    MAICoS modules you can render the parameters using the
-    :func:`maicos.lib.util.render_docs` decorator. The decorator will replace special
-    keywords with a leading ``$`` with the actual docstring as defined in
+    Due to the similar structure of all MAICoS modules you can render the parameters
+    using the :func:`maicos.lib.util.render_docs` decorator. The decorator will replace
+    special keywords with a leading ``$`` with the actual docstring as defined in
     :attr:`maicos.lib.util.DOC_DICT`.
 
     >>> @render_docs
@@ -385,13 +384,28 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         self._prepare()
 
+        if self.refgroup is not None:
+            logging.info(
+                """Coordinates are relative to the center of mass of reference"""
+                f""" atomgroup {atomgroup_header(self.refgroup)}."""
+            )
+        else:
+            logging.info(
+                """Coordinates are relative to the center """
+                """of the simulation box."""
+            )
+
+        logging.info(f"Considered atomgroup {atomgroup_header(self.atomgroup)}.")
+
         # Log bin information if a spatial analysis is run.
         if hasattr(self, "n_bins"):
             logging.info(f"Using {self.n_bins} bins.")
 
         self.timeseries = np.zeros(self.n_frames)
 
-        logging.info(f"Starting analysis loop over {self.n_frames} trajectory frames.")
+        logging.info(f"Analysing {self.n_frames} trajectory frames.")
+
+        logging.debug(f"Module input: {get_module_input_str(self)}")
 
     def _single_frame(self) -> None | float:
         """Calculate data from a single frame of trajectory.
@@ -467,7 +481,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         except AttributeError as err:
             with logging_redirect_tqdm():
-                logging.info("Preparing error estimation.")
+                logging.debug("Initializing error estimation.")
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).
@@ -564,43 +578,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         if hasattr(self, "refgroup") and self.refgroup is not None:
             atomgroups += f"  (ref) {atomgroup_header(self.refgroup)}\n"
 
-        # We have to check this since only the modules have the _locals attribute,
-        # not the base classes. Yet we still want to test output behaviour of the base
-        # classes.
-        if hasattr(self, "_locals") and hasattr(self, "_run_locals"):
-            sig = inspect.getfullargspec(self.__class__)
-            sig.args.remove("self")
-            strings = []
-            for param in sig.args:
-                if type(self._locals[param]) is str:
-                    string = f"{param}='{self._locals[param]}'"
-                elif (
-                    param == "atomgroup"
-                    or param == "refgroup"
-                    and self._locals[param] is not None
-                ):
-                    string = f"{param}=<AtomGroup>"
-                else:
-                    string = f"{param}={self._locals[param]}"
-                strings.append(string)
-            init_signature = ", ".join(strings)
-
-            sig = inspect.getfullargspec(self.run)
-            sig.args.remove("self")
-            run_signature = ", ".join(
-                [
-                    (
-                        f"{param}='{self._run_locals[param]}'"
-                        if type(self._run_locals[param]) is str
-                        else f"{param}={self._run_locals[param]}"
-                    )
-                    for param in sig.args
-                ]
-            )
-
-            module_input = f"{module_name}({init_signature}).run({run_signature})"
-        else:
-            module_input = f"{module_name}(*args).run(*args)"
+        module_input = get_module_input_str(self)
 
         header = (
             f"This file was generated by {module_name} "
@@ -797,6 +775,7 @@ class ProfileBase:
                 f"'{self.grouping}' is not a valid option for "
                 f"grouping. Use {', '.join(groupings)}."
             )
+        logging.info(f"Atoms grouped by {self.grouping}.")
 
         # If unwrap has not been set we define it here
         if not hasattr(self, "unwrap"):

@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing kinetic energy timeseries."""
 
+import logging
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -78,6 +80,8 @@ class KineticEnergy(AnalysisBase):
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
+        logging.info("Analysis of the kinetic energy timeseries.")
+
         if self.refpoint not in ["com", "coc"]:
             raise ValueError(
                 f"Invalid choice for dens: {self.refpoint} (choose from 'com' or 'coc')"
