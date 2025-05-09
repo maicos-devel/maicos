@@ -158,7 +158,7 @@ class PDFCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logging.info("Compute pair distribution function.")
+        logging.info("Analysis of the cylindrical pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center

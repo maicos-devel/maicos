@@ -8,6 +8,7 @@
 """Small helper and utilities functions that don't fit anywhere else."""
 
 import functools
+import inspect
 import logging
 import re
 import sys
@@ -821,3 +822,47 @@ class Unit_vector(Protocol):
     def __call__(self, atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
         """Call for type hints."""
         ...
+
+
+def get_module_input_str(module_obj):
+    """Make a string with all the modules parameters."""
+    module_name = module_obj.__class__.__name__
+    # We have to check this since only the modules have the _locals attribute,
+    # not the base classes. Yet we still want to test output behaviour of the base
+    # classes.
+    if hasattr(module_obj, "_locals") and hasattr(module_obj, "_run_locals"):
+        sig = inspect.getfullargspec(module_obj.__class__)
+        sig.args.remove("self")
+        strings = []
+        for param in sig.args:
+            if type(module_obj._locals[param]) is str:
+                string = f"{param}='{module_obj._locals[param]}'"
+            elif (
+                param == "atomgroup"
+                or param == "refgroup"
+                and module_obj._locals[param] is not None
+            ):
+                string = f"{param}=<AtomGroup>"
+            else:
+                string = f"{param}={module_obj._locals[param]}"
+            strings.append(string)
+        init_signature = ", ".join(strings)
+
+        sig = inspect.getfullargspec(module_obj.run)
+        sig.args.remove("self")
+        run_signature = ", ".join(
+            [
+                (
+                    f"{param}='{module_obj._run_locals[param]}'"
+                    if type(module_obj._run_locals[param]) is str
+                    else f"{param}={module_obj._run_locals[param]}"
+                )
+                for param in sig.args
+            ]
+        )
+
+        module_input = f"{module_name}({init_signature}).run({run_signature})"
+    else:
+        module_input = f"{module_name}(*args).run(*args)"
+
+    return module_input

@@ -108,6 +108,7 @@ class DielectricSpectrum(AnalysisBase):
         self.nobin = nobin
 
     def _prepare(self) -> None:
+        logging.info("Analysis of the linear dielectric spectrum.")
         # Print the Shane Carlson citation
         logging.info(citation_reminder("10.1021/acs.jpca.0c04063"))
 

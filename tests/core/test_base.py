@@ -529,12 +529,10 @@ class Test_AnalysisBase:
         caplog.set_level(logging.INFO)
         ana_obj.run(stop=1)
 
-        preparation_msg = "Starting preparation"
-        analysis_msg = "Starting analysis loop over 1 trajectory frames."
+        analysis_msg = "Analysing 1 trajectory frames."
 
         # INFO log messages should always be in the logger
         messages = [rec.message for rec in caplog.records]
-        assert preparation_msg in messages
         assert analysis_msg in messages
 
     def test_unwrap_atoms(self, ag, caplog):

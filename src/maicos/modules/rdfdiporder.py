@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing Radial Distribution functions for dipoles."""
 
+import logging
+
 import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib import distances
@@ -108,6 +110,10 @@ class RDFDiporder(AnalysisBase):
         self.output = output
 
     def _prepare(self):
+        logging.info(
+            "Analysis of the spherical radial distribution function for dipoles."
+        )
+
         self.n_bins = int(np.ceil((self.rmax - self.rmin) / self.bin_width))
 
         supported_norms = ["rdf", "density", "none"]

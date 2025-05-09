@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing dipole angle timeseries."""
 
+import logging
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -76,6 +78,7 @@ class DipoleAngle(AnalysisBase):
         self.output = output
 
     def _prepare(self) -> None:
+        logging.info("Analysis of the dipole moment angles (timeseries).")
         self.n_residues = self.atomgroup.residues.n_residues
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):

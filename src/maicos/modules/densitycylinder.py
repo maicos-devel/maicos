@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing cylindrical density profiles."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
@@ -73,3 +75,7 @@ class DensityCylinder(ProfileCylinderBase):
             weighting_function_kwargs={"dens": dens},
             normalization="volume",
         )
+
+    def _prepare(self):
+        logging.info(f"Analysis of the {self._locals['dens']} density profile.")
+        super()._prepare()

@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
+- Improve loogging messages (!331)
 - Make ``project.license`` a simple string according to PEP639 (!335)
 - Render bash usage with sphinx-gallery (!334)
 - Improve documentation of density modules (!333)

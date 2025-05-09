@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing structure factor for dipoles."""
 
+import logging
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -85,6 +87,7 @@ class DiporderStructureFactor(AnalysisBase):
         self.output = output
 
     def _prepare(self) -> None:
+        logging.info("Analysis of the structure factor of dipoles.")
         self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))
 
     def _single_frame(self) -> float:

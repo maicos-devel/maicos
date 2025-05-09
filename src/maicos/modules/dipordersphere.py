@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 r"""Module for computing spherical dipolar order parameters."""
 
+import logging
+
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
@@ -76,3 +78,7 @@ class DiporderSphere(ProfileSphereBase):
             },
             normalization=normalization,
         )
+
+    def _prepare(self):
+        logging.info("Analysis of the spherical dipolar order parameters.")
+        super()._prepare()
