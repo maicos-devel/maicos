@@ -22,16 +22,19 @@ from ..lib.util import charge_neutral, citation_reminder, get_compound, render_d
 class DielectricCylinder(CylinderBase):
     r"""Cylindrical dielectric profiles.
 
-    Components are calculated along the axial (:math:`z`) and radial (:math:`r`)
-    direction either with respect to the center of the simulation box or the center of
-    mass of the refgroup, if provided. The axial direction is selected using the ``dim``
-    parameter.
-
-    For correlation analysis, the component along the :math:`z` axis is used.
-    ${CORRELATION_INFO}
+    Computes the axial :math:`\varepsilon_z(r)` and inverse radial
+    :math:`\varepsilon_r^{-1}(r)` components of the cylindrical dielectric tensor
+    :math:`\varepsilon`. The components are binned along the radial direction of the
+    cylinder. The :math:`z`-axis of the cylinder is pointing in the direction given by
+    the ``dim`` parameter. The center of the cylinder is either located at the center of
+    the simulation box (default) or at the center of mass of the ``refgroup``, if
+    provided.
 
     For usage please refer to :ref:`How-to: Dielectric constant<howto-dielectric>` and
     for details on the theory see :ref:`dielectric-explanations`.
+
+    For correlation analysis, the component along the :math:`z`-axis is used.
+    ${CORRELATION_INFO}
 
     Also, please read and cite :footcite:p:`locheGiantaxialDielectric2019`.
 
@@ -41,20 +44,20 @@ class DielectricCylinder(CylinderBase):
     ${CYLINDER_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
     single : bool
-        For a single chain of molecules the average of M is zero. This flag sets
-        <M> = 0.
+        For a single chain of molecules the average of :math:`M` is zero. This flag sets
+        :math:`\langle M \rangle = 0`.
 
     Attributes
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
     results.eps_z : numpy.ndarray
-        Reduced axial dielectric profile :math:`(\varepsilon_z - 1)` of the
+        Reduced axial dielectric profile :math:`(\varepsilon_z(r) - 1)` of the
         selected atomgroup
     results.deps_z : numpy.ndarray
         Estimated uncertainty of axial dielectric profile
     results.eps_r : numpy.ndarray
         Reduced inverse radial dielectric profile
-        :math:`(\varepsilon^{-1}_r - 1)`
+        :math:`(\varepsilon^{-1}_r(r) - 1)`
     results.deps_r : numpy.ndarray
         Estimated uncertainty of inverse radial dielectric profile
 
@@ -155,12 +158,12 @@ class DielectricCylinder(CylinderBase):
         )
 
         # Note that M_r is not really the total system dipole moment in radial
-        # direction, but it keeps the Nomenclature consistent across all of the
+        # direction, but it keeps the nomenclature consistent across all of the
         # dielectric modules.
         self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
-        # Use virtual cutting method ( for axial component )
+        # Use virtual cutting method (for axial component)
         # ========================================================
         # number of virtual cuts ("many")
         nbinsz = np.ceil(self._obs.L / self.vcutwidth).astype(int)

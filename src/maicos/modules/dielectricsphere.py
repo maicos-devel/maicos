@@ -22,9 +22,10 @@ from ..lib.util import charge_neutral, citation_reminder, get_compound, render_d
 class DielectricSphere(SphereBase):
     r"""Spherical dielectric profiles.
 
-    Components are calculated along the radial (:math:`r`) direction either with respect
-    to the center of the simulation box or the center of mass of the refgroup, if
-    provided.
+    Computes the inverse radial :math:`\varepsilon_r^{-1}(r)` component of the
+    spherical dielectric tensor :math:`\varepsilon`. The center of the sphere is either
+    located at the center of the simulation box (default) or at the center of mass of
+    the ``refgroup``, if provided.
 
     For usage, please refer to :ref:`How-to: Dielectric
     constant<howto-dielectric>` and for details on the theory see
@@ -46,7 +47,7 @@ class DielectricSphere(SphereBase):
     ----------
     ${RADIAL_CLASS_ATTRIBUTES}
     results.eps_rad : numpy.ndarray
-        Reduced inverse radial dielectric profile (:math:`\varepsilon^{-1}_r - 1)`
+        Reduced inverse radial dielectric profile (:math:`\varepsilon^{-1}_r(r) - 1)`
     results.deps_rad : numpy.ndarray
         Uncertainty of inverse radial dielectric profile
 
@@ -133,7 +134,7 @@ class DielectricSphere(SphereBase):
         # Same as above, but for the total charge density.
         self._obs.m_r_tot = -np.cumsum(curQ_rad_tot) / 4 / np.pi / self._obs.bin_pos**2
 
-        # This is not really the systems dipole moment, but it keeps the Nomenclature
+        # This is not really the systems dipole moment, but it keeps the nomenclature
         # consistent with the DielectricPlanar module.
         self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
