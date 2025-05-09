@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
+- Make ``project.license`` a simple string according to PEP639 (!335)
 - Render bash usage with sphinx-gallery (!334)
 - Improve documentation of density modules (!333)
 - Make cython logic in setup.py more robust (!330)
