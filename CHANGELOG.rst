@@ -11,7 +11,7 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-Unreleased
+v0.10 (2025/05/12)
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
