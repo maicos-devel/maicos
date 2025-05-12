@@ -9,6 +9,7 @@ _cmath.c
 
 # Unit test / coverage reports
 .tox/
+.asv/
 .coverage.*
 .coverage
 coverage.xml

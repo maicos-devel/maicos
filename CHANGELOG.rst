@@ -15,6 +15,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß, Kira Fischer
 
+- Add asv for performance regression tests (!336)
 - Improve documentation of dielectric modules (!335)
 - Improve loogging messages (!331)
 - Make ``project.license`` a simple string according to PEP639 (!337)

@@ -13,6 +13,7 @@ prune .tox
 prune developer
 prune examples
 prune tests
+prune benchmarks
 
 exclude .gitlab-ci.yml
 exclude .gitattributes
@@ -21,5 +22,6 @@ exclude .coveragerc
 exclude .readthedocs.yml
 exclude codecov.yml
 exclude tox.ini
+exclude asv.conf.json
 
 global-exclude *.py[cod] __pycache__/* *.so *.dylib
