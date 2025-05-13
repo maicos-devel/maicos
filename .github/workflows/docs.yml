@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,9 +21,14 @@ jobs:
         with:
           python-version: "3.13"
       - name: install dependencies
-        run: python -m pip install tox
+        run: python -m pip install tox gitpython
       - name: build documentation
         run: tox -e docs
+
+      - name: Check for Changelog
+        if: github.event_name == 'pull_request'
+        run: python ./developer/check_changelog.py
+
       - name: put documentation in the website
         run: |
           git clone https://github.com/$GITHUB_REPOSITORY --branch gh-pages gh-pages

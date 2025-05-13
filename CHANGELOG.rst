@@ -11,8 +11,17 @@ The rules for MAICoS' CHANGELOG file:
 
 .. inclusion-marker-changelog-start
 
-v0.10 (2025/05/12)
+Unreleased
 ----------
+Philip Loche
+
+- Move changelog test from tox to Gitlab CI (#483)
+- Move from Gitlab to GitHub (#1)
+
+.. Note: moved to github after 0.10; `!XXX` links are not valid anymore.
+
+v0.10 (2025/05/12)
+------------------
 Philip Loche, Henrik Stooß, Kira Fischer
 
 - Add asv for performance regression tests (!336)
