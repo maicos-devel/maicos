@@ -1,24 +1,24 @@
-CHANGELOG file
---------------
+Changelog
+=========
 
-The rules for MAICoS' CHANGELOG file:
-
-- entries are sorted newest-first.
-- summarize sets of changes (don't reproduce every git log comment here).
-- don't ever delete anything.
-- keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
-  use spaces for formatting
-
-.. inclusion-marker-changelog-start
+..
+  The rules for MAICoS' CHANGELOG file:
+  - entries are sorted newest-first.
+  - summarize sets of changes (don't reproduce every git log comment here).
+  - don't ever delete anything.
+  - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
+    use spaces for formatting
 
 Unreleased
 ----------
 Philip Loche
 
-- Move changelog test from tox to Gitlab CI (#483)
+- Move changelog test from ``tox`` to Gitlab CI (#483)
 - Move from Gitlab to GitHub (#1)
 
-.. Note: moved from gitlab to github after 0.10; `!XXX` reference gitlab merge requests at https://gitlab.com/maicos-devel/maicos/-/merge_requests
+..
+  Note: moved from GitLab to GitHub after v0.10; `!XXX` reference GitLab merge
+  requests at https://gitlab.com/maicos-devel/maicos/-/merge_requests
 
 v0.10 (2025/05/12)
 ------------------
@@ -407,5 +407,3 @@ v0.1 (2019/10/30)
 Philip Loche
 
 - first release out of the lab
-
-.. inclusion-marker-changelog-end
