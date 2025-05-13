@@ -11,7 +11,7 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche
+Philip Loche, Henrik Stooß
 
 - Move changelog test from ``tox`` to Gitlab CI (#483)
 - Move from Gitlab to GitHub (#1)
