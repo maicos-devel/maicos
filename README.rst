@@ -97,45 +97,45 @@ Currently, MAICoS supports the following analysis modules in alphabetical order:
      - Description
 
    * - DensityCylinder
-     - Compute cylindrical partial densitiy profiles
+     - Cylindrical partial densitiy profiles
    * - DensityPlanar
-     - Compute cartesian partial density profiles
+     - Cartesian partial density profiles
    * - DensitySphere
-     - Compute spherical partial density profiles
+     - Spherical partial density profiles
    * - DielectricCylinder
-     - Compute cylindrical dielectric profiles
+     - Cylindrical dielectric profiles
    * - DielectricPlanar
-     - Compute planar dielectric profiles
+     - Planar dielectric profiles
    * - DielectricSpectrum
-     - Compute the linear dielectric spectrum
+     - Linear dielectric spectrum
    * - DielectricSphere
-     - Compute spherical dielectric profiles
+     - Spherical dielectric profiles
    * - DipoleAngle
-     - Compute angle timeseries of dipole moments
+     - Angle timeseries of dipole moments
    * - DiporderCylinder
-     - Compute cylindrical dipolar order parameters
+     - Cylindrical dipolar order parameters
    * - DiporderPlanar
-     - Compute planar dipolar order parameters
+     - Planar dipolar order parameters
    * - RDFDiporder
      - Spherical Radial Distribution function between dipoles
    * - DiporderSphere
-     - Compute spherical dipolar order parameters
+     - Spherical dipolar order parameters
    * - DiporderStructureFactor
      - Structure factor for dipoles
    * - KineticEnergy
-     - Compute the timeseries of energies
+     - Timeseries of energies
    * - PDFCylinder
-     - Compute cylindrical shell-wise 1D pair distribution functions
+     - Cylindrical shell-wise 1D pair distribution functions
    * - PDFPlanar
-     - Compute slab-wise planar 2D pair distribution functions
+     - Slab-wise planar 2D pair distribution functions
    * - Saxs
-     - Compute small angle X-Ray structure factors and scattering intensities (SAXS)
+     - Small angle X-Ray structure factors and scattering intensities (SAXS)
    * - TemperaturePlanar
-     - Compute temperature profiles in a cartesian geometry
+     - Temperature profiles in a cartesian geometry
    * - VelocityCylinder
-     - Compute the cartesian velocity profile across a cylinder
+     - Cartesian velocity profile across a cylinder
    * - VelocityPlanar
-     - Compute the velocity profile in a cartesian geometry
+     - Velocity profile in a cartesian geometry
 
 .. inclusion-marker-modules-end
 

@@ -61,27 +61,13 @@ Create release
 
    should result in ``vX.X``
 
-4. If a new major release create release branch
+4. Push tag
 
    .. code-block:: bash
 
-    git branch release-X-X
-
-   otherwise update the release branch with respect to the branch
-
-   .. code-block:: bash
-
-    git checkout release-X-X
-    git rebase -i main
-
-5. Push branch, tag
-
-   .. code-block:: bash
-
-    git push release-X-X
     git push --tags
 
-6. Go to the `web interface`_, add changelog as release message
+5. Go to the `web interface`_, add changelog as release message
 
 After the release
 -----------------
