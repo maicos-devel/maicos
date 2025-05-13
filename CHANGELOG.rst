@@ -18,7 +18,7 @@ Philip Loche
 - Move changelog test from tox to Gitlab CI (#483)
 - Move from Gitlab to GitHub (#1)
 
-.. Note: moved to github after 0.10; `!XXX` links are not valid anymore.
+.. Note: moved from gitlab to github after 0.10; `!XXX` reference gitlab merge requests at https://gitlab.com/maicos-devel/maicos/-/merge_requests
 
 v0.10 (2025/05/12)
 ------------------
