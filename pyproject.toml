@@ -98,6 +98,12 @@ exclude_lines = ["if __name__ == .__main__.:"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+addopts = [
+    "--cov",
+    "--cov-append",
+    "--cov-report=",
+    "--import-mode=append",
+]
 
 [tool.ruff]
 exclude = ["versioneer.py", "docs/src/examples/**", "src/maicos/_version.py"]

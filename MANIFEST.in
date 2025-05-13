@@ -20,7 +20,7 @@ exclude .gitattributes
 exclude .gitignore
 exclude .coveragerc
 exclude .readthedocs.yml
-exclude codecov.yml
+exclude .codecov.yml
 exclude tox.ini
 exclude asv.conf.json
 
