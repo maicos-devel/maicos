@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Fix rendering in class docstrings (#484)
 - Move changelog test from ``tox`` to Gitlab CI (#483)
 - Move from Gitlab to GitHub (#1)
 
