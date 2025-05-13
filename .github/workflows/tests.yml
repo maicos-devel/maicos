@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # Check all PR
+  schedule:
+    # check once a week on mondays
+    - cron: '0 10 * * 1'
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            python-version: "3.10"
+          - os: ubuntu-24.04
+            python-version: "3.13"
+          - os: macos-15
+            python-version: "3.13"
+          - os: windows-2025
+            python-version: "3.13"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install tox coverage[toml]
+    - name: run Python tests
+      run: |
+        tox -e tests
+        coverage xml
+    - name: upload to codecov.io
+      uses: codecov/codecov-action@v5
+      with:
+        fail_ci_if_error: true
+        files: tests/coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}

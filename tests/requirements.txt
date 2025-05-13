@@ -1,0 +1,8 @@
+hypothesis
+MDAnalysisTests>=2.8.0
+pytest
+pytest-cov
+pytest-mock
+pytest-xdist
+setuptools
+sympy
