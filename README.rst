@@ -24,12 +24,12 @@ users can use the Python API for their day to day analysis or use the provided
 infrastructure to build their own analysis for interfacial and confined systems.
 
 Keep up to date with MAICoS news by following us on Twitter_. If you find an issue, you
-can report it on Gitlab_. You can also join the developer team on Discord_ to discuss
+can report it on GitHub_. You can also join the developer team on Discord_ to discuss
 possible improvements and usages of MAICoS.
 
 .. _`MDAnalysis`: https://www.mdanalysis.org
 .. _`Twitter`: https://twitter.com/maicos_analysis
-.. _`Gitlab`: https://gitlab.com/maicos-devel/maicos
+.. _`GitHub`: https://github.com/maicos-devel/maicos
 .. _`Discord`: https://discord.gg/mnrEQWVAed
 
 .. inclusion-readme-intro-end

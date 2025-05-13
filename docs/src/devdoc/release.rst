@@ -76,4 +76,4 @@ After the release
 
 .. _`version` : https://pypi.org/project/versioneer
 .. _`upgrade notes` : https://github.com/python-versioneer/python-versioneer/blob/master/UPGRADING.md
-.. _`web interface` : https://gitlab.com/maicos-devel/maicos/-/tags
+.. _`web interface` : https://github.com/maicos-devel/maicos/releases
