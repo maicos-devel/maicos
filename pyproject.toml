@@ -70,9 +70,9 @@ examples = ["matplotlib"]
 [project.urls]
 homepage = "https://www.maicos-analysis.org"
 documentation = "https://maicos-devel.gitlab.io/maicos"
-repository = "https://gitlab.com/maicos-devel/maicos"
-changelog = "https://maicos-devel.gitlab.io/maicos/get-started/changelog.html"
-issues = "https://gitlab.com/maicos-devel/maicos/-/issues"
+repository = "https://github.com/maicos-devel/maicos"
+changelog = "https://maicos-devel.github.io/maicos/latest/get-started/changelog.html"
+issues = "https://github.com/maicos-devel/maicos/issues"
 discord = "https://discord.gg/mnrEQWVAed"
 twitter = "https://twitter.com/maicos_analysis"
 
