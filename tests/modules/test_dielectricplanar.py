@@ -164,7 +164,6 @@ class TestDielectricPlanar:
         For example if some positions of charges are erroneously shifted out of the
         system.
 
-        See https://gitlab.com/maicos-devel/maicos/-/issues/83 for more infos.
         """
         xx, yy, zz = np.meshgrid(
             np.arange(0, 10, 2) + 1, np.arange(0, 10, 2) + 1, np.arange(0, 10, 2) + 1

@@ -61,8 +61,8 @@ For details, tutorials, and examples, please have a look at our documentation_. 
 are using an older version of MAICoS, you can access the corresponding documentation on
 ReadTheDocs_.
 
-.. _`documentation`: https://maicos-devel.gitlab.io/maicos/index.html
-.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos/
+.. _`documentation`: https://maicos-devel.github.io/maicos
+.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos
 
 .. inclusion-readme-installation-start
 

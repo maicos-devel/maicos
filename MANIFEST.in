@@ -8,14 +8,12 @@ include *.rst
 include LICENSE
 include versioneer.py
 
-prune .gitlab
 prune .tox
 prune developer
 prune examples
 prune tests
 prune benchmarks
 
-exclude .gitlab-ci.yml
 exclude .gitattributes
 exclude .gitignore
 exclude .coveragerc

@@ -11,7 +11,7 @@ You can run all tests by:
 
     tox
 
-These are exactly the same tests that will be performed online in our GitLab CI
+These are exactly the same tests that will be performed online in our GitHub CI
 workflows.
 
 Also, you can run individual environments if you wish to test only specific
