@@ -66,7 +66,7 @@ dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""
 refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
 :ref:`general-design` section.""",
     CORRELATION_INFO_PLANAR=r"""For the correlation analysis the central bin
-(:math:`N \backslash 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
+(:math:`N / 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
     CORRELATION_INFO_RADIAL="""For the correlation analysis the 0th bin of the 0th's
 group profile is used. ${CORRELATION_INFO}""",
     RUN_METHOD_DESCRIPTION="""Iterate over the trajectory.

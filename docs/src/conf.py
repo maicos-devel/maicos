@@ -93,46 +93,25 @@ pygments_style = "tango"
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
 html_theme = "furo"
+html_title = "MAICoS"
+html_favicon = "../static/logo_MAICOS_square_64.png"
+html_static_path = ["../static"]
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-html_logo = "../static/logo_MAICOS_gray.png"
-
-# Overwrite the 'MAICoS documentation' on the top left corner'
-html_title = "    "
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
-html_static_path: list[str] = []
-
-# Custom sidebar templates, must be a dictionary that maps document names
-# to template names.
-#
-# The default sidebars (for documents that don't match any pattern) are
-# defined by theme itself.  Builtin themes are using these templates by
-# default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
-# 'searchbox.html']``.
-#
-# html_sidebars = {}
-
-# Controls whether the user can navigate the documentation
-# using the keyboard’s left and right arrows. The default is False.
 html_theme_options = {
     "navigation_with_keys": True,
     "footer_icons": [
         {
-            "name": "GitLab",
+            "name": "GitHub",
             "url": project_dict["urls"]["repository"],
             "html": "",
-            "class": "fa-brands fa-gitlab fa-2x",
+            "class": "fa-brands fa-github fa-2x",
         },
     ],
+    "top_of_page_buttons": [],
+    "light_logo": "logo_MAICOS_light.png",
+    "dark_logo": "logo_MAICOS_dark.png",
+    "sidebar_hide_name": True,
 }
 
 # font-awesome logos

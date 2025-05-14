@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Fixed typos in documentation (!486)
 - Change links to GitHub in documentation (#485)
 - Fix rendering in class docstrings (#484)
 - Move changelog test from ``tox`` to Gitlab CI (#483)
