@@ -195,6 +195,42 @@ class DielectricCylinder(CylinderBase):
         self._obs.M_z = np.dot(self._universe.atoms.charges, self.pos_cyl[:, 2])
         self._obs.mM_z = self._obs.m_z * self._obs.M_z
 
+        # Use virtual cutting method (for azimuthal component)
+        # ========================================================
+        # number of virtual cuts ("many")
+        self.phicutwidth = 0.1 # angstrom
+
+        nbinsphi = np.ceil(self.rmax * 2 * np.pi / self.phicutwidth).astype(int)
+        logging.debug("Number of phi bins {nbinsphi}")
+
+        # Move all r-positions to 'center of charge' such that we avoid monopoles in
+        # r-direction. We only want to cut in z direction.
+        chargepos = self.pos_cyl[self.atomgroup.ix, 0] * np.abs(self.atomgroup.charges)
+        center = self.atomgroup.accumulate(
+            chargepos, compound=self.comp
+        ) / self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
+        )
+        testpos = center[self.inverse_ix]
+
+        rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
+        phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
+        phibins = np.digitize(self.pos_cyl[self.atomgroup.ix, 1], phi[1:])
+
+        curQphi = np.bincount(
+            rbins + self.n_bins * phibins,
+            weights=self.atomgroup.charges,
+            minlength=self.n_bins * nbinsphi,
+        ).reshape(nbinsphi, self.n_bins)
+
+        area = self._obs.bin_width * self._obs.L
+        curqphi = np.cumsum(curQphi, axis=0) / (area )
+        self._obs.m_phi = -curqphi.mean(axis=0)
+        # This is the systems dipole moment in z-direction and
+        # not the radial integral of the dipole density.
+        self._obs.M_phi = np.sum(self._obs.bin_pos**2 * self._obs.m_phi)
+        self._obs.mM_phi = self._obs.m_phi * self._obs.M_phi
+
         # Save the total dipole moment in z dierection for correlation analysis.
         return self._obs.M_z
 
@@ -241,6 +277,10 @@ class DielectricCylinder(CylinderBase):
         self.results.deps_r = (
             2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * dcov_r
         )
+
+        self.results.m_phi = self.means.m_phi
+        cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
+        self.results.eps_phi = 1 + 2*np.pi *self._obs.L / self.results.bin_pos * self._pref * cov_phi  
 
     @render_docs
     def save(self) -> None:
