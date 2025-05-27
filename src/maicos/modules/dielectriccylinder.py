@@ -213,9 +213,27 @@ class DielectricCylinder(CylinderBase):
         )
         testpos = center[self.inverse_ix]
 
+        # do the first cut at the 0, 2pi plane.
+        # Wrap all molecules that cross the 0, 2pi plane to their center of charge
+        # tbh, we can just delete them from the atomgroup
+        chargepos_phi = self.pos_cyl[self.atomgroup.ix, 1] * np.abs(self.atomgroup.charges)
+        center_phi = self.atomgroup.accumulate(
+            chargepos_phi, compound=self.comp
+        ) / self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
+        )
+        # expand center_phi to be on a per atom basis
+        test_center_phi = chargepos_phi[self.inverse_ix]
+        # wrap all components that cross the border
+        pos_phi = self.pos_cyl[self.atomgroup.ix, 1]
+        difference = test_center_phi - pos_phi
+        pos_phi = np.where(difference > 1.9*np.pi, pos_phi + 2 * np.pi, pos_phi)
+        pos_phi = np.where(difference < -1.9*np.pi, pos_phi -2*np.pi, pos_phi)
+
+
         rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
         phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
-        phibins = np.digitize(self.pos_cyl[self.atomgroup.ix, 1], phi[1:])
+        phibins = np.digitize(pos_phi, phi[1:])
 
         curQphi = np.bincount(
             rbins + self.n_bins * phibins,
@@ -292,6 +310,10 @@ class DielectricCylinder(CylinderBase):
             [self.results.bin_pos, self.results.eps_r, self.results.deps_r]
         ).T
 
+        outdata_phi = np.array(
+                [self.results.bin_pos, self.results.eps_phi, self.results.m_phi]
+                ).T
+
         columns = ["positions [Å]"]
 
         columns += ["ε_z - 1", "Δε_z"]
@@ -307,3 +329,13 @@ class DielectricCylinder(CylinderBase):
         self.savetxt(
             "{}{}".format(self.output_prefix, "_r.dat"), outdata_r, columns=columns
         )
+
+        columns = ["positions [Å]"]
+
+        columns += ["ε_phi", "m_phi"]
+
+        self.savetxt(
+            "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
+        )
+
+
