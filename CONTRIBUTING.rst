@@ -6,7 +6,8 @@ Contribution via pull requests are always welcome. Source code is available from
 and open an issue to discuss your changes. Use only the `main` branch for submitting
 your requests.
 
-.. _`developer documentation` : https://maicos-devel.github.io/maicos/latest/devdoc
+.. Explicitly link LATEST documentation for developers
+.. _`developer documentation` : https://maicos-analysis.org/latest/devdoc
 .. _`GitHub` : https://github.com/maicos-devel/maicos/
 
 By contributing to MAICoS, you accept and agree to the following terms and conditions

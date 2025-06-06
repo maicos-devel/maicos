@@ -37,12 +37,13 @@ jobs:
 
           REF_KIND=$(echo $GITHUB_REF | cut -d / -f2)
           if [[ "$REF_KIND" == "tags" ]]; then
-              TAG=${GITHUB_REF#refs/tags/}
-              mv ../docs/build/html $TAG
+              DOC_KIND="stable"
           else
-              rm -rf latest
-              mv ../docs/build/html latest
+              DOC_KIND="latest"
           fi
+
+          rm -rf $DOC_KIND
+          mv ../docs/build/html $DOC_KIND
       - name: deploy to gh-pages
         if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v4
