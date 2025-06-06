@@ -1,7 +1,7 @@
 MAICoS
 ======
 
-.. image:: docs/static/logo.svg
+.. image:: https://raw.githubusercontent.com/maicos-devel/maicos/refs/heads/main/docs/static/logo_MAICOS_square.png
    :width: 200 px
    :align: left
    :alt: MAICoS logo

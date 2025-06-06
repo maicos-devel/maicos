@@ -95,7 +95,7 @@ pygments_style = "tango"
 
 html_theme = "furo"
 html_title = "MAICoS"
-html_favicon = "../static/logo.svg"
+html_favicon = "../static/logo.ico"
 html_static_path = ["../static"]
 
 html_theme_options = {
