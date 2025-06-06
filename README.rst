@@ -159,7 +159,7 @@ Thanks goes to all people that make *MAICoS* possible:
    :alt: Documentation of stable released version
    :target: `documentation`_
 
-.. |docs-latest| image:: https://img.shields.io/badge/📚_Documentation-latest-yellow.svg
+.. |docs-latest| image:: https://img.shields.io/badge/📒_Documentation-latest-yellow.svg
    :alt: Documentation of latest unreleased version
    :target: `latest documentation`_
 
