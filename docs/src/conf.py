@@ -109,8 +109,8 @@ html_theme_options = {
         },
     ],
     "top_of_page_buttons": [],
-    "light_logo": "logo_MAICOS_light.png",
-    "dark_logo": "logo_MAICOS_dark.png",
+    "light_logo": "logo_MAICOS_light.svg",
+    "dark_logo": "logo_MAICOS_dark.svg",
     "sidebar_hide_name": True,
 }
 

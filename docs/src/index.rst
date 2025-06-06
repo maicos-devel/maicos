@@ -1,8 +1,8 @@
-.. image:: /../static/logo_MAICOS_light.png
+.. image:: /../static/logo_MAICOS_light.svg
    :class: only-light sd-mb-4
    :width: 600px
 
-.. image:: /../static/logo_MAICOS_dark.png
+.. image:: /../static/logo_MAICOS_dark.svg
    :class: only-dark sd-mb-4
    :width: 600px
 
