@@ -1,6 +1,8 @@
 coverage:
   ignore:
-    - tests/.*
+    - "examples/.*"
+    - "tests/.*"
+    - "versioneer.py"
   status:
     project:
       default:
