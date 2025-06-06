@@ -13,8 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
-- Update ignore list for codecoverage (#488)
 - Cleanup logos (#487)
+- Update ignore list for codecoverage (#488)
 - Fixed typos in documentation (#486)
 - Change links to GitHub in documentation (#485)
 - Fix rendering in class docstrings (#484)
