@@ -6,7 +6,7 @@ MAICoS
    :align: left
    :alt: MAICoS logo
 
-|tests| |codecov| |docs| |mdanalysis|
+|tests| |codecov| |docs-stable| |docs-latest| |mdanalysis| 
 
 .. inclusion-readme-intro-start
 
@@ -159,7 +159,7 @@ Thanks goes to all people that make *maicos* possible:
    :alt: Documentation of stable released version
    :target: `documentation`_
 
-.. |docs-latest| image:: https://img.shields.io/badge/docs-latest-yellow.svg
+.. |docs-latest| image:: https://img.shields.io/badge/documentation-latest-yellow.svg
    :alt: Documentation of latest unreleased version
    :target: https://maicos-analysis.org/latest
 
