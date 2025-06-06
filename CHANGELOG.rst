@@ -13,7 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
-- Create logic for stable and latest documentation versions (#XXX)
+- Create logic for stable and latest documentation versions (#489)
 - Cleanup logos (#487)
 - Update ignore list for codecoverage (#488)
 - Fixed typos in documentation (#486)
