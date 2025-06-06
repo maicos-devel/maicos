@@ -34,11 +34,10 @@ and special use-cases in MAICoS.
 
 Analysis Modules
 ----------------
-The :ref:`userdoc_api-documentation` section is for MAICoS for intermediate users, it
+The :ref:`userdoc-analysis-modules` section is for MAICoS for intermediate users, it
 contains technical references and parameter list for each MAICoS module. Even more
 advanced API documentation of all underlying *functions* and *classes* is described in
 :ref:`userdoc_api-documentation`.
-
 
 API Documentation
 -----------------
@@ -47,7 +46,7 @@ contains technical references and parameter list for the APIs behind the library
 describes the various functionalities provided by MAICoS. You can always refer to this
 section to learn more about classes, functions, modules, and other aspects of MAICoS
 machinery you may come across behind the analysis classes described in
-:ref:`userdoc_api-documentation`.
+:ref:`userdoc-analysis-modules`.
 
 Concepts & Explanations
 -----------------------
