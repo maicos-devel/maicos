@@ -95,7 +95,7 @@ pygments_style = "tango"
 
 html_theme = "furo"
 html_title = "MAICoS"
-html_favicon = "../static/logo_MAICOS_square_64.png"
+html_favicon = "../static/logo.ico"
 html_static_path = ["../static"]
 
 html_theme_options = {
@@ -109,8 +109,8 @@ html_theme_options = {
         },
     ],
     "top_of_page_buttons": [],
-    "light_logo": "logo_MAICOS_light.png",
-    "dark_logo": "logo_MAICOS_dark.png",
+    "light_logo": "logo_MAICOS_light.svg",
+    "dark_logo": "logo_MAICOS_dark.svg",
     "sidebar_hide_name": True,
 }
 
