@@ -23,7 +23,7 @@ jobs:
           - os: macos-15
             python-version: "3.13"
           - os: windows-2025
-            python-version: "3.13"
+            python-version: "3.13.5"
 
     steps:
     - uses: actions/checkout@v4
