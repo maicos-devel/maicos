@@ -13,7 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
-- Use gallery view for examples (#XXX)
+- Use gallery view for examples (#491)
+- Create logic for stable and latest documentation versions (#489)
 - Cleanup logos (#487)
 - Update ignore list for codecoverage (#488)
 - Fixed typos in documentation (#486)
