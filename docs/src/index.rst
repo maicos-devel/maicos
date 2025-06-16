@@ -58,7 +58,7 @@ MAICoS.
    :hidden:
 
    get-started/index
-   how-to/index
+   examples/index
    analysis-modules/index
    api-documentation/index
    concepts-explanations/index
