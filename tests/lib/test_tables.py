@@ -14,9 +14,9 @@ from maicos.lib.tables import CM_parameters
 
 
 def test_cm_parameters():
-    """Test that cm_parameters for carbon are same as literature value.
+    """Test that the carbon Cromer-Mann parameters are the same as literature value.
 
-    Reference values for hydrogen are taken from Table 6.1.1.4 in
+    Reference values for carbon are taken from Table 6.1.1.4 in
     https://it.iucr.org/Cb/ch6o1v0001/
     """
     params = CM_parameters["C"]

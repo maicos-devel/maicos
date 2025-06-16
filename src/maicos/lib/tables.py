@@ -18,17 +18,6 @@ import numpy as np
 _share_path = Path(__file__).parents[1] / "share"
 
 
-#: Translation of
-#: :py:class:`MDAnalysis.AtomGroup.types <MDAnalysis.core.topologyattrs.Atomtypes>` to
-#: chemical elements.
-atomtypes = {}
-with Path(_share_path / "atomtypes.dat").open() as f:
-    for line in f:
-        if line[0] != "#":
-            elements = line.split()
-            atomtypes[elements[0]] = elements[1]
-
-
 @dataclass
 class CMParameter:
     """Cromer-Mann X-ray scattering factor parameters."""

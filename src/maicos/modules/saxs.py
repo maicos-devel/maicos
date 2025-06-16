@@ -151,31 +151,24 @@ class Saxs(AnalysisBase):
         self.thetamin *= np.pi / 180
         self.thetamax *= np.pi / 180
 
-        self.groups = []
-        self.weights = []
-        self.atom_types = []
+        self.groups = []  # groups of atoms with the same element
+        self.weights = []  # weights (form factors) for the groups
+        self.elements = []  # unique elements in the groups
 
-        logging.info("\nMap the following atomtypes:")
-        for atom_type in np.unique(self.atomgroup.types).astype(str):
-            try:
-                element = tables.atomtypes[atom_type]
-            except KeyError as err:
+        for element in np.unique(self.atomgroup.elements):
+            if element not in tables.CM_parameters:
                 raise KeyError(
-                    f"No suitable element for '{atom_type}' found. You can change the "
-                    f"`types` of the input `atomgroup` to match the known elements in "
-                    "`maicos.lib.tables.atomtypes`."
-                ) from err
+                    f"Element '{element}' not found in Cromer-Mann parameters."
+                )
             if element == "DUM":
                 continue
 
-            group = self.atomgroup.select_atoms(f"type {atom_type}*")
+            group = self.atomgroup.select_atoms(f"element {element}")
 
             self.groups.append(group)
             # Actual weights (form factors) are applied in post processing after
             self.weights.append(np.ones(group.n_atoms))
-            self.atom_types.append(atom_type)
-
-            logging.info(f"{atom_type:>14} --> {element:>5}")
+            self.elements.append(element)
 
         if self.bin_spectrum:
             self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))
@@ -219,7 +212,7 @@ class Saxs(AnalysisBase):
             )
 
             scattering_intensities = (
-                compute_form_factor(scattering_vectors, self.atom_types[i_group]) ** 2
+                compute_form_factor(scattering_vectors, self.elements[i_group]) ** 2
                 * structure_factors
             )
 
