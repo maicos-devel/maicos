@@ -55,14 +55,14 @@ bibtex_reference_style = "author_year"
 sphinx_gallery_conf = {
     "filename_pattern": r"/*\.py",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
+    "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),
     "example_extensions": {".py", ".sh"},
     "examples_dirs": ["../../examples"],
     "gallery_dirs": ["examples"],
     "min_reported_time": 60,
-    # Make the code snippet for rascaline functions clickable
     "reference_url": {"maicos": None},
-    # Make sure inheritance points to the actual/child classes and not the base classes.
-    "prefer_full_module": ["maicos.*"],
+    "remove_config_comments": True,
+    "prefer_full_module": ["maicos"],
 }
 
 # Add any paths that contain templates here, relative to this directory.
