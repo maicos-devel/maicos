@@ -31,8 +31,9 @@ DOC_DICT = dict(
     #####################
     SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
     DENSITY_DESCRIPTION_1=r"""Calculations are carried out for
-``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})` or ``charge``
-:math:`(\rm e \cdot Å^{-3})` density profiles """,
+ ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`,``charge``
+ :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})` density
+ profiles """,
     DENSITY_DESCRIPTION_2="""Cell dimensions are allowed to fluctuate in time.
 
 For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
@@ -105,7 +106,7 @@ self : object
     The group which will be kept together through the wrap processes. Allowed values
     are: ``"atoms"``, ``"group"``, ``"residues"``,
 ``"segments"``, ``"molecules"``, or ``"fragments"``.""",
-    DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``}
+    DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``, ``"electron"``}
     density type to be calculated.""",
     TEMPERATURE_PARAMETER="""temperature : float
     Reference temperature (K)""",
