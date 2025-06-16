@@ -33,6 +33,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        check-latest: true
     - run: python -m pip install tox coverage[toml]
     - name: run Python tests
       run: |
