@@ -6,7 +6,7 @@ MAICoS
    :align: left
    :alt: MAICoS logo
 
-|tests| |codecov| |docs| |mdanalysis|
+|tests| |codecov| |docs-stable| |docs-latest| |mdanalysis|
 
 .. inclusion-readme-intro-start
 
@@ -23,12 +23,12 @@ For these users MAICoS provides a descriptive command line interface. Also exper
 users can use the Python API for their day to day analysis or use the provided
 infrastructure to build their own analysis for interfacial and confined systems.
 
-Keep up to date with MAICoS news by following us on Twitter_. If you find an issue, you
+Keep up to date with MAICoS news by following us on X_. If you find an issue, you
 can report it on GitHub_. You can also join the developer team on Discord_ to discuss
 possible improvements and usages of MAICoS.
 
 .. _`MDAnalysis`: https://www.mdanalysis.org
-.. _`Twitter`: https://twitter.com/maicos_analysis
+.. _`X`: https://x.com/maicos_analysis
 .. _`GitHub`: https://github.com/maicos-devel/maicos
 .. _`Discord`: https://discord.gg/mnrEQWVAed
 
@@ -57,12 +57,12 @@ the bins from ``dplan.results.bin_pos``.
 Documentation
 =============
 
-For details, tutorials, and examples, please have a look at our documentation_. If you
-are using an older version of MAICoS, you can access the corresponding documentation on
-ReadTheDocs_.
+For details, tutorials, and examples, please have a look at our documentation_. We also
+provide a `latest documentation`_ from the current unreleased development version of
+MAICoS.
 
-.. _`documentation`: https://maicos-devel.github.io/maicos
-.. _`ReadTheDocs` : https://readthedocs.org/projects/maicos
+.. _`documentation`: https://maicos-analysis.org
+.. _`latest documentation`: https://maicos-analysis.org/latest
 
 .. inclusion-readme-installation-start
 
@@ -142,7 +142,7 @@ Currently, MAICoS supports the following analysis modules in alphabetical order:
 Contributors
 ============
 
-Thanks goes to all people that make *maicos* possible:
+Thanks goes to all people that make *MAICoS* possible:
 
 .. image:: https://contrib.rocks/image?repo=maicos-devel/maicos
    :target: https://github.com/maicos-devel/maicos/graphs/contributors
@@ -155,9 +155,13 @@ Thanks goes to all people that make *maicos* possible:
    :alt: Code coverage
    :target: https://codecov.io/gh/maicos-devel/maicos
 
-.. |docs| image:: https://img.shields.io/badge/documentation-latest-sucess
-   :alt: Documentation
+.. |docs-stable| image:: https://img.shields.io/badge/📚_Documentation-stable-sucess
+   :alt: Documentation of stable released version
    :target: `documentation`_
+
+.. |docs-latest| image:: https://img.shields.io/badge/📒_Documentation-latest-yellow.svg
+   :alt: Documentation of latest unreleased version
+   :target: `latest documentation`_
 
 .. |mdanalysis| image:: https://img.shields.io/badge/powered%20by-MDAnalysis-orange.svg?logoWidth=16&logo=data:image/x-icon;base64,AAABAAEAEBAAAAEAIAAoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJD+XwCY/fEAkf3uAJf97wGT/a+HfHaoiIWE7n9/f+6Hh4fvgICAjwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACT/yYAlP//AJ///wCg//8JjvOchXly1oaGhv+Ghob/j4+P/39/f3IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJH8aQCY/8wAkv2kfY+elJ6al/yVlZX7iIiI8H9/f7h/f38UAAAAAAAAAAAAAAAAAAAAAAAAAAB/f38egYF/noqAebF8gYaagnx3oFpUUtZpaWr/WFhY8zo6OmT///8BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgICAn46Ojv+Hh4b/jouJ/4iGhfcAAADnAAAA/wAAAP8AAADIAAAAAwCj/zIAnf2VAJD/PAAAAAAAAAAAAAAAAICAgNGHh4f/gICA/4SEhP+Xl5f/AwMD/wAAAP8AAAD/AAAA/wAAAB8Aov9/ALr//wCS/Z0AAAAAAAAAAAAAAACBgYGOjo6O/4mJif+Pj4//iYmJ/wAAAOAAAAD+AAAA/wAAAP8AAABhAP7+FgCi/38Axf4fAAAAAAAAAAAAAAAAiIiID4GBgYKCgoKogoB+fYSEgZhgYGDZXl5e/m9vb/9ISEjpEBAQxw8AAFQAAAAAAAAANQAAADcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjo6Mb5iYmP+cnJz/jY2N95CQkO4pKSn/AAAA7gAAAP0AAAD7AAAAhgAAAAEAAAAAAAAAAACL/gsAkv2uAJX/QQAAAAB9fX3egoKC/4CAgP+NjY3/c3Nz+wAAAP8AAAD/AAAA/wAAAPUAAAAcAAAAAAAAAAAAnP4NAJL9rgCR/0YAAAAAfX19w4ODg/98fHz/i4uL/4qKivwAAAD/AAAA/wAAAP8AAAD1AAAAGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALGxsVyqqqr/mpqa/6mpqf9KSUn/AAAA5QAAAPkAAAD5AAAAhQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADkUFBSuZ2dn/3V1df8uLi7bAAAATgBGfyQAAAA2AAAAMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB0AAADoAAAA/wAAAP8AAAD/AAAAWgC3/2AAnv3eAJ/+dgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9AAAA/wAAAP8AAAD/AAAA/wAKDzEAnP3WAKn//wCS/OgAf/8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIQAAANwAAADtAAAA7QAAAMAAABUMAJn9gwCe/e0Aj/2LAP//AQAAAAAAAAAA
     :alt: Powered by MDAnalysis
