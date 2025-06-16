@@ -29,16 +29,20 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         check-latest: true
+
     - run: python -m pip install tox coverage[toml]
+
     - name: run Python tests
       run: |
         tox -e tests
         coverage xml
+
     - name: upload to codecov.io
       uses: codecov/codecov-action@v5
       with:
