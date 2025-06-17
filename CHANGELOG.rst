@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Implement error calculation for observables with multiple samples (#494)
 - Use gallery view for examples (#491)
 - Create logic for stable and latest documentation versions (#489)
 - Cleanup logos (#487)

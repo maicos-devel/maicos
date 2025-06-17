@@ -464,9 +464,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.sems  # type: ignore  # noqa B018
 
             for key in self._obs:
-
                 # Sanitize the data type of the observable
-                if type(self._obs[key]) is list:
+                if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
                 if key in self._var and key in self._pop:
                     delta = self._obs[key] - self.means[key]  # type: ignore
