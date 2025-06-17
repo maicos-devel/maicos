@@ -13,8 +13,9 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose
 
+- Implement error calculation for observables with multiple samples (#494)
 - Warn if box is not orthorhombic (#523)
-- Update CI action dependencies (#526) 
+- Update CI action dependencies (#526)
 - Update CI action dependencies (#525)
 - Simplify bin width validation (#522)
 - Small cleanup of build workflow (#521)
