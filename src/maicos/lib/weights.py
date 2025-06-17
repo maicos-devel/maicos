@@ -11,7 +11,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy import constants
 
-from .tables import CM_parameters
+from .math import compute_form_factor
 from .util import Unit_vector, render_docs
 
 
@@ -62,10 +62,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     elif dens == "electron":
         # Cromer-Mann parameters for q=0 is the number of electrons
         electrons = np.array(
-            [
-                CM_parameters[el].a.sum() + CM_parameters[el].c
-                for el in atomgroup.elements
-            ],
+            [compute_form_factor(q=0, atom_type=el) for el in atomgroup.elements],
             dtype=np.float64,
         )
         if grouping == "atoms":
