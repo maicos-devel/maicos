@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk
+Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
 
+- Implement error calculation for observables with multiple samples (#494)
 - Bump minimal Python version to 3.11 and MDAnalysis to 2.10.0 (#529)
 - Added support for Python 3.14 in CI workflows (#529)
 - Add additional examples for dielectric profile analysis (#518)
