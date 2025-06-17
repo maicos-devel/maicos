@@ -451,34 +451,63 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
 
         self._obs = Results()
+        self._var = Results()
+        self._pop = Results()
 
         self.timeseries[current_frame_index] = self._single_frame()
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
         try:
+            # Fail fast if the means and sems are not defined yet.
+            self.means  # type: ignore  # noqa B018
+            self.sems  # type: ignore  # noqa B018
+
             for key in self._obs:
+
+                # Sanitize the data type of the observable
                 if type(self._obs[key]) is list:
                     self._obs[key] = np.array(self._obs[key])
-                old_mean = self.means[key]  # type: ignore
-                old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
-                self.means[key] = new_mean(  # type: ignore
-                    self.means[key],  # type: ignore
-                    self._obs[key],
-                    self._index,  # type: ignore
-                )  # type: ignore
-                self.sems[key] = np.sqrt(  # type: ignore
-                    new_variance(
-                        old_var,
-                        old_mean,
+                if key in self._var and key in self._pop:
+                    delta = self._obs[key] - self.means[key]  # type: ignore
+                    self.means[key] = self.means[key] + delta * (  # type: ignore
+                        self._pop[key] / (self.pop[key] + self._pop[key])  # type: ignore
+                    )
+                    self.M[key] = (  # type: ignore
+                        self.M[key]  # type: ignore
+                        + self._var[key] * self._pop[key]
+                        + delta**2
+                        * (self._pop[key] * self.pop[key])  # type: ignore
+                        / (self._pop[key] + self.pop[key])  # type: ignore
+                    )
+
+                    self.sems[key] = np.sqrt(  # type: ignore
+                        self.M[key] / (self._pop[key] + self.pop[key]) ** 2  # type: ignore
+                    )
+                    self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+
+                    # Finally update the population of A
+                    self.pop[key] += self._pop[key]  # type: ignore
+
+                else:
+                    old_mean = self.means[key]  # type: ignore
+                    old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
+                    self.means[key] = new_mean(  # type: ignore
                         self.means[key],  # type: ignore
                         self._obs[key],
-                        self._index,
+                        self._index,  # type: ignore
+                    )  # type: ignore
+                    self.sems[key] = np.sqrt(  # type: ignore
+                        new_variance(
+                            old_var,
+                            old_mean,
+                            self.means[key],  # type: ignore
+                            self._obs[key],
+                            self._index,
+                        )
+                        / self._index
                     )
-                    / self._index
-                )
-                self.sums[key] += self._obs[key]  # type: ignore
-
+                    self.sums[key] += self._obs[key]  # type: ignore
         except AttributeError as err:
             with logging_redirect_tqdm():
                 logging.debug("Initializing error estimation.")
@@ -488,10 +517,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.sums = self._obs.copy()
             self.means = self._obs.copy()
             self.sems = Results()
+            self.pop = Results()
+            self.M = Results()
+
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 self.sems[key] = np.zeros(np.shape(self._obs[key]))
+                if key in self._var and key in self._pop:
+                    self.M[key] = self._var[key] * self._pop[key]
+                    self.pop[key] = self._pop[key]
+                    self.sums[key] = self._obs[key] * self._pop[key]
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
