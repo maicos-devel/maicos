@@ -30,7 +30,7 @@ class CMParameter:
 #: Cromer-Mann X-ray scattering factors computed from numerical
 #: Hartree-Fock wave functions. See https://it.iucr.org/Cb/ch6o1v0001/
 CM_parameters = {}
-with Path(_share_path / "sfactor.dat").open() as f:
+with Path(_share_path / "scatteringfactors.dat").open() as f:
     for line in f:
         if line[0] != "#":
             params = line.split()
