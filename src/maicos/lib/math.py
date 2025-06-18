@@ -610,16 +610,20 @@ def compute_form_factor(q: float, element: str) -> float:
 
     The coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and :math:`c` are also
     known as Cromer-Mann X-ray scattering factors and are documented in
-    :footcite:t:`princeInternationalTablesCrystallography2004` and taken from
-    https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php.
-    and stored stored in :obj:`maicos.lib.tables.CM_parameters`.
+    :footcite:t:`princeInternationalTablesCrystallography2004` and taken from the `TU
+    Graz
+    <https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php>`_.
+    and stored in :obj:`maicos.lib.tables.CM_parameters`.
 
     Parameters
     ----------
     q : float
         The magnitude of the scattering vector in reciprocal angstroms (1/Å).
     element : str
-        The element for which the form factor is calculated.
+        The element for which the form factor is calculated. Known elements are listed
+        in the :attr:`maicos.lib.tables.elements` set. United elements such as
+        ``"CH1"``, ``"CH2"``, ``"CH3"``, ``"CH4"``, ``"NH1"``, ``"NH2"``, and ``"NH3"``
+        are also supported.
 
     Returns
     -------
@@ -643,6 +647,11 @@ def compute_form_factor(q: float, element: str) -> float:
     elif element == "NH3":
         form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
     else:
+        if element not in tables.CM_parameters:
+            raise ValueError(
+                f"Element '{element}' not found in Cromer-Mann parameters. Known"
+                "elements are listed in the :attr:`maicos.lib.tables.elements` set."
+            )
         form_factor = tables.CM_parameters[element].c
         # q / (4 * pi) = sin(theta) / lambda
         q2 = (q / (4 * np.pi)) ** 2

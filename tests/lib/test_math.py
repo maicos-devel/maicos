@@ -626,3 +626,12 @@ def test_form_factor_unknown_type():
         desired=6,
         rtol=1e-2,
     )
+
+def test_form_factor_unknown_element():
+    """Test that an unknown elements raise an error."""
+    match = (
+        "Element 'foo' not found in Cromer-Mann parameters. Known"
+        "elements are listed in the :attr:`maicos.lib.tables.elements` set."
+    )
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.compute_form_factor(0.0, "foo")

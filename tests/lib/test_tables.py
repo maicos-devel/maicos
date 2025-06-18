@@ -10,7 +10,7 @@
 import numpy as np
 from numpy.testing import assert_equal
 
-from maicos.lib.tables import CM_parameters
+from maicos.lib.tables import CM_parameters, elements
 
 
 def test_cm_parameters():
@@ -23,3 +23,8 @@ def test_cm_parameters():
     assert_equal(params.a, np.array([2.31, 1.02, 1.5886, 0.865]))
     assert_equal(params.b, np.array([20.8439, 10.2075, 0.5687, 51.6512]))
     assert params.c == 0.2156
+
+
+def test_elements():
+    """Test that the elements in CM_parameters match the known elements."""
+    assert set(elements) == set(CM_parameters.keys())

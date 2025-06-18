@@ -7,7 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The module contains static lookup tables for atom typing etc.
 
-The tables are dictionaries that are indexed by elements.
+The tables are dictionaries that are indexed by elements. All known elements are listed
+in the :attr:`elements` set.
 """
 
 from dataclasses import dataclass
@@ -41,3 +42,6 @@ with Path(_share_path / "scatteringfactors.dat").open() as f:
                 b=np.array(params[5:9], dtype=np.double),
                 c=float(params[9]),
             )
+
+#: Set of known elements for Cromer-Mann coefficients.
+elements = set(CM_parameters.keys())

@@ -1,5 +1,4 @@
-# Scattering factors for elements. Table is copied from sfactor.dat in the GROMACS
-# package. Numbers taken from:
+# Scattering factors for elements. Numbers taken from:
 # https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php
 #
 # Underlying calculations due to D. T. Cromer & J. B. Mann
