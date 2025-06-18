@@ -223,18 +223,18 @@ class TestChargedDecorator:
 
     def test_charged_single(self, ag):
         """Test charged single."""
-        with pytest.raises(UserWarning):
+        with pytest.raises(UserWarning, match="At least one AtomGroup has free"):
             single_class(ag.select_atoms("name OW*"), filter="error")._prepare()
 
     def test_charged_single_warn(self, ag):
         """Test charged single warn."""
-        with pytest.warns(UserWarning):
+        with pytest.warns(UserWarning, match="At least one AtomGroup has free"):
             single_class(ag.select_atoms("name OW*"), filter="default")._prepare()
 
     def test_universe_charged_single(self, ag):
         """Test universe charged single."""
         ag[0].charge += 1
-        with pytest.raises(UserWarning):
+        with pytest.raises(UserWarning, match="At least one AtomGroup has free"):
             single_class(ag.select_atoms("name OW*"), filter="error")._prepare()
 
     def test_universe_slightly_charged_single(self, ag):
@@ -244,7 +244,7 @@ class TestChargedDecorator:
 
 
 def unwrap_refgroup_class(**kwargs):
-    """Simple class setting kywword arguments as attrubutes."""
+    """Simple class setting keyword arguments as attributes."""
 
     @maicos.lib.util.unwrap_refgroup
     class UnwrapRefgroup(AnalysisBase):

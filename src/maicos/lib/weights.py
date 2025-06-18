@@ -11,6 +11,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy import constants
 
+from .math import compute_form_factor
 from .util import Unit_vector, render_docs
 
 
@@ -47,20 +48,34 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
             numbers = len(np.unique(atomgroup.molnums))
         else:
             numbers = getattr(atomgroup, f"n_{grouping}")
-        return np.ones(numbers)
-    if dens == "mass":
+        weights = np.ones(numbers)
+    elif dens == "mass":
         if grouping == "atoms":
-            masses = atomgroup.masses
+            weights = atomgroup.masses
         else:
-            masses = atomgroup.total_mass(compound=grouping)
-        return masses
-    if dens == "charge":
+            weights = atomgroup.total_mass(compound=grouping)
+    elif dens == "charge":
         if grouping == "atoms":
-            return atomgroup.charges
-        return atomgroup.total_charge(compound=grouping)
-    raise ValueError(
-        f"'{dens}' density type is not supported. Use `mass`, `number` or `charge`."
-    )
+            weights = atomgroup.charges
+        else:
+            weights = atomgroup.total_charge(compound=grouping)
+    elif dens == "electron":
+        # Cromer-Mann parameters for q=0 is the number of electrons
+        electrons = np.array(
+            [compute_form_factor(q=0, atom_type=el) for el in atomgroup.elements],
+            dtype=np.float64,
+        )
+        if grouping == "atoms":
+            weights = electrons
+        else:
+            weights = atomgroup.accumulate(electrons, compound=grouping)
+    else:
+        raise ValueError(
+            f"'{dens}' density type is not supported. Use 'mass', 'number', 'charge' "
+            "or 'electron'."
+        )
+
+    return weights
 
 
 @render_docs

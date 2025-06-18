@@ -19,7 +19,13 @@ import maicos.lib.weights
 from maicos.lib.util import unit_vectors_planar
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from data import (  # noqa: E402
+    SPCE_GRO,
+    SPCE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 from util import line_of_water_molecules  # noqa: E402
 
 
@@ -73,6 +79,27 @@ def test_density_weights_number_molecules(ag_water_npt):
     """Test number weights for grouping with respect to molecules."""
     weights = maicos.lib.weights.density_weights(ag_water_npt, "molecules", "number")
     assert_equal(weights, np.ones(len(np.unique(ag_water_npt.molnums))))
+
+
+@pytest.mark.parametrize("compound", ["atoms", "residues", "segments"])
+def test_density_weights_electron(compound):
+    """Test electron weights with grouping."""
+    u = mda.Universe(WATER_GRO_NPT)
+    u.guess_TopologyAttrs(to_guess=["elements"])
+    u.atoms.elements = np.array([el.title() for el in u.atoms.elements])
+
+    d = {"H": 1, "O": 8}
+    electrons = np.array([d[el] for el in u.atoms.elements], dtype=np.float64)
+    weights = maicos.lib.weights.density_weights(u.atoms, compound, "electron")
+
+    if compound == "atoms":
+        assert_allclose(weights, electrons, rtol=1e-2)
+    else:
+        assert_allclose(
+            actual=weights,
+            desired=u.atoms.accumulate(electrons, compound=compound),
+            rtol=1e-4,
+        )
 
 
 def test_density_weights_error(ag_water_npt):

@@ -243,7 +243,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 
-        # Take the center bin of the 0th group for correlation analysis.
+        # Take the center bin for correlation analysis.
         return self._obs.profile[self.n_bins // 2]
 
     def _conclude(self):
