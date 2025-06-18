@@ -627,6 +627,7 @@ def test_form_factor_unknown_type():
         rtol=1e-2,
     )
 
+
 def test_form_factor_unknown_element():
     """Test that an unknown elements raise an error."""
     match = (
