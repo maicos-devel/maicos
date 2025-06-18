@@ -31,9 +31,9 @@ DOC_DICT = dict(
     #####################
     SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
     DENSITY_DESCRIPTION_1=r"""Calculations are carried out for
- ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`,``charge``
- :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})` density
- profiles """,
+ ``mass`` :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`, partial
+ ``charge`` :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})`
+ density profiles """,
     DENSITY_DESCRIPTION_2="""Cell dimensions are allowed to fluctuate in time.
 
 For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
