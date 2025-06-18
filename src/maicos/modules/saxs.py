@@ -13,7 +13,6 @@ import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
-from ..lib import tables
 from ..lib.math import compute_form_factor, compute_structure_factor
 from ..lib.util import render_docs
 
@@ -156,13 +155,6 @@ class Saxs(AnalysisBase):
         self.elements = []  # unique elements in the groups
 
         for element in np.unique(self.atomgroup.elements):
-            if element not in tables.CM_parameters:
-                raise KeyError(
-                    f"Element '{element}' not found in Cromer-Mann parameters."
-                )
-            if element == "DUM":
-                continue
-
             group = self.atomgroup.select_atoms(f"element {element}")
 
             self.groups.append(group)

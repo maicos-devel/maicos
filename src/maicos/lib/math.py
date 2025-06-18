@@ -649,8 +649,8 @@ def compute_form_factor(q: float, element: str) -> float:
     else:
         if element not in tables.CM_parameters:
             raise ValueError(
-                f"Element '{element}' not found in Cromer-Mann parameters. Known"
-                "elements are listed in the :attr:`maicos.lib.tables.elements` set."
+                f"Element '{element}' not found in Cromer-Mann parameters. Known "
+                "elements are listed in the `maicos.lib.tables.elements` set."
             )
         form_factor = tables.CM_parameters[element].c
         # q / (4 * pi) = sin(theta) / lambda

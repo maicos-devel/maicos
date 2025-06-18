@@ -25,6 +25,14 @@ def test_cm_parameters():
     assert params.c == 0.2156
 
 
+def test_cm_dummy():
+    """Test that DUMMY element has all zero CM parameters."""
+    params = CM_parameters["DUMMY"]
+    assert_equal(params.a, np.zeros(4))
+    assert_equal(params.b, np.zeros(4))
+    assert params.c == 0.0
+
+
 def test_elements():
     """Test that the elements in CM_parameters match the known elements."""
     assert set(elements) == set(CM_parameters.keys())
