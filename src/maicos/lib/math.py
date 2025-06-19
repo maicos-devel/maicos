@@ -615,7 +615,7 @@ def symmetrize(
     return out
 
 
-def compute_form_factor(q: float, atom_type: str) -> float:
+def compute_form_factor(q: float, element: str) -> float:
     r"""Calculate the form factor :math:`f(q)`.
 
     :math:`f(q)` is expressed in terms of the scattering vector as
@@ -625,32 +625,34 @@ def compute_form_factor(q: float, atom_type: str) -> float:
 
     The coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and :math:`c` are also
     known as Cromer-Mann X-ray scattering factors and are documented in
-    :footcite:t:`princeInternationalTablesCrystallography2004` and taken from
-    https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php.
-    and stored stored in :obj:`maicos.lib.tables.CM_parameters`.
+    :footcite:t:`princeInternationalTablesCrystallography2004` and taken from the `TU
+    Graz
+    <https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php>`_.
+    and stored in :obj:`maicos.lib.tables.CM_parameters`.
 
     Parameters
     ----------
     q : float
         The magnitude of the scattering vector in reciprocal angstroms (1/Å).
-    atom_type : str
-        The type of the atom for which the form factor is calculated. The ``atom_type``
-        is attempted to be converted into an element using
-        :obj:`maicos.lib.tables.atomtypes`. If no suitable element is found, it is taken
-        as is.
+    element : str
+        The element for which the form factor is calculated. Known elements are listed
+        in the :attr:`maicos.lib.tables.elements` set. United-atom models such as
+        ``"CH1"``, ``"CH2"``, ``"CH3"``, ``"CH4"``, ``"NH1"``, ``"NH2"``, and ``"NH3"``
+        are also supported.
+
+        .. note::
+
+            ``element`` is converted to title case to avoid most common issues with
+            MDAnalysis which uses upper case elements by default. For example ``"MG"``
+            will be converted to ``"Mg"``.
 
     Returns
     -------
     float
-        The calculated form factor for the specified atom type and q in units of
+        The calculated form factor for the specified element and q in units of
         electrons.
 
     """
-    if atom_type in tables.atomtypes:
-        element = tables.atomtypes[atom_type]
-    else:
-        element = atom_type
-
     if element == "CH1":
         form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
     elif element == "CH2":
@@ -666,6 +668,12 @@ def compute_form_factor(q: float, atom_type: str) -> float:
     elif element == "NH3":
         form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
     else:
+        if element.title() not in tables.CM_parameters:
+            raise ValueError(
+                f"Element '{element}' not found in Cromer-Mann parameters. Known "
+                "elements are listed in the `maicos.lib.tables.elements` set."
+            )
+        element = element.title()
         form_factor = tables.CM_parameters[element].c
         # q / (4 * pi) = sin(theta) / lambda
         q2 = (q / (4 * np.pi)) ** 2
