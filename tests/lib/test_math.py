@@ -597,6 +597,8 @@ def test_form_factor():
     ("atom_type", "n_electrons"),
     [
         ("C", 6),
+        ("Cval", 6),
+        ("CVAL", 6),  # upper case elements should also work
         ("O", 8),
         ("CH1", 7),
         ("CH2", 8),
@@ -612,19 +614,6 @@ def test_form_factor_zero(atom_type, n_electrons):
         actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
         desired=n_electrons,
         rtol=1e-3,
-    )
-
-
-def test_form_factor_unknown_type():
-    """Test that an unknown atom_type works well.
-
-    Cval is unknown by our atom_types dictionary and will be used as is for the form
-    factor. It is known in the sfactor table because it is a carbon atom.
-    """
-    assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(0.0, "Cval"),
-        desired=6,
-        rtol=1e-2,
     )
 
 

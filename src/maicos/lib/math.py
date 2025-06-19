@@ -625,6 +625,12 @@ def compute_form_factor(q: float, element: str) -> float:
         ``"CH1"``, ``"CH2"``, ``"CH3"``, ``"CH4"``, ``"NH1"``, ``"NH2"``, and ``"NH3"``
         are also supported.
 
+        .. note::
+
+            ``element`` is converted to title case to avoid most common issues with
+            MDAnalysis which uses upper case elements by default. For example ``"MG"``
+            will be converted to ``"Mg"``.
+
     Returns
     -------
     float
@@ -647,11 +653,12 @@ def compute_form_factor(q: float, element: str) -> float:
     elif element == "NH3":
         form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
     else:
-        if element not in tables.CM_parameters:
+        if element.title() not in tables.CM_parameters:
             raise ValueError(
                 f"Element '{element}' not found in Cromer-Mann parameters. Known "
                 "elements are listed in the `maicos.lib.tables.elements` set."
             )
+        element = element.title()
         form_factor = tables.CM_parameters[element].c
         # q / (4 * pi) = sin(theta) / lambda
         q2 = (q / (4 * np.pi)) ** 2

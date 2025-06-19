@@ -27,7 +27,7 @@ def test_cm_parameters():
 
 def test_cm_dummy():
     """Test that DUMMY element has all zero CM parameters."""
-    params = CM_parameters["DUMMY"]
+    params = CM_parameters["Dummy"]
     assert_equal(params.a, np.zeros(4))
     assert_equal(params.b, np.zeros(4))
     assert params.c == 0.0
