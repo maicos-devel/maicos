@@ -528,11 +528,11 @@ def symmetrize(
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
     inplace : bool
         Do symmetrizations inplace. If :obj:`False` a new array is returned.
-    parity : str
-        The parity to use for symmetrization. Can be either "even" or "odd".
-        "even" parity means that the output array will be symmetric with respect to the
-        specified axis, while "odd" parity means that the output array will be
-        antisymmetric.
+    is_odd : bool
+        The parity to use for symmetrization. If :obj:`False` (default), the
+        symmetrization is done with "even" parity, meaning that the output array will be
+        symmetric with respect to the specified axis. If :obj:`True`, the symmetrization
+        is done with "odd" parity, meaning that the output array will be antisymmetric.
 
     Returns
     -------
