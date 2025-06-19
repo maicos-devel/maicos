@@ -27,7 +27,7 @@ import scipy
 from MDAnalysis.analysis.dielectric import DielectricConstant
 
 import maicos
-from maicos.lib.math import compute_rdf_structure_factor
+from maicos.lib.math import rdf_structure_factor
 
 # %%
 # Our example system is :math:`N=512` rigid SPC/E water molecules simulated in an NVT
@@ -276,13 +276,13 @@ diporder_structure_factors.run()
 #     \rho \int_0^\infty \mathrm{d}r r \frac{\sin(qr)}{q} g_{\hat \mu\hat \mu}(r)\,,
 #
 # which can be obtained by the function
-# :func:`maicos.lib.math.compute_rdf_structure_factor`. We have assumed an isotropic
+# :func:`maicos.lib.math.rdf_structure_factor`. We have assumed an isotropic
 # system so that :math:`S(\boldsymbol q) = S(q)`. Note that we added a one to the dipole
 # pair correlation function due to the implementation of the Fourier transformation
-# inside :func:`maicos.lib.math.compute_rdf_structure_factor`.
+# inside :func:`maicos.lib.math.rdf_structure_factor`.
 
 
-q_rdf, struct_fac_rdf = compute_rdf_structure_factor(
+q_rdf, struct_fac_rdf = rdf_structure_factor(
     rdf=1 + rdf_diporder.results.rdf, r=rdf_diporder.results.bins, density=density
 )
 
