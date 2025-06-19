@@ -597,6 +597,8 @@ def test_form_factor():
     ("atom_type", "n_electrons"),
     [
         ("C", 6),
+        ("Cval", 6),
+        ("CVAL", 6),  # upper case elements should also work
         ("O", 8),
         ("CH1", 7),
         ("CH2", 8),
@@ -615,14 +617,11 @@ def test_form_factor_zero(atom_type, n_electrons):
     )
 
 
-def test_form_factor_unknown_type():
-    """Test that an unknown atom_type works well.
-
-    Cval is unknown by our atom_types dictionary and will be used as is for the form
-    factor. It is known in the sfactor table because it is a carbon atom.
-    """
-    assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(0.0, "Cval"),
-        desired=6,
-        rtol=1e-2,
+def test_form_factor_unknown_element():
+    """Test that an unknown elements raise an error."""
+    match = (
+        "Element 'foo' not found in Cromer-Mann parameters. Known elements are listed "
+        "in the `maicos.lib.tables.elements` set."
     )
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.compute_form_factor(0.0, "foo")

@@ -39,13 +39,19 @@ class TestSaxs(ReferenceAtomGroups):
     @pytest.fixture
     def ag_single_frame(self):
         """Import MDA universe."""
-        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
+        u = mda.Universe(WATER_GRO_NPT)
+        u.guess_TopologyAttrs(to_guess=["elements"])
+        u.atoms.elements = np.array([el.title() for el in u.atoms.elements])
+
         return u.atoms
 
     @pytest.fixture
     def ag(self):
         """Import MDA universe."""
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
+        u.guess_TopologyAttrs(to_guess=["elements"])
+        u.atoms.elements = np.array([el.title() for el in u.atoms.elements])
+
         return u.atoms
 
     def test_one_frame(sef, ag_single_frame, monkeypatch, tmp_path):
@@ -69,12 +75,16 @@ class TestSaxs(ReferenceAtomGroups):
         with pytest.raises(ValueError, match=r"thetamin \(-10°\) has to between 0"):
             Saxs(ag_single_frame, thetamin=-10, thetamax=190).run()
 
-    def test_unknown_atomtypes(self, ag_single_frame):
-        """Test that an error is raised if an atomtype is unknown."""
-        TYPES_DICT = {"OW": "foo", "H": "H"}
-        ag_single_frame.types = np.array([TYPES_DICT[t] for t in ag_single_frame.types])
+    def test_unknown_element(self, ag_single_frame):
+        """Test that an error is raised if an element is unknown."""
+        d = {"O": "foo", "H": "H"}
+        ag_single_frame.elements = np.array([d[t] for t in ag_single_frame.elements])
 
-        with pytest.raises(KeyError, match="No suitable element for 'foo' found."):
+        match = (
+            "Element 'foo' not found in Cromer-Mann parameters. Known elements are "
+            "listed in the `maicos.lib.tables.elements` set."
+        )
+        with pytest.raises(ValueError, match=match):
             Saxs(ag_single_frame).run()
 
     def test_not_binned_spectrum(self, ag_single_frame, monkeypatch, tmp_path):

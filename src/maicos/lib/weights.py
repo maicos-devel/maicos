@@ -62,7 +62,7 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
     elif dens == "electron":
         # Cromer-Mann parameters for q=0 is the number of electrons
         electrons = np.array(
-            [compute_form_factor(q=0, atom_type=el) for el in atomgroup.elements],
+            [compute_form_factor(q=0, element=el) for el in atomgroup.elements],
             dtype=np.float64,
         )
         if grouping == "atoms":

@@ -13,7 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
-- Add electron density weights for density modules (#492)
+- Base Cromer-Mann form factor on ``atomgroup.elements`` (#492)
+- Add electron density weights for density modules (#493)
 - Use gallery view for examples (#491)
 - Create logic for stable and latest documentation versions (#489)
 - Cleanup logos (#487)
