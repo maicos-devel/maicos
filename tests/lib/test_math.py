@@ -268,10 +268,12 @@ def test_symmetrize_odd():
     A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float))
     assert np.all(A_sym == 5)
 
+
 def test_symmetrize_parity_even():
     """Tests symmetrization for even parity."""
     A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float), parity="even")
     assert np.all(A_sym == 5)
+
 
 def test_symmetrize_parity_odd():
     """Tests symmetrization for odd parity."""
@@ -279,6 +281,7 @@ def test_symmetrize_parity_odd():
     A_result = np.arange(10).astype(float) - 4.5
     A_sym = maicos.lib.math.symmetrize(A, parity="odd")
     assert np.all(A_sym == A_result)
+
 
 def test_symmetrize_parity_odd_antisymmetric():
     """Tests symmetrization for odd parity.
@@ -288,6 +291,7 @@ def test_symmetrize_parity_odd_antisymmetric():
     A = np.arange(11).astype(float) - 5
     A_sym = maicos.lib.math.symmetrize(A, parity="odd")
     assert np.all(A_sym == A)
+
 
 def test_higher_dimensions_length_1():
     """Tests arrays with higher dimensions of length 1."""

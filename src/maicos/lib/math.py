@@ -507,7 +507,10 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 
 
 def symmetrize(
-    m: np.ndarray, axis: None | int | tuple[int] = None, inplace: bool = False, parity: str = "even"
+    m: np.ndarray,
+    axis: None | int | tuple[int] = None,
+    inplace: bool = False,
+    parity: str = "even",
 ) -> np.ndarray:
     """Symmeterize an array.
 
