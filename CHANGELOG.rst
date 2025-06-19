@@ -13,6 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Introduce `sym_parity` option to `ProfilePlanarBase` to support vectorial
+  observables (#495)
 - Use gallery view for examples (#491)
 - Create logic for stable and latest documentation versions (#489)
 - Cleanup logos (#487)
