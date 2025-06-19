@@ -635,7 +635,7 @@ def test_form_factor_zero(atom_type, n_electrons):
     assert_allclose(
         actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
         desired=n_electrons,
-        rtol=1e-2,
+        rtol=1e-3,
     )
 
 
