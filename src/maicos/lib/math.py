@@ -260,7 +260,7 @@ def correlation_time(
     ----------
     timeseries : numpy.ndarray
         The time series used to calculate the correlation time from.
-    method : {"sokal", "chodera"}
+    method : {``"sokal"``, ``"chodera"``}
         Method to choose summation cutoff :math:`N_\mathrm{cut}`.
     mintime: int
         Minimum possible value for :math:`N_\mathrm{cut}`.

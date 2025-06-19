@@ -34,8 +34,11 @@ class VelocityPlanar(ProfilePlanarBase):
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    sym_parity : {``"even"``, ``"odd"``}
+        Symmetry parity of the profile. If ``even``, the profile is symmetrized. If
+        ``odd``, the profile is antisymmetrized.
     ${VDIM_PARAMETER}
-    $FLUX_PARAMETER}
+    ${FLUX_PARAMETER}
 
     Attributes
     ----------
