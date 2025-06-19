@@ -555,11 +555,11 @@ def symmetrize(
     >>> A
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
-    Antisymmetrization can be achieved by setting ``parity="odd"``.
+    Antisymmetrization can be achieved by setting ``is_odd=True``.
     >>> A = np.arange(10).astype(float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
-    >>> symmetrize(A, parity="odd")
+    >>> symmetrize(A, is_odd=True)
     array([-4.5, -3.5, -2.5, -1.5, -0.5,  0.5,  1.5,  2.5,  3.5,  4.5])
 
     It also works for arrays with more than 1 dimensions in a general dimension.
