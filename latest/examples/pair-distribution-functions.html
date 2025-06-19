@@ -1,0 +1,1086 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Dielectric profile calculation" href="dielectric-profiles.html" /><link rel="prev" title="Ideal component of the chemical potential" href="chemical-potential.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Pair distribution functions - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../get-started/index.html">Getting started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/units.html">Some conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/changelog.html">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">How-to guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipole-correlations.html">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analysis-modules/index.html">Analysis modules</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfplanar.html">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-pair-distribution-functions-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="pair-distribution-functions">
+<span id="howto-pair-distribution-functions"></span><span id="sphx-glr-examples-pair-distribution-functions-py"></span><h1>Pair distribution functions<a class="headerlink" href="#pair-distribution-functions" title="Link to this heading">¶</a></h1>
+<section id="basic-usage">
+<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h2>
+<p>In the following example, we will show how to calculate the two-dimensional planar
+pair distribution functions.</p>
+<p>In the following, we will give an example of a trajectory of water confined by graphene
+sheets simulated via GROMACS. We assume that the GROMACS topology is given by
+<cite>graphene_water.tpr</cite> and the trajectory is given by <cite>graphene_water.xtc</cite>. Both can be
+downloaded under <a class="reference download internal" download="" href="../_downloads/fb8c33638c3504a79d9cff8b876d0bd7/graphene_water.tpr"><code class="xref download docutils literal notranslate"><span class="pre">topology</span></code></a> and
+<a class="reference download internal" download="" href="../_downloads/569e384867236805bac039b04ff06e16/graphene_water.xtc"><code class="xref download docutils literal notranslate"><span class="pre">trajectory</span></code></a>, respectively.</p>
+<p>From these files you can create a MDAnalysis universe object.</p>
+<p>We begin by importing the necessary modules.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">MDAnalysis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mda</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">maicos</span>
+</pre></div>
+</div>
+<p>Next, we proceed with the creation of a MDAnalysis universe object, from
+which we further select the water molecules using the <cite>resname</cite> selector.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class"><span class="n">mda</span><span class="o">.</span><span class="n">Universe</span></a><span class="p">(</span><span class="s2">&quot;./graphene_water.tpr&quot;</span><span class="p">,</span> <span class="s2">&quot;graphene_water.xtc&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This universe object can then be passed to <a class="reference internal" href="../analysis-modules/pdfplanar.html#maicos.PDFPlanar" title="maicos.modules.pdfplanar.PDFPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.modules.pdfplanar.PDFPlanar</span></code></a>
+analysis object.
+It expects you to pass the atom groups you want to perform the analysis for.
+In our example, we have graphene walls and SPC/E water confined between them,
+where we are interested in the dielectric behavior of the fluid.
+Thus, we will first select the water as an MDAnalysis atom group using
+<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup.select_atoms" title="(in MDAnalysis v2.9.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">MDAnalysis.core.groups.AtomGroup.select_atoms()</span></code></a>. In this case we select
+the water by filtering for the residue named <code class="docutils literal notranslate"><span class="pre">SOL</span></code>.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;resname SOL&quot;</span><span class="p">)</span>
+
+<span class="n">ana_obj</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">PDFPlanar</span></a><span class="p">(</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a><span class="p">,</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a><span class="p">,</span>
+    <span class="n">dzheight</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">pdf_bin_width</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">refgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a><span class="p">,</span>
+    <span class="n">zmin</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">zmax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we can run the analysis over the trajectory.
+To this end we call the member function
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">run</span></code>.
+We may set the <code class="docutils literal notranslate"><span class="pre">verbose</span></code> keyword to <code class="docutils literal notranslate"><span class="pre">True</span></code> to get additional information
+such a a progress bar.</p>
+<p>Here you also have the chance to set <code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">stop</span></code> keywords to
+specify which frames the analysis should start at and where to end.
+One can also specify a <code class="docutils literal notranslate"><span class="pre">step</span></code> keyword to only analyze every <code class="docutils literal notranslate"><span class="pre">step</span></code>
+frames.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">ana_obj</span><span class="o">.</span><span class="n">run</span></a><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/2001 [00:00&lt;?, ?it/s]
+  0%|          | 3/2001 [00:00&lt;01:18, 25.51it/s]
+  0%|          | 7/2001 [00:00&lt;01:06, 30.17it/s]
+  1%|          | 11/2001 [00:00&lt;01:03, 31.45it/s]
+  1%|          | 15/2001 [00:00&lt;01:01, 32.11it/s]
+  1%|          | 19/2001 [00:00&lt;01:01, 32.46it/s]
+  1%|          | 23/2001 [00:00&lt;01:00, 32.67it/s]
+  1%|▏         | 27/2001 [00:00&lt;01:00, 32.74it/s]
+  2%|▏         | 31/2001 [00:00&lt;01:00, 32.79it/s]
+  2%|▏         | 35/2001 [00:01&lt;01:00, 32.76it/s]
+  2%|▏         | 39/2001 [00:01&lt;00:59, 32.70it/s]
+  2%|▏         | 43/2001 [00:01&lt;00:59, 32.68it/s]
+  2%|▏         | 47/2001 [00:01&lt;00:59, 32.83it/s]
+  3%|▎         | 51/2001 [00:01&lt;00:59, 32.65it/s]
+  3%|▎         | 55/2001 [00:01&lt;00:59, 32.63it/s]
+  3%|▎         | 59/2001 [00:01&lt;00:59, 32.68it/s]
+  3%|▎         | 63/2001 [00:01&lt;00:59, 32.66it/s]
+  3%|▎         | 67/2001 [00:02&lt;01:01, 31.67it/s]
+  4%|▎         | 71/2001 [00:02&lt;01:00, 32.01it/s]
+  4%|▎         | 75/2001 [00:02&lt;00:59, 32.22it/s]
+  4%|▍         | 79/2001 [00:02&lt;00:59, 32.38it/s]
+  4%|▍         | 83/2001 [00:02&lt;00:59, 32.47it/s]
+  4%|▍         | 87/2001 [00:02&lt;00:58, 32.57it/s]
+  5%|▍         | 91/2001 [00:02&lt;00:58, 32.78it/s]
+  5%|▍         | 95/2001 [00:02&lt;00:58, 32.76it/s]
+  5%|▍         | 99/2001 [00:03&lt;00:57, 32.81it/s]
+  5%|▌         | 103/2001 [00:03&lt;00:57, 32.88it/s]
+  5%|▌         | 107/2001 [00:03&lt;00:57, 32.92it/s]
+  6%|▌         | 111/2001 [00:03&lt;00:57, 32.92it/s]
+  6%|▌         | 115/2001 [00:03&lt;00:57, 32.90it/s]
+  6%|▌         | 119/2001 [00:03&lt;00:57, 32.99it/s]
+  6%|▌         | 123/2001 [00:03&lt;00:56, 33.01it/s]
+  6%|▋         | 127/2001 [00:03&lt;00:56, 33.03it/s]
+  7%|▋         | 131/2001 [00:04&lt;00:56, 33.02it/s]
+  7%|▋         | 135/2001 [00:04&lt;00:56, 33.08it/s]
+  7%|▋         | 139/2001 [00:04&lt;00:56, 33.13it/s]
+  7%|▋         | 143/2001 [00:04&lt;00:56, 33.09it/s]
+  7%|▋         | 147/2001 [00:04&lt;00:56, 32.96it/s]
+  8%|▊         | 151/2001 [00:04&lt;00:56, 32.94it/s]
+  8%|▊         | 155/2001 [00:04&lt;00:55, 32.98it/s]
+  8%|▊         | 159/2001 [00:04&lt;00:55, 33.09it/s]
+  8%|▊         | 163/2001 [00:04&lt;00:55, 33.13it/s]
+  8%|▊         | 167/2001 [00:05&lt;00:55, 33.19it/s]
+  9%|▊         | 171/2001 [00:05&lt;00:55, 33.07it/s]
+  9%|▊         | 175/2001 [00:05&lt;00:55, 33.09it/s]
+  9%|▉         | 179/2001 [00:05&lt;00:55, 33.08it/s]
+  9%|▉         | 183/2001 [00:05&lt;00:55, 32.99it/s]
+  9%|▉         | 187/2001 [00:05&lt;00:54, 33.09it/s]
+ 10%|▉         | 191/2001 [00:05&lt;00:54, 33.02it/s]
+ 10%|▉         | 195/2001 [00:05&lt;00:54, 33.04it/s]
+ 10%|▉         | 199/2001 [00:06&lt;00:54, 33.06it/s]
+ 10%|█         | 203/2001 [00:06&lt;00:54, 33.04it/s]
+ 10%|█         | 207/2001 [00:06&lt;00:54, 32.89it/s]
+ 11%|█         | 211/2001 [00:06&lt;00:54, 32.73it/s]
+ 11%|█         | 215/2001 [00:06&lt;00:54, 32.68it/s]
+ 11%|█         | 219/2001 [00:06&lt;00:54, 32.63it/s]
+ 11%|█         | 223/2001 [00:06&lt;00:54, 32.73it/s]
+ 11%|█▏        | 227/2001 [00:06&lt;00:53, 32.86it/s]
+ 12%|█▏        | 231/2001 [00:07&lt;00:54, 32.76it/s]
+ 12%|█▏        | 235/2001 [00:07&lt;00:53, 32.78it/s]
+ 12%|█▏        | 239/2001 [00:07&lt;00:53, 32.71it/s]
+ 12%|█▏        | 243/2001 [00:07&lt;00:53, 32.69it/s]
+ 12%|█▏        | 247/2001 [00:07&lt;00:53, 32.74it/s]
+ 13%|█▎        | 251/2001 [00:07&lt;00:53, 32.80it/s]
+ 13%|█▎        | 255/2001 [00:07&lt;00:52, 32.95it/s]
+ 13%|█▎        | 259/2001 [00:07&lt;00:52, 32.97it/s]
+ 13%|█▎        | 263/2001 [00:08&lt;00:53, 32.73it/s]
+ 13%|█▎        | 267/2001 [00:08&lt;00:53, 32.72it/s]
+ 14%|█▎        | 271/2001 [00:08&lt;00:53, 32.50it/s]
+ 14%|█▎        | 275/2001 [00:08&lt;00:53, 32.52it/s]
+ 14%|█▍        | 279/2001 [00:08&lt;00:52, 32.59it/s]
+ 14%|█▍        | 283/2001 [00:08&lt;00:52, 32.64it/s]
+ 14%|█▍        | 287/2001 [00:08&lt;00:52, 32.59it/s]
+ 15%|█▍        | 291/2001 [00:08&lt;00:52, 32.52it/s]
+ 15%|█▍        | 295/2001 [00:09&lt;00:52, 32.57it/s]
+ 15%|█▍        | 299/2001 [00:09&lt;00:52, 32.61it/s]
+ 15%|█▌        | 303/2001 [00:09&lt;00:51, 32.71it/s]
+ 15%|█▌        | 307/2001 [00:09&lt;00:51, 32.83it/s]
+ 16%|█▌        | 311/2001 [00:09&lt;00:51, 32.91it/s]
+ 16%|█▌        | 315/2001 [00:09&lt;00:51, 32.98it/s]
+ 16%|█▌        | 319/2001 [00:09&lt;00:50, 33.03it/s]
+ 16%|█▌        | 323/2001 [00:09&lt;00:50, 33.19it/s]
+ 16%|█▋        | 327/2001 [00:09&lt;00:50, 33.06it/s]
+ 17%|█▋        | 331/2001 [00:10&lt;00:50, 32.90it/s]
+ 17%|█▋        | 335/2001 [00:10&lt;00:50, 32.95it/s]
+ 17%|█▋        | 339/2001 [00:10&lt;00:50, 32.87it/s]
+ 17%|█▋        | 343/2001 [00:10&lt;00:50, 32.98it/s]
+ 17%|█▋        | 347/2001 [00:10&lt;00:50, 33.02it/s]
+ 18%|█▊        | 351/2001 [00:10&lt;00:49, 33.07it/s]
+ 18%|█▊        | 355/2001 [00:10&lt;00:49, 33.12it/s]
+ 18%|█▊        | 359/2001 [00:10&lt;00:49, 33.28it/s]
+ 18%|█▊        | 363/2001 [00:11&lt;00:49, 33.31it/s]
+ 18%|█▊        | 367/2001 [00:11&lt;00:49, 33.22it/s]
+ 19%|█▊        | 371/2001 [00:11&lt;00:49, 33.20it/s]
+ 19%|█▊        | 375/2001 [00:11&lt;00:49, 33.14it/s]
+ 19%|█▉        | 379/2001 [00:11&lt;00:48, 33.16it/s]
+ 19%|█▉        | 383/2001 [00:11&lt;00:48, 33.12it/s]
+ 19%|█▉        | 387/2001 [00:11&lt;00:48, 33.08it/s]
+ 20%|█▉        | 391/2001 [00:11&lt;00:48, 33.12it/s]
+ 20%|█▉        | 395/2001 [00:12&lt;00:48, 33.18it/s]
+ 20%|█▉        | 399/2001 [00:12&lt;00:48, 33.09it/s]
+ 20%|██        | 403/2001 [00:12&lt;00:48, 33.05it/s]
+ 20%|██        | 407/2001 [00:12&lt;00:48, 33.06it/s]
+ 21%|██        | 411/2001 [00:12&lt;00:48, 33.07it/s]
+ 21%|██        | 415/2001 [00:12&lt;00:47, 33.15it/s]
+ 21%|██        | 419/2001 [00:12&lt;00:47, 33.13it/s]
+ 21%|██        | 423/2001 [00:12&lt;00:47, 33.09it/s]
+ 21%|██▏       | 427/2001 [00:13&lt;00:47, 32.90it/s]
+ 22%|██▏       | 431/2001 [00:13&lt;00:47, 32.81it/s]
+ 22%|██▏       | 435/2001 [00:13&lt;00:47, 32.75it/s]
+ 22%|██▏       | 439/2001 [00:13&lt;00:47, 32.62it/s]
+ 22%|██▏       | 443/2001 [00:13&lt;00:47, 32.67it/s]
+ 22%|██▏       | 447/2001 [00:13&lt;00:47, 32.65it/s]
+ 23%|██▎       | 451/2001 [00:13&lt;00:47, 32.60it/s]
+ 23%|██▎       | 455/2001 [00:13&lt;00:47, 32.75it/s]
+ 23%|██▎       | 459/2001 [00:13&lt;00:47, 32.77it/s]
+ 23%|██▎       | 463/2001 [00:14&lt;00:46, 32.97it/s]
+ 23%|██▎       | 467/2001 [00:14&lt;00:46, 33.03it/s]
+ 24%|██▎       | 471/2001 [00:14&lt;00:46, 32.94it/s]
+ 24%|██▎       | 475/2001 [00:14&lt;00:46, 32.75it/s]
+ 24%|██▍       | 479/2001 [00:14&lt;00:46, 32.72it/s]
+ 24%|██▍       | 483/2001 [00:14&lt;00:46, 32.82it/s]
+ 24%|██▍       | 487/2001 [00:14&lt;00:46, 32.74it/s]
+ 25%|██▍       | 491/2001 [00:14&lt;00:46, 32.76it/s]
+ 25%|██▍       | 495/2001 [00:15&lt;00:45, 32.84it/s]
+ 25%|██▍       | 499/2001 [00:15&lt;00:45, 32.99it/s]
+ 25%|██▌       | 503/2001 [00:15&lt;00:45, 32.83it/s]
+ 25%|██▌       | 507/2001 [00:15&lt;00:45, 32.82it/s]
+ 26%|██▌       | 511/2001 [00:15&lt;00:45, 32.90it/s]
+ 26%|██▌       | 515/2001 [00:15&lt;00:44, 33.04it/s]
+ 26%|██▌       | 519/2001 [00:15&lt;00:44, 33.06it/s]
+ 26%|██▌       | 523/2001 [00:15&lt;00:44, 33.16it/s]
+ 26%|██▋       | 527/2001 [00:16&lt;00:44, 33.12it/s]
+ 27%|██▋       | 531/2001 [00:16&lt;00:44, 33.22it/s]
+ 27%|██▋       | 535/2001 [00:16&lt;00:44, 33.06it/s]
+ 27%|██▋       | 539/2001 [00:16&lt;00:44, 33.17it/s]
+ 27%|██▋       | 543/2001 [00:16&lt;00:43, 33.24it/s]
+ 27%|██▋       | 547/2001 [00:16&lt;00:43, 33.30it/s]
+ 28%|██▊       | 551/2001 [00:16&lt;00:43, 33.31it/s]
+ 28%|██▊       | 555/2001 [00:16&lt;00:43, 33.26it/s]
+ 28%|██▊       | 559/2001 [00:17&lt;00:43, 33.31it/s]
+ 28%|██▊       | 563/2001 [00:17&lt;00:43, 33.37it/s]
+ 28%|██▊       | 567/2001 [00:17&lt;00:42, 33.38it/s]
+ 29%|██▊       | 571/2001 [00:17&lt;00:42, 33.41it/s]
+ 29%|██▊       | 575/2001 [00:17&lt;00:42, 33.25it/s]
+ 29%|██▉       | 579/2001 [00:17&lt;00:42, 33.18it/s]
+ 29%|██▉       | 583/2001 [00:17&lt;00:42, 33.16it/s]
+ 29%|██▉       | 587/2001 [00:17&lt;00:42, 33.09it/s]
+ 30%|██▉       | 591/2001 [00:17&lt;00:42, 33.14it/s]
+ 30%|██▉       | 595/2001 [00:18&lt;00:42, 33.30it/s]
+ 30%|██▉       | 599/2001 [00:18&lt;00:42, 33.26it/s]
+ 30%|███       | 603/2001 [00:18&lt;00:42, 33.25it/s]
+ 30%|███       | 607/2001 [00:18&lt;00:42, 33.02it/s]
+ 31%|███       | 611/2001 [00:18&lt;00:42, 33.05it/s]
+ 31%|███       | 615/2001 [00:18&lt;00:41, 33.09it/s]
+ 31%|███       | 619/2001 [00:18&lt;00:42, 32.90it/s]
+ 31%|███       | 623/2001 [00:18&lt;00:42, 32.74it/s]
+ 31%|███▏      | 627/2001 [00:19&lt;00:41, 32.81it/s]
+ 32%|███▏      | 631/2001 [00:19&lt;00:41, 32.79it/s]
+ 32%|███▏      | 635/2001 [00:19&lt;00:41, 32.93it/s]
+ 32%|███▏      | 639/2001 [00:19&lt;00:41, 32.92it/s]
+ 32%|███▏      | 643/2001 [00:19&lt;00:41, 32.97it/s]
+ 32%|███▏      | 647/2001 [00:19&lt;00:40, 33.07it/s]
+ 33%|███▎      | 651/2001 [00:19&lt;00:40, 33.05it/s]
+ 33%|███▎      | 655/2001 [00:19&lt;00:40, 33.08it/s]
+ 33%|███▎      | 659/2001 [00:20&lt;00:40, 33.14it/s]
+ 33%|███▎      | 663/2001 [00:20&lt;00:40, 33.06it/s]
+ 33%|███▎      | 667/2001 [00:20&lt;00:40, 32.95it/s]
+ 34%|███▎      | 671/2001 [00:20&lt;00:40, 32.98it/s]
+ 34%|███▎      | 675/2001 [00:20&lt;00:41, 31.83it/s]
+ 34%|███▍      | 679/2001 [00:20&lt;00:41, 31.50it/s]
+ 34%|███▍      | 683/2001 [00:20&lt;00:41, 31.75it/s]
+ 34%|███▍      | 687/2001 [00:20&lt;00:40, 32.21it/s]
+ 35%|███▍      | 691/2001 [00:21&lt;00:40, 32.59it/s]
+ 35%|███▍      | 695/2001 [00:21&lt;00:39, 32.75it/s]
+ 35%|███▍      | 699/2001 [00:21&lt;00:39, 32.72it/s]
+ 35%|███▌      | 703/2001 [00:21&lt;00:39, 32.69it/s]
+ 35%|███▌      | 707/2001 [00:21&lt;00:39, 32.85it/s]
+ 36%|███▌      | 711/2001 [00:21&lt;00:39, 32.90it/s]
+ 36%|███▌      | 715/2001 [00:21&lt;00:38, 33.02it/s]
+ 36%|███▌      | 719/2001 [00:21&lt;00:38, 33.00it/s]
+ 36%|███▌      | 723/2001 [00:22&lt;00:38, 33.02it/s]
+ 36%|███▋      | 727/2001 [00:22&lt;00:38, 33.07it/s]
+ 37%|███▋      | 731/2001 [00:22&lt;00:38, 33.04it/s]
+ 37%|███▋      | 735/2001 [00:22&lt;00:38, 33.12it/s]
+ 37%|███▋      | 739/2001 [00:22&lt;00:38, 33.09it/s]
+ 37%|███▋      | 743/2001 [00:22&lt;00:37, 33.13it/s]
+ 37%|███▋      | 747/2001 [00:22&lt;00:37, 33.02it/s]
+ 38%|███▊      | 751/2001 [00:22&lt;00:37, 33.06it/s]
+ 38%|███▊      | 755/2001 [00:22&lt;00:37, 33.04it/s]
+ 38%|███▊      | 759/2001 [00:23&lt;00:37, 33.08it/s]
+ 38%|███▊      | 763/2001 [00:23&lt;00:37, 33.00it/s]
+ 38%|███▊      | 767/2001 [00:23&lt;00:37, 33.02it/s]
+ 39%|███▊      | 771/2001 [00:23&lt;00:37, 33.17it/s]
+ 39%|███▊      | 775/2001 [00:23&lt;00:37, 33.07it/s]
+ 39%|███▉      | 779/2001 [00:23&lt;00:36, 33.05it/s]
+ 39%|███▉      | 783/2001 [00:23&lt;00:36, 33.25it/s]
+ 39%|███▉      | 787/2001 [00:23&lt;00:36, 33.25it/s]
+ 40%|███▉      | 791/2001 [00:24&lt;00:36, 33.30it/s]
+ 40%|███▉      | 795/2001 [00:24&lt;00:36, 33.31it/s]
+ 40%|███▉      | 799/2001 [00:24&lt;00:36, 33.35it/s]
+ 40%|████      | 803/2001 [00:24&lt;00:36, 33.11it/s]
+ 40%|████      | 807/2001 [00:24&lt;00:36, 32.93it/s]
+ 41%|████      | 811/2001 [00:24&lt;00:36, 33.04it/s]
+ 41%|████      | 815/2001 [00:24&lt;00:35, 33.23it/s]
+ 41%|████      | 819/2001 [00:24&lt;00:35, 33.28it/s]
+ 41%|████      | 823/2001 [00:25&lt;00:35, 33.36it/s]
+ 41%|████▏     | 827/2001 [00:25&lt;00:35, 33.27it/s]
+ 42%|████▏     | 831/2001 [00:25&lt;00:35, 33.11it/s]
+ 42%|████▏     | 835/2001 [00:25&lt;00:35, 33.15it/s]
+ 42%|████▏     | 839/2001 [00:25&lt;00:34, 33.26it/s]
+ 42%|████▏     | 843/2001 [00:25&lt;00:34, 33.32it/s]
+ 42%|████▏     | 847/2001 [00:25&lt;00:34, 33.32it/s]
+ 43%|████▎     | 851/2001 [00:25&lt;00:34, 33.19it/s]
+ 43%|████▎     | 855/2001 [00:25&lt;00:34, 33.26it/s]
+ 43%|████▎     | 859/2001 [00:26&lt;00:34, 33.27it/s]
+ 43%|████▎     | 863/2001 [00:26&lt;00:34, 32.66it/s]
+ 43%|████▎     | 867/2001 [00:26&lt;00:34, 32.75it/s]
+ 44%|████▎     | 871/2001 [00:26&lt;00:34, 32.76it/s]
+ 44%|████▎     | 875/2001 [00:26&lt;00:34, 32.90it/s]
+ 44%|████▍     | 879/2001 [00:26&lt;00:33, 33.01it/s]
+ 44%|████▍     | 883/2001 [00:26&lt;00:33, 33.10it/s]
+ 44%|████▍     | 887/2001 [00:26&lt;00:33, 33.21it/s]
+ 45%|████▍     | 891/2001 [00:27&lt;00:33, 33.23it/s]
+ 45%|████▍     | 895/2001 [00:27&lt;00:33, 33.22it/s]
+ 45%|████▍     | 899/2001 [00:27&lt;00:33, 33.34it/s]
+ 45%|████▌     | 903/2001 [00:27&lt;00:33, 33.26it/s]
+ 45%|████▌     | 907/2001 [00:27&lt;00:32, 33.23it/s]
+ 46%|████▌     | 911/2001 [00:27&lt;00:32, 33.22it/s]
+ 46%|████▌     | 915/2001 [00:27&lt;00:32, 33.22it/s]
+ 46%|████▌     | 919/2001 [00:27&lt;00:32, 33.33it/s]
+ 46%|████▌     | 923/2001 [00:28&lt;00:32, 33.27it/s]
+ 46%|████▋     | 927/2001 [00:28&lt;00:32, 33.12it/s]
+ 47%|████▋     | 931/2001 [00:28&lt;00:32, 33.06it/s]
+ 47%|████▋     | 935/2001 [00:28&lt;00:32, 32.95it/s]
+ 47%|████▋     | 939/2001 [00:28&lt;00:32, 33.07it/s]
+ 47%|████▋     | 943/2001 [00:28&lt;00:31, 33.21it/s]
+ 47%|████▋     | 947/2001 [00:28&lt;00:31, 33.24it/s]
+ 48%|████▊     | 951/2001 [00:28&lt;00:31, 33.26it/s]
+ 48%|████▊     | 955/2001 [00:28&lt;00:31, 33.20it/s]
+ 48%|████▊     | 959/2001 [00:29&lt;00:31, 33.20it/s]
+ 48%|████▊     | 963/2001 [00:29&lt;00:31, 33.19it/s]
+ 48%|████▊     | 967/2001 [00:29&lt;00:31, 33.13it/s]
+ 49%|████▊     | 971/2001 [00:29&lt;00:31, 33.09it/s]
+ 49%|████▊     | 975/2001 [00:29&lt;00:31, 33.08it/s]
+ 49%|████▉     | 979/2001 [00:29&lt;00:30, 33.15it/s]
+ 49%|████▉     | 983/2001 [00:29&lt;00:30, 33.22it/s]
+ 49%|████▉     | 987/2001 [00:29&lt;00:30, 33.13it/s]
+ 50%|████▉     | 991/2001 [00:30&lt;00:30, 33.12it/s]
+ 50%|████▉     | 995/2001 [00:30&lt;00:30, 32.93it/s]
+ 50%|████▉     | 999/2001 [00:30&lt;00:30, 33.01it/s]
+ 50%|█████     | 1003/2001 [00:30&lt;00:30, 32.80it/s]
+ 50%|█████     | 1007/2001 [00:30&lt;00:30, 32.65it/s]
+ 51%|█████     | 1011/2001 [00:30&lt;00:30, 32.76it/s]
+ 51%|█████     | 1015/2001 [00:30&lt;00:30, 32.64it/s]
+ 51%|█████     | 1019/2001 [00:30&lt;00:30, 32.63it/s]
+ 51%|█████     | 1023/2001 [00:31&lt;00:30, 32.56it/s]
+ 51%|█████▏    | 1027/2001 [00:31&lt;00:29, 32.65it/s]
+ 52%|█████▏    | 1031/2001 [00:31&lt;00:29, 32.69it/s]
+ 52%|█████▏    | 1035/2001 [00:31&lt;00:29, 32.77it/s]
+ 52%|█████▏    | 1039/2001 [00:31&lt;00:29, 32.90it/s]
+ 52%|█████▏    | 1043/2001 [00:31&lt;00:29, 33.03it/s]
+ 52%|█████▏    | 1047/2001 [00:31&lt;00:28, 33.07it/s]
+ 53%|█████▎    | 1051/2001 [00:31&lt;00:28, 32.93it/s]
+ 53%|█████▎    | 1055/2001 [00:32&lt;00:28, 32.95it/s]
+ 53%|█████▎    | 1059/2001 [00:32&lt;00:28, 33.07it/s]
+ 53%|█████▎    | 1063/2001 [00:32&lt;00:28, 32.89it/s]
+ 53%|█████▎    | 1067/2001 [00:32&lt;00:28, 33.07it/s]
+ 54%|█████▎    | 1071/2001 [00:32&lt;00:28, 33.20it/s]
+ 54%|█████▎    | 1075/2001 [00:32&lt;00:27, 33.28it/s]
+ 54%|█████▍    | 1079/2001 [00:32&lt;00:27, 33.26it/s]
+ 54%|█████▍    | 1083/2001 [00:32&lt;00:27, 33.19it/s]
+ 54%|█████▍    | 1087/2001 [00:33&lt;00:27, 33.11it/s]
+ 55%|█████▍    | 1091/2001 [00:33&lt;00:27, 33.09it/s]
+ 55%|█████▍    | 1095/2001 [00:33&lt;00:27, 32.96it/s]
+ 55%|█████▍    | 1099/2001 [00:33&lt;00:27, 32.92it/s]
+ 55%|█████▌    | 1103/2001 [00:33&lt;00:27, 32.96it/s]
+ 55%|█████▌    | 1107/2001 [00:33&lt;00:27, 32.94it/s]
+ 56%|█████▌    | 1111/2001 [00:33&lt;00:27, 32.88it/s]
+ 56%|█████▌    | 1115/2001 [00:33&lt;00:26, 32.98it/s]
+ 56%|█████▌    | 1119/2001 [00:33&lt;00:26, 33.11it/s]
+ 56%|█████▌    | 1123/2001 [00:34&lt;00:26, 33.22it/s]
+ 56%|█████▋    | 1127/2001 [00:34&lt;00:26, 33.11it/s]
+ 57%|█████▋    | 1131/2001 [00:34&lt;00:26, 33.10it/s]
+ 57%|█████▋    | 1135/2001 [00:34&lt;00:26, 33.16it/s]
+ 57%|█████▋    | 1139/2001 [00:34&lt;00:26, 33.15it/s]
+ 57%|█████▋    | 1143/2001 [00:34&lt;00:25, 33.19it/s]
+ 57%|█████▋    | 1147/2001 [00:34&lt;00:25, 33.12it/s]
+ 58%|█████▊    | 1151/2001 [00:34&lt;00:25, 33.13it/s]
+ 58%|█████▊    | 1155/2001 [00:35&lt;00:25, 33.16it/s]
+ 58%|█████▊    | 1159/2001 [00:35&lt;00:25, 33.22it/s]
+ 58%|█████▊    | 1163/2001 [00:35&lt;00:25, 33.22it/s]
+ 58%|█████▊    | 1167/2001 [00:35&lt;00:25, 33.10it/s]
+ 59%|█████▊    | 1171/2001 [00:35&lt;00:25, 33.12it/s]
+ 59%|█████▊    | 1175/2001 [00:35&lt;00:24, 33.20it/s]
+ 59%|█████▉    | 1179/2001 [00:35&lt;00:24, 33.05it/s]
+ 59%|█████▉    | 1183/2001 [00:35&lt;00:24, 33.03it/s]
+ 59%|█████▉    | 1187/2001 [00:36&lt;00:24, 33.02it/s]
+ 60%|█████▉    | 1191/2001 [00:36&lt;00:24, 32.97it/s]
+ 60%|█████▉    | 1195/2001 [00:36&lt;00:24, 32.88it/s]
+ 60%|█████▉    | 1199/2001 [00:36&lt;00:24, 32.88it/s]
+ 60%|██████    | 1203/2001 [00:36&lt;00:24, 32.92it/s]
+ 60%|██████    | 1207/2001 [00:36&lt;00:24, 32.94it/s]
+ 61%|██████    | 1211/2001 [00:36&lt;00:23, 33.05it/s]
+ 61%|██████    | 1215/2001 [00:36&lt;00:23, 33.13it/s]
+ 61%|██████    | 1219/2001 [00:36&lt;00:23, 33.23it/s]
+ 61%|██████    | 1223/2001 [00:37&lt;00:23, 33.34it/s]
+ 61%|██████▏   | 1227/2001 [00:37&lt;00:23, 33.13it/s]
+ 62%|██████▏   | 1231/2001 [00:37&lt;00:23, 33.04it/s]
+ 62%|██████▏   | 1235/2001 [00:37&lt;00:23, 33.12it/s]
+ 62%|██████▏   | 1239/2001 [00:37&lt;00:22, 33.19it/s]
+ 62%|██████▏   | 1243/2001 [00:37&lt;00:22, 33.30it/s]
+ 62%|██████▏   | 1247/2001 [00:37&lt;00:22, 33.04it/s]
+ 63%|██████▎   | 1251/2001 [00:37&lt;00:22, 32.97it/s]
+ 63%|██████▎   | 1255/2001 [00:38&lt;00:22, 32.92it/s]
+ 63%|██████▎   | 1259/2001 [00:38&lt;00:22, 32.82it/s]
+ 63%|██████▎   | 1263/2001 [00:38&lt;00:22, 32.58it/s]
+ 63%|██████▎   | 1267/2001 [00:38&lt;00:22, 32.34it/s]
+ 64%|██████▎   | 1271/2001 [00:38&lt;00:22, 32.45it/s]
+ 64%|██████▎   | 1275/2001 [00:38&lt;00:22, 32.51it/s]
+ 64%|██████▍   | 1279/2001 [00:38&lt;00:22, 32.62it/s]
+ 64%|██████▍   | 1283/2001 [00:38&lt;00:21, 32.79it/s]
+ 64%|██████▍   | 1287/2001 [00:39&lt;00:21, 32.94it/s]
+ 65%|██████▍   | 1291/2001 [00:39&lt;00:21, 33.03it/s]
+ 65%|██████▍   | 1295/2001 [00:39&lt;00:21, 33.10it/s]
+ 65%|██████▍   | 1299/2001 [00:39&lt;00:21, 33.21it/s]
+ 65%|██████▌   | 1303/2001 [00:39&lt;00:21, 33.18it/s]
+ 65%|██████▌   | 1307/2001 [00:39&lt;00:20, 33.15it/s]
+ 66%|██████▌   | 1311/2001 [00:39&lt;00:20, 33.11it/s]
+ 66%|██████▌   | 1315/2001 [00:39&lt;00:20, 33.02it/s]
+ 66%|██████▌   | 1319/2001 [00:40&lt;00:20, 32.97it/s]
+ 66%|██████▌   | 1323/2001 [00:40&lt;00:20, 32.99it/s]
+ 66%|██████▋   | 1327/2001 [00:40&lt;00:20, 33.09it/s]
+ 67%|██████▋   | 1331/2001 [00:40&lt;00:20, 33.08it/s]
+ 67%|██████▋   | 1335/2001 [00:40&lt;00:20, 33.11it/s]
+ 67%|██████▋   | 1339/2001 [00:40&lt;00:19, 33.20it/s]
+ 67%|██████▋   | 1343/2001 [00:40&lt;00:19, 33.33it/s]
+ 67%|██████▋   | 1347/2001 [00:40&lt;00:19, 33.24it/s]
+ 68%|██████▊   | 1351/2001 [00:40&lt;00:19, 33.18it/s]
+ 68%|██████▊   | 1355/2001 [00:41&lt;00:19, 33.20it/s]
+ 68%|██████▊   | 1359/2001 [00:41&lt;00:19, 33.14it/s]
+ 68%|██████▊   | 1363/2001 [00:41&lt;00:19, 33.16it/s]
+ 68%|██████▊   | 1367/2001 [00:41&lt;00:19, 33.12it/s]
+ 69%|██████▊   | 1371/2001 [00:41&lt;00:18, 33.29it/s]
+ 69%|██████▊   | 1375/2001 [00:41&lt;00:18, 33.18it/s]
+ 69%|██████▉   | 1379/2001 [00:41&lt;00:18, 33.05it/s]
+ 69%|██████▉   | 1383/2001 [00:41&lt;00:18, 33.01it/s]
+ 69%|██████▉   | 1387/2001 [00:42&lt;00:18, 33.10it/s]
+ 70%|██████▉   | 1391/2001 [00:42&lt;00:18, 33.19it/s]
+ 70%|██████▉   | 1395/2001 [00:42&lt;00:18, 33.05it/s]
+ 70%|██████▉   | 1399/2001 [00:42&lt;00:18, 33.00it/s]
+ 70%|███████   | 1403/2001 [00:42&lt;00:18, 32.88it/s]
+ 70%|███████   | 1407/2001 [00:42&lt;00:18, 32.73it/s]
+ 71%|███████   | 1411/2001 [00:42&lt;00:18, 32.76it/s]
+ 71%|███████   | 1415/2001 [00:42&lt;00:17, 32.88it/s]
+ 71%|███████   | 1419/2001 [00:43&lt;00:17, 32.90it/s]
+ 71%|███████   | 1423/2001 [00:43&lt;00:17, 32.82it/s]
+ 71%|███████▏  | 1427/2001 [00:43&lt;00:17, 32.93it/s]
+ 72%|███████▏  | 1431/2001 [00:43&lt;00:17, 33.04it/s]
+ 72%|███████▏  | 1435/2001 [00:43&lt;00:17, 33.07it/s]
+ 72%|███████▏  | 1439/2001 [00:43&lt;00:16, 33.12it/s]
+ 72%|███████▏  | 1443/2001 [00:43&lt;00:16, 33.16it/s]
+ 72%|███████▏  | 1447/2001 [00:43&lt;00:16, 33.09it/s]
+ 73%|███████▎  | 1451/2001 [00:44&lt;00:16, 33.08it/s]
+ 73%|███████▎  | 1455/2001 [00:44&lt;00:16, 32.98it/s]
+ 73%|███████▎  | 1459/2001 [00:44&lt;00:16, 33.17it/s]
+ 73%|███████▎  | 1463/2001 [00:44&lt;00:16, 33.08it/s]
+ 73%|███████▎  | 1467/2001 [00:44&lt;00:16, 33.06it/s]
+ 74%|███████▎  | 1471/2001 [00:44&lt;00:16, 33.06it/s]
+ 74%|███████▎  | 1475/2001 [00:44&lt;00:15, 33.08it/s]
+ 74%|███████▍  | 1479/2001 [00:44&lt;00:15, 32.95it/s]
+ 74%|███████▍  | 1483/2001 [00:44&lt;00:15, 32.73it/s]
+ 74%|███████▍  | 1487/2001 [00:45&lt;00:15, 32.61it/s]
+ 75%|███████▍  | 1491/2001 [00:45&lt;00:15, 32.61it/s]
+ 75%|███████▍  | 1495/2001 [00:45&lt;00:15, 32.73it/s]
+ 75%|███████▍  | 1499/2001 [00:45&lt;00:15, 32.79it/s]
+ 75%|███████▌  | 1503/2001 [00:45&lt;00:15, 32.89it/s]
+ 75%|███████▌  | 1507/2001 [00:45&lt;00:14, 33.07it/s]
+ 76%|███████▌  | 1511/2001 [00:45&lt;00:14, 33.24it/s]
+ 76%|███████▌  | 1515/2001 [00:45&lt;00:14, 33.29it/s]
+ 76%|███████▌  | 1519/2001 [00:46&lt;00:14, 33.10it/s]
+ 76%|███████▌  | 1523/2001 [00:46&lt;00:14, 33.12it/s]
+ 76%|███████▋  | 1527/2001 [00:46&lt;00:14, 33.17it/s]
+ 77%|███████▋  | 1531/2001 [00:46&lt;00:14, 33.19it/s]
+ 77%|███████▋  | 1535/2001 [00:46&lt;00:14, 33.18it/s]
+ 77%|███████▋  | 1539/2001 [00:46&lt;00:13, 33.26it/s]
+ 77%|███████▋  | 1543/2001 [00:46&lt;00:13, 33.20it/s]
+ 77%|███████▋  | 1547/2001 [00:46&lt;00:13, 33.22it/s]
+ 78%|███████▊  | 1551/2001 [00:47&lt;00:13, 33.33it/s]
+ 78%|███████▊  | 1555/2001 [00:47&lt;00:13, 33.35it/s]
+ 78%|███████▊  | 1559/2001 [00:47&lt;00:13, 33.36it/s]
+ 78%|███████▊  | 1563/2001 [00:47&lt;00:13, 33.45it/s]
+ 78%|███████▊  | 1567/2001 [00:47&lt;00:12, 33.46it/s]
+ 79%|███████▊  | 1571/2001 [00:47&lt;00:12, 33.45it/s]
+ 79%|███████▊  | 1575/2001 [00:47&lt;00:12, 33.34it/s]
+ 79%|███████▉  | 1579/2001 [00:47&lt;00:12, 33.32it/s]
+ 79%|███████▉  | 1583/2001 [00:48&lt;00:12, 33.42it/s]
+ 79%|███████▉  | 1587/2001 [00:48&lt;00:12, 33.41it/s]
+ 80%|███████▉  | 1591/2001 [00:48&lt;00:12, 33.36it/s]
+ 80%|███████▉  | 1595/2001 [00:48&lt;00:12, 33.29it/s]
+ 80%|███████▉  | 1599/2001 [00:48&lt;00:12, 33.22it/s]
+ 80%|████████  | 1603/2001 [00:48&lt;00:12, 33.12it/s]
+ 80%|████████  | 1607/2001 [00:48&lt;00:11, 33.22it/s]
+ 81%|████████  | 1611/2001 [00:48&lt;00:11, 33.18it/s]
+ 81%|████████  | 1615/2001 [00:48&lt;00:11, 33.18it/s]
+ 81%|████████  | 1619/2001 [00:49&lt;00:11, 33.18it/s]
+ 81%|████████  | 1623/2001 [00:49&lt;00:11, 33.13it/s]
+ 81%|████████▏ | 1627/2001 [00:49&lt;00:11, 33.10it/s]
+ 82%|████████▏ | 1631/2001 [00:49&lt;00:11, 32.98it/s]
+ 82%|████████▏ | 1635/2001 [00:49&lt;00:11, 33.07it/s]
+ 82%|████████▏ | 1639/2001 [00:49&lt;00:10, 33.07it/s]
+ 82%|████████▏ | 1643/2001 [00:49&lt;00:10, 32.93it/s]
+ 82%|████████▏ | 1647/2001 [00:49&lt;00:10, 32.91it/s]
+ 83%|████████▎ | 1651/2001 [00:50&lt;00:10, 32.87it/s]
+ 83%|████████▎ | 1655/2001 [00:50&lt;00:10, 32.89it/s]
+ 83%|████████▎ | 1659/2001 [00:50&lt;00:10, 33.04it/s]
+ 83%|████████▎ | 1663/2001 [00:50&lt;00:10, 33.03it/s]
+ 83%|████████▎ | 1667/2001 [00:50&lt;00:10, 33.03it/s]
+ 84%|████████▎ | 1671/2001 [00:50&lt;00:09, 33.04it/s]
+ 84%|████████▎ | 1675/2001 [00:50&lt;00:09, 32.89it/s]
+ 84%|████████▍ | 1679/2001 [00:50&lt;00:09, 32.82it/s]
+ 84%|████████▍ | 1683/2001 [00:51&lt;00:09, 32.88it/s]
+ 84%|████████▍ | 1687/2001 [00:51&lt;00:09, 32.99it/s]
+ 85%|████████▍ | 1691/2001 [00:51&lt;00:09, 33.09it/s]
+ 85%|████████▍ | 1695/2001 [00:51&lt;00:09, 33.14it/s]
+ 85%|████████▍ | 1699/2001 [00:51&lt;00:09, 33.13it/s]
+ 85%|████████▌ | 1703/2001 [00:51&lt;00:09, 33.00it/s]
+ 85%|████████▌ | 1707/2001 [00:51&lt;00:08, 33.05it/s]
+ 86%|████████▌ | 1711/2001 [00:51&lt;00:08, 33.14it/s]
+ 86%|████████▌ | 1715/2001 [00:51&lt;00:08, 33.05it/s]
+ 86%|████████▌ | 1719/2001 [00:52&lt;00:08, 33.06it/s]
+ 86%|████████▌ | 1723/2001 [00:52&lt;00:08, 33.15it/s]
+ 86%|████████▋ | 1727/2001 [00:52&lt;00:08, 33.18it/s]
+ 87%|████████▋ | 1731/2001 [00:52&lt;00:08, 33.08it/s]
+ 87%|████████▋ | 1735/2001 [00:52&lt;00:08, 33.02it/s]
+ 87%|████████▋ | 1739/2001 [00:52&lt;00:07, 33.11it/s]
+ 87%|████████▋ | 1743/2001 [00:52&lt;00:07, 33.05it/s]
+ 87%|████████▋ | 1747/2001 [00:52&lt;00:07, 33.20it/s]
+ 88%|████████▊ | 1751/2001 [00:53&lt;00:07, 33.25it/s]
+ 88%|████████▊ | 1755/2001 [00:53&lt;00:07, 33.23it/s]
+ 88%|████████▊ | 1759/2001 [00:53&lt;00:07, 33.16it/s]
+ 88%|████████▊ | 1763/2001 [00:53&lt;00:07, 33.07it/s]
+ 88%|████████▊ | 1767/2001 [00:53&lt;00:07, 33.05it/s]
+ 89%|████████▊ | 1771/2001 [00:53&lt;00:06, 33.05it/s]
+ 89%|████████▊ | 1775/2001 [00:53&lt;00:06, 33.02it/s]
+ 89%|████████▉ | 1779/2001 [00:53&lt;00:06, 32.97it/s]
+ 89%|████████▉ | 1783/2001 [00:54&lt;00:06, 32.94it/s]
+ 89%|████████▉ | 1787/2001 [00:54&lt;00:06, 33.04it/s]
+ 90%|████████▉ | 1791/2001 [00:54&lt;00:06, 33.09it/s]
+ 90%|████████▉ | 1795/2001 [00:54&lt;00:06, 33.10it/s]
+ 90%|████████▉ | 1799/2001 [00:54&lt;00:06, 33.06it/s]
+ 90%|█████████ | 1803/2001 [00:54&lt;00:05, 33.15it/s]
+ 90%|█████████ | 1807/2001 [00:54&lt;00:05, 33.28it/s]
+ 91%|█████████ | 1811/2001 [00:54&lt;00:05, 33.23it/s]
+ 91%|█████████ | 1815/2001 [00:55&lt;00:05, 33.14it/s]
+ 91%|█████████ | 1819/2001 [00:55&lt;00:05, 33.16it/s]
+ 91%|█████████ | 1823/2001 [00:55&lt;00:05, 33.29it/s]
+ 91%|█████████▏| 1827/2001 [00:55&lt;00:05, 33.30it/s]
+ 92%|█████████▏| 1831/2001 [00:55&lt;00:05, 33.27it/s]
+ 92%|█████████▏| 1835/2001 [00:55&lt;00:04, 33.32it/s]
+ 92%|█████████▏| 1839/2001 [00:55&lt;00:04, 33.49it/s]
+ 92%|█████████▏| 1843/2001 [00:55&lt;00:04, 33.52it/s]
+ 92%|█████████▏| 1847/2001 [00:55&lt;00:04, 33.49it/s]
+ 93%|█████████▎| 1851/2001 [00:56&lt;00:04, 33.41it/s]
+ 93%|█████████▎| 1855/2001 [00:56&lt;00:04, 33.39it/s]
+ 93%|█████████▎| 1859/2001 [00:56&lt;00:04, 33.28it/s]
+ 93%|█████████▎| 1863/2001 [00:56&lt;00:04, 33.27it/s]
+ 93%|█████████▎| 1867/2001 [00:56&lt;00:04, 33.20it/s]
+ 94%|█████████▎| 1871/2001 [00:56&lt;00:03, 33.23it/s]
+ 94%|█████████▎| 1875/2001 [00:56&lt;00:03, 33.23it/s]
+ 94%|█████████▍| 1879/2001 [00:56&lt;00:03, 33.18it/s]
+ 94%|█████████▍| 1883/2001 [00:57&lt;00:03, 33.20it/s]
+ 94%|█████████▍| 1887/2001 [00:57&lt;00:03, 33.21it/s]
+ 95%|█████████▍| 1891/2001 [00:57&lt;00:03, 33.14it/s]
+ 95%|█████████▍| 1895/2001 [00:57&lt;00:03, 33.03it/s]
+ 95%|█████████▍| 1899/2001 [00:57&lt;00:03, 33.01it/s]
+ 95%|█████████▌| 1903/2001 [00:57&lt;00:02, 33.11it/s]
+ 95%|█████████▌| 1907/2001 [00:57&lt;00:02, 33.22it/s]
+ 96%|█████████▌| 1911/2001 [00:57&lt;00:02, 33.19it/s]
+ 96%|█████████▌| 1915/2001 [00:58&lt;00:02, 33.13it/s]
+ 96%|█████████▌| 1919/2001 [00:58&lt;00:02, 33.19it/s]
+ 96%|█████████▌| 1923/2001 [00:58&lt;00:02, 33.20it/s]
+ 96%|█████████▋| 1927/2001 [00:58&lt;00:02, 33.11it/s]
+ 97%|█████████▋| 1931/2001 [00:58&lt;00:02, 33.12it/s]
+ 97%|█████████▋| 1935/2001 [00:58&lt;00:01, 33.03it/s]
+ 97%|█████████▋| 1939/2001 [00:58&lt;00:01, 32.62it/s]
+ 97%|█████████▋| 1943/2001 [00:58&lt;00:01, 32.53it/s]
+ 97%|█████████▋| 1947/2001 [00:59&lt;00:01, 32.64it/s]
+ 98%|█████████▊| 1951/2001 [00:59&lt;00:01, 32.64it/s]
+ 98%|█████████▊| 1955/2001 [00:59&lt;00:01, 32.75it/s]
+ 98%|█████████▊| 1959/2001 [00:59&lt;00:01, 32.79it/s]
+ 98%|█████████▊| 1963/2001 [00:59&lt;00:01, 32.94it/s]
+ 98%|█████████▊| 1967/2001 [00:59&lt;00:01, 33.08it/s]
+ 99%|█████████▊| 1971/2001 [00:59&lt;00:00, 33.11it/s]
+ 99%|█████████▊| 1975/2001 [00:59&lt;00:00, 33.00it/s]
+ 99%|█████████▉| 1979/2001 [00:59&lt;00:00, 32.96it/s]
+ 99%|█████████▉| 1983/2001 [01:00&lt;00:00, 33.06it/s]
+ 99%|█████████▉| 1987/2001 [01:00&lt;00:00, 33.08it/s]
+100%|█████████▉| 1991/2001 [01:00&lt;00:00, 33.07it/s]
+100%|█████████▉| 1995/2001 [01:00&lt;00:00, 33.09it/s]
+100%|█████████▉| 1999/2001 [01:00&lt;00:00, 32.89it/s]
+100%|██████████| 2001/2001 [01:00&lt;00:00, 33.00it/s]
+
+&lt;maicos.modules.pdfplanar.PDFPlanar object at 0x7f872364fcb0&gt;
+</pre></div>
+</div>
+<p>We also calculate the density profile of the water molecules in order to
+compare the different slabs with the layering visible in the density.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dana_obj</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">refgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">water</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sym</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zmin</span><span class="o">=-</span><span class="mi">7</span><span class="p">,</span> <span class="n">zmax</span><span class="o">=</span><span class="mi">7</span>
+<span class="p">)</span>
+
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">dana_obj</span><span class="o">.</span><span class="n">run</span></a><span class="p">(</span><span class="n">step</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;maicos.modules.densityplanar.DensityPlanar object at 0x7f87247a5950&gt;
+</pre></div>
+</div>
+<p>The results of the analysis are stored in the <code class="docutils literal notranslate"><span class="pre">results</span></code> member variable.
+As per the documentation of <code class="docutils literal notranslate"><span class="pre">PDFPlanar</span></code>, we get three different arrays:
+<code class="docutils literal notranslate"><span class="pre">bin_pos</span></code>, <code class="docutils literal notranslate"><span class="pre">bins</span></code>, and <code class="docutils literal notranslate"><span class="pre">pdf</span></code>.
+Here, <code class="docutils literal notranslate"><span class="pre">bin_pos</span></code> is the position of the center of the slices in the
+z-direction, <code class="docutils literal notranslate"><span class="pre">bins</span></code> contains the bin positions of the pair distribution,
+which are shared by all slices and correspondingly <code class="docutils literal notranslate"><span class="pre">pdf</span></code> contains each
+profile that our code produced.</p>
+<p>In the following, we loop over all the pdf slices and plot each of them.
+Furthermore, in a separate subplot, we also show the density profile of the
+water molecules and highlight the slices that each pdf is calculated for.
+Hence, the same color in both plots corresponds to the same slice for the
+pair distribution function and the density profile.
+%%</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># u per cubic angstrom to kg per cubic meter factor</span>
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u2kg</span></a> <span class="o">=</span> <span class="mf">1660.5390665999998</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tax</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">shift</span></a> <span class="o">=</span> <span class="mi">0</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">shift_amount</span></a> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">for</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">pdf</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+    <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">bin_pos</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a><span class="p">[</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a><span class="p">]</span>
+
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">pdf_prof</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">pdf</span></a><span class="p">[:,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a><span class="p">]</span>
+    <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">mean_bulk</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="numpy.mean" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">pdf_prof</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">])</span>
+
+    <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">line</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">pdf</span></a><span class="p">[:,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a><span class="p">]</span> <span class="o">/</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">mean_bulk</span></a> <span class="o">+</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">shift</span></a>
+    <span class="p">)</span>
+    <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.vlines.html#matplotlib.axes.Axes.vlines" title="matplotlib.axes.Axes.vlines" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">vlines</span></a><span class="p">(</span>
+        <span class="mi">7</span> <span class="o">+</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">bin_pos</span></a><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3500</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">line</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span> <span class="n">linestyles</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span>
+    <span class="p">)</span>
+
+    <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axvspan.html#matplotlib.axes.Axes.axvspan" title="matplotlib.axes.Axes.axvspan" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">axvspan</span></a><span class="p">(</span>
+        <span class="mi">7</span> <span class="o">+</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">bin_pos</span></a> <span class="o">-</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="mi">7</span> <span class="o">+</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">bin_pos</span></a> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">line</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="p">)</span>
+    <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">shift</span></a> <span class="o">+=</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">shift_amount</span></a>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$g(r)$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r$ [$\AA$]&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">))</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span>
+    <span class="mi">7</span> <span class="o">+</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dana_obj</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a> <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u2kg</span></a><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Density&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlim.html#matplotlib.axes.Axes.set_xlim" title="matplotlib.axes.Axes.set_xlim" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">set_xlim</span></a><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.get_yticks.html#matplotlib.axes.Axes.get_yticks" title="matplotlib.axes.Axes.get_yticks" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">get_yticks</span></a><span class="p">())</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([])</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">tax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\rho(z)$ [kg/m$^3$]&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$z$ [$\AA$]&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set the padding between the axis to zero</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.tight_layout.html#matplotlib.pyplot.tight_layout" title="matplotlib.pyplot.tight_layout" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.subplots_adjust.html#matplotlib.figure.Figure.subplots_adjust" title="matplotlib.figure.Figure.subplots_adjust" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span></a><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.dpi.html#matplotlib.figure.Figure.dpi" title="matplotlib.figure.Figure.dpi" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-property"><span class="n">fig</span><span class="o">.</span><span class="n">dpi</span></a> <span class="o">=</span> <span class="mi">200</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_pair-distribution-functions_001.png" srcset="../_images/sphx_glr_pair-distribution-functions_001.png" alt="pair distribution functions" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;Axes: &gt; &lt;Axes: &gt;]
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 1.303 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-pair-distribution-functions-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/6ddadb436c689fe88b6724a95e6e9a3d/pair-distribution-functions.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">pair-distribution-functions.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/2f851b1df8165acde29324607f299e74/pair-distribution-functions.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pair-distribution-functions.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/d7ee4ae0c9c72c3876b57e108402f623/pair-distribution-functions.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">pair-distribution-functions.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dielectric-profiles.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Dielectric profile calculation</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="chemical-potential.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Ideal component of the chemical potential</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Pair distribution functions</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    </body>
+</html>
