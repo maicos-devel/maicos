@@ -68,7 +68,7 @@ class TemperaturePlanar(ProfilePlanarBase):
             bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
-            sym_parity="even",
+            sym_odd=False,
             grouping=grouping,
             bin_method=bin_method,
             output=output,

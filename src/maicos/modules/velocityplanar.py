@@ -34,9 +34,10 @@ class VelocityPlanar(ProfilePlanarBase):
     Parameters
     ----------
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    sym_parity : {``"even"``, ``"odd"``}
-        Symmetry parity of the profile. If ``even``, the profile is symmetrized. If
-        ``odd``, the profile is antisymmetrized.
+    sym_odd : bool,
+        Parity of the profile. If :obj:`False`, the profile will be symmetrized. If
+        :obj:`True`, the profile is antisymmetrized. Only relevant in combination with
+        ``sym``.
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
 
@@ -55,7 +56,7 @@ class VelocityPlanar(ProfilePlanarBase):
         bin_width: float = 1.0,
         refgroup: mda.AtomGroup | None = None,
         sym: bool = False,
-        sym_parity: str = "even",
+        sym_odd: bool = False,
         grouping: str = "atoms",
         unwrap: bool = True,
         pack: bool = True,
@@ -83,7 +84,7 @@ class VelocityPlanar(ProfilePlanarBase):
             bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
-            sym_parity=sym_parity,
+            sym_odd=sym_odd,
             grouping=grouping,
             bin_method=bin_method,
             output=output,

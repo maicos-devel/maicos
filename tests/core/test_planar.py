@@ -438,7 +438,7 @@ class TestProfilePlanarBase:
             bin_width=0.1,
             refgroup=None,
             sym=False,
-            sym_parity="even",
+            sym_odd=False,
             grouping="atoms",
             unwrap=False,
             pack=True,

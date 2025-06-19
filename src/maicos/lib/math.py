@@ -510,7 +510,7 @@ def symmetrize(
     m: np.ndarray,
     axis: None | int | tuple[int] = None,
     inplace: bool = False,
-    parity: str = "even",
+    is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
@@ -602,7 +602,7 @@ def symmetrize(
     """
     # The returned array will be of type float
     out = m.copy().astype("float")
-    out += (1 if parity == "even" else -1) * np.flip(m, axis=axis)
+    out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
 
     if inplace:

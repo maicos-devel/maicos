@@ -184,7 +184,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         zmax: None | float,
         bin_width: float,
         sym: bool,
-        sym_parity: None | str,
+        sym_odd: bool,
         grouping: str,
         bin_method: str,
         output: str,
@@ -224,10 +224,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         if self.sym and self.refgroup is None:
             raise ValueError("For symmetrization the `refgroup` argument is required.")
 
-        if sym_parity not in ["even", "odd"]:
-            raise ValueError("Symmetry parity must be either 'even' or 'odd'.")
-
-        self.sym_parity = sym_parity
+        self.sym_odd = sym_odd
 
     def _prepare(self):
         PlanarBase._prepare(self)
@@ -256,12 +253,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         PlanarBase._conclude(self)
 
         if self.sym:
-            symmetrize(self.sums.profile, inplace=True, parity=self.sym_parity)
-            symmetrize(self.means.profile, inplace=True, parity=self.sym_parity)
-            symmetrize(self.sems.profile, inplace=True, parity="even")
+            symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
+            symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+            symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
-                symmetrize(self.sums.bincount, inplace=True, parity=self.sym_parity)
+                symmetrize(self.sums.bincount, inplace=True, is_odd=self.sym_odd)
 
         # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
         # this prevents symmetrizing.

@@ -75,7 +75,7 @@ class DiporderPlanar(ProfilePlanarBase):
             zmax=zmax,
             bin_width=bin_width,
             sym=sym,
-            sym_parity="odd",
+            sym_odd=True,
             grouping=grouping,
             bin_method=bin_method,
             output=output,

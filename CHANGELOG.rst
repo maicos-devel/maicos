@@ -13,7 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
-- Introduce `sym_parity` option to `ProfilePlanarBase` to support vectorial
+- Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
   observables (#495)
 - Base Cromer-Mann form factor on ``atomgroup.elements`` (#492)
 - Add electron density weights for density modules (#493)
