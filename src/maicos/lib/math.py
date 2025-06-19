@@ -12,7 +12,7 @@ import numpy as np
 from scipy.fftpack import dst
 
 from . import tables
-from ._cmath import compute_structure_factor  # noqa: F401
+from ._cmath import structure_factor  # noqa: F401
 
 # Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
 dt_dk_tolerance = 1e-8
@@ -615,10 +615,20 @@ def symmetrize(
     return out
 
 
-def compute_form_factor(q: float | np.ndarray, element: str) -> float:
-    r"""Calculate the form factor :math:`f(q)`.
+def atomic_form_factor(q: float, element: str) -> float:
+    r"""Calculate atomic form factor :math:`f(q)` for X-ray scattering.
 
-    :math:`f(q)` is expressed in terms of the scattering vector as
+    The atomic form factor :math:`f(q)` is a measure of the scattering
+    amplitude of a wave by an **isolated** atom
+
+    .. attention::
+
+        The atomic form factor should not be confused with the atomic scattering factor
+        or intensity (often anonymously called form factor). The scattering intensity
+        depends strongly on the distribution of atoms and can be computed using
+        :class:`maicos.Saxs`.
+
+    Here, :math:`f(q)` is computed in terms of the scattering vector as
 
     .. math::
         f(q) = \sum_{i=1}^4 a_i e^{-b_i q^2/(4\pi)^2} + c \,.
@@ -627,7 +637,7 @@ def compute_form_factor(q: float | np.ndarray, element: str) -> float:
     known as Cromer-Mann X-ray scattering factors and are documented in
     :footcite:t:`princeInternationalTablesCrystallography2004` and taken from the `TU
     Graz
-    <https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php>`_.
+    <https://lampz.tugraz.at/~hadley/ss1/crystaldiffraction/atomicformfactors/formfactors.php>`_
     and stored in :obj:`maicos.lib.tables.CM_parameters`.
 
     Parameters
@@ -635,8 +645,8 @@ def compute_form_factor(q: float | np.ndarray, element: str) -> float:
     q : float
         The magnitude of the scattering vector in reciprocal angstroms (1/Å).
     element : str
-        The element for which the form factor is calculated. Known elements are listed
-        in the :attr:`maicos.lib.tables.elements` set. United-atom models such as
+        The element for which the atomic form factor is calculated. Known elements are
+        listed in the :attr:`maicos.lib.tables.elements` set. United-atom models such as
         ``"CH1"``, ``"CH2"``, ``"CH3"``, ``"CH4"``, ``"NH1"``, ``"NH2"``, and ``"NH3"``
         are also supported.
 
@@ -649,24 +659,24 @@ def compute_form_factor(q: float | np.ndarray, element: str) -> float:
     Returns
     -------
     float
-        The calculated form factor for the specified element and q in units of
+        The calculated atomic form factor for the specified element and q in units of
         electrons.
 
     """
     if element == "CH1":
-        return compute_form_factor(q, "C") + compute_form_factor(q, "H")
+        return atomic_form_factor(q, "C") + atomic_form_factor(q, "H")
     if element == "CH2":
-        return compute_form_factor(q, "C") + 2 * compute_form_factor(q, "H")
+        return atomic_form_factor(q, "C") + 2 * atomic_form_factor(q, "H")
     if element == "CH3":
-        return compute_form_factor(q, "C") + 3 * compute_form_factor(q, "H")
+        return atomic_form_factor(q, "C") + 3 * atomic_form_factor(q, "H")
     if element == "CH4":
-        return compute_form_factor(q, "C") + 4 * compute_form_factor(q, "H")
+        return atomic_form_factor(q, "C") + 4 * atomic_form_factor(q, "H")
     if element == "NH1":
-        return compute_form_factor(q, "N") + compute_form_factor(q, "H")
+        return atomic_form_factor(q, "N") + atomic_form_factor(q, "H")
     if element == "NH2":
-        return compute_form_factor(q, "N") + 2 * compute_form_factor(q, "H")
+        return atomic_form_factor(q, "N") + 2 * atomic_form_factor(q, "H")
     if element == "NH3":
-        return compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
+        return atomic_form_factor(q, "N") + 3 * atomic_form_factor(q, "H")
 
     if element.title() not in tables.CM_parameters:
         raise ValueError(
@@ -763,12 +773,13 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     return trans_positions
 
 
-def compute_rdf_structure_factor(
+def rdf_structure_factor(
     rdf: np.ndarray, r: np.ndarray, density: float
 ) -> tuple[np.ndarray, np.ndarray]:
     r"""Computes the structure factor based on the radial distribution function (RDF).
 
-    The structure factor :math:`S(q)` based on the RDF :math:`g(r)` is given by
+    The structure factor :math:`S(q)` based on an equally spaced RDF :math:`g(r)` is
+    given by
 
     .. math::
         S(q) = 1 + 4 \pi \rho \int_0^\infty \mathrm{d}r r

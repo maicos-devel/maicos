@@ -18,7 +18,7 @@ from libc cimport math
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision
-cpdef tuple compute_structure_factor(
+cpdef tuple structure_factor(
         double[:,:] positions,
         double[:] dimensions,
         double qmin,
@@ -29,7 +29,7 @@ cpdef tuple compute_structure_factor(
     ):
     r"""Calculates scattering vectors and corresponding structure factors.
 
-    Use via ``from maicos.lib.math import compute_structure_factor``
+    Use via ``from maicos.lib.math import structure_factor``
 
     The structure factors are calculated according to
 

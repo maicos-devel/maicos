@@ -150,7 +150,7 @@ class Test_sfactor:
     @pytest.mark.parametrize("qmax", [0.075, 0.1])
     def test_sfactor(self, ag, qS, qmin, qmax):
         """Test sfactor."""
-        q, S = maicos.lib.math.compute_structure_factor(
+        q, S = maicos.lib.math.structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
             qmin,
@@ -182,7 +182,7 @@ class Test_sfactor:
 
     def test_sfactor_angle(self, ag):
         """Test sfactor angle."""
-        q, S = maicos.lib.math.compute_structure_factor(
+        q, S = maicos.lib.math.structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
             0,  # qmin
@@ -583,7 +583,7 @@ def test_transform_cylinder():
 
 
 def test_form_factor():
-    """Regression test for the form factor as function q.
+    """Regression test for the atomic form factor as function q.
 
     Reference values for hydrogen are taken from Table 6.1.1.1 in
     https://it.iucr.org/Cb/ch6o1v0001/
@@ -611,7 +611,7 @@ def test_form_factor():
     desired = reference_values[:, 1]
 
     assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(q, "H"),
+        actual=maicos.lib.math.atomic_form_factor(q, "H"),
         desired=desired,
         rtol=5e-3,
     )
@@ -633,9 +633,9 @@ def test_form_factor():
     ],
 )
 def test_form_factor_zero(atom_type, n_electrons):
-    """Test that the form factor for q=0 is same as the number of electrons."""
+    """Test that the atomic form factor for q=0 is same as the number of electrons."""
     assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
+        actual=maicos.lib.math.atomic_form_factor(0.0, atom_type),
         desired=n_electrons,
         rtol=1e-3,
     )
@@ -648,4 +648,4 @@ def test_form_factor_unknown_element():
         "`maicos.lib.tables.elements` set."
     )
     with pytest.raises(ValueError, match=match):
-        maicos.lib.math.compute_form_factor(0.0, "foo")
+        maicos.lib.math.atomic_form_factor(0.0, "foo")
