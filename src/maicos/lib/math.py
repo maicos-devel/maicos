@@ -260,7 +260,7 @@ def correlation_time(
     ----------
     timeseries : numpy.ndarray
         The time series used to calculate the correlation time from.
-    method : {"sokal", "chodera"}
+    method : {``"sokal"``, ``"chodera"``}
         Method to choose summation cutoff :math:`N_\mathrm{cut}`.
     mintime: int
         Minimum possible value for :math:`N_\mathrm{cut}`.
@@ -507,7 +507,10 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 
 
 def symmetrize(
-    m: np.ndarray, axis: None | int | tuple[int] = None, inplace: bool = False
+    m: np.ndarray,
+    axis: None | int | tuple[int] = None,
+    inplace: bool = False,
+    is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
@@ -525,6 +528,11 @@ def symmetrize(
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
     inplace : bool
         Do symmetrizations inplace. If :obj:`False` a new array is returned.
+    is_odd : bool
+        The parity to use for symmetrization. If :obj:`False` (default), the
+        symmetrization is done with "even" parity, meaning that the output array will be
+        symmetric with respect to the specified axis. If :obj:`True`, the symmetrization
+        is done with "odd" parity, meaning that the output array will be antisymmetric.
 
     Returns
     -------
@@ -546,6 +554,13 @@ def symmetrize(
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
     >>> A
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
+
+    Antisymmetrization can be achieved by setting ``is_odd=True``.
+    >>> A = np.arange(10).astype(float)
+    >>> A
+    array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
+    >>> symmetrize(A, is_odd=True)
+    array([-4.5, -3.5, -2.5, -1.5, -0.5,  0.5,  1.5,  2.5,  3.5,  4.5])
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
@@ -587,7 +602,7 @@ def symmetrize(
     """
     # The returned array will be of type float
     out = m.copy().astype("float")
-    out += np.flip(m, axis=axis)
+    out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
 
     if inplace:

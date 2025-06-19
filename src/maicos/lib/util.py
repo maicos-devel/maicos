@@ -104,8 +104,8 @@ self : object
     performed.""",
     WRAP_COMPOUND_PARAMETER="""wrap_compound : str
     The group which will be kept together through the wrap processes. Allowed values
-    are: ``"atoms"``, ``"group"``, ``"residues"``,
-``"segments"``, ``"molecules"``, or ``"fragments"``.""",
+    are: ``"atoms"``, ``"group"``, ``"residues"``, ``"segments"``, ``"molecules"``, or
+    ``"fragments"``.""",
     DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``, ``"electron"``}
     density type to be calculated.""",
     TEMPERATURE_PARAMETER="""temperature : float
@@ -114,7 +114,7 @@ self : object
     Width of the bins (in Å).""",
     DIM_PARAMETER="""dim : {0, 1, 2}
     Dimension for binning (``x=0``, ``y=1``, ``z=1``).""",
-    VDIM_PARAMETER="""    vdim : {0, 1, 2}
+    VDIM_PARAMETER="""vdim : {0, 1, 2}
     Dimension for velocity binning (``x=0``, ``y=1``, ``z=1``).""",
     PDIM_PLANAR_PARAMETER="""pdim : {0, 1, 2}
     direction of the projection""",
