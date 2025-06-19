@@ -16,10 +16,12 @@ import pytest
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.weights
+from maicos.lib.tables import electron_count
 from maicos.lib.util import unit_vectors_planar
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import (  # noqa: E402
+    SALT_WATER_GRO,
     SPCE_GRO,
     SPCE_ITP,
     WATER_GRO_NPT,
@@ -100,6 +102,33 @@ def test_density_weights_electron(compound):
             desired=u.atoms.accumulate(electrons, compound=compound),
             rtol=1e-4,
         )
+
+
+def test_density_weights_electron_title():
+    """Test that the elements are converted to title case.
+
+    SALT_WATER_GRO contains elements NA and CL in upper case.
+    """
+    u = mda.Universe(SALT_WATER_GRO)
+    u.guess_TopologyAttrs(to_guess=["elements"])
+
+    assert_allclose(
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "electron"),
+        np.array([electron_count[el.title()] for el in u.atoms.elements]),
+    )
+
+
+def test_density_weights_electron_error():
+    """Test error raise for non existing element."""
+    u = mda.Universe(SPCE_GRO)
+    u.add_TopologyAttr("elements", u.atoms.n_atoms * ["foo"])
+
+    match = (
+        "Element 'Foo' not found. Known elements are listed in the "
+        "`maicos.lib.tables.elements` set."
+    )
+    with pytest.raises(KeyError, match=match):
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "electron")
 
 
 def test_density_weights_error(ag_water_npt):

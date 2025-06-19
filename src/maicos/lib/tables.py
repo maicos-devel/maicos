@@ -45,3 +45,10 @@ with Path(_share_path / "scatteringfactors.dat").open() as f:
 
 #: Set of known elements for Cromer-Mann coefficients.
 elements = set(CM_parameters.keys())
+
+#: Number of electrons for each element
+#: Values are computed from :math:`q=0` limit of Cromer-Mann parameters.
+electron_count = {}
+for element in elements:
+    CM_parameter = CM_parameters[element]
+    electron_count[element] = np.sum(CM_parameter.a) + CM_parameter.c
