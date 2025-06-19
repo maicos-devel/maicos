@@ -507,7 +507,7 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 
 
 def symmetrize(
-    m: np.ndarray, axis: None | int | tuple[int] = None, inplace: bool = False
+    m: np.ndarray, axis: None | int | tuple[int] = None, inplace: bool = False, parity: str = "even"
 ) -> np.ndarray:
     """Symmeterize an array.
 
@@ -525,6 +525,11 @@ def symmetrize(
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
     inplace : bool
         Do symmetrizations inplace. If :obj:`False` a new array is returned.
+    parity : str
+        The parity to use for symmetrization. Can be either "even" or "odd".
+        "even" parity means that the output array will be symmetric with respect to the
+        specified axis, while "odd" parity means that the output array will be
+        antisymmetric.
 
     Returns
     -------
@@ -546,6 +551,13 @@ def symmetrize(
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
     >>> A
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
+
+    Antisymmetrization can be achieved by setting ``parity="odd"``.
+    >>> A = np.arange(10).astype(float)
+    >>> A
+    array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
+    >>> symmetrize(A, parity="odd")
+    array([-4.5, -3.5, -2.5, -1.5, -0.5,  0.5,  1.5,  2.5,  3.5,  4.5])
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
@@ -587,7 +599,7 @@ def symmetrize(
     """
     # The returned array will be of type float
     out = m.copy().astype("float")
-    out += np.flip(m, axis=axis)
+    out += (1 if parity == "even" else -1) * np.flip(m, axis=axis)
     out /= 2
 
     if inplace:
