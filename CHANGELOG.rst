@@ -13,6 +13,10 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Rename ``compute_form_factor`` to ``atomic_form_factor``,
+  ``compute_rdf_structure_factor`` to ``rdf_structure_factor`` and
+  ``compute_structure_factor`` to ``structure_factor`` (#499)
+- Clearify role of atomic form factors and rename  to (#499)
 - Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
   observables (#495)
 - Base Cromer-Mann form factor on ``atomgroup.elements`` (#492)

@@ -16,7 +16,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from maicos import DiporderStructureFactor, RDFDiporder
-from maicos.lib.math import compute_rdf_structure_factor
+from maicos.lib.math import rdf_structure_factor
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_TPR_NVT, WATER_XTC_NVT  # noqa: E402
@@ -39,7 +39,7 @@ class TestDiporderStructureFactor:
 
         inter_rdf = RDFDiporder(ag, bin_width=0.1, rmax=L / 2).run(step=10)
 
-        scaterring_vectors_rdf, structure_factors_rdf = compute_rdf_structure_factor(
+        scaterring_vectors_rdf, structure_factors_rdf = rdf_structure_factor(
             rdf=1 + inter_rdf.results.rdf,
             r=inter_rdf.results.bins,
             density=density,

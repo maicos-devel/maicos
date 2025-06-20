@@ -13,7 +13,7 @@ import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
-from ..lib.math import compute_form_factor, compute_structure_factor
+from ..lib.math import atomic_form_factor, structure_factor
 from ..lib.util import render_docs
 
 
@@ -22,9 +22,10 @@ class Saxs(AnalysisBase):
     r"""Small angle X-Ray scattering intensities (SAXS).
 
     This module computes the structure factor :math:`S(q)`, the scattering intensity
-    :math:`I(q)` and their corresponding scattering vectors :math:`q`. For a system
-    containing only one element the structure factor and the scattering intensity are
-    connected via the form factor :math:`f(q)`
+    (sometimes also called scattering factor) :math:`I(q)` and their corresponding
+    scattering vectors :math:`q`. For a system containing only one element the structure
+    factor and the scattering intensity are connected via the atomic form factor
+    :math:`f(q)`
 
     .. math::
         I(q) = [f(q)]^2 S(q)
@@ -49,7 +50,7 @@ class Saxs(AnalysisBase):
     Analyzed scattering vectors :math:`q` can be restricted by a minimal and maximal
     angle with the z-axis. For ``0`` and ``180``, all possible vectors are taken into
     account. To obtain the scattering intensities, the structure factor is normalized by
-    an element-specific form factor based on Cromer-Mann parameters
+    an element-specific atomic form factor based on Cromer-Mann parameters
     :footcite:t:`princeInternationalTablesCrystallography2004`.
 
     For the correlation time estimation the module will use the value of the scattering
@@ -151,14 +152,14 @@ class Saxs(AnalysisBase):
         self.thetamax *= np.pi / 180
 
         self.groups = []  # groups of atoms with the same element
-        self.weights = []  # weights (form factors) for the groups
+        self.weights = []  # weights (atomic form factors) for the groups
         self.elements = []  # unique elements in the groups
 
         for element in np.unique(self.atomgroup.elements):
             group = self.atomgroup.select_atoms(f"element {element}")
 
             self.groups.append(group)
-            # Actual weights (form factors) are applied in post processing after
+            # Actual weights (atomic form factors) are applied in post processing after
             self.weights.append(np.ones(group.n_atoms))
             self.elements.append(element)
 
@@ -193,7 +194,7 @@ class Saxs(AnalysisBase):
                 group.atoms.positions / box
             )
 
-            scattering_vectors, structure_factors = compute_structure_factor(
+            scattering_vectors, structure_factors = structure_factor(
                 np.double(positions),
                 np.double(box),
                 self.qmin,
@@ -204,7 +205,7 @@ class Saxs(AnalysisBase):
             )
 
             scattering_intensities = (
-                compute_form_factor(scattering_vectors, self.elements[i_group]) ** 2
+                atomic_form_factor(scattering_vectors, self.elements[i_group]) ** 2
                 * structure_factors
             )
 

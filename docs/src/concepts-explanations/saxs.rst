@@ -56,7 +56,7 @@ incident and scattered waves are the same: :math:`|\boldsymbol{k}_i| =
 |\boldsymbol{k}_s| = 2\pi/\lambda`. The scattering vector is :math:`\boldsymbol{q} =
 \boldsymbol{k}_s - \boldsymbol{k}_i` with a magnitude of :math:`q = |\boldsymbol{q}| =
 4\pi \sin(\theta)/\lambda`. The structure factor can be obtained from the intensity of
-the scattered wave, :math:`I_s(\boldsymbol{q})`, and the correspnding form factor
+the scattered wave, :math:`I_s(\boldsymbol{q})`, and the correspnding atomic form factor
 :math:`f (q)`, which involves a frourier transform of the element-specific local
 electron density and thus determines the amplitude of the scattered wave of a single
 element.
@@ -80,7 +80,7 @@ with the amplitude of the elastically scattered wave
 .. math::
     A_s(\boldsymbol{q}) = \sum\limits_{j=1}^N f_j(q) \cdot e^{-i\boldsymbol{qr}_j} \,,
 
-where :math:`f_j(q)` is the element-specific form factor of atom :math:`j` and
+where :math:`f_j(q)` is the element-specific atomic form factor of atom :math:`j` and
 :math:`\boldsymbol{r}_j` the position of the :math:`j` th atom out of :math:`N` atoms.
 
 The scattering intensity can be evaluated for wave vectors :math:`\boldsymbol q = 2 \pi
@@ -110,7 +110,7 @@ With Euler’s formula :math:`e^{i\phi} = \cos(\phi) + i \sin(\phi)` the intensi
 
 Multiplication of the terms and simplifying yields the final expression for the
 intensity of a scattered wave as a function of the wave vector and with respect to the
-particle’s form factor
+particle’s atomic form factor
 
 .. math::
     I_s (\boldsymbol{q}) = \left[ \sum\limits_{j=1}^N f_j(q) \cos(\boldsymbol{qr}_j) \right ]^2 +
@@ -132,7 +132,7 @@ For any system the structure factor can be written as
 
 The limiting value :math:`S(0)` for :math:`q \rightarrow 0` is connected to the
 isothermal compressibility :footcite:p:`hansen_theory_2006` and the element-specific
-form factors :math:`f(q)` of a specific atom can be approximated with
+atomic form factors :math:`f(q)` of a specific atom can be approximated with
 
 .. math::
     f(\sin\theta/\lambda) = \sum_{i=1}^4 a_i e^{-b_i \sin^2\theta/\lambda^2} + c \,.
@@ -144,6 +144,13 @@ Expressed in terms of the scattering vector we can write
 
 The element-specific coefficients :math:`a_{1,\dots,4}`, :math:`b_{1,\dots,4}` and
 :math:`c` are documented :footcite:p:`princeInternationalTablesCrystallography2004`.
+
+.. attention::
+
+    The atomic form factor should not be confused with the atomic scattering factor or
+    intensity (often anonymously called form factor). The scattering intensity depends
+    strongly on the distribution of atoms and can be computed using
+    :class:`maicos.Saxs`.
 
 ----------------------------------------------------------------------
 Connection of the structure factor to the radial distribution function
@@ -192,7 +199,7 @@ the direct evaluation, leading to "cutoff ripples". The direct evaluation should
 therefore usually be preferred :footcite:p:`sedlmeier_spatial_2011`.
 
 To compare the RDF and the structure factor you can use
-:func:`maicos.lib.math.compute_rdf_structure_factor`. For a detailed example take
+:func:`maicos.lib.math.rdf_structure_factor`. For a detailed example take
 a look at :ref:`howto-saxs`.
 
 References
