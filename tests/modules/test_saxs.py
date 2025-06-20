@@ -81,8 +81,8 @@ class TestSaxs(ReferenceAtomGroups):
         ag_single_frame.elements = np.array([d[t] for t in ag_single_frame.elements])
 
         match = (
-            "Element 'foo' not found in Cromer-Mann parameters. Known elements are "
-            "listed in the `maicos.lib.tables.elements` set."
+            "Element 'foo' not found. Known elements are listed in the "
+            "`maicos.lib.tables.elements` set."
         )
         with pytest.raises(ValueError, match=match):
             Saxs(ag_single_frame).run()

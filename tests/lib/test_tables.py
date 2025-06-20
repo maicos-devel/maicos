@@ -8,9 +8,9 @@
 """Test for tables."""
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
-from maicos.lib.tables import CM_parameters, elements
+from maicos.lib.tables import CM_parameters, electron_count, elements
 
 
 def test_cm_parameters():
@@ -36,3 +36,12 @@ def test_cm_dummy():
 def test_elements():
     """Test that the elements in CM_parameters match the known elements."""
     assert set(elements) == set(CM_parameters.keys())
+
+
+def test_electron_count():
+    """Test that the electron count for H, C, and O matches the expected values."""
+    assert set(electron_count.keys()) == elements
+
+    assert_allclose(electron_count["H"], 1.0, rtol=1e-3)
+    assert_allclose(electron_count["C"], 6.0, rtol=1e-3)
+    assert_allclose(electron_count["O"], 8.0, rtol=1e-3)

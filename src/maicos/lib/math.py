@@ -615,7 +615,7 @@ def symmetrize(
     return out
 
 
-def compute_form_factor(q: float, element: str) -> float:
+def compute_form_factor(q: float | np.ndarray, element: str) -> float:
     r"""Calculate the form factor :math:`f(q)`.
 
     :math:`f(q)` is expressed in terms of the scattering vector as
@@ -654,35 +654,37 @@ def compute_form_factor(q: float, element: str) -> float:
 
     """
     if element == "CH1":
-        form_factor = compute_form_factor(q, "C") + compute_form_factor(q, "H")
-    elif element == "CH2":
-        form_factor = compute_form_factor(q, "C") + 2 * compute_form_factor(q, "H")
-    elif element == "CH3":
-        form_factor = compute_form_factor(q, "C") + 3 * compute_form_factor(q, "H")
-    elif element == "CH4":
-        form_factor = compute_form_factor(q, "C") + 4 * compute_form_factor(q, "H")
-    elif element == "NH1":
-        form_factor = compute_form_factor(q, "N") + compute_form_factor(q, "H")
-    elif element == "NH2":
-        form_factor = compute_form_factor(q, "N") + 2 * compute_form_factor(q, "H")
-    elif element == "NH3":
-        form_factor = compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
-    else:
-        if element.title() not in tables.CM_parameters:
-            raise ValueError(
-                f"Element '{element}' not found in Cromer-Mann parameters. Known "
-                "elements are listed in the `maicos.lib.tables.elements` set."
-            )
-        element = element.title()
-        form_factor = tables.CM_parameters[element].c
-        # q / (4 * pi) = sin(theta) / lambda
-        q2 = (q / (4 * np.pi)) ** 2
-        for i in range(4):
-            form_factor += tables.CM_parameters[element].a[i] * np.exp(
-                -tables.CM_parameters[element].b[i] * q2
-            )
+        return compute_form_factor(q, "C") + compute_form_factor(q, "H")
+    if element == "CH2":
+        return compute_form_factor(q, "C") + 2 * compute_form_factor(q, "H")
+    if element == "CH3":
+        return compute_form_factor(q, "C") + 3 * compute_form_factor(q, "H")
+    if element == "CH4":
+        return compute_form_factor(q, "C") + 4 * compute_form_factor(q, "H")
+    if element == "NH1":
+        return compute_form_factor(q, "N") + compute_form_factor(q, "H")
+    if element == "NH2":
+        return compute_form_factor(q, "N") + 2 * compute_form_factor(q, "H")
+    if element == "NH3":
+        return compute_form_factor(q, "N") + 3 * compute_form_factor(q, "H")
 
-    return form_factor
+    if element.title() not in tables.CM_parameters:
+        raise ValueError(
+            f"Element '{element}' not found. Known elements are listed in the "
+            "`maicos.lib.tables.elements` set."
+        )
+    # q / (4 * pi) = sin(theta) / lambda
+    q2 = np.asarray((q / (4 * np.pi)) ** 2)
+
+    CM_parameter = tables.CM_parameters[element.title()]
+
+    q2_flat = q2.flatten()
+    form_factor = (
+        np.sum(CM_parameter.a * np.exp(-CM_parameter.b * q2_flat[:, None]), axis=1)
+        + CM_parameter.c
+    )
+
+    return form_factor.reshape(q2.shape)
 
 
 def transform_cylinder(
