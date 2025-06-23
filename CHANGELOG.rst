@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Improve issue templates (#500)
 - Speed up electron density calculation by using a dictionary lookup (#498)
 - Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
   observables (#495)
