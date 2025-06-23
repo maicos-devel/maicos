@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Speed up electron density calculation by using a dictionary lookup (#498)
 - Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
   observables (#495)
 - Base Cromer-Mann form factor on ``atomgroup.elements`` (#492)

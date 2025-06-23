@@ -11,7 +11,7 @@ import MDAnalysis as mda
 import numpy as np
 from scipy import constants
 
-from .math import compute_form_factor
+from .tables import electron_count
 from .util import Unit_vector, render_docs
 
 
@@ -61,10 +61,15 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
             weights = atomgroup.total_charge(compound=grouping)
     elif dens == "electron":
         # Cromer-Mann parameters for q=0 is the number of electrons
-        electrons = np.array(
-            [compute_form_factor(q=0, element=el) for el in atomgroup.elements],
-            dtype=np.float64,
-        )
+        try:
+            electrons = np.array(
+                [electron_count[el.title()] for el in atomgroup.elements]
+            )
+        except KeyError as e:
+            raise KeyError(
+                f"Element '{e.args[0]}' not found. Known elements are listed in the "
+                "`maicos.lib.tables.elements` set."
+            ) from e
         if grouping == "atoms":
             weights = electrons
         else:
