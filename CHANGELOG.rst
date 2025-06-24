@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Fix wrong equation in ``compute_structure_factor`` documentation (#501)
 - Improve issue templates (#500)
 - Speed up electron density calculation by using a dictionary lookup (#498)
 - Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
