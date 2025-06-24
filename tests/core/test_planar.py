@@ -503,7 +503,7 @@ class TestProfilePlanarBase:
         """Test the histogram method."""
         p = ProfilePlanarBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None
         )
 
@@ -513,7 +513,7 @@ class TestProfilePlanarBase:
         """Test the histogram method with weights."""
         p = ProfilePlanarBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
             weights=5 * np.ones(p.n_bins),
         )
