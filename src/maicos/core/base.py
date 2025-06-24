@@ -858,10 +858,13 @@ class ProfileBase:
             self._obs.profile /= self._obs.bincount
 
             self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0, copy=True)  # type: ignore
-            self._var.profile, _ = self._compute_histogram(  # type: ignore
-                positions,
-                weights - self._obs.profile[bin_indices],  # type: ignore
+            self._var.profile, _ = (  # type: ignore
+                self._compute_histogram(  # type: ignore
+                    positions,
+                    weights - self._obs.profile[bin_indices],  # type: ignore
+                )
             )  # type: ignore
+            self._var.profile /= self._obs.bincount  # type: ignore
         return None
 
     def _conclude(self) -> None:
