@@ -269,6 +269,30 @@ def test_symmetrize_odd():
     assert np.all(A_sym == 5)
 
 
+def test_symmetrize_parity_even():
+    """Tests symmetrization for even parity."""
+    A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float), is_odd=False)
+    assert np.all(A_sym == 5)
+
+
+def test_symmetrize_parity_odd():
+    """Tests symmetrization for odd parity."""
+    A = np.arange(10).astype(float)
+    A_result = np.arange(10).astype(float) - 4.5
+    A_sym = maicos.lib.math.symmetrize(A, is_odd=True)
+    assert np.all(A_sym == A_result)
+
+
+def test_symmetrize_parity_odd_antisymmetric():
+    """Tests symmetrization for odd parity.
+
+    The array is unchanged, as it is already antisymmetric.
+    """
+    A = np.arange(11).astype(float) - 5
+    A_sym = maicos.lib.math.symmetrize(A, is_odd=True)
+    assert np.all(A_sym == A)
+
+
 def test_higher_dimensions_length_1():
     """Tests arrays with higher dimensions of length 1."""
     A = np.arange(11).astype(float)[:, np.newaxis]
@@ -597,6 +621,8 @@ def test_form_factor():
     ("atom_type", "n_electrons"),
     [
         ("C", 6),
+        ("Cval", 6),
+        ("CVAL", 6),  # upper case elements should also work
         ("O", 8),
         ("CH1", 7),
         ("CH2", 8),
@@ -611,18 +637,15 @@ def test_form_factor_zero(atom_type, n_electrons):
     assert_allclose(
         actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
         desired=n_electrons,
-        rtol=1e-2,
+        rtol=1e-3,
     )
 
 
-def test_form_factor_unknown_type():
-    """Test that an unknown atom_type works well.
-
-    Cval is unknown by our atom_types dictionary and will be used as is for the form
-    factor. It is known in the sfactor table because it is a carbon atom.
-    """
-    assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(0.0, "Cval"),
-        desired=6,
-        rtol=1e-2,
+def test_form_factor_unknown_element():
+    """Test that an unknown elements raise an error."""
+    match = (
+        "Element 'foo' not found. Known elements are listed in the "
+        "`maicos.lib.tables.elements` set."
     )
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.compute_form_factor(0.0, "foo")

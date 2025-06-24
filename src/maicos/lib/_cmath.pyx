@@ -35,48 +35,50 @@ cpdef tuple compute_structure_factor(
 
     .. math::
         S(\boldsymbol{q}) = 
-            \left [ \sum\limits_{k=1}^N w_j(q) \cos(\boldsymbol{qr}_j) \right ]^2 +
-            \left [ \sum\limits_{k=1}^N w_j(q) \sin(\boldsymbol{qr}_j) \right ]^2 \,.
+            \left [ \sum\limits_{k=1}^N w_k \cos(\boldsymbol{qr}_k) \right ]^2 +
+            \left [ \sum\limits_{k=1}^N w_k \sin(\boldsymbol{qr}_k) \right ]^2 \,.
 
     where :math:`\boldsymbol{r}_j` is the positions vector of particle :math:`k`,
-    :math:`\boldsymbol{q}` is scattering vector and the :math:`w_j` are optional
+    :math:`\boldsymbol{q}` is scattering vector and the :math:`w_k` are optional
     weights. The possible scattering vectors are determined by the given cell
     ``dimensions``.
 
     Results are returned as arrays with three dimensions, where the index of each
-    dimensions referers to the Miller indices :math:`hkl`. Based on the Miller indices
+    dimensions refers to the Miller indices :math:`hkl`. Based on the Miller indices
     and the returned length of the scattering vector the actual scattering vector can be
     obtained by
 
     .. math::
         q_{hkl} = \vert \boldsymbol{q} \vert \frac{2\pi}{L_{hkl}}
 
-    where :math:`\vert \boldsymbol{q} \vert` are the returned lengths of the scattering vector and 
-    :math:`L_{hkl}` are the components of the simulation cell.
+    where :math:`\vert \boldsymbol{q} \vert` are the returned lengths of the scattering
+    vector and :math:`L_{hkl}` are the components of the simulation cell.
 
     Parameters
     ----------
     positions : numpy.ndarray
-        position array.
+        Position array
     dimensions : numpy.ndarray
-        dimensions of the cell.
+        Dimensions of the cell
     qmin : float
-        Starting scattering vector length (1/Å).
+        Starting scattering vector length (1/Å). Possible values are in the range
+        :math:`[0, 180]`.
     qmax : float
-        Ending scattering vector length (1/Å).
+        Ending scattering vector length (1/Å). Possible values are in the range
+        :math:`[0, 180]`.
     thetamin : float
         Minimal angle (°) between the scattering vectors and the z-axis.
     thetamax : float
         Maximal angle (°) between the scattering vectors and the z-axis.
     weights : numpy.ndarray
-        Atomic quantity whose :math:`S(\vert q \vert)` we are computing. Provide an
-        array of ``1`` that has the same size as the postions, h.e
-        ``np.ones(len(positions))``, for the standard structure factor.
+        Atomic quantity for weighting the structure factor. Provide an array of ones
+        that has the same size as the positions, i.e ``np.ones(len(positions))``, for
+        the standard structure factor.
 
     Returns
     -------
     tuple(numpy.ndarray, numpy.ndarray)
-        The length of the scattering vectors and the corresponding structure factors.
+        Scattering vectors and their corresponding structure factors.
     """
 
     assert(dimensions.shape[0] == 3)

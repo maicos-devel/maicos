@@ -16,10 +16,18 @@ import pytest
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.weights
+from maicos.lib.tables import electron_count
 from maicos.lib.util import unit_vectors_planar
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from data import (  # noqa: E402
+    SALT_WATER_GRO,
+    SPCE_GRO,
+    SPCE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 from util import line_of_water_molecules  # noqa: E402
 
 
@@ -73,6 +81,54 @@ def test_density_weights_number_molecules(ag_water_npt):
     """Test number weights for grouping with respect to molecules."""
     weights = maicos.lib.weights.density_weights(ag_water_npt, "molecules", "number")
     assert_equal(weights, np.ones(len(np.unique(ag_water_npt.molnums))))
+
+
+@pytest.mark.parametrize("compound", ["atoms", "residues", "segments"])
+def test_density_weights_electron(compound):
+    """Test electron weights with grouping."""
+    u = mda.Universe(WATER_GRO_NPT)
+    u.guess_TopologyAttrs(to_guess=["elements"])
+    u.atoms.elements = np.array([el.title() for el in u.atoms.elements])
+
+    d = {"H": 1, "O": 8}
+    electrons = np.array([d[el] for el in u.atoms.elements], dtype=np.float64)
+    weights = maicos.lib.weights.density_weights(u.atoms, compound, "electron")
+
+    if compound == "atoms":
+        assert_allclose(weights, electrons, rtol=1e-2)
+    else:
+        assert_allclose(
+            actual=weights,
+            desired=u.atoms.accumulate(electrons, compound=compound),
+            rtol=1e-4,
+        )
+
+
+def test_density_weights_electron_title():
+    """Test that the elements are converted to title case.
+
+    SALT_WATER_GRO contains elements NA and CL in upper case.
+    """
+    u = mda.Universe(SALT_WATER_GRO)
+    u.guess_TopologyAttrs(to_guess=["elements"])
+
+    assert_allclose(
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "electron"),
+        np.array([electron_count[el.title()] for el in u.atoms.elements]),
+    )
+
+
+def test_density_weights_electron_error():
+    """Test error raise for non existing element."""
+    u = mda.Universe(SPCE_GRO)
+    u.add_TopologyAttr("elements", u.atoms.n_atoms * ["foo"])
+
+    match = (
+        "Element 'Foo' not found. Known elements are listed in the "
+        "`maicos.lib.tables.elements` set."
+    )
+    with pytest.raises(KeyError, match=match):
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "electron")
 
 
 def test_density_weights_error(ag_water_npt):

@@ -72,6 +72,7 @@ class DensityPlanar(ProfilePlanarBase):
             bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
+            sym_odd=False,
             grouping=grouping,
             bin_method=bin_method,
             output=output,

@@ -184,6 +184,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         zmax: None | float,
         bin_width: float,
         sym: bool,
+        sym_odd: bool,
         grouping: str,
         bin_method: str,
         output: str,
@@ -220,12 +221,14 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
         self.sym = sym
 
+        if self.sym and self.refgroup is None:
+            raise ValueError("For symmetrization the `refgroup` argument is required.")
+
+        self.sym_odd = sym_odd
+
     def _prepare(self):
         PlanarBase._prepare(self)
         ProfileBase._prepare(self)
-
-        if self.sym and self.refgroup is None:
-            raise ValueError("For symmetrization the `refgroup` argument is required.")
 
         logging.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
 
@@ -245,19 +248,19 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 
-        # Take the center bin of the 0th group for correlation analysis.
+        # Take the center bin for correlation analysis.
         return self._obs.profile[self.n_bins // 2]
 
     def _conclude(self):
         PlanarBase._conclude(self)
 
         if self.sym:
-            symmetrize(self.sums.profile, inplace=True)
-            symmetrize(self.means.profile, inplace=True)
-            symmetrize(self.sems.profile, inplace=True)
+            symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
+            symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+            symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
-                symmetrize(self.sums.bincount, inplace=True)
+                symmetrize(self.sums.bincount, inplace=True, is_odd=self.sym_odd)
 
         # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
         # this prevents symmetrizing.
