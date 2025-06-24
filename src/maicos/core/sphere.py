@@ -216,11 +216,13 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = transform_sphere(positions, origin=self.box_center)[:, 0]
-        hist, _ = np.histogram(
+        hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.rmin, self.rmax), weights=weights
         )
 
-        return hist
+        bin_indices = np.digitize(positions, bin_edges[1:-1])
+
+        return hist, bin_indices
 
     def _single_frame(self) -> float:
         SphereBase._single_frame(self)

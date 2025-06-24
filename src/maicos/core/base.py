@@ -469,11 +469,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._obs[key] = np.array(self._obs[key])
                 if key in self._var and key in self._pop:
                     delta = self._obs[key] - self.means[key]  # type: ignore
+                    delta = np.nan_to_num(delta, nan=0.0)
                     self.means[key] = self.means[key] + delta * (  # type: ignore
                         self._pop[key] / (self.pop[key] + self._pop[key])  # type: ignore
                     )
                     self.M[key] = (  # type: ignore
-                        self.M[key]  # type: ignore
+                        np.nan_to_num(self.M[key], nan=0.0)  # type: ignore
                         + self._var[key] * self._pop[key]
                         + delta**2
                         * (self._pop[key] * self.pop[key])  # type: ignore
@@ -848,25 +849,23 @@ class ProfileBase:
             )
 
         weights = self.weighting_function(self.atomgroup)
-        profile = self._compute_histogram(positions, weights)
-
-        self._obs.bincount = self._compute_histogram(positions, weights=None)
+        self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
+        self._obs.bincount = np.bincount(bin_indices, minlength=self.n_bins)  # type: ignore
 
         if self.normalization == "volume":
-            profile /= self._obs.bin_volume
+            self._obs.profile /= self._obs.bin_volume
+        elif self.normalization == "number":
+            self._obs.profile /= self._obs.bincount
 
-        self._obs.profile = profile
-
+            self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0, copy=True)  # type: ignore
+            self._var.profile, _ = self._compute_histogram(  # type: ignore
+                positions,
+                weights - self._obs.profile[bin_indices],  # type: ignore
+            )  # type: ignore
         return None
 
     def _conclude(self) -> None:
-        if self.normalization == "number":
-            with np.errstate(divide="ignore", invalid="ignore"):
-                self.results.profile = (
-                    self.sums.profile / self.sums.bincount  # type: ignore
-                )
-        else:
-            self.results.profile = self.means.profile  # type: ignore
+        self.results.profile = self.means.profile  # type: ignore
         self.results.dprofile = self.sems.profile  # type: ignore
 
     @render_docs

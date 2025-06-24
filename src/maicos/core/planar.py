@@ -233,11 +233,13 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = positions[:, self.dim]
-        hist, _ = np.histogram(
+        hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.zmin, self.zmax), weights=weights
         )
 
-        return hist
+        bin_indices = np.digitize(positions, bin_edges[1:-1])
+
+        return hist, bin_indices
 
     def _single_frame(self) -> float:
         PlanarBase._single_frame(self)
