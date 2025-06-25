@@ -9,8 +9,11 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
-Unreleased
-----------
+.. Unreleased
+.. ----------
+
+v0.11 (2025/06/25)
+------------------
 Philip Loche, Henrik Stooß
 
 - Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
