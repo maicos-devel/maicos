@@ -845,7 +845,7 @@ class ProfileBase:
             bin_indices[bin_indices > -1],
             minlength=self.n_bins,  # type: ignore
         )
-        print(self._obs.bincount)  # type: ignore
+        print("self._obs.bincount:", self._obs.bincount)  # type: ignore
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
         elif self.normalization == "number":
