@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  push:
-    tags: ["*"]
   pull_request:
     paths:
       # build wheels in PR if this file changed

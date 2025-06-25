@@ -9,8 +9,11 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
-.. Unreleased
-.. ----------
+Unreleased
+----------
+Philip Loche
+
+- Update release workflow documentation (#504)
 
 v0.11 (2025/06/25)
 ------------------
