@@ -14,8 +14,9 @@ from scipy.fftpack import dst
 from . import tables
 from ._cmath import structure_factor  # noqa: F401
 
-# Max variation from the mean dt or dk that is allowed (~1e-10 suggested)
-dt_dk_tolerance = 1e-8
+# Max spacing variation in series that is allowed
+dt_dk_tolerance = 1e-8  # (~1e-10 suggested)
+dr_tolerance = 1e-6
 
 
 def FT(
@@ -64,10 +65,11 @@ def FT(
     :func:`iFT` : For the inverse fourier transform.
 
     """
-    a, b = np.min(t), np.max(t)
     dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
-    if (abs(t[1:] - t[:-1] - dt) > dt_dk_tolerance).any():
-        raise RuntimeError("Time series not equally spaced!")
+
+    if (abs(np.diff(t) - dt) > dt_dk_tolerance).any():
+        raise ValueError("Time series not equally spaced!")
+
     N = len(t)
 
     # calculate frequency values for FT
@@ -75,6 +77,7 @@ def FT(
 
     # calculate FT of data
     xf = np.fft.fftshift(np.fft.fft(x))
+    a, b = np.min(t), np.max(t)
     xf2 = xf * (b - a) / N * np.exp(-1j * k * a)
 
     if indvar:
@@ -118,8 +121,10 @@ def iFT(
 
     """
     dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
-    if (abs(k[1:] - k[:-1] - dk) > dt_dk_tolerance).any():
-        raise RuntimeError("Time series not equally spaced!")
+
+    if (abs(np.diff(k) - dk) > dt_dk_tolerance).any():
+        raise ValueError("Time series not equally spaced!")
+
     N = len(k)
     x = np.fft.ifftshift(np.fft.ifft(xf))
     t = np.fft.ifftshift(np.fft.fftfreq(N, d=dk)) * 2 * np.pi
@@ -810,9 +815,9 @@ def rdf_structure_factor(
     ValueError
         If the distance array ``r`` is not equally spaced.
     """
-    dr = r[1] - r[0]
+    dr = r[-1] - r[0] / float(len(r) - 1)
 
-    if (abs(np.diff(r) - dr) > 1e-6).any():
+    if (abs(np.diff(r) - dr) > dr_tolerance).any():
         raise ValueError("Distance array `r` is not equally spaced!")
 
     q = np.pi / r[-1] * np.arange(1, len(r) + 1)

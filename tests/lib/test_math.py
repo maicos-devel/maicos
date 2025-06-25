@@ -247,6 +247,16 @@ def test_FT():
     assert_allclose(abs(t[np.argmax(sin_FT)]), 5, rtol=1e-2)
 
 
+def test_FT_unequal_spacing():
+    """Tests for the Fourier transform with unequal spacing."""
+    t = np.linspace(-np.pi, np.pi, 500)
+    t[0] += 1e-5  # make it unequal
+    sin = np.sin(5 * t)
+    match = "Time series not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.FT(t, sin)
+
+
 def test_iFT():
     """Tests for the inverse Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
@@ -255,6 +265,16 @@ def test_iFT():
     sin_new = maicos.lib.math.iFT(t, sin_FT, indvar=False)
     # Shift to positive y domain to avoid comparing 0
     assert_allclose(2 + sin, 2 + sin_new.real, rtol=1e-1)
+
+
+def test_iFT_unequal_spacing():
+    """Tests for the inverse Fourier transform with unequal spacing."""
+    t = np.linspace(-np.pi, np.pi, 500)
+    t[0] += 1e-5  # make it unequal
+    sin = np.sin(5 * t)
+    match = "Time series not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.iFT(t, sin)
 
 
 def test_symmetrize_even():
