@@ -65,7 +65,7 @@ def FT(
     :func:`iFT` : For the inverse fourier transform.
 
     """
-    dt = (t[-1] - t[0]) / float(len(t) - 1)  # timestep
+    dt = (t[-1] - t[0]) / float(len(t) - 1)
 
     if (abs(np.diff(t) - dt) > dt_dk_tolerance).any():
         raise ValueError("Time series not equally spaced!")
@@ -120,7 +120,7 @@ def iFT(
     :func:`FT` : For the Fourier transform.
 
     """
-    dk = (k[-1] - k[0]) / float(len(k) - 1)  # timestep
+    dk = (k[-1] - k[0]) / float(len(k) - 1)
 
     if (abs(np.diff(k) - dk) > dt_dk_tolerance).any():
         raise ValueError("Time series not equally spaced!")
@@ -815,7 +815,7 @@ def rdf_structure_factor(
     ValueError
         If the distance array ``r`` is not equally spaced.
     """
-    dr = r[-1] - r[0] / float(len(r) - 1)
+    dr = (r[-1] - r[0]) / float(len(r) - 1)
 
     if (abs(np.diff(r) - dr) > dr_tolerance).any():
         raise ValueError("Distance array `r` is not equally spaced!")
