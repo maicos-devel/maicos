@@ -468,25 +468,20 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
                 if key in self._var and key in self._pop:
-                    delta = self._obs[key] - self.means[key]  # type: ignore
-                    delta = np.nan_to_num(delta, nan=0.0)
-                    self.means[key] = self.means[key] + delta * (  # type: ignore
-                        self._pop[key] / (self.pop[key] + self._pop[key])  # type: ignore
-                    )
-                    self.M[key] = (  # type: ignore
-                        np.nan_to_num(self.M[key], nan=0.0)  # type: ignore
-                        + self._var[key] * self._pop[key]
-                        + delta**2
-                        * (self._pop[key] * self.pop[key])  # type: ignore
-                        / (self._pop[key] + self.pop[key])  # type: ignore
-                    )
+                    pop_A = self._pop[key]  # type: ignore
+                    pop_B = self.pop[key]  # type: ignore
+                    pop_AB = pop_A + pop_B  # type: ignore
 
-                    self.sems[key] = np.sqrt(  # type: ignore
-                        self.M[key] / (self._pop[key] + self.pop[key]) ** 2  # type: ignore
-                    )
-                    self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+                    old_mean = np.nan_to_num(self.means[key])  # type: ignore
+                    delta = np.nan_to_num(self._obs[key] - old_mean)  # type: ignore
 
-                    # Finally update the population of A
+                    self.means[key] += delta * (pop_A / pop_AB)
+                    self.M[key] += self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB
+
+                    self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)
+                    self.sums[key] += self._obs[key] * self._pop[key]
+
+                    # Finally update the population of B
                     self.pop[key] += self._pop[key]  # type: ignore
 
                 else:
@@ -850,13 +845,15 @@ class ProfileBase:
 
         weights = self.weighting_function(self.atomgroup)
         self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
+        
         self._obs.bincount = np.bincount(bin_indices, minlength=self.n_bins)  # type: ignore
-
+        print(self._obs.bincount)
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
         elif self.normalization == "number":
-            self._obs.profile /= self._obs.bincount
-
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self._obs.profile /= self._obs.bincount
+                print(self._obs.profile) 
             self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0, copy=True)  # type: ignore
             self._var.profile, _ = (  # type: ignore
                 self._compute_histogram(  # type: ignore
