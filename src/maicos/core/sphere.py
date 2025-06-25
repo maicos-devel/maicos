@@ -220,7 +220,9 @@ class ProfileSphereBase(SphereBase, ProfileBase):
             positions, bins=self.n_bins, range=(self.rmin, self.rmax), weights=weights
         )
 
-        bin_indices = np.digitize(positions, bin_edges[1:-1])
+        # TODO: Is this the best way to do this? Also, can we somehow abstract this away?
+        bin_indices = np.digitize(positions, bin_edges, right=True) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
 
         return hist, bin_indices
 

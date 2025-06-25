@@ -845,15 +845,14 @@ class ProfileBase:
 
         weights = self.weighting_function(self.atomgroup)
         self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
-        
-        self._obs.bincount = np.bincount(bin_indices, minlength=self.n_bins)  # type: ignore
-        print(self._obs.bincount)
+
+        self._obs.bincount = np.bincount(bin_indices[bin_indices > -1], minlength=self.n_bins)  # type: ignore
+
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
         elif self.normalization == "number":
             with np.errstate(divide="ignore", invalid="ignore"):
                 self._obs.profile /= self._obs.bincount
-                print(self._obs.profile) 
             self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0, copy=True)  # type: ignore
             self._var.profile, _ = (  # type: ignore
                 self._compute_histogram(  # type: ignore
