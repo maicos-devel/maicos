@@ -236,13 +236,14 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = positions[:, self.dim]
+        print(f"Positions: {positions}")
         hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.zmin, self.zmax), weights=weights
         )
-
+        print("bin_edges:", bin_edges)
         # TODO(@hejamu): Is this the best way to do this?
         # Also, can we somehow abstract this away?
-        bin_indices = np.digitize(positions, bin_edges, right=True) - 1
+        bin_indices = np.digitize(positions, bin_edges) - 1
         bin_indices[bin_indices == self.n_bins] = -1
 
         return hist, bin_indices

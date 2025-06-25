@@ -7,6 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
 
+import copy
 import logging
 import warnings
 from collections.abc import Callable
@@ -23,7 +24,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from typing_extensions import Self
 
 from .._version import get_versions
-from ..lib.math import center_cluster, new_mean, new_variance
+from ..lib.math import center_cluster
 from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
@@ -467,52 +468,37 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 # Sanitize the data type of the observable
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
-                if key in self._var and key in self._pop:
-                    pop_A = self._pop[key]  # type: ignore
-                    pop_B = self.pop[key]  # type: ignore
-                    pop_AB = pop_A + pop_B  # type: ignore
+                if key not in self._pop:
+                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
+                    self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                    old_mean = np.nan_to_num(self.means[key])  # type: ignore
-                    delta = np.nan_to_num(self._obs[key] - old_mean)  # type: ignore
+                pop_A = self._pop[key]  # type: ignore
+                pop_B = self.pop[key]  # type: ignore
+                pop_AB = pop_A + pop_B  # type: ignore
 
-                    self.means[key] += delta * (pop_A / pop_AB)  # type: ignore
-                    self.M[key] += (  # type: ignore
-                        self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB  # type: ignore
-                    )  # type: ignore
+                old_mean = np.nan_to_num(self.means[key])  # type: ignore
+                delta = np.nan_to_num(self._obs[key] - old_mean)  # type: ignore
+                delta = delta.astype(float)  # type: ignore
 
-                    self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)  # type: ignore
-                    self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+                self.means[key] += delta * (pop_A / pop_AB)  # type: ignore
+                self.M[key] += np.nan_to_num(  # type: ignore
+                    self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB  # type: ignore
+                )  # type: ignore
 
-                    # Finally update the population of B
-                    self.pop[key] += self._pop[key]  # type: ignore
+                self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)  # type: ignore
+                self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
 
-                else:
-                    old_mean = self.means[key]  # type: ignore
-                    old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
-                    self.means[key] = new_mean(  # type: ignore
-                        self.means[key],  # type: ignore
-                        self._obs[key],
-                        self._index,  # type: ignore
-                    )  # type: ignore
-                    self.sems[key] = np.sqrt(  # type: ignore
-                        new_variance(
-                            old_var,
-                            old_mean,
-                            self.means[key],  # type: ignore
-                            self._obs[key],
-                            self._index,
-                        )
-                        / self._index
-                    )
-                    self.sums[key] += self._obs[key]  # type: ignore
+                # Finally update the population of B
+                self.pop[key] += self._pop[key]  # type: ignore
+
         except AttributeError as err:
             with logging_redirect_tqdm():
                 logging.debug("Initializing error estimation.")
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).
-            self.sums = self._obs.copy()
-            self.means = self._obs.copy()
+            self.sums = Results()
+            self.means = Results()
             self.sems = Results()
             self.pop = Results()
             self.M = Results()
@@ -520,11 +506,18 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
-                self.sems[key] = np.zeros(np.shape(self._obs[key]))
-                if key in self._var and key in self._pop:
-                    self.M[key] = self._var[key] * self._pop[key]
-                    self.pop[key] = self._pop[key]
-                    self.sums[key] = self._obs[key] * self._pop[key]
+                if key not in self._pop:
+                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
+                    self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
+                    self._var[key].fill(np.nan)
+
+                self.means[key] = self._obs[key].astype(float)
+                self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
+
+                self.M[key] = self._var[key] * self._pop[key]
+                self.pop[key] = self._pop[key]
+                self.sums[key] = self._obs[key] * self._pop[key]
+
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
@@ -847,12 +840,12 @@ class ProfileBase:
 
         weights = self.weighting_function(self.atomgroup)
         self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
-
+        print(bin_indices)
         self._obs.bincount = np.bincount(
             bin_indices[bin_indices > -1],
             minlength=self.n_bins,  # type: ignore
         )
-
+        print(self._obs.bincount)  # type: ignore
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
         elif self.normalization == "number":
