@@ -16,6 +16,7 @@ v0.11 (2025/06/25)
 ------------------
 Philip Loche, Henrik Stooß
 
+- Update GitHub Actions for building wheels (#503)
 - Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
   equally spaced (#499)
 - Rename ``compute_form_factor`` to ``atomic_form_factor``,
