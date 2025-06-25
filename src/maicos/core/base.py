@@ -7,7 +7,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
 
-import copy
 import logging
 import warnings
 from collections.abc import Callable
@@ -506,18 +505,22 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
+                if isinstance(self._obs[key], list):
+                    self._obs[key] = np.array(self._obs[key])
                 if key not in self._pop:
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
                     self._var[key].fill(np.nan)
 
-                self.means[key] = self._obs[key].astype(float)
+                if isinstance(self._obs[key], np.ndarray):
+                    self.means[key] = np.astype(self._obs[key], float)
+                else:
+                    self.means[key] = float(self._obs[key])
                 self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
 
                 self.M[key] = self._var[key] * self._pop[key]
                 self.pop[key] = self._pop[key]
                 self.sums[key] = self._obs[key] * self._pop[key]
-
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
@@ -840,18 +843,18 @@ class ProfileBase:
 
         weights = self.weighting_function(self.atomgroup)
         self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
-        print(bin_indices)
+
         self._obs.bincount = np.bincount(
             bin_indices[bin_indices > -1],
             minlength=self.n_bins,  # type: ignore
         )
-        print("self._obs.bincount:", self._obs.bincount)  # type: ignore
+
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
         elif self.normalization == "number":
             with np.errstate(divide="ignore", invalid="ignore"):
                 self._obs.profile /= self._obs.bincount
-            self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0, copy=True)  # type: ignore
+            self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0)  # type: ignore
             self._var.profile, _ = (  # type: ignore
                 self._compute_histogram(  # type: ignore
                     positions,

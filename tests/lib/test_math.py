@@ -649,3 +649,37 @@ def test_form_factor_unknown_element():
     )
     with pytest.raises(ValueError, match=match):
         maicos.lib.math.compute_form_factor(0.0, "foo")
+
+
+@pytest.mark.parametrize(
+    ("n_A", "n_B"),
+    [
+        (1, 1), # trivial case
+        (1, 10), # series B is larger than the other
+        (10, 1), # series A is larger than the other
+        (10000, 10000), # both series are large
+        (10000, 1), # series A is much larger than series B
+        (1, 10000), # series B is much larger than series A
+    ],
+)
+def test_parallel_welford(n_A, n_B):
+    """Test parallel Welford algorithm for mean and variance."""
+    # Ensure series_B is different from series_A
+    series_A = np.random.rand(n_A) * 100 - 50
+    series_B = np.random.rand(n_B) * 10
+    series_AB = np.concatenate([series_A, series_B])
+
+    n_A = len(series_A)
+    n_B = len(series_B)
+
+    mu_A = series_A.mean()
+    mu_B = series_B.mean()
+
+    M_A = len(series_A) * series_A.var()
+    M_B = len(series_B) * series_B.var()
+
+    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(n_A, n_B, mu_A, mu_B, M_A, M_B)
+
+    assert n_AB == len(series_AB)
+    assert_allclose(mu_AB, series_AB.mean(), rtol=1e-9)
+    assert_allclose(M_AB, series_AB.var() * len(series_AB), rtol=1e-9)

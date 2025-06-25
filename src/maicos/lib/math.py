@@ -801,3 +801,43 @@ def compute_rdf_structure_factor(
     struct_factor = 1 + 4 * np.pi * density * 0.5 * dst((rdf - 1) * r) / q * dr
 
     return q, struct_factor
+
+
+# TODO(@hejamu): Find better name
+def parallel_welford(n_A, n_B, mu_A, mu_B, M_A, M_B):
+    """Calculate the mean and variance of two datasets of arbitrary size.
+
+    Given two datasets of arbitrary size, this function calculates the mean and
+    variance of the combined dataset using Welford's method. This is useful for
+    parallel processing where the datasets are processed in chunks.
+
+    Parameters
+    ----------
+    n_A : int
+        Number of elements in dataset A.
+    n_B : int
+        Number of elements in dataset B.
+    mu_A : float
+        Mean of dataset A.
+    mu_B : float
+        Mean of dataset B.
+    M_A : float
+        Sum of squares of deviations from the mean for dataset A.
+    M_B : float
+        Sum of squares of deviations from the mean for dataset B.
+
+    Returns
+    -------
+    n_AB : int
+        Total number of elements in the combined dataset (n_A + n_B).
+    mu_AB : float
+        Mean of the combined dataset.
+    M_AB : float
+        Sum of squares of deviations from the mean for the combined dataset.
+    """
+    n_AB = n_A + n_B
+    delta = mu_B - mu_A
+    mu_AB = mu_A + delta * n_B / n_AB
+    M_AB = M_A + M_B + delta**2 * n_A * n_B / n_AB
+
+    return n_AB, mu_AB, M_AB

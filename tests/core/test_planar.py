@@ -535,10 +535,10 @@ class TestProfilePlanarBase:
 
     @pytest.mark.parametrize("n_bins", [1, 2, 3])
     def test_correlation_bin(self, params, u, n_bins):
-        #TODO(@hejamu): Bad test, middle bin for n_bins = 2 is empty. (i.e. nan is the correct value)
+        # TODO(@hejamu): Bad test, middle bin for n_bins = 2 is empty. (i.e. nan is the correct value)
         """Test that the center bin is taken for the analysis."""
-        L = u.dimensions[2]
-        params.update(bin_width=L / n_bins)
+        L = u.dimensions[2] / 2
+        params.update(bin_width=L / n_bins, zmax=L)
 
         profile = ProfilePlanarBase(**params).run(stop=1)
 

@@ -242,6 +242,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
         # TODO(@hejamu): Is this the best way to do this?
         # Also, can we somehow abstract this away?
         bin_indices = np.digitize(positions[:, 0], bin_edges) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
 
         # Reshape into 1D array
         return hist[:, 0], bin_indices
