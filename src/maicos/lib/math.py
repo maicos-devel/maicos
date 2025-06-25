@@ -812,7 +812,7 @@ def rdf_structure_factor(
     """
     dr = r[1] - r[0]
 
-    if (abs(r[1:] - r[:-1] - dr) > 1e-6).any():
+    if (abs(np.diff(r) - dr) > 1e-6).any():
         raise ValueError("Distance array `r` is not equally spaced!")
 
     q = np.pi / r[-1] * np.arange(1, len(r) + 1)
