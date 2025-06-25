@@ -475,11 +475,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     old_mean = np.nan_to_num(self.means[key])  # type: ignore
                     delta = np.nan_to_num(self._obs[key] - old_mean)  # type: ignore
 
-                    self.means[key] += delta * (pop_A / pop_AB)
-                    self.M[key] += self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB
+                    self.means[key] += delta * (pop_A / pop_AB)  # type: ignore
+                    self.M[key] += (  # type: ignore
+                        self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB  # type: ignore
+                    )  # type: ignore
 
-                    self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)
-                    self.sums[key] += self._obs[key] * self._pop[key]
+                    self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)  # type: ignore
+                    self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
 
                     # Finally update the population of B
                     self.pop[key] += self._pop[key]  # type: ignore
@@ -846,7 +848,10 @@ class ProfileBase:
         weights = self.weighting_function(self.atomgroup)
         self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
 
-        self._obs.bincount = np.bincount(bin_indices[bin_indices > -1], minlength=self.n_bins)  # type: ignore
+        self._obs.bincount = np.bincount(
+            bin_indices[bin_indices > -1],
+            minlength=self.n_bins,  # type: ignore
+        )
 
         if self.normalization == "volume":
             self._obs.profile /= self._obs.bin_volume
