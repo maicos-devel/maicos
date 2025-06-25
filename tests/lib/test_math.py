@@ -150,7 +150,7 @@ class Test_sfactor:
     @pytest.mark.parametrize("qmax", [0.075, 0.1])
     def test_sfactor(self, ag, qS, qmin, qmax):
         """Test sfactor."""
-        q, S = maicos.lib.math.compute_structure_factor(
+        q, S = maicos.lib.math.structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
             qmin,
@@ -182,7 +182,7 @@ class Test_sfactor:
 
     def test_sfactor_angle(self, ag):
         """Test sfactor angle."""
-        q, S = maicos.lib.math.compute_structure_factor(
+        q, S = maicos.lib.math.structure_factor(
             np.double(ag.positions),
             np.double(ag.universe.dimensions)[:3],
             0,  # qmin
@@ -247,6 +247,16 @@ def test_FT():
     assert_allclose(abs(t[np.argmax(sin_FT)]), 5, rtol=1e-2)
 
 
+def test_FT_unequal_spacing():
+    """Tests for the Fourier transform with unequal spacing."""
+    t = np.linspace(-np.pi, np.pi, 500)
+    t[0] += 1e-5  # make it unequal
+    sin = np.sin(5 * t)
+    match = "Time series not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.FT(t, sin)
+
+
 def test_iFT():
     """Tests for the inverse Fourier transform."""
     x = np.linspace(-np.pi, np.pi, 500)
@@ -255,6 +265,16 @@ def test_iFT():
     sin_new = maicos.lib.math.iFT(t, sin_FT, indvar=False)
     # Shift to positive y domain to avoid comparing 0
     assert_allclose(2 + sin, 2 + sin_new.real, rtol=1e-1)
+
+
+def test_iFT_unequal_spacing():
+    """Tests for the inverse Fourier transform with unequal spacing."""
+    t = np.linspace(-np.pi, np.pi, 500)
+    t[0] += 1e-5  # make it unequal
+    sin = np.sin(5 * t)
+    match = "Time series not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.iFT(t, sin)
 
 
 def test_symmetrize_even():
@@ -583,7 +603,7 @@ def test_transform_cylinder():
 
 
 def test_form_factor():
-    """Regression test for the form factor as function q.
+    """Regression test for the atomic form factor as function q.
 
     Reference values for hydrogen are taken from Table 6.1.1.1 in
     https://it.iucr.org/Cb/ch6o1v0001/
@@ -611,7 +631,7 @@ def test_form_factor():
     desired = reference_values[:, 1]
 
     assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(q, "H"),
+        actual=maicos.lib.math.atomic_form_factor(q, "H"),
         desired=desired,
         rtol=5e-3,
     )
@@ -627,15 +647,16 @@ def test_form_factor():
         ("CH1", 7),
         ("CH2", 8),
         ("CH3", 9),
+        ("CH4", 10),
         ("NH1", 8),
         ("NH2", 9),
         ("NH3", 10),
     ],
 )
 def test_form_factor_zero(atom_type, n_electrons):
-    """Test that the form factor for q=0 is same as the number of electrons."""
+    """Test that the atomic form factor for q=0 is same as the number of electrons."""
     assert_allclose(
-        actual=maicos.lib.math.compute_form_factor(0.0, atom_type),
+        actual=maicos.lib.math.atomic_form_factor(0.0, atom_type),
         desired=n_electrons,
         rtol=1e-3,
     )
@@ -648,4 +669,20 @@ def test_form_factor_unknown_element():
         "`maicos.lib.tables.elements` set."
     )
     with pytest.raises(ValueError, match=match):
-        maicos.lib.math.compute_form_factor(0.0, "foo")
+        maicos.lib.math.atomic_form_factor(0.0, "foo")
+
+
+def test_rdf_structure_factor_unequal_spacing():
+    """Test that a ValueError is raised if the input is not equally spaced.
+
+    Additional tests for the functionality are located in `test_saxs.py` and
+    `test_diorderstructurefactor.py`.
+    """
+    r = np.linspace(0, 10, 10)
+    r[0] += 1e-5
+
+    rdf = np.ones(len(r))
+    density = 1.0
+    match = "Distance array `r` is not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.rdf_structure_factor(rdf=rdf, r=r, density=density)

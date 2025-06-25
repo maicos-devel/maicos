@@ -13,6 +13,12 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
+  equally spaced (#499)
+- Rename ``compute_form_factor`` to ``atomic_form_factor``,
+  ``compute_rdf_structure_factor`` to ``rdf_structure_factor`` and
+  ``compute_structure_factor`` to ``structure_factor`` (#499)
+- Clearify role of atomic form factors in documenation (#499)
 - Fix wrong equation in ``compute_structure_factor`` documentation (#501)
 - Improve issue templates (#500)
 - Speed up electron density calculation by using a dictionary lookup (#498)

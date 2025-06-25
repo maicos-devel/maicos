@@ -26,9 +26,9 @@ head -n 20 density.dat
 # For lengthy analysis, use the ``concfreq`` option to update the result during the run
 
 maicos densityplanar -s slit_flow.tpr \
-                    -f slit_flow.trr \
-                    -atomgroup 'type OW HW' \
-                    -concfreq '10'
+                     -f slit_flow.trr \
+                     -atomgroup 'type OW HW' \
+                     -concfreq '10'
 
 # %%
 #
