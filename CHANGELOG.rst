@@ -17,6 +17,7 @@ Philip Loche, Henrik Stooß
   ``compute_rdf_structure_factor`` to ``rdf_structure_factor`` and
   ``compute_structure_factor`` to ``structure_factor`` (#499)
 - Clearify role of atomic form factors in documenation (#499)
+- Fix wrong equation in ``compute_structure_factor`` documentation (#501)
 - Improve issue templates (#500)
 - Speed up electron density calculation by using a dictionary lookup (#498)
 - Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
