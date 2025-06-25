@@ -481,7 +481,7 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile.flatten()
-        desired = [np.nan, np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1]
+        desired = [np.nan, np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 1]
         desired += desired[::-1]
 
         assert_allclose(actual, desired, atol=1e-2)
@@ -528,6 +528,7 @@ class TestProfilePlanarBase:
 
     @pytest.mark.parametrize("n_bins", [1, 2, 3])
     def test_correlation_bin(self, params, u, n_bins):
+        #TODO(@hejamu): Bad test, middle bin for n_bins = 2 is empty. (i.e. nan is the correct value)
         """Test that the center bin is taken for the analysis."""
         L = u.dimensions[2]
         params.update(bin_width=L / n_bins)

@@ -254,7 +254,10 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
         if self.sym:
             symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
+            print("self.means.profile:", self.means.profile)
             symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+
+            print("after sym self.means.profile:", self.means.profile)
             symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
@@ -263,3 +266,4 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
         # this prevents symmetrizing.
         ProfileBase._conclude(self)
+        print("self.results.profile:", self.results.profile)
