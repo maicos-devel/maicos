@@ -649,3 +649,19 @@ def test_form_factor_unknown_element():
     )
     with pytest.raises(ValueError, match=match):
         maicos.lib.math.atomic_form_factor(0.0, "foo")
+
+
+def test_rdf_structure_factor_unequal_spacing():
+    """Test that a ValueError is raised if the input is not equally spaced.
+
+    Additional tests for the functionality are located in `test_saxs.py` and
+    `test_diorderstructurefactor.py`.
+    """
+    r = np.linspace(0, 10, 10)
+    r[0] += 1e-5
+
+    rdf = np.ones(len(r))
+    density = 1.0
+    match = "Distance array `r` is not equally spaced!"
+    with pytest.raises(ValueError, match=match):
+        maicos.lib.math.rdf_structure_factor(rdf=rdf, r=r, density=density)

@@ -13,6 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
+  equally spaced (#499)
 - Rename ``compute_form_factor`` to ``atomic_form_factor``,
   ``compute_rdf_structure_factor`` to ``rdf_structure_factor`` and
   ``compute_structure_factor`` to ``structure_factor`` (#499)

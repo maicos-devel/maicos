@@ -778,8 +778,7 @@ def rdf_structure_factor(
 ) -> tuple[np.ndarray, np.ndarray]:
     r"""Computes the structure factor based on the radial distribution function (RDF).
 
-    The structure factor :math:`S(q)` based on an equally spaced RDF :math:`g(r)` is
-    given by
+    The structure factor :math:`S(q)` based on an RDF :math:`g(r)` is given by
 
     .. math::
         S(q) = 1 + 4 \pi \rho \int_0^\infty \mathrm{d}r r
@@ -806,8 +805,16 @@ def rdf_structure_factor(
     struct_factor : numpy.ndarray
         structure factor
 
+    Raises
+    ------
+    ValueError
+        If the distance array ``r`` is not equally spaced.
     """
     dr = r[1] - r[0]
+
+    if (abs(r[1:] - r[:-1] - dr) > 1e-6).any():
+        raise ValueError("Distance array `r` is not equally spaced!")
+
     q = np.pi / r[-1] * np.arange(1, len(r) + 1)
     struct_factor = 1 + 4 * np.pi * density * 0.5 * dst((rdf - 1) * r) / q * dr
 
