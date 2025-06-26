@@ -103,6 +103,7 @@ addopts = [
     "--cov-append",
     "--cov-report=",
     "--import-mode=append",
+    "--disable-warnings",
 ]
 
 [tool.ruff]
@@ -141,10 +142,10 @@ ignore = [
     "D401",  # First line should be in imperative mood
     "D413",  # Missing blank line after last section
     "D417",  # Missing argument description in the docstring for {definition}: {name}
-    "TRY003", # Avoid specifying long messages outside the exception class
-    "TD003", # Missing issue link for this TODO
-    "G004", # f-strings in log messages
-    "LOG015", # Logging using root logger #TODO(@PicoCentauri): Check this
+    "TRY003",  # Avoid specifying long messages outside the exception class
+    "TD003",  # Missing issue link for this TODO
+    "G004",  # f-strings in log messages
+    "LOG015",  # Logging using root logger #TODO(@PicoCentauri): Check this
 ]
 
 [tool.ruff.lint.per-file-ignores]
