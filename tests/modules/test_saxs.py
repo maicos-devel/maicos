@@ -18,7 +18,7 @@ from MDAnalysis.analysis.rdf import InterRDF
 from numpy.testing import assert_allclose, assert_equal
 
 from maicos import Saxs
-from maicos.lib.math import compute_form_factor, compute_rdf_structure_factor
+from maicos.lib.math import atomic_form_factor, rdf_structure_factor
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -116,7 +116,7 @@ class TestSaxs(ReferenceAtomGroups):
         scattering_vectors = saxs.results.scattering_vectors
 
         scattering_intensities = (
-            compute_form_factor(scattering_vectors, "O") ** 2 * scattering_vectors
+            atomic_form_factor(scattering_vectors, "O") ** 2 * scattering_vectors
         )
         assert_allclose(saxs.results.scattering_intensities, scattering_intensities)
 
@@ -135,7 +135,7 @@ class TestSaxs(ReferenceAtomGroups):
             exclude_same="residue",
         ).run()
 
-        scattering_vectors_rdf, structure_factors_rdf = compute_rdf_structure_factor(
+        scattering_vectors_rdf, structure_factors_rdf = rdf_structure_factor(
             rdf=inter_rdf.results.rdf,
             r=inter_rdf.results.bins,
             density=density,

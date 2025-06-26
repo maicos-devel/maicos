@@ -13,7 +13,7 @@ import MDAnalysis as mda
 import numpy as np
 
 from ..core import AnalysisBase
-from ..lib.math import compute_structure_factor
+from ..lib.math import structure_factor
 from ..lib.util import get_center, render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
 
@@ -118,7 +118,7 @@ class DiporderStructureFactor(AnalysisBase):
                 get_unit_vectors=get_unit_vectors,
             )
 
-            scattering_vectors, structure_factors = compute_structure_factor(
+            scattering_vectors, structure_factors = structure_factor(
                 np.double(positions),
                 np.double(box),
                 self.qmin,

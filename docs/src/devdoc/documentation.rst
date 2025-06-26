@@ -17,7 +17,7 @@ Mozilla Firefox is used)
 
 .. code-block:: bash
 
-    firefox dist/docs/index.html
+    firefox docs/build/html/index.html
 
 Structure
 ---------

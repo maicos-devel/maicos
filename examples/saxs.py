@@ -25,7 +25,7 @@ import MDAnalysis as mda
 from MDAnalysis.analysis.rdf import InterRDF
 
 import maicos
-from maicos.lib.math import compute_form_factor, compute_rdf_structure_factor
+from maicos.lib.math import atomic_form_factor, rdf_structure_factor
 
 # %%
 # The `water` system consists of 510 water molecules in the liquid state. The
@@ -113,11 +113,11 @@ saxs_O = maicos.Saxs(group_O).run(stop=30)
 saxs_H = maicos.Saxs(group_H).run(stop=30)
 
 # %%
-# Let us plot the results for the structure factor, the squared form factor as well
-# scattering intensities together. For computing the form factor we will use
-# :func:`maicos.lib.math.compute_form_factor`. Note that here we access the results
-# directly from the ``results`` attribute without storing them in individual variables
-# before:
+# Let us plot the results for the structure factor, the squared atomic form factor as
+# well scattering intensities together. For computing the atomic form factor we will use
+# :func:`maicos.lib.math.atomic_form_factor`. Note that for the ``structure_factors``
+# and the ``scattering_intensities` we access the results directly from the ``results``
+# attribute without storing them in individual variables as before:
 
 fig2, ax2 = plt.subplots(nrows=3, sharex=True, layout="constrained")
 
@@ -133,17 +133,17 @@ ax2[0].plot(
     label="Hydrogen",
 )
 
-# form factors
+# atomic form factors
 ax2[1].plot(
     saxs_O.results.scattering_vectors,
-    compute_form_factor(saxs_O.results.scattering_vectors, "O") ** 2,
+    atomic_form_factor(saxs_O.results.scattering_vectors, "O") ** 2,
 )
 ax2[1].plot(
     saxs_H.results.scattering_vectors,
-    compute_form_factor(saxs_H.results.scattering_vectors, "H") ** 2,
+    atomic_form_factor(saxs_H.results.scattering_vectors, "H") ** 2,
 )
 
-# scattering intensitie
+# scattering intensities
 ax2[2].plot(saxs_O.results.scattering_vectors, saxs_O.results.scattering_intensities)
 ax2[2].plot(saxs_H.results.scattering_vectors, saxs_H.results.scattering_intensities)
 
@@ -159,10 +159,13 @@ fig2.show()
 
 # %%
 # The figure above nicely shows that multiplying the structure factor :math:`S(q)` and
-# the squared form factor :math:`f(q)^2` results in the scattering intensity
-# :math:`I(q)`. Also, it is worth to notice that due to small form factor of hydrogen
-# there is basically no contribution of the hydrogen atoms to the total scattering
-# intensity of water.
+# the squared atomic form factor :math:`f(q)^2` results in the scattering intensity
+# :math:`I(q)`.
+#
+# The atomic form factors are monotonically decaying as a function of :math:`q` and
+# their value for :math:`q=0` is the same number of electrons for the element. Also, it
+# is worth to notice that due to small atomic form factor of hydrogen there is basically
+# no contribution of the hydrogen atoms to the total scattering intensity of water.
 #
 # Connection of the structure factor to the radial distribution function
 # ----------------------------------------------------------------------
@@ -189,14 +192,12 @@ rdf_oo = oo_inter_rdf.results.rdf
 # %%
 # We use ``exclude_same="residue"`` to exclude atomic self contributions resulting in a
 # large peak at 0. Next, we convert the RDF into a structure factor using
-# :func:`maicos.lib.math.compute_rdf_structure_factor` and the number density of the
+# :func:`maicos.lib.math.rdf_structure_factor` and the number density of the
 # oxygens.
 
 density = group_O.n_atoms / u.trajectory.ts.volume
 
-q_rdf, struct_factor_rdf = compute_rdf_structure_factor(
-    rdf=rdf_oo, r=r_oo, density=density
-)
+q_rdf, struct_factor_rdf = rdf_structure_factor(rdf=rdf_oo, r=r_oo, density=density)
 
 # %%
 # Now we can plot everything together and find that the direct evaluation from above and
