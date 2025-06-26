@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche
 
+- Disable warnings in test output (#505)
 - Update release workflow documentation (#504)
 
 v0.11 (2025/06/25)
