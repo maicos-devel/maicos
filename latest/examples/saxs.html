@@ -1,0 +1,649 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Calculating and interpreting dipolar pair correlation functions" href="dipole-correlations.html" /><link rel="prev" title="Dielectric profile calculation" href="dielectric-profiles.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Small-angle X-ray scattering - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../get-started/index.html">Getting started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/units.html">Some conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/changelog.html">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">How-to guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pair-distribution-functions.html">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipole-correlations.html">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analysis-modules/index.html">Analysis modules</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfplanar.html">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-saxs-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="small-angle-x-ray-scattering">
+<span id="howto-saxs"></span><span id="sphx-glr-examples-saxs-py"></span><h1>Small-angle X-ray scattering<a class="headerlink" href="#small-angle-x-ray-scattering" title="Link to this heading">¶</a></h1>
+<p>Small-angle X-ray scattering (SAXS) can be extracted using MAICoS. To follow this how-to
+guide, you should download the <a class="reference download internal" download="" href="../_downloads/0e2de835f769a58cf1f1c852ea61fade/water.tpr"><code class="xref download docutils literal notranslate"><span class="pre">topology</span></code></a> and the
+<a class="reference download internal" download="" href="../_downloads/87236a0f848d46c4dd3c8814385c0d94/water.trr"><code class="xref download docutils literal notranslate"><span class="pre">trajectory</span></code></a> files of the water system.</p>
+<p>For more details on the theory see <a class="reference internal" href="../concepts-explanations/saxs.html#saxs-explanations"><span class="std std-ref">Small-angle X-ray scattering</span></a>.</p>
+<p>First, we import Matplotlib, MDAnalysis, NumPy and MAICoS:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">MDAnalysis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mda</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">MDAnalysis.analysis.rdf</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/rdf.html#MDAnalysis.analysis.rdf.InterRDF" title="MDAnalysis.analysis.rdf.InterRDF" class="sphx-glr-backref-module-MDAnalysis-analysis-rdf sphx-glr-backref-type-py-class"><span class="n">InterRDF</span></a>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">maicos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">maicos.lib.math</span><span class="w"> </span><span class="kn">import</span> <a href="../api-documentation/math.html#maicos.lib.math.atomic_form_factor" title="maicos.lib.math.atomic_form_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">atomic_form_factor</span></a><span class="p">,</span> <a href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">rdf_structure_factor</span></a>
+</pre></div>
+</div>
+<p>The <cite>water</cite> system consists of 510 water molecules in the liquid state. The
+molecules are placed in a periodic cubic cell with an extent of <span class="math notranslate nohighlight">\(25 \times 25
+\times 25\,\textrm{Å}^3\)</span>.</p>
+<section id="load-simulation-data">
+<h2>Load Simulation Data<a class="headerlink" href="#load-simulation-data" title="Link to this heading">¶</a></h2>
+<p>Create a <a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.core.universe.Universe</span></code></a> and define a group containing only
+the oxygen atoms and a group containing only the hydrogen atoms:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class"><span class="n">mda</span><span class="o">.</span><span class="n">Universe</span></a><span class="p">(</span><span class="s2">&quot;water.tpr&quot;</span><span class="p">,</span> <span class="s2">&quot;water.trr&quot;</span><span class="p">)</span>
+
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type O*&quot;</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type H*&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="extract-small-angle-x-ray-scattering-saxs-intensities">
+<h2>Extract small angle x-ray scattering (SAXS) intensities<a class="headerlink" href="#extract-small-angle-x-ray-scattering-saxs-intensities" title="Link to this heading">¶</a></h2>
+<p>Let us use the <a class="reference internal" href="../analysis-modules/saxs.html#maicos.Saxs" title="maicos.Saxs"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.Saxs</span></code></a> class of MAICoS and apply it to all atoms in the
+system:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">saxs</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">Saxs</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span><span class="o">.</span><span class="n">atoms</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/maicos/maicos/src/maicos/modules/saxs.py:248: RuntimeWarning: invalid value encountered in divide
+  structure_factors = self.sums.structure_factors / self.sums.bincount
+/home/runner/work/maicos/maicos/src/maicos/modules/saxs.py:250: RuntimeWarning: invalid value encountered in divide
+  self.sums.scattering_intensities / self.sums.bincount
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SAXS computations are extensive calculations. Here, to get an overview of the
+scattering intensities, we reduce the number of frames to be analyzed from <code class="docutils literal notranslate"><span class="pre">101</span></code>
+to <code class="docutils literal notranslate"><span class="pre">30</span></code>, by adding the <code class="docutils literal notranslate"><span class="pre">stop</span> <span class="pre">=</span> <span class="pre">30</span></code> parameter to the <code class="docutils literal notranslate"><span class="pre">run</span></code> method. Due to the
+small number of analyzed frames, the scattering intensities shown in this tutorial
+should not be used to draw any conclusions from the data.</p>
+</div>
+<p>Extract the scattering vectors and the averaged structure factor and SAXS scattering
+intensities from the <code class="docutils literal notranslate"><span class="pre">results</span></code> attribute:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_values</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">structure_factors</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_intensities</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_intensities</span></a>
+</pre></div>
+</div>
+<p>The scattering intensities (and structure factors) are given as a 1D array, let us
+look at the 10 first lines:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_intensities</span></a><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[1.62552456 0.91142785 1.3238033  1.75288348 1.20407559 2.08831939
+ 2.14261014 2.38557557 2.75070612 3.32383489]
+</pre></div>
+</div>
+<p>By default, the binwidth in the recipocal <span class="math notranslate nohighlight">\((q)\)</span> space is <span class="math notranslate nohighlight">\(0.1 Å^{-1}\)</span>.</p>
+<p>We now plot the structure factor as well a the scattering intensities together.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig1</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;constrained&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_values</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">structure_factors</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_values</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scattering_intensities</span></a><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;q (1/Å)&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;structure factor $S(q)$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;scattering intensities $I(q)$&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.align_labels.html#matplotlib.figure.Figure.align_labels" title="matplotlib.figure.Figure.align_labels" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig1</span><span class="o">.</span><span class="n">align_labels</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig1</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_saxs_001.png" srcset="../_images/sphx_glr_saxs_001.png" alt="saxs" class = "sphx-glr-single-img"/><p>The structure factor <span class="math notranslate nohighlight">\(S(q)\)</span> and the scattering intensities <span class="math notranslate nohighlight">\(I(q)\)</span> are
+related via</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[I(q) = [f(q)]^2 S(q)\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(f(q)\)</span> are the atomic form factors. We will investigate the relation below
+in more details.</p>
+</section>
+<section id="computing-oxygen-and-hydrogen-contributions">
+<h2>Computing oxygen and hydrogen contributions<a class="headerlink" href="#computing-oxygen-and-hydrogen-contributions" title="Link to this heading">¶</a></h2>
+<p>An advantage of full atomistic simulations is their ability to investigate atomic
+contributions individually. Let us calculate both oxygen and hydrogen contributions,
+respectively:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">saxs_O</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">Saxs</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">saxs_H</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">Saxs</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stop</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let us plot the results for the structure factor, the squared atomic form factor as
+well scattering intensities together. For computing the atomic form factor we will use
+<a class="reference internal" href="../api-documentation/math.html#maicos.lib.math.atomic_form_factor" title="maicos.lib.math.atomic_form_factor"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.atomic_form_factor()</span></code></a>. Note that for the <code class="docutils literal notranslate"><span class="pre">structure_factors</span></code>
+and the <code class="docutils literal notranslate"><span class="pre">scattering_intensities`</span> <span class="pre">we</span> <span class="pre">access</span> <span class="pre">the</span> <span class="pre">results</span> <span class="pre">directly</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">``results</span></code>
+attribute without storing them in individual variables as before:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig2</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;constrained&quot;</span><span class="p">)</span>
+
+<span class="c1"># structure factors</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Oxygen&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Hydrogen&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># atomic form factors</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="../api-documentation/math.html#maicos.lib.math.atomic_form_factor" title="maicos.lib.math.atomic_form_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">atomic_form_factor</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="../api-documentation/math.html#maicos.lib.math.atomic_form_factor" title="maicos.lib.math.atomic_form_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">atomic_form_factor</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># scattering intensities</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_intensities</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_H</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_intensities</span></a><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;q (1/Å)&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$S(q)$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$f(q)^2$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$I(q)$&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.align_labels.html#matplotlib.figure.Figure.align_labels" title="matplotlib.figure.Figure.align_labels" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig2</span><span class="o">.</span><span class="n">align_labels</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig2</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_saxs_002.png" srcset="../_images/sphx_glr_saxs_002.png" alt="saxs" class = "sphx-glr-single-img"/><p>The figure above nicely shows that multiplying the structure factor <span class="math notranslate nohighlight">\(S(q)\)</span> and
+the squared atomic form factor <span class="math notranslate nohighlight">\(f(q)^2\)</span> results in the scattering intensity
+<span class="math notranslate nohighlight">\(I(q)\)</span>.</p>
+<p>The atomic form factors are monotonically decaying as a function of <span class="math notranslate nohighlight">\(q\)</span> and
+their value for <span class="math notranslate nohighlight">\(q=0\)</span> is the same number of electrons for the element. Also, it
+is worth to notice that due to small atomic form factor of hydrogen there is basically
+no contribution of the hydrogen atoms to the total scattering intensity of water.</p>
+</section>
+<section id="connection-of-the-structure-factor-to-the-radial-distribution-function">
+<h2>Connection of the structure factor to the radial distribution function<a class="headerlink" href="#connection-of-the-structure-factor-to-the-radial-distribution-function" title="Link to this heading">¶</a></h2>
+<p>As in details explained in <a class="reference internal" href="../concepts-explanations/saxs.html#saxs-explanations"><span class="std std-ref">Small-angle X-ray scattering</span></a>, the structure factor can be
+related to the radial distribution function (RDF). We denote this structure factor by
+<span class="math notranslate nohighlight">\(S^\mathrm{FT}(q)\)</span> since it is based on Fourier transforming the RDF. The
+structure factor which can be directly obtained from the trajectory is denoted by
+<span class="math notranslate nohighlight">\(S^\mathrm{D}(q)\)</span>.</p>
+<p>To relate these two we first calculate the oxygen-oxygen RDF up to half the box length
+using <a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/rdf.html#MDAnalysis.analysis.rdf.InterRDF" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.analysis.rdf.InterRDF</span></code></a> and save the result in
+variables for an easier access.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float32" title="numpy.float32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">box_lengh</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.dimensions" title="MDAnalysis.core.universe.Universe.dimensions" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">dimensions</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/rdf.html#MDAnalysis.analysis.rdf.InterRDF" title="MDAnalysis.analysis.rdf.InterRDF" class="sphx-glr-backref-module-MDAnalysis-analysis-rdf sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oo_inter_rdf</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/rdf.html#MDAnalysis.analysis.rdf.InterRDF" title="MDAnalysis.analysis.rdf.InterRDF" class="sphx-glr-backref-module-MDAnalysis-analysis-rdf sphx-glr-backref-type-py-class"><span class="n">InterRDF</span></a><span class="p">(</span>
+    <span class="n">g1</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a><span class="p">,</span> <span class="n">g2</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float32" title="numpy.float32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">box_lengh</span></a> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">exclude_same</span><span class="o">=</span><span class="s2">&quot;residue&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">r_oo</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oo_inter_rdf</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_oo</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oo_inter_rdf</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">rdf</span></a>
+</pre></div>
+</div>
+<p>We use <code class="docutils literal notranslate"><span class="pre">exclude_same=&quot;residue&quot;</span></code> to exclude atomic self contributions resulting in a
+large peak at 0. Next, we convert the RDF into a structure factor using
+<a class="reference internal" href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.rdf_structure_factor()</span></code></a> and the number density of the
+oxygens.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup.n_atoms" title="MDAnalysis.core.groups.AtomGroup.n_atoms" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-property"><span class="n">group_O</span><span class="o">.</span><span class="n">n_atoms</span></a> <span class="o">/</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.trajectory" title="MDAnalysis.core.universe.Universe.trajectory" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">volume</span></a>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">q_rdf</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">struct_factor_rdf</span></a> <span class="o">=</span> <a href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">rdf_structure_factor</span></a><span class="p">(</span><span class="n">rdf</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_oo</span></a><span class="p">,</span> <span class="n">r</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">r_oo</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we can plot everything together and find that the direct evaluation from above and
+the transformed RDF give the same structure factor.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig3</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;constrained&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">r_oo</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_oo</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Oxygen-Oxygen&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;r (Å)&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;radial distribution function&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">q_rdf</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">struct_factor_rdf</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$S^\mathrm</span><span class="si">{FT}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">saxs_O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$S^\mathrm</span><span class="si">{D}</span><span class="s2">$&quot;</span><span class="p">,</span>
+    <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;q (1/Å)&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;structure factor $S(q)$&quot;</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax3</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.align_labels.html#matplotlib.figure.Figure.align_labels" title="matplotlib.figure.Figure.align_labels" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig3</span><span class="o">.</span><span class="n">align_labels</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig3</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_saxs_003.png" srcset="../_images/sphx_glr_saxs_003.png" alt="saxs" class = "sphx-glr-single-img"/><div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-saxs-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/f4c1610fd524ce45cd864108b3c06193/saxs.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">saxs.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/d34dc3c27815923871231a6af759d6c4/saxs.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">saxs.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4308248a3d11b1d754c7ec298d33c95c/saxs.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">saxs.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="dipole-correlations.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Calculating and interpreting dipolar pair correlation functions</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="dielectric-profiles.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Dielectric profile calculation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Small-angle X-ray scattering</a><ul>
+<li><a class="reference internal" href="#load-simulation-data">Load Simulation Data</a></li>
+<li><a class="reference internal" href="#extract-small-angle-x-ray-scattering-saxs-intensities">Extract small angle x-ray scattering (SAXS) intensities</a></li>
+<li><a class="reference internal" href="#computing-oxygen-and-hydrogen-contributions">Computing oxygen and hydrogen contributions</a></li>
+<li><a class="reference internal" href="#connection-of-the-structure-factor-to-the-radial-distribution-function">Connection of the structure factor to the radial distribution function</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>
