@@ -683,3 +683,32 @@ def test_parallel_welford(n_A, n_B):
     assert n_AB == len(series_AB)
     assert_allclose(mu_AB, series_AB.mean(), rtol=1e-9)
     assert_allclose(M_AB, series_AB.var() * len(series_AB), rtol=1e-9)
+
+def test_parallel_welford_empty():
+    """Test parallel Welford algorithm with empty series."""
+    series_A = np.random.rand(10)
+    n_A = len(series_A)
+    n_B = 0  # empty series
+    mu_A = series_A.mean()
+    mu_B = np.nan  # mean of empty series is NaN
+    M_A = len(series_A) * series_A.var()
+    M_B = np.nan
+
+    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(n_A, n_B, mu_A, mu_B, M_A, M_B)
+
+    assert n_AB == len(series_A)
+    assert mu_AB == mu_A
+    assert M_AB == M_A
+
+    # Test the other way around, series_A is empty
+    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(n_B, n_A, mu_B, mu_A, M_B, M_A)
+
+    assert n_AB == len(series_A)
+    assert mu_AB == mu_A
+    assert M_AB == M_A
+
+    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(0, 0, np.nan, np.nan, np.nan, np.nan)
+
+    assert n_AB == 0
+    assert np.isnan(mu_AB)
+    assert np.isnan(M_AB)
