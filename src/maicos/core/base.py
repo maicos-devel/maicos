@@ -23,7 +23,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from typing_extensions import Self
 
 from .._version import get_versions
-from ..lib.math import center_cluster
+from ..lib.math import center_cluster, parallel_welford
 from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
@@ -471,24 +471,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                pop_A = self._pop[key]  # type: ignore
-                pop_B = self.pop[key]  # type: ignore
-                pop_AB = pop_A + pop_B  # type: ignore
+                self.pop[key], self.means[key], self.M[key] = parallel_welford(  # type: ignore
+                    self._pop[key],  # type: ignore
+                    self.pop[key],  # type: ignore
+                    self._obs[key],  # type: ignore
+                    self.means[key],  # type: ignore
+                    self._var[key] * self._pop[key],  # type: ignore
+                    self.M[key],  # type: ignore
+                )
 
-                old_mean = np.nan_to_num(self.means[key])  # type: ignore
-                delta = np.nan_to_num(self._obs[key] - old_mean)  # type: ignore
-                delta = delta.astype(float)  # type: ignore
-
-                self.means[key] += delta * (pop_A / pop_AB)  # type: ignore
-                self.M[key] += np.nan_to_num(  # type: ignore
-                    self._var[key] * pop_A + delta**2 * (pop_A * pop_B) / pop_AB  # type: ignore
-                )  # type: ignore
-
-                self.sems[key] = np.sqrt(self.M[key] / pop_AB**2)  # type: ignore
+                self.sems[key] = np.sqrt(self.M[key] / self.pop[key] ** 2)  # type: ignore
                 self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
-
-                # Finally update the population of B
-                self.pop[key] += self._pop[key]  # type: ignore
 
         except AttributeError as err:
             with logging_redirect_tqdm():

@@ -669,18 +669,18 @@ def test_form_factor_unknown_element():
         "`maicos.lib.tables.elements` set."
     )
     with pytest.raises(ValueError, match=match):
-        maicos.lib.math.compute_form_factor(0.0, "foo")
+        maicos.lib.math.atomic_form_factor(0.0, "foo")
 
 
 @pytest.mark.parametrize(
     ("n_A", "n_B"),
     [
-        (1, 1), # trivial case
-        (1, 10), # series B is larger than the other
-        (10, 1), # series A is larger than the other
-        (10000, 10000), # both series are large
-        (10000, 1), # series A is much larger than series B
-        (1, 10000), # series B is much larger than series A
+        (1, 1),  # trivial case
+        (1, 10),  # series B is larger than the other
+        (10, 1),  # series A is larger than the other
+        (10000, 10000),  # both series are large
+        (10000, 1),  # series A is much larger than series B
+        (1, 10000),  # series B is much larger than series A
     ],
 )
 def test_parallel_welford(n_A, n_B):
@@ -705,6 +705,7 @@ def test_parallel_welford(n_A, n_B):
     assert_allclose(mu_AB, series_AB.mean(), rtol=1e-9)
     assert_allclose(M_AB, series_AB.var() * len(series_AB), rtol=1e-9)
 
+
 def test_parallel_welford_empty():
     """Test parallel Welford algorithm with empty series."""
     series_A = np.random.rand(10)
@@ -728,7 +729,10 @@ def test_parallel_welford_empty():
     assert mu_AB == mu_A
     assert M_AB == M_A
 
-    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(0, 0, np.nan, np.nan, np.nan, np.nan)
+    # Test both series are empty
+    n_AB, mu_AB, M_AB = maicos.lib.math.parallel_welford(
+        0, 0, np.nan, np.nan, np.nan, np.nan
+    )
 
     assert n_AB == 0
     assert np.isnan(mu_AB)
