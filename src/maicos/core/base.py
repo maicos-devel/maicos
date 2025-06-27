@@ -471,16 +471,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                self.pop[key], self.means[key], self.M[key] = parallel_welford(  # type: ignore
+                self.pop[key], self.means[key], self.M2[key] = parallel_welford(  # type: ignore
                     self._pop[key],  # type: ignore
                     self.pop[key],  # type: ignore
                     self._obs[key],  # type: ignore
                     self.means[key],  # type: ignore
                     self._var[key] * self._pop[key],  # type: ignore
-                    self.M[key],  # type: ignore
+                    self.M2[key],  # type: ignore
                 )
 
-                self.sems[key] = np.sqrt(self.M[key] / self.pop[key] ** 2)  # type: ignore
+                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore
                 self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
 
         except AttributeError as err:
@@ -493,7 +493,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.means = Results()
             self.sems = Results()
             self.pop = Results()
-            self.M = Results()
+            self.M2 = Results()
 
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
@@ -511,7 +511,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self.means[key] = float(self._obs[key])
                 self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
 
-                self.M[key] = self._var[key] * self._pop[key]
+                self.M2[key] = self._var[key] * self._pop[key]
                 self.pop[key] = self._pop[key]
                 self.sums[key] = self._obs[key] * self._pop[key]
 
