@@ -530,7 +530,7 @@ class TestProfileCylinderBase:
         """Test the histogram method."""
         p = ProfileCylinderBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None
         )
 
@@ -540,7 +540,7 @@ class TestProfileCylinderBase:
         """Test the histogram method with weights."""
         p = ProfileCylinderBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
             weights=5 * np.ones(p.n_bins),
         )
