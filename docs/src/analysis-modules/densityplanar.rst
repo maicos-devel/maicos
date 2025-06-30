@@ -7,5 +7,4 @@ DensityPlanar
 
 .. autoclass:: maicos.DensityPlanar
     :members:
-    :undoc-members:
     :show-inheritance:
