@@ -4,14 +4,14 @@ on:
   pull_request:
     paths:
       # build wheels in PR if this file changed
-      - '.github/workflows/build.yml'
+      - ".github/workflows/build.yml"
       # build wheels in PR if any of the build system files changed
-      - '**/setup.py'
-      - '**/pyproject.toml'
-      - '**/MANIFEST.in'
+      - "**/setup.py"
+      - "**/pyproject.toml"
+      - "**/MANIFEST.in"
   schedule:
     # check the build once a week on mondays
-    - cron: '0 10 * * 1'
+    - cron: "0 10 * * 1"
   workflow_dispatch:
     # allow manual triggering of the workflow
 
@@ -21,6 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        # macos-13 is an intel runner, macos-15 is apple silicon
         os: [ubuntu-24.04, ubuntu-24.04-arm, windows-2025, macos-13, macos-15]
 
     steps:
@@ -28,21 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          check-latest: true
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
-
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_BUILD: cp313-*
-          CIBW_SKIP: "*musllinux*"
-          CIBW_BUILD_VERBOSITY: 1
+        uses: pypa/cibuildwheel@v3.0.0
 
       - uses: actions/upload-artifact@v4
         with:
