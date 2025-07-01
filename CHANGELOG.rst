@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche
 
+- Run scheduled tests on MDAnalysis dev version (#506)
 - Disable warnings in test output (#505)
 - Update release workflow documentation (#504)
 
