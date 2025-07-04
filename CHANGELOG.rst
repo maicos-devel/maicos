@@ -9,8 +9,11 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
-Unreleased
-----------
+.. Unreleased
+.. ----------
+
+v0.11.1 (2025/07/04)
+--------------------
 Philip Loche
 
 - Provide wheels for all Python versions (#508)
