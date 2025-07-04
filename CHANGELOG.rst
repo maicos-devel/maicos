@@ -14,6 +14,7 @@ Unreleased
 Philip Loche
 
 - Provide wheels for all Python versions (#508)
+- Run scheduled tests on MDAnalysis dev version (#506)
 - Disable warnings in test output (#505)
 - Update release workflow documentation (#504)
 
