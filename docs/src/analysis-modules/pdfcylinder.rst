@@ -3,7 +3,6 @@
 PDFCylinder
 ###########
 
-.. autoclass:: maicos.modules.pdfcylinder.PDFCylinder
+.. autoclass:: maicos.PDFCylinder
     :members:
-    :undoc-members:
     :show-inheritance:
