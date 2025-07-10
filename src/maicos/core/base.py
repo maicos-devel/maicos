@@ -23,7 +23,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from typing_extensions import Self
 
 from .._version import get_versions
-from ..lib.math import center_cluster, new_mean, new_variance
+from ..lib.math import center_cluster, parallel_welford
 from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
@@ -451,33 +451,37 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
 
         self._obs = Results()
+        self._var = Results()
+        self._pop = Results()
 
         self.timeseries[current_frame_index] = self._single_frame()
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
         try:
+            # Fail fast if the means and sems are not defined yet.
+            self.means  # type: ignore  # noqa B018
+            self.sems  # type: ignore  # noqa B018
+
             for key in self._obs:
-                if type(self._obs[key]) is list:
+                # Sanitize the data type of the observable
+                if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
-                old_mean = self.means[key]  # type: ignore
-                old_var = self.sems[key] ** 2 * (self._index - 1)  # type: ignore
-                self.means[key] = new_mean(  # type: ignore
+                if key not in self._pop:
+                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
+                    self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
+
+                self.pop[key], self.means[key], self.M2[key] = parallel_welford(  # type: ignore
+                    self._pop[key],  # type: ignore
+                    self.pop[key],  # type: ignore
+                    self._obs[key],  # type: ignore
                     self.means[key],  # type: ignore
-                    self._obs[key],
-                    self._index,  # type: ignore
-                )  # type: ignore
-                self.sems[key] = np.sqrt(  # type: ignore
-                    new_variance(
-                        old_var,
-                        old_mean,
-                        self.means[key],  # type: ignore
-                        self._obs[key],
-                        self._index,
-                    )
-                    / self._index
+                    self._var[key] * self._pop[key],  # type: ignore
+                    self.M2[key],  # type: ignore
                 )
-                self.sums[key] += self._obs[key]  # type: ignore
+
+                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore
+                self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
 
         except AttributeError as err:
             with logging_redirect_tqdm():
@@ -485,13 +489,31 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).
-            self.sums = self._obs.copy()
-            self.means = self._obs.copy()
+            self.sums = Results()
+            self.means = Results()
             self.sems = Results()
+            self.pop = Results()
+            self.M2 = Results()
+
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
-                self.sems[key] = np.zeros(np.shape(self._obs[key]))
+                if isinstance(self._obs[key], list):
+                    self._obs[key] = np.array(self._obs[key])
+                if key not in self._pop:
+                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
+                    self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
+                    self._var[key].fill(np.nan)
+
+                if isinstance(self._obs[key], np.ndarray):
+                    self.means[key] = np.astype(self._obs[key], float)
+                else:
+                    self.means[key] = float(self._obs[key])
+                self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
+
+                self.M2[key] = self._var[key] * self._pop[key]
+                self.pop[key] = self._pop[key]
+                self.sums[key] = self._obs[key] * self._pop[key]
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
@@ -813,25 +835,30 @@ class ProfileBase:
             )
 
         weights = self.weighting_function(self.atomgroup)
-        profile = self._compute_histogram(positions, weights)
+        self._obs.profile, bin_indices = self._compute_histogram(positions, weights)
 
-        self._obs.bincount = self._compute_histogram(positions, weights=None)
+        self._obs.bincount = np.bincount(
+            bin_indices[bin_indices > -1],
+            minlength=self.n_bins,  # type: ignore
+        )
 
         if self.normalization == "volume":
-            profile /= self._obs.bin_volume
-
-        self._obs.profile = profile
-
+            self._obs.profile /= self._obs.bin_volume
+        elif self.normalization == "number":
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self._obs.profile /= self._obs.bincount
+            self._pop.profile = np.nan_to_num(self._obs.bincount, nan=0)  # type: ignore
+            self._var.profile, _ = (  # type: ignore
+                self._compute_histogram(  # type: ignore
+                    positions,
+                    weights - self._obs.profile[bin_indices],  # type: ignore
+                )
+            )  # type: ignore
+            self._var.profile /= self._obs.bincount  # type: ignore
         return None
 
     def _conclude(self) -> None:
-        if self.normalization == "number":
-            with np.errstate(divide="ignore", invalid="ignore"):
-                self.results.profile = (
-                    self.sums.profile / self.sums.bincount  # type: ignore
-                )
-        else:
-            self.results.profile = self.means.profile  # type: ignore
+        self.results.profile = self.means.profile  # type: ignore
         self.results.dprofile = self.sems.profile  # type: ignore
 
     @render_docs
