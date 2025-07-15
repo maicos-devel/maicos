@@ -42,11 +42,13 @@ following format:
 
     .. autoclass:: maicos.ModuleName
         :members:
-        :undoc-members:
         :show-inheritance:
 
-Note that all files located within ``docs/src/examples`` are generated from the Python
-scrips located in ``examples`` using `Sphinx-Gallery`_.
+We use the ``:members:`` directive to include inherited methods and attributes like the
+``save`` method.
+
+All files located within ``docs/src/examples`` are generated from the Python scrips
+located in ``examples`` using `Sphinx-Gallery`_.
 
 .. _`Sphinx` : https://www.sphinx-doc.org/en/master/
 .. _`Sphinx-Gallery` : https://sphinx-gallery.github.io/stable/index.html
