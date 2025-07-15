@@ -1,0 +1,1061 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Usage - command line" href="usage-bash.html" /><link rel="prev" title="Installation" href="../get-started/installation.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Usage - Python interpreter - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../get-started/index.html">Getting started</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../get-started/maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/installation.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/units.html">Some conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/changelog.html">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">How-to guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pair-distribution-functions.html">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipole-correlations.html">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analysis-modules/index.html">Analysis modules</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfplanar.html">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-usage-python-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="usage-python-interpreter">
+<span id="usage-python"></span><span id="sphx-glr-examples-usage-python-py"></span><h1>Usage - Python interpreter<a class="headerlink" href="#usage-python-interpreter" title="Link to this heading">¶</a></h1>
+<p>To follow this tutorial, it is assumed that MAICoS has been <a class="reference internal" href="../get-started/installation.html#label-installation"><span class="std std-ref">installed</span></a> on your computer.</p>
+<p>MAICoS heavily depends on the <a class="reference external" href="https://www.mdanalysis.org">MDAnalysis</a> infrastructure for trajectory loading and
+atom selection. Here we will only cover a small aspects of the capabilities of
+<a class="reference external" href="https://www.mdanalysis.org">MDAnalysis</a>. If you want to learn more about the library, take a look at their
+<a class="reference external" href="https://docs.mdanalysis.org/stable/index.html">documentation</a>.</p>
+<p>Only three MAICoS analysis modules are used in this tutorial
+<a class="reference internal" href="../analysis-modules/densityplanar.html#maicos.DensityPlanar" title="maicos.DensityPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DensityPlanar</span></code></a>, <a class="reference internal" href="../analysis-modules/velocityplanar.html#maicos.VelocityPlanar" title="maicos.VelocityPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.VelocityPlanar</span></code></a> and
+<a class="reference internal" href="../analysis-modules/diporderplanar.html#maicos.DiporderPlanar" title="maicos.DiporderPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DiporderPlanar</span></code></a> but all modules follow the same structure:</p>
+<ol class="arabic simple">
+<li><p>load your simulation data into an <a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.core.universe.Universe</span></code></a></p></li>
+<li><p>define analysis parameters like bin width or the direction of the analysis</p></li>
+<li><p>after the analysis was succesful, access all results in a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.analysis.base.Results</span></code> of the analysis object.</p></li>
+</ol>
+<p>Note that some of the calculations may contain pitfall, such as dielectric profiles
+calculation. Potential pitfalls and best practices are listed in the
+<a class="reference internal" href="index.html#userdoc-how-to"><span class="std std-ref">How-to guides</span></a> section.</p>
+<p>To start, let us first import Matplotlib, MDAnalysis and MAICoS</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">MDAnalysis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mda</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">maicos</span>
+</pre></div>
+</div>
+<section id="load-simulation-data">
+<h2>Load Simulation Data<a class="headerlink" href="#load-simulation-data" title="Link to this heading">¶</a></h2>
+<p>For this tutorial we use a system consisting of a 2D slab with 1176 water molecules
+confined in a 2D slit made of NaCl atoms, where the two water/solid interfaces are
+normal to the axis <span class="math notranslate nohighlight">\(z\)</span> as shown in the snapshot below:</p>
+<img alt="Snapshot Slit Flow System" class="only-dark" src="../_images/slit-flow-dark.png" />
+<img alt="Snapshot Slit Flow System" class="only-light" src="../_images/slit-flow-light.png" />
+<p>An acceleration <span class="math notranslate nohighlight">\(a = 0.05\,\text{nm}\,\text{ps}^{-2}\)</span> was applied to the water
+molecules in the <span class="math notranslate nohighlight">\(\boldsymbol{e}_x\)</span> direction parallel to the NaCl wall, and the
+atoms of the wall were maintained frozen along <span class="math notranslate nohighlight">\(\boldsymbol{e}_x\)</span>.</p>
+<p>We first create an <a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.core.universe.Universe</span></code></a> by loading a topology
+and trajectory from disk. You can download the <a class="reference download internal" download="" href="../_downloads/15b1560cbf58de183c294a37e87db4ad/slit_flow.tpr"><code class="xref download docutils literal notranslate"><span class="pre">topology</span></code></a>
+and the <a class="reference download internal" download="" href="../_downloads/0d3de816a036c46c4649552cd493d08c/slit_flow.trr"><code class="xref download docutils literal notranslate"><span class="pre">trajectory</span></code></a> from our website.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class"><span class="n">mda</span><span class="o">.</span><span class="n">Universe</span></a><span class="p">(</span><span class="s2">&quot;slit_flow.tpr&quot;</span><span class="p">,</span> <span class="s2">&quot;slit_flow.trr&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let us print a few information about the trajectory:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of frames in the trajectory is </span><span class="si">{</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.trajectory" title="MDAnalysis.core.universe.Universe.trajectory" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">n_frames</span></a><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">timestep</span></a> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.trajectory" title="MDAnalysis.core.universe.Universe.trajectory" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">dt</span></a><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time interval between two frames is </span><span class="si">{</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">timestep</span></a><span class="si">}</span><span class="s2"> ps.&quot;</span><span class="p">)</span>
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">total_time</span></a> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.trajectory" title="MDAnalysis.core.universe.Universe.trajectory" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">totaltime</span></a><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total simulation time is </span><span class="si">{</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">total_time</span></a><span class="si">}</span><span class="s2"> ps.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Number of frames in the trajectory is 201.
+Time interval between two frames is 10.0 ps.
+Total simulation time is 2000.0 ps.
+</pre></div>
+</div>
+<p>Now, we define four atom groups containing repectively:</p>
+<ol class="arabic simple">
+<li><p>the oxygen and the hydrogen atoms (of the water molecules),</p></li>
+<li><p>the oxygen atoms (of the water molecules),</p></li>
+<li><p>the hydrogen atoms (of the water molecules),</p></li>
+<li><p>the Na and Cl atoms (of the wall):</p></li>
+</ol>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type OW HW&quot;</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type OW&quot;</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type HW&quot;</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_NaCl</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.select_atoms" title="MDAnalysis.core.universe.Universe.select_atoms" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span></a><span class="p">(</span><span class="s2">&quot;type SOD CLA&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let us print a few information about the groups</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of water molecules is </span><span class="si">{</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup.n_atoms" title="MDAnalysis.core.groups.AtomGroup.n_atoms" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-property"><span class="n">group_O</span><span class="o">.</span><span class="n">n_atoms</span></a><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of NaCl atoms is </span><span class="si">{</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup.n_atoms" title="MDAnalysis.core.groups.AtomGroup.n_atoms" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-property"><span class="n">group_NaCl</span><span class="o">.</span><span class="n">n_atoms</span></a><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Number of water molecules is 1176.
+Number of NaCl atoms is 784.
+</pre></div>
+</div>
+</section>
+<section id="density-profiles">
+<h2>Density Profiles<a class="headerlink" href="#density-profiles" title="Link to this heading">¶</a></h2>
+<p>Let us use the <a class="reference internal" href="../analysis-modules/densityplanar.html#maicos.DensityPlanar" title="maicos.DensityPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DensityPlanar</span></code></a> class to extract the density profile of
+the <code class="docutils literal notranslate"><span class="pre">group_H2O</span></code> along the (default) <span class="math notranslate nohighlight">\(z\)</span> axis by running the analysis:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dplan</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The warning starting with <em>Unwrapping</em> is perfectly normal and can be ignored for now.</p>
+<p>Let us extract the bin coordinates <span class="math notranslate nohighlight">\(z\)</span> and the averaged density profile from the
+<code class="docutils literal notranslate"><span class="pre">results</span></code> attribute:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a>
+</pre></div>
+</div>
+<p>The density profile is given as a 1D array, let us look at the 10 first lines:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens</span></a><span class="p">[:</span><span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00
+ 0.00000000e+00 2.91778321e-05 3.26228275e-01 9.99460390e-01
+ 5.32837124e-01 5.64829866e-01]
+</pre></div>
+</div>
+<p>By default the <code class="docutils literal notranslate"><span class="pre">bin_width</span></code> is 1 Å, and the unit is atomic mass per <span class="math notranslate nohighlight">\(Å^3\)</span>
+(<span class="math notranslate nohighlight">\(\text{u}/\text{Å}^3\)</span>).</p>
+<p>Let us plot the density profile using Matplotlib:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($\rm Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density H2O ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_001.png" srcset="../_images/sphx_glr_usage-python_001.png" alt="usage python" class = "sphx-glr-single-img"/><section id="uncertainity-estimates">
+<h3>Uncertainity estimates<a class="headerlink" href="#uncertainity-estimates" title="Link to this heading">¶</a></h3>
+<p>MAICoS estimates the uncertainity for each profile. This uncertainity is stored inside
+the <cite>dprofile</cite> attribute.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">uncertainity</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">dprofile</span></a>
+
+<span class="c1"># Let us plot the results also showing the uncertainities</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.errorbar.html#matplotlib.axes.Axes.errorbar" title="matplotlib.axes.Axes.errorbar" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens</span></a><span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">uncertainity</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($\rm Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density H2O ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_002.png" srcset="../_images/sphx_glr_usage-python_002.png" alt="usage python" class = "sphx-glr-single-img"/><p>For this example we scale the error by 5 to be visible in the plot.</p>
+<p>The uncertainity estimatation assumes that the trajectory data is uncorraleted. If the
+correlation time is too high or not reasonably computable a warning occurs that the
+uncertainity estimatation might be unreasonable.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/maicos/maicos/src/maicos/core/base.py:510: UserWarning: Your trajectory is too short to estimate a correlation time. Use the calculated error estimates with caution.
+  self.corrtime = correlation_analysis(self.timeseries)
+
+&lt;maicos.modules.densityplanar.DensityPlanar object at 0x7effad301bd0&gt;
+</pre></div>
+</div>
+</section>
+<section id="improving-the-results">
+<h3>Improving the Results<a class="headerlink" href="#improving-the-results" title="Link to this heading">¶</a></h3>
+<p>By changing the value of the default parameters, one can improve the results, and
+perform more advanced operations.</p>
+<p>Let us increase the spatial resolution by reducing the <code class="docutils literal notranslate"><span class="pre">bin_width</span></code>, and extract two
+profiles instead of one:</p>
+<ul class="simple">
+<li><p>one for the oxygen atoms of the water molecules,</p></li>
+<li><p>one from the hydrogen atoms:</p></li>
+</ul>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ag</span></a> <span class="ow">in</span> <span class="p">[</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_O</span></a><span class="p">,</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H</span></a><span class="p">]:</span>
+    <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ag</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="p">)</span>
+
+<span class="c1"># TODO(@PicoCentauri): Intoduce AnalysisCollection here?</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_smaller_bin_O</span></a> <span class="o">=</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_smaller_bin_O</span></a> <span class="o">=</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_smaller_bin_H</span></a> <span class="o">=</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_smaller_bin_H</span></a> <span class="o">=</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_smaller_bin</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span>
+</pre></div>
+</div>
+<p>Let us plot the results using two differents <span class="math notranslate nohighlight">\(y\)</span>-axis:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_smaller_bin_O</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_smaller_bin_O</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;Oxygen&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_smaller_bin_H</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_smaller_bin_H</span></a> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;Hydrogen&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density O ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.twinx.html#matplotlib.axes.Axes.twinx" title="matplotlib.axes.Axes.twinx" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span></a><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density H ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html#matplotlib.axes.Axes.legend" title="matplotlib.axes.Axes.legend" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_003.png" srcset="../_images/sphx_glr_usage-python_003.png" alt="usage python" class = "sphx-glr-single-img"/></section>
+<section id="access-to-all-the-module-s-options">
+<h3>Access to all the Module’s Options<a class="headerlink" href="#access-to-all-the-module-s-options" title="Link to this heading">¶</a></h3>
+<p>For each MAICoS module, they are several parameters similar to <code class="docutils literal notranslate"><span class="pre">bin_width</span></code>. The
+parameter list and default options are listed in the <a class="reference internal" href="../analysis-modules/dielectricplanar.html#dielectricplanar"><span class="std std-ref">module’s documentation</span></a>, and can be gathered by calling the help function of Python:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">help</span><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Help on class DensityPlanar in module maicos.modules.densityplanar:
+
+class DensityPlanar(maicos.core.planar.ProfilePlanarBase)
+ |  DensityPlanar(
+ |      atomgroup: MDAnalysis.core.groups.AtomGroup,
+ |      dens: str = &#39;mass&#39;,
+ |      dim: int = 2,
+ |      zmin: float | None = None,
+ |      zmax: float | None = None,
+ |      bin_width: float = 1,
+ |      refgroup: MDAnalysis.core.groups.AtomGroup | None = None,
+ |      sym: bool = False,
+ |      grouping: str = &#39;atoms&#39;,
+ |      unwrap: bool = True,
+ |      pack: bool = True,
+ |      bin_method: str = &#39;com&#39;,
+ |      output: str = &#39;density.dat&#39;,
+ |      concfreq: int = 0,
+ |      jitter: float = 0.0
+ |  ) -&gt; None
+ |
+ |  Cartesian partial density profiles.
+ |
+ |  Calculations are carried out for ``mass``
+ |  :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`, partial ``charge``
+ |  :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})` density
+ |  profiles
+ |  along certain cartesian axes ``[x, y, z]`` of the simulation
+ |  cell.
+ |  Cell dimensions are allowed to fluctuate in time.
+ |
+ |  For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
+ |  centers (i.e., center of mass), taking into account periodic boundary conditions,
+ |  are calculated. For these calculations molecules will be unwrapped/made whole.
+ |  Trajectories containing already whole molecules can be run with ``unwrap=False`` to
+ |  gain a speedup. For grouping with respect to atoms, the ``unwrap`` option is always
+ |  ignored.
+ |
+ |  For the correlation analysis the central bin
+ |  (:math:`N / 2`) of the 0th&#39;s group profile is used. For further information on the correlation analysis please
+ |  refer to :class:`AnalysisBase &lt;maicos.core.base.AnalysisBase&gt;` or the
+ |  :ref:`general-design` section.
+ |
+ |  Parameters
+ |  ----------
+ |  atomgroup : MDAnalysis.core.groups.AtomGroup
+ |      A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
+ |      performed.
+ |  unwrap : bool
+ |      When :obj:`True`, molecules that are broken due to the periodic boundary conditions
+ |      are made whole.
+ |
+ |      If the input contains molecules that are already whole, speed up the calculation by
+ |      disabling unwrap. To do so, use the flag ``-no-unwrap`` when using MAICoS from the
+ |      command line, or use ``unwrap=False`` when using MAICoS from the Python interpreter.
+ |
+ |      Note: Molecules containing virtual sites (e.g. TIP4P water models) are not currently
+ |      supported in MDAnalysis. In this case, you need to provide unwrapped trajectory
+ |      files directly, and disable unwrap. Trajectories can be unwrapped, for example,
+ |      using the ``trjconv`` command of GROMACS.
+ |  pack : bool
+ |      When :obj:`True`, molecules are put back into the unit cell. This is required
+ |      because MAICoS only takes into account molecules that are inside the unit cell.
+ |
+ |      If the input contains molecules that are already packed, speed up the calculation by
+ |      disabling packing with ``pack=False``.
+ |  refgroup : MDAnalysis.core.groups.AtomGroup
+ |      Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation. If
+ |      ``refgroup`` is provided, the calculation is performed relative to the center of
+ |      mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are performed
+ |      with respect to the center of the (changing) box.
+ |  jitter : float
+ |      Magnitude of the random noise to add to the atomic positions.
+ |
+ |      A jitter can be used to stabilize the aliasing effects sometimes appearing when
+ |      histogramming data. The jitter value should be about the precision of the
+ |      trajectory. In that case, using jitter will not alter the results of the histogram.
+ |      If ``jitter = 0.0`` (default), the original atomic positions are kept unchanged.
+ |
+ |      You can estimate the precision of the positions in your trajectory with
+ |      :func:`maicos.lib.util.trajectory_precision`. Note that if the precision is not the
+ |      same for all frames, the smallest precision should be used.
+ |  concfreq : int
+ |      When concfreq (for conclude frequency) is larger than ``0``, the conclude function
+ |      is called and the output files are written every ``concfreq`` frames.
+ |  dim : {0, 1, 2}
+ |      Dimension for binning (``x=0``, ``y=1``, ``z=1``).
+ |  zmin : float
+ |      Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
+ |      refgroup.
+ |
+ |      If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
+ |      account.
+ |  zmax : float
+ |      Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
+ |      refgroup.
+ |
+ |      If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
+ |      account.
+ |  bin_width : float
+ |      Width of the bins (in Å).
+ |  sym : bool
+ |      Symmetrize the profile. Only works in combination with ``refgroup``.
+ |  grouping : {``&quot;atoms&quot;``, ``&quot;residues&quot;``, ``&quot;segments&quot;``, ``&quot;molecules&quot;``, ``&quot;fragments&quot;``}
+ |      Atom grouping for the calculations.
+ |
+ |      The possible grouping options are the atom positions (in the case where
+ |      ``grouping=&quot;atoms&quot;``) or the center of mass of the specified grouping unit (in the
+ |      case where ``grouping=&quot;residues&quot;``, ``&quot;segments&quot;``, ``&quot;molecules&quot;`` or
+ |      ``&quot;fragments&quot;``).
+ |  bin_method : {``&quot;com&quot;``, ``&quot;cog&quot;``, ``&quot;coc&quot;``}
+ |      Method for the position binning.
+ |
+ |      The possible options are center of mass (``&quot;com&quot;``), center of geometry (``&quot;cog&quot;``),
+ |      and center of charge (``&quot;coc&quot;``).
+ |  output : str
+ |      Output filename.
+ |  dens : {``&quot;mass&quot;``, ``&quot;number&quot;``, ``&quot;charge&quot;``, ``&quot;electron&quot;``}
+ |      density type to be calculated.
+ |
+ |  Attributes
+ |  ----------
+ |  results.bin_pos : numpy.ndarray
+ |      Bin positions (in Å) ranging from ``zmin`` to ``zmax``.
+ |  results.profile : numpy.ndarray
+ |      Calculated profile.
+ |  results.dprofile : numpy.ndarray
+ |      Estimated profile&#39;s uncertainity.
+ |
+ |  Notes
+ |  -----
+ |  Partial mass density profiles can be used to calculate the ideal component of the
+ |  chemical potential. For details, take a look at the corresponding :ref:`How-to
+ |  guide&lt;howto-chemical-potential&gt;`.
+ |
+ |  Method resolution order:
+ |      DensityPlanar
+ |      maicos.core.planar.ProfilePlanarBase
+ |      maicos.core.planar.PlanarBase
+ |      maicos.core.base.AnalysisBase
+ |      maicos.core.base._Runner
+ |      MDAnalysis.analysis.base.AnalysisBase
+ |      maicos.core.base.ProfileBase
+ |      builtins.object
+ |
+ |  Methods defined here:
+ |
+ |  __init__(
+ |      self,
+ |      atomgroup: MDAnalysis.core.groups.AtomGroup,
+ |      dens: str = &#39;mass&#39;,
+ |      dim: int = 2,
+ |      zmin: float | None = None,
+ |      zmax: float | None = None,
+ |      bin_width: float = 1,
+ |      refgroup: MDAnalysis.core.groups.AtomGroup | None = None,
+ |      sym: bool = False,
+ |      grouping: str = &#39;atoms&#39;,
+ |      unwrap: bool = True,
+ |      pack: bool = True,
+ |      bin_method: str = &#39;com&#39;,
+ |      output: str = &#39;density.dat&#39;,
+ |      concfreq: int = 0,
+ |      jitter: float = 0.0
+ |  ) -&gt; None
+ |      Initialize self.  See help(type(self)) for accurate signature.
+ |
+ |  ----------------------------------------------------------------------
+ |  Readonly properties inherited from maicos.core.planar.PlanarBase:
+ |
+ |  odims
+ |      Other dimensions perpendicular to dim i.e. (0,2) if dim = 1.
+ |
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from maicos.core.base.AnalysisBase:
+ |
+ |  run(
+ |      self,
+ |      start: int | None = None,
+ |      stop: int | None = None,
+ |      step: int | None = None,
+ |      frames: int | None = None,
+ |      verbose: bool | None = None,
+ |      progressbar_kwargs: dict | None = None
+ |  ) -&gt; Self
+ |      Iterate over the trajectory.
+ |
+ |  savetxt(self, fname: str, X: numpy.ndarray, columns: list[str] | None = None) -&gt; None
+ |      Save to text.
+ |
+ |      An extension of the numpy savetxt function. Adds the command line input to the
+ |      header and checks for a doubled defined filesuffix.
+ |
+ |      Return a header for the text file to save the data to. This method builds a
+ |      generic header that can be used by any MAICoS module. It is called by the save
+ |      method of each module.
+ |
+ |      The information it collects is:
+ |        - timestamp of the analysis
+ |        - name of the module
+ |        - version of MAICoS that was used
+ |        - command line arguments that were used to run the module
+ |        - module call including the default arguments
+ |        - number of frames that were analyzed
+ |        - atomgroup that was analyzed
+ |        - output messages from modules and base classes (if they exist)
+ |
+ |  ----------------------------------------------------------------------
+ |  Readonly properties inherited from maicos.core.base.AnalysisBase:
+ |
+ |  box_center
+ |      Center of the simulation cell.
+ |
+ |  box_lengths
+ |      Lengths of the simulation cell vectors.
+ |
+ |  ----------------------------------------------------------------------
+ |  Data descriptors inherited from maicos.core.base._Runner:
+ |
+ |  __dict__
+ |      dictionary for instance variables
+ |
+ |  __weakref__
+ |      list of weak references to the object
+ |
+ |  ----------------------------------------------------------------------
+ |  Class methods inherited from MDAnalysis.analysis.base.AnalysisBase:
+ |
+ |  get_supported_backends()
+ |      Tuple with backends supported by the core library for a given class.
+ |      User can pass either one of these values as ``backend=...`` to
+ |      :meth:`run()` method, or a custom object that has ``apply`` method
+ |      (see documentation for :meth:`run()`):
+ |
+ |       - &#39;serial&#39;: no parallelization
+ |       - &#39;multiprocessing&#39;: parallelization using `multiprocessing.Pool`
+ |       - &#39;dask&#39;: parallelization using `dask.delayed.compute()`. Requires
+ |         installation of `mdanalysis[dask]`
+ |
+ |      If you want to add your own backend to an existing class, pass a
+ |      :class:`backends.BackendBase` subclass (see its documentation to learn
+ |      how to implement it properly), and specify ``unsupported_backend=True``.
+ |
+ |      Returns
+ |      -------
+ |      tuple
+ |          names of built-in backends that can be used in :meth:`run(backend=...)`
+ |
+ |
+ |      .. versionadded:: 2.8.0
+ |
+ |  ----------------------------------------------------------------------
+ |  Readonly properties inherited from MDAnalysis.analysis.base.AnalysisBase:
+ |
+ |  parallelizable
+ |      Boolean mark showing that a given class can be parallelizable with
+ |      split-apply-combine procedure. Namely, if we can safely distribute
+ |      :meth:`_single_frame` to multiple workers and then combine them with a
+ |      proper :meth:`_conclude` call. If set to ``False``, no backends except
+ |      for ``serial`` are supported.
+ |
+ |      .. note::   If you want to check parallelizability of the whole class, without
+ |                  explicitly creating an instance of the class, see
+ |                  :attr:`_analysis_algorithm_is_parallelizable`. Note that you
+ |                  setting it to other value will break things if the algorithm
+ |                  behind the analysis is not trivially parallelizable.
+ |
+ |
+ |      Returns
+ |      -------
+ |      bool
+ |          if a given ``AnalysisBase`` subclass instance
+ |          is parallelizable with split-apply-combine, or not
+ |
+ |
+ |      .. versionadded:: 2.8.0
+ |
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from maicos.core.base.ProfileBase:
+ |
+ |  save(self) -&gt; None
+ |      Save results of analysis to file specified by ``output``.
+</pre></div>
+</div>
+<p>Here we can see that for <a class="reference internal" href="../analysis-modules/densityplanar.html#maicos.DensityPlanar" title="maicos.DensityPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DensityPlanar</span></code></a>, there are several possible
+options such as <code class="docutils literal notranslate"><span class="pre">zmin</span></code>, <code class="docutils literal notranslate"><span class="pre">zmax</span></code> (the minimal and maximal coordinates to consider),
+or <code class="docutils literal notranslate"><span class="pre">refgroup</span></code> (to perform the binning with respect to the center of mass of a
+certain group of atoms).</p>
+<p>Knowing this, let us re-calculate the density profile of <span class="math notranslate nohighlight">\(\mathrm{H_2O}\)</span>, but
+this time using the group <code class="docutils literal notranslate"><span class="pre">group_H2O</span></code> as a reference for the center of mass:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dplan_centered_H2O</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">refgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">dplan_centered_H2O</span><span class="o">.</span><span class="n">run</span></a><span class="p">()</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_centered_H2O</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_centered_H2O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_centered_H2O</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_centered_H2O</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a>
+</pre></div>
+</div>
+<p>Let us also extract the density profile for the NaCl walls, but centered with respect
+to the center of mass of the <span class="math notranslate nohighlight">\(\mathrm{H_2O}\)</span> group:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dplan_centered_NaCl</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_NaCl</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">refgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">dplan_centered_NaCl</span><span class="o">.</span><span class="n">run</span></a><span class="p">()</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_centered_NaCl</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_centered_NaCl</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_centered_NaCl</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dplan_centered_NaCl</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/maicos/maicos/src/maicos/lib/math.py:305: RuntimeWarning: invalid value encountered in divide
+  (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
+/home/runner/work/maicos/maicos/src/maicos/core/base.py:510: UserWarning: Your trajectory does not provide sufficient statistics to estimate a correlation time. Use the calculated error estimates with caution.
+  self.corrtime = correlation_analysis(self.timeseries)
+</pre></div>
+</div>
+<p>An plot the two profiles with different <span class="math notranslate nohighlight">\(y\)</span>-axis:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax1</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_centered_H2O</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_centered_H2O</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\rm H_2O$&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor_centered_NaCl</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dens_centered_NaCl</span></a> <span class="o">/</span> <span class="mi">5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\rm NaCl$&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density O ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.legend.html#matplotlib.axes.Axes.legend" title="matplotlib.axes.Axes.legend" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax2</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.twinx.html#matplotlib.axes.Axes.twinx" title="matplotlib.axes.Axes.twinx" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span></a><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;density NaCl ($\rm u \cdot Å^{-3}$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_004.png" srcset="../_images/sphx_glr_usage-python_004.png" alt="usage python" class = "sphx-glr-single-img"/></section>
+<section id="additional-options">
+<h3>Additional Options<a class="headerlink" href="#additional-options" title="Link to this heading">¶</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> to display extra informations and a progress bar:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dplan_verbose</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">dplan_verbose</span><span class="o">.</span><span class="n">run</span></a><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/201 [00:00&lt;?, ?it/s]
+ 26%|██▌       | 52/201 [00:00&lt;00:00, 512.80it/s]
+ 52%|█████▏    | 104/201 [00:00&lt;00:00, 515.13it/s]
+ 78%|███████▊  | 156/201 [00:00&lt;00:00, 515.99it/s]
+100%|██████████| 201/201 [00:00&lt;00:00, 514.94it/s]
+
+&lt;maicos.modules.densityplanar.DensityPlanar object at 0x7effa3e81310&gt;
+</pre></div>
+</div>
+<p>MAICoS uses Python’s <a class="reference external" href="https://docs.python.org/3/library/logging.html">standard logging library</a> to display additional informations
+during the analysis of your trajectory. If you also want to show the <cite>DEBUG</cite> messages
+you can configure the logger accordingly.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/logging.html#logging.basicConfig" title="logging.basicConfig" class="sphx-glr-backref-module-logging sphx-glr-backref-type-py-function"><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span></a><span class="p">(</span><span class="n">stream</span><span class="o">=</span><a href="https://docs.python.org/3/library/sys.html#sys.stdout" title="sys.stdout" class="sphx-glr-backref-module-sys sphx-glr-backref-type-py-data"><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span></a><span class="p">,</span> <span class="n">level</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span></a><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">dplan_verbose</span><span class="o">.</span><span class="n">run</span></a><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a href="https://docs.python.org/3/library/logging.html#logging.disable" title="logging.disable" class="sphx-glr-backref-module-logging sphx-glr-backref-type-py-function"><span class="n">logging</span><span class="o">.</span><span class="n">disable</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>  0%|          | 0/201 [00:00&lt;?, ?it/s]
+ 25%|██▌       | 51/201 [00:00&lt;00:00, 505.79it/s]
+ 51%|█████     | 103/201 [00:00&lt;00:00, 511.61it/s]
+ 77%|███████▋  | 155/201 [00:00&lt;00:00, 513.61it/s]
+100%|██████████| 201/201 [00:00&lt;00:00, 512.38it/s]
+</pre></div>
+</div>
+<p>For additional options take a look at the <a class="reference external" href="https://docs.python.org/3/howto/logging.html">HOWTO</a> for the logging library.</p>
+<p>To analyse only a subpart of a trajectory file, for instance to analyse only frames 2,
+4, 6, 8, and 10, use the <code class="docutils literal notranslate"><span class="pre">start</span></code>, <code class="docutils literal notranslate"><span class="pre">stop</span></code>, and <code class="docutils literal notranslate"><span class="pre">step</span></code> keywords as follow:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">dplan</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DensityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="velocity-profile">
+<h2>Velocity Profile<a class="headerlink" href="#velocity-profile" title="Link to this heading">¶</a></h2>
+<p>Here we use the same trajectory file, but extract the velocity profile instead of the
+density profile. Do to so, the <a class="reference internal" href="../analysis-modules/velocityplanar.html#maicos.VelocityPlanar" title="maicos.VelocityPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.VelocityPlanar</span></code></a> is used.</p>
+<p>Let us call the velocity module:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">tplan</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">VelocityPlanar</span></a><span class="p">(</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">vdim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flux</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tplan</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vel</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tplan</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a>
+</pre></div>
+</div>
+<p>0`` option, but the binning is made along the default <span class="math notranslate nohighlight">\(z\)</span> axis.</p>
+<p>And plot the velocity profile:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axhline.html#matplotlib.axes.Axes.axhline" title="matplotlib.axes.Axes.axhline" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vel</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;velocity H2O ($Å ps^{-1}$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_005.png" srcset="../_images/sphx_glr_usage-python_005.png" alt="usage python" class = "sphx-glr-single-img"/><hr class="docutils" />
+<p>Finally, still using the same trajectory file, we extract the average orientation of
+the water molecules.</p>
+<p>Let us call the <a class="reference internal" href="../analysis-modules/diporderplanar.html#maicos.DiporderPlanar" title="maicos.DiporderPlanar"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DiporderPlanar</span></code></a> to extract the average orientation of
+the water molecules:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mydiporder</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DiporderPlanar</span></a><span class="p">(</span>
+    <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">refgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">group_H2O</span></a><span class="p">,</span> <span class="n">order_parameter</span><span class="o">=</span><span class="s2">&quot;cos_theta&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then, let us extract the cosinus of the angle of the molecules, <span class="math notranslate nohighlight">\(\cos(\theta)\)</span>:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mydiporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bin_pos</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cos_theta</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mydiporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">profile</span></a>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.axhline.html#matplotlib.axes.Axes.axhline" title="matplotlib.axes.Axes.axhline" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="matplotlib.axes.Axes.plot" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zcoor</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cos_theta</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_xlabel.html#matplotlib.axes.Axes.set_xlabel" title="matplotlib.axes.Axes.set_xlabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;z coordinate ($Å$)&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.set_ylabel.html#matplotlib.axes.Axes.set_ylabel" title="matplotlib.axes.Axes.set_ylabel" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-method"><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\cos$($\theta$)&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_usage-python_006.png" srcset="../_images/sphx_glr_usage-python_006.png" alt="usage python" class = "sphx-glr-single-img"/><div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-usage-python-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/5fa4f84bcf376b67693e5e4a71485107/usage-python.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">usage-python.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/0ca8e3b2660d4340d21cae136b531603/usage-python.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">usage-python.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/b10f90277985d25757a3fe6140b4d167/usage-python.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">usage-python.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="usage-bash.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Usage - command line</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../get-started/installation.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Installation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Usage - Python interpreter</a><ul>
+<li><a class="reference internal" href="#load-simulation-data">Load Simulation Data</a></li>
+<li><a class="reference internal" href="#density-profiles">Density Profiles</a><ul>
+<li><a class="reference internal" href="#uncertainity-estimates">Uncertainity estimates</a></li>
+<li><a class="reference internal" href="#improving-the-results">Improving the Results</a></li>
+<li><a class="reference internal" href="#access-to-all-the-module-s-options">Access to all the Module’s Options</a></li>
+<li><a class="reference internal" href="#additional-options">Additional Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#velocity-profile">Velocity Profile</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

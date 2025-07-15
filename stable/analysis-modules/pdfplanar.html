@@ -1,0 +1,578 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="RDFDiporder" href="rdfdiporder.html" /><link rel="prev" title="PDFCylinder" href="pdfcylinder.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>PDFPlanar - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../get-started/index.html">Getting started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/units.html">Some conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/changelog.html">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">How-to guides</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/pair-distribution-functions.html">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/dipole-correlations.html">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Analysis modules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="pdfplanar">
+<span id="id1"></span><h1>PDFPlanar<a class="headerlink" href="#pdfplanar" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="maicos.PDFPlanar">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">maicos.</span></span><span class="sig-name descname"><span class="pre">PDFPlanar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><span class="pre">AtomGroup</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">g2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><span class="pre">AtomGroup</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf_bin_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dzheight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'com'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pdf.dat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unwrap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refgroup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><span class="pre">AtomGroup</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jitter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/maicos/modules/pdfplanar.html#PDFPlanar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#maicos.PDFPlanar" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../api-documentation/planar/planarbase.html#maicos.core.PlanarBase" title="maicos.core.planar.PlanarBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlanarBase</span></code></a></p>
+<p>Slab-wise planar 2D pair distribution functions.</p>
+<p>The pair distribution function <span class="math notranslate nohighlight">\(g_\mathrm{2D}(r)\)</span> describes the
+spatial correlation between atoms in <span class="math notranslate nohighlight">\(g_1\)</span> and atoms in
+<span class="math notranslate nohighlight">\(g_2\)</span>, which lie in the same plane.
+It gives the average number density of <span class="math notranslate nohighlight">\(g_2\)</span> atoms as a function of lateral
+distance <span class="math notranslate nohighlight">\(r\)</span> from a centered <span class="math notranslate nohighlight">\(g_1\)</span> atom.
+PDFPlanar can be used in systems that are inhomogeneous along one axis,
+and homogeneous in a plane.
+In fully homogeneous systems and in the limit of small ‘dzheight’
+<span class="math notranslate nohighlight">\(\Delta z\)</span>, it is the same as the well known three dimensional PDF.</p>
+<p>The planar PDF is defined by</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[g_\mathrm{2D}(r) = \left \langle
+\frac{1}{N_{g1}} \cdot \sum_{i}^{N_{g1}} \sum_{j}^{N_{g2}}
+\frac{1}{2 \pi r} \delta(r - r_{ij}) \delta(z_{ij})
+\right \rangle .\]</div>
+</div>
+<p>where the brackets <span class="math notranslate nohighlight">\(\langle \cdot \rangle\)</span> denote the ensemble
+average. <span class="math notranslate nohighlight">\(\delta(r- r_{ij})\)</span> counts the <span class="math notranslate nohighlight">\(g_2\)</span> atoms at distance
+<span class="math notranslate nohighlight">\(r\)</span> from atom <span class="math notranslate nohighlight">\(i\)</span>.
+<span class="math notranslate nohighlight">\(\delta(z_{ij})\)</span> ensures that only atoms, which lie
+in the same plane <span class="math notranslate nohighlight">\(z_i = z_j\)</span>, are considered for the PDF.</p>
+<p>Discretized for computational purposes the equation reads as</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[g_\mathrm{2D}(r) =
+\frac{1}{N_{g1}} \cdot \sum_{i}^{N_{g1}} \frac{\mathrm{count}\; g_2 \;
+\mathrm{in}\; \Delta V_i(r) }{\Delta V_i(r)} .\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta V_i(r)\)</span> is a ring around atom i, with inner
+radius <span class="math notranslate nohighlight">\(r - \frac{\Delta r}{2}\)</span>, outer radius
+<span class="math notranslate nohighlight">\(r + \frac{\Delta r}{2}\)</span> and height <span class="math notranslate nohighlight">\(2 \Delta z\)</span>.</p>
+<p>As the density to normalise the PDF with is unknown, the output is in
+the dimension of number/volume in 1/Å^3.</p>
+<p>Functionally, PDFPlanar bins all pairwise <span class="math notranslate nohighlight">\(g_1\)</span>-<span class="math notranslate nohighlight">\(g_2\)</span> distances,
+where the z distance is smaller than ‘dzheight’ in a histogram.</p>
+<p>For a more detailed explanation refer to
+<a class="reference internal" href="../concepts-explanations/pdfs.html#pdfs-explanation"><span class="std std-ref">Explanation: PDF</span></a> and
+<a class="reference internal" href="../concepts-explanations/pdfs.html#pdfplanar-derivation"><span class="std std-ref">PDFPlanar Derivation</span></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g1</strong> (<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><em>MDAnalysis.core.groups.AtomGroup</em></a>) – First AtomGroup.</p></li>
+<li><p><strong>g2</strong> (<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><em>MDAnalysis.core.groups.AtomGroup</em></a>) – Second AtomGroup.</p></li>
+<li><p><strong>pdf_bin_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Binwidth of bins in the histogram of the PDF (Å).</p></li>
+<li><p><strong>dzheight</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – dz height of a PDF slab <span class="math notranslate nohighlight">\(\Delta z\)</span> (Å). <span class="math notranslate nohighlight">\(\Delta z\)</span> is
+introduced to discretize the delta function <span class="math notranslate nohighlight">\(\delta(z_{ij})\)</span>.
+It is the maximum <span class="math notranslate nohighlight">\(z\)</span> distance between atoms which are
+considered to lie in the same plane.
+In the limit of <span class="math notranslate nohighlight">\(\Delta z \to 0\)</span>, PDFPlanar reaches the
+continous limit. However, if <span class="math notranslate nohighlight">\(\Delta z\)</span> is too small, there
+are no atoms in <code class="docutils literal notranslate"><span class="pre">g2</span></code> to sample.
+We recommend a choice of <span class="math notranslate nohighlight">\(\Delta z\)</span> that is 1/10th of
+a bond length.</p></li>
+<li><p><strong>dmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Minimum pairwise distance between <code class="docutils literal notranslate"><span class="pre">g1</span></code> and <code class="docutils literal notranslate"><span class="pre">g2</span></code> (Å).</p></li>
+<li><p><strong>dmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Maximum pairwise distance between <code class="docutils literal notranslate"><span class="pre">g1</span></code> and <code class="docutils literal notranslate"><span class="pre">g2</span></code> (Å).</p></li>
+<li><p><strong>bin_method</strong> ({<code class="docutils literal notranslate"><span class="pre">&quot;com&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;cog&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;coc&quot;</span></code>}) – <p>Method for the position binning.</p>
+<p>The possible options are center of mass (<code class="docutils literal notranslate"><span class="pre">&quot;com&quot;</span></code>), center of geometry (<code class="docutils literal notranslate"><span class="pre">&quot;cog&quot;</span></code>),
+and center of charge (<code class="docutils literal notranslate"><span class="pre">&quot;coc&quot;</span></code>).</p>
+</p></li>
+<li><p><strong>output</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Output filename.</p></li>
+<li><p><strong>unwrap</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – <p>When <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>, molecules that are broken due to the periodic boundary conditions
+are made whole.</p>
+<p>If the input contains molecules that are already whole, speed up the calculation by
+disabling unwrap. To do so, use the flag <code class="docutils literal notranslate"><span class="pre">-no-unwrap</span></code> when using MAICoS from the
+command line, or use <code class="docutils literal notranslate"><span class="pre">unwrap=False</span></code> when using MAICoS from the Python interpreter.</p>
+<p>Note: Molecules containing virtual sites (e.g. TIP4P water models) are not currently
+supported in MDAnalysis. In this case, you need to provide unwrapped trajectory
+files directly, and disable unwrap. Trajectories can be unwrapped, for example,
+using the <code class="docutils literal notranslate"><span class="pre">trjconv</span></code> command of GROMACS.</p>
+</p></li>
+<li><p><strong>pack</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – <p>When <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>, molecules are put back into the unit cell. This is required
+because MAICoS only takes into account molecules that are inside the unit cell.</p>
+<p>If the input contains molecules that are already packed, speed up the calculation by
+disabling packing with <code class="docutils literal notranslate"><span class="pre">pack=False</span></code>.</p>
+</p></li>
+<li><p><strong>refgroup</strong> (<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><em>MDAnalysis.core.groups.AtomGroup</em></a>) – Reference <a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomGroup</span></code></a> used for the calculation. If
+<code class="docutils literal notranslate"><span class="pre">refgroup</span></code> is provided, the calculation is performed relative to the center of
+mass of the AtomGroup. If <code class="docutils literal notranslate"><span class="pre">refgroup</span></code> is <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a> the calculations are performed
+with respect to the center of the (changing) box.</p></li>
+<li><p><strong>jitter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – <p>Magnitude of the random noise to add to the atomic positions.</p>
+<p>A jitter can be used to stabilize the aliasing effects sometimes appearing when
+histogramming data. The jitter value should be about the precision of the
+trajectory. In that case, using jitter will not alter the results of the histogram.
+If <code class="docutils literal notranslate"><span class="pre">jitter</span> <span class="pre">=</span> <span class="pre">0.0</span></code> (default), the original atomic positions are kept unchanged.</p>
+<p>You can estimate the precision of the positions in your trajectory with
+<a class="reference internal" href="../api-documentation/util.html#maicos.lib.util.trajectory_precision" title="maicos.lib.util.trajectory_precision"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.util.trajectory_precision()</span></code></a>. Note that if the precision is not the
+same for all frames, the smallest precision should be used.</p>
+</p></li>
+<li><p><strong>concfreq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – When concfreq (for conclude frequency) is larger than <code class="docutils literal notranslate"><span class="pre">0</span></code>, the conclude function
+is called and the output files are written every <code class="docutils literal notranslate"><span class="pre">concfreq</span></code> frames.</p></li>
+<li><p><strong>dim</strong> (<em>{0</em><em>, </em><em>1</em><em>, </em><em>2}</em>) – Dimension for binning (<code class="docutils literal notranslate"><span class="pre">x=0</span></code>, <code class="docutils literal notranslate"><span class="pre">y=1</span></code>, <code class="docutils literal notranslate"><span class="pre">z=1</span></code>).</p></li>
+<li><p><strong>zmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – <p>Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
+refgroup.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">zmin=None</span></code>, all coordinates down to the lower cell boundary are taken into
+account.</p>
+</p></li>
+<li><p><strong>zmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – <p>Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
+refgroup.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">zmax</span> <span class="pre">=</span> <span class="pre">None</span></code>, all coordinates up to the upper cell boundary are taken into
+account.</p>
+</p></li>
+<li><p><strong>bin_width</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Width of the bins (in Å).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="maicos.PDFPlanar.results.bin_pos">
+<span class="sig-prename descclassname"><span class="pre">results.</span></span><span class="sig-name descname"><span class="pre">bin_pos</span></span><a class="headerlink" href="#maicos.PDFPlanar.results.bin_pos" title="Link to this definition">¶</a></dt>
+<dd><p>Bin positions (in Å) ranging from <code class="docutils literal notranslate"><span class="pre">zmin</span></code> to <code class="docutils literal notranslate"><span class="pre">zmax</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="maicos.PDFPlanar.results.bins">
+<span class="sig-prename descclassname"><span class="pre">results.</span></span><span class="sig-name descname"><span class="pre">bins</span></span><a class="headerlink" href="#maicos.PDFPlanar.results.bins" title="Link to this definition">¶</a></dt>
+<dd><p>distances to which the PDF is calculated with shape (pdf_nbins) (Å)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="maicos.PDFPlanar.results.pdf">
+<span class="sig-prename descclassname"><span class="pre">results.</span></span><span class="sig-name descname"><span class="pre">pdf</span></span><a class="headerlink" href="#maicos.PDFPlanar.results.pdf" title="Link to this definition">¶</a></dt>
+<dd><p>PDF with shape (pdf_nbins, n_bins) (1/Å^3)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndrray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="maicos.PDFPlanar.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/maicos/modules/pdfplanar.html#PDFPlanar.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#maicos.PDFPlanar.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save results of analysis to file specified by <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="rdfdiporder.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">RDFDiporder</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="pdfcylinder.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">PDFCylinder</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PDFPlanar</a><ul>
+<li><a class="reference internal" href="#maicos.PDFPlanar"><code class="docutils literal notranslate"><span class="pre">PDFPlanar</span></code></a><ul>
+<li><a class="reference internal" href="#maicos.PDFPlanar.results.bin_pos"><code class="docutils literal notranslate"><span class="pre">PDFPlanar.results.bin_pos</span></code></a></li>
+<li><a class="reference internal" href="#maicos.PDFPlanar.results.bins"><code class="docutils literal notranslate"><span class="pre">PDFPlanar.results.bins</span></code></a></li>
+<li><a class="reference internal" href="#maicos.PDFPlanar.results.pdf"><code class="docutils literal notranslate"><span class="pre">PDFPlanar.results.pdf</span></code></a></li>
+<li><a class="reference internal" href="#maicos.PDFPlanar.save"><code class="docutils literal notranslate"><span class="pre">PDFPlanar.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

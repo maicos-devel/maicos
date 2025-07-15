@@ -1,0 +1,862 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Analysis modules" href="../analysis-modules/index.html" /><link rel="prev" title="Small-angle X-ray scattering" href="saxs.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Calculating and interpreting dipolar pair correlation functions - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../get-started/index.html">Getting started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/units.html">Some conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../get-started/changelog.html">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">How-to guides</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pair-distribution-functions.html">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analysis-modules/index.html">Analysis modules</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfplanar.html">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-examples-dipole-correlations-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code.</p>
+</div>
+<section class="sphx-glr-example-title" id="calculating-and-interpreting-dipolar-pair-correlation-functions">
+<span id="howto-spatial-dipole-dipole-correlations"></span><span id="sphx-glr-examples-dipole-correlations-py"></span><h1>Calculating and interpreting dipolar pair correlation functions<a class="headerlink" href="#calculating-and-interpreting-dipolar-pair-correlation-functions" title="Link to this heading">¶</a></h1>
+<p>In this examples we will calculate dipolar pair correlation functions in real and
+Fourier space using the maicos modules <a class="reference internal" href="../analysis-modules/rdfdiporder.html#maicos.RDFDiporder" title="maicos.RDFDiporder"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.RDFDiporder</span></code></a> and
+<a class="reference internal" href="../analysis-modules/diporderstructurefactor.html#maicos.DiporderStructureFactor" title="maicos.DiporderStructureFactor"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DiporderStructureFactor</span></code></a>. We will show how these pair correlation
+functions are connected to each other and electrostatic properties like the dielectric
+constant <span class="math notranslate nohighlight">\(\varepsilon\)</span> and the Kirkwood factor <span class="math notranslate nohighlight">\(g_K\)</span>.</p>
+<p>We start by importing the necessarary modules</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">MDAnalysis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mda</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">MDAnalysis.analysis.dielectric</span><span class="w"> </span><span class="kn">import</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/dielectric.html#MDAnalysis.analysis.dielectric.DielectricConstant" title="MDAnalysis.analysis.dielectric.DielectricConstant" class="sphx-glr-backref-module-MDAnalysis-analysis-dielectric sphx-glr-backref-type-py-class"><span class="n">DielectricConstant</span></a>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">maicos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">maicos.lib.math</span><span class="w"> </span><span class="kn">import</span> <a href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">rdf_structure_factor</span></a>
+</pre></div>
+</div>
+<p>Our example system is <span class="math notranslate nohighlight">\(N=512\)</span> rigid SPC/E water molecules simulated in an NVT
+ensemble at <span class="math notranslate nohighlight">\(300\,\mathrm{K}\)</span> in a cubic cell of <span class="math notranslate nohighlight">\(L=24.635\,Å\)</span>. To follow
+this how-to guide, you should download the <a class="reference download internal" download="" href="../_downloads/f168cfc11b0968cad69e1bd5751287c7/water_nvt.tpr"><code class="xref download docutils literal notranslate"><span class="pre">topology</span></code></a> and
+the <a class="reference download internal" download="" href="../_downloads/b665bb243941862830cc34fbbba92cf8/water_nvt.xtc"><code class="xref download docutils literal notranslate"><span class="pre">trajectory</span></code></a> files of the system. Below we load the
+system, report and store some system properties for later usage.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe" title="MDAnalysis.core.universe.Universe" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-class"><span class="n">mda</span><span class="o">.</span><span class="n">Universe</span></a><span class="p">(</span><span class="s2">&quot;water_nvt.tpr&quot;</span><span class="p">,</span> <span class="s2">&quot;water_nvt.xtc&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.trajectory" title="MDAnalysis.core.universe.Universe.trajectory" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">volume</span></a>
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.ResidueGroup.n_residues" title="MDAnalysis.core.groups.ResidueGroup.n_residues" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-property"><span class="n">u</span><span class="o">.</span><span class="n">residues</span><span class="o">.</span><span class="n">n_residues</span></a> <span class="o">/</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a>
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">dipole_moment</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup.dipole_moment" title="MDAnalysis.core.groups.AtomGroup.dipole_moment" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-method"><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">dipole_moment</span></a><span class="p">(</span><span class="n">compound</span><span class="o">=</span><span class="s2">&quot;residues&quot;</span><span class="p">,</span> <span class="n">unwrap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ρ_n = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> Å^-3&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;µ = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">dipole_moment</span></a><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> eÅ&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ρ_n = 0.034 Å^-3
+µ = 0.49 eÅ
+</pre></div>
+</div>
+<p>The results of our first property calculations show that the number density as well as
+the dipole moment of a single water molecule is consistent with the literature
+<a class="footnote-reference brackets" href="#footcite-vega-simulating-2011" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<section id="static-dielectric-constant">
+<h2>Static dielectric constant<a class="headerlink" href="#static-dielectric-constant" title="Link to this heading">¶</a></h2>
+<p>To start with the analysis we first look at the dielectric constant of the system. If
+you run a simulation using an Ewald simulation technique as usually done, the
+dielectric constant for such system with metallic boundary conditions is given
+according to Neumann<a class="footnote-reference brackets" href="#footcite-neumann-dipole-1983" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> by</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\varepsilon = 1 + \frac{\langle M^2 \rangle_\mathrm{MBE} - \langle
+M \rangle_\mathrm{MBE}^2}{3 \varepsilon_0 V k_B T}\]</div>
+</div>
+<p>where</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\boldsymbol M = \sum_{i=1}^N \boldsymbol \mu_i\]</div>
+</div>
+<p>is the total dipole moment of the box, <span class="math notranslate nohighlight">\(V\)</span> its volume and <span class="math notranslate nohighlight">\(\varepsilon_0\)</span>
+the vacuum permittivity. We use the subscript in the expectation value
+<span class="math notranslate nohighlight">\(\mathrm{MBE}\)</span> indicating that the equation only holds for simulations with
+<strong>M</strong>etallic <strong>B</strong>oundary conditions in an <strong>E</strong>wald simulation style. As shown
+in the equation for <span class="math notranslate nohighlight">\(\varepsilon(\mathrm{MBE})\)</span> the dielectric constant here is
+a <em>total cell</em> quantity connecting the fluctuations of the total dipole moment to the
+dielectric constant. We can calculate <span class="math notranslate nohighlight">\(\varepsilon_\mathrm{MBE}\)</span> using the
+<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/dielectric.html#MDAnalysis.analysis.dielectric.DielectricConstant" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.analysis.dielectric.DielectricConstant</span></code></a> module of MDAnalysis.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/dielectric.html#MDAnalysis.analysis.dielectric.DielectricConstant" title="MDAnalysis.analysis.dielectric.DielectricConstant" class="sphx-glr-backref-module-MDAnalysis-analysis-dielectric sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">epsilon_mbe</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/dielectric.html#MDAnalysis.analysis.dielectric.DielectricConstant" title="MDAnalysis.analysis.dielectric.DielectricConstant" class="sphx-glr-backref-module-MDAnalysis-analysis-dielectric sphx-glr-backref-type-py-class"><span class="n">DielectricConstant</span></a><span class="p">(</span><span class="n">atomgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span><span class="o">.</span><span class="n">atoms</span></a><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ɛ_MBE = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">epsilon_mbe</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">eps_mean</span></a><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ɛ_MBE = 69.21
+</pre></div>
+</div>
+<p>The value of 70 is the same as reported in the literature for the
+rigid SPC/E water model <a class="footnote-reference brackets" href="#footcite-vega-simulating-2011" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="kirkwood-factor">
+<h2>Kirkwood factor<a class="headerlink" href="#kirkwood-factor" title="Link to this heading">¶</a></h2>
+<p>Knowing the dielectric constant we can also calculate the Kirkwood factor <span class="math notranslate nohighlight">\(g_K\)</span>
+which is a measure describing molecular correlations. I.e a Kirkwood factor greater
+than 1 indicates that neighboring molecular dipoles are more likely to align in the
+same direction, enhancing the material’s polarization and, consequently, its
+dielectric constant. Based on the dielectric constant <span class="math notranslate nohighlight">\(\varepsilon\)</span> Kirkwood and
+Fröhlich derived the relation for the factor <span class="math notranslate nohighlight">\(g_K\)</span> according to</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{ N \mu^2 g_K}{\varepsilon_0 V k_B T} = \frac{(\varepsilon -
+1)(2\varepsilon + 1)}{\varepsilon}\]</div>
+</div>
+<p>This relation is valid for a sample in an infinity, homogenous medium of the same
+dielectric constant. Below we implement this equation and calculate the factor for our
+system.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">kirkwood_factor_KF</span><span class="p">(</span>
+    <span class="n">dielectric_constant</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">n_dipoles</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">molecular_dipole_moment</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kirkwood factor in the Kirkwood-Fröhlich way.</span>
+
+<span class="sd">    For the sample in an infinity, homogenous medium of the same dielectric constant.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dielectric_constant : float</span>
+<span class="sd">        the static dielectric constant ɛ</span>
+<span class="sd">    volume : float</span>
+<span class="sd">        system volume in Å^3</span>
+<span class="sd">    n_dipoles : float</span>
+<span class="sd">        number of dipoles</span>
+<span class="sd">    molecular_dipole_moment : float</span>
+<span class="sd">        dipole moment of a molecule (eÅ)</span>
+<span class="sd">    temperature : float</span>
+<span class="sd">        temperature of the simulation K</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dipole_moment_sq</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">molecular_dipole_moment</span>
+        <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">elementary_charge</span></a>
+        <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">angstrom</span></a>
+    <span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span>
+        <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">epsilon_0</span></a>
+        <span class="o">*</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a> <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">angstrom</span></a><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+        <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">Boltzmann</span></a>
+        <span class="o">*</span> <span class="n">temperature</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">factor</span>
+        <span class="o">/</span> <span class="p">(</span><span class="n">dielectric_constant</span> <span class="o">*</span> <span class="n">n_dipoles</span> <span class="o">*</span> <span class="n">dipole_moment_sq</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">dielectric_constant</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dielectric_constant</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">kirkwood_KF</span></a> <span class="o">=</span> <span class="n">kirkwood_factor_KF</span><span class="p">(</span>
+    <span class="n">dielectric_constant</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">epsilon_mbe</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">eps_mean</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">volume</span></a><span class="p">,</span>
+    <span class="n">n_dipoles</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.ResidueGroup.n_residues" title="MDAnalysis.core.groups.ResidueGroup.n_residues" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-property"><span class="n">u</span><span class="o">.</span><span class="n">residues</span><span class="o">.</span><span class="n">n_residues</span></a><span class="p">,</span>
+    <span class="n">molecular_dipole_moment</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">dipole_moment</span></a><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;g_K = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">kirkwood_KF</span></a><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>g_K = 2.39
+</pre></div>
+</div>
+<p>This value means there is a quite strong correlation between neighboring water
+molecules. The dielectric constant <span class="math notranslate nohighlight">\(\varepsilon\)</span> is a material property and does
+not depend on the boundary condition. Instead, the Kirkwood factor is indicative of
+dipole-dipole correlations which instead depend on the boundary condistions in the
+simulation. This relation is described and shown below.</p>
+</section>
+<section id="connecting-the-kirkwood-factor-to-real-space-dipolar-pair-correlation-functions">
+<h2>Connecting the Kirkwood factor to real space dipolar pair-correlation functions<a class="headerlink" href="#connecting-the-kirkwood-factor-to-real-space-dipolar-pair-correlation-functions" title="Link to this heading">¶</a></h2>
+<p>The <span class="math notranslate nohighlight">\(r\)</span>-dependent Kirkwood factor can also be calculated from real space
+dipole-dipole pair correlation function <a class="footnote-reference brackets" href="#footcite-zhang-dipolar-2014" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[g_\mathrm{\hat{\boldsymbol{\mu}}, \hat{\boldsymbol{\mu}}}(r) = \frac{1}{N}
+\left\langle \sum_i \frac{1}{n_i(r)} \sum_{j=1}^{n_i(r)} (\hat{\boldsymbol{\mu}}_i
+\cdot \hat{\boldsymbol{\mu}}_j) \right \rangle\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\hat{\boldsymbol{\mu}}\)</span> is the normalized dipole moment and
+<span class="math notranslate nohighlight">\(n_i(r)\)</span> is the number of dipoles within a spherical shell of distance <span class="math notranslate nohighlight">\(r\)</span>
+and <span class="math notranslate nohighlight">\(r + \delta r\)</span> from dipole <span class="math notranslate nohighlight">\(i\)</span>. We compute the pair correlation
+function using the <a class="reference internal" href="../analysis-modules/rdfdiporder.html#maicos.RDFDiporder" title="maicos.RDFDiporder"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.RDFDiporder</span></code></a> module up to half of the length of
+cubic simulation box. We drop a delta like contribution in <span class="math notranslate nohighlight">\(r=0\)</span> caused by
+interaction of the dipole with itself.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float32" title="numpy.float32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">L_half</span></a> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/core/universe.html#MDAnalysis.core.universe.Universe.dimensions" title="MDAnalysis.core.universe.Universe.dimensions" class="sphx-glr-backref-module-MDAnalysis-core-universe sphx-glr-backref-type-py-attribute"><span class="n">u</span><span class="o">.</span><span class="n">dimensions</span></a><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+
+<span class="n">rdf_diporder</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">RDFDiporder</span></a><span class="p">(</span><span class="n">g1</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span><span class="o">.</span><span class="n">atoms</span></a><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float32" title="numpy.float32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">L_half</span></a><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">run</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;maicos.modules.rdfdiporder.RDFDiporder object at 0x7effad8c38c0&gt;
+</pre></div>
+</div>
+<p>Based on this correlation function we can calculate the radially resolved Kirkwood
+factor via <a class="footnote-reference brackets" href="#footcite-zhang-computing-2016" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[G_K(r) = \rho_n 4 \pi \int_0^r \mathrm{d}r^\prime {r^\prime}^2
+g_\mathrm{\hat \mu, \hat \mu}(r^\prime) + 1\]</div>
+</div>
+<p>where the “<span class="math notranslate nohighlight">\(+ 1\)</span>” accounts for the integration of the delta function at
+<span class="math notranslate nohighlight">\(r=0\)</span>. Here <span class="math notranslate nohighlight">\(\rho_n = N/V\)</span> is the density of dipoles.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">radial_kirkwood</span></a> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a>
+    <span class="o">*</span> <span class="mi">4</span>
+    <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">pi</span></a>
+    <span class="o">*</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.cumulative_trapezoid.html#scipy.integrate.cumulative_trapezoid" title="scipy.integrate.cumulative_trapezoid" class="sphx-glr-backref-module-scipy-integrate sphx-glr-backref-type-py-function"><span class="n">scipy</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">cumulative_trapezoid</span></a><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">rdf</span></a><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>While, for a truly infinite system, the <span class="math notranslate nohighlight">\(r\)</span>- dependent Kirkwood factor,
+<span class="math notranslate nohighlight">\(G_\mathrm{K}(r)\)</span> is short range <a class="footnote-reference brackets" href="#footcite-frohlich-theory-1958" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a>
+<a class="footnote-reference brackets" href="#footcite-zhang-computing-2016" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>, the boundary conditions on a finite system
+introduce long-range effects. In particular, within MBE,
+Caillol<a class="footnote-reference brackets" href="#footcite-caillol-asymptotic-1992" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a> has shown that <span class="math notranslate nohighlight">\(G_\mathrm{K}(r)\)</span> has a
+spurious asymptotic growth proportional to <span class="math notranslate nohighlight">\(r^3/V\)</span>. This effect is stil present
+at <span class="math notranslate nohighlight">\(r=r_K\)</span>, where <span class="math notranslate nohighlight">\(r_K\)</span> (here approximately 6 Å) indicates a distance
+after which all the physical features of
+<span class="math notranslate nohighlight">\(g_\mathrm{\hat{\boldsymbol{\mu}},\hat{\boldsymbol{\mu}}}(r)\)</span> are extinct. For
+more details see the original literature. Below we show the pair correlation function
+as well as the radial and the (static) Kirkwood factor as gray dashed line.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">rdf</span></a><span class="p">,</span>
+<span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">kirkwood_KF</span></a><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;$g_K$ (KF)&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">radial_kirkwood</span></a><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$g_\mathrm{\hat{\boldsymbol{\mu}}, \hat{\boldsymbol{\mu}}}(r)$&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">),</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$r\,/\,\mathrm</span><span class="si">{Å}</span><span class="s2">$&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$G_K(r)$&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.align_labels.html#matplotlib.figure.Figure.align_labels" title="matplotlib.figure.Figure.align_labels" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">align_labels</span></a><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.tight_layout.html#matplotlib.figure.Figure.tight_layout" title="matplotlib.figure.Figure.tight_layout" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_dipole-correlations_001.png" srcset="../_images/sphx_glr_dipole-correlations_001.png" alt="dipole correlations" class = "sphx-glr-single-img"/><p>Notice that the Kirkwood Fröhlich estimator for the Kirkwood factors differs from the
+value of <span class="math notranslate nohighlight">\(G_K(r=r_K)\)</span> obtained from simulations in the MBE ensemble.</p>
+</section>
+<section id="dipole-structure-factor">
+<h2>Dipole Structure factor<a class="headerlink" href="#dipole-structure-factor" title="Link to this heading">¶</a></h2>
+<p>An alternative approach to calculate the dielectric constant is via the dipole
+structure factor which is given by</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[S(q)_{\hat{\boldsymbol{\mu}} \hat{\boldsymbol{\mu}}} = \left \langle
+\frac{1}{N} \sum_{i,j=1}^N \hat \mu_i \hat \mu_j \, \exp(-i\boldsymbol q\cdot
+[\boldsymbol r_i - \boldsymbol r_j]) \right \rangle\]</div>
+</div>
+<p>We compute the structure factor using the <a class="reference internal" href="../analysis-modules/diporderstructurefactor.html#maicos.DiporderStructureFactor" title="maicos.DiporderStructureFactor"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.DiporderStructureFactor</span></code></a>
+module.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">diporder_structure_factors</span> <span class="o">=</span> <a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="MDAnalysis.analysis.base.AnalysisBase" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-class"><span class="n">maicos</span><span class="o">.</span><span class="n">DiporderStructureFactor</span></a><span class="p">(</span><span class="n">atomgroup</span><span class="o">=</span><a href="https://docs.mdanalysis.org/stable/documentation_pages/core/groups.html#MDAnalysis.core.groups.AtomGroup" title="MDAnalysis.core.groups.AtomGroup" class="sphx-glr-backref-module-MDAnalysis-core-groups sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">u</span><span class="o">.</span><span class="n">atoms</span></a><span class="p">,</span> <span class="n">dq</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<a href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase.run" title="MDAnalysis.analysis.base.AnalysisBase.run" class="sphx-glr-backref-module-MDAnalysis-analysis-base sphx-glr-backref-type-py-method"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">run</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;maicos.modules.diporderstructurefactor.DiporderStructureFactor object at 0x7effad8c34d0&gt;
+</pre></div>
+</div>
+<p>As also shown <a class="reference internal" href="saxs.html#howto-saxs"><span class="std std-ref">how to on SAXS calculations</span></a> the structure factor can
+also be obtained directly from the real space correlation functions using Fourier
+transformation via</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[S_{\hat{\boldsymbol{\mu}} \hat{\boldsymbol{\mu}}}^\mathrm{FT}(q) = 1 + 4 \pi
+\rho \int_0^\infty \mathrm{d}r r \frac{\sin(qr)}{q} g_{\hat \mu\hat \mu}(r)\,,\]</div>
+</div>
+<p>which can be obtained by the function
+<a class="reference internal" href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.rdf_structure_factor()</span></code></a>. We have assumed an isotropic
+system so that <span class="math notranslate nohighlight">\(S(\boldsymbol q) = S(q)\)</span>. Note that we added a one to the dipole
+pair correlation function due to the implementation of the Fourier transformation
+inside <a class="reference internal" href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.rdf_structure_factor()</span></code></a>.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">q_rdf</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">struct_fac_rdf</span></a> <span class="o">=</span> <a href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor" class="sphx-glr-backref-module-maicos-lib-math sphx-glr-backref-type-py-function"><span class="n">rdf_structure_factor</span></a><span class="p">(</span>
+    <span class="n">rdf</span><span class="o">=</span><span class="mi">1</span> <span class="o">+</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">rdf</span></a><span class="p">,</span> <span class="n">r</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rdf_diporder</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">bins</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">density</span></a>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Before we plot the structure factors we first also fit the low <span class="math notranslate nohighlight">\(q\)</span> limit
+according to a quadratic function as</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[S_\mathrm{\hat \mu\hat \mu}(q\rightarrow0) \approx S_0 + S_2q^2\]</div>
+</div>
+<p>The fit contains no linear term because of the structure factors’ symmetry around 0.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_max</span></a> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># take `n_max` first data points of the structure factor for the fit</span>
+
+<span class="c1"># q_max is the maximal q value corresponding to the last point taken for the fit</span>
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">q_max</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">[</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_max</span></a><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;q_max = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">q_max</span></a><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Å&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.html#numpy.polynomial.polynomial.Polynomial" title="numpy.polynomial.polynomial.Polynomial" class="sphx-glr-backref-module-numpy-polynomial-polynomial sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">eps_fit</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.fit.html#numpy.polynomial.polynomial.Polynomial.fit" title="numpy.polynomial.polynomial.Polynomial.fit" class="sphx-glr-backref-module-numpy-polynomial-polynomial sphx-glr-backref-type-py-method"><span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">Polynomial</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">[:</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_max</span></a><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a><span class="p">[:</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_max</span></a><span class="p">],</span>
+    <span class="n">deg</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">domain</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">q_max</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">q_max</span></a><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Best fit parameters: S_0 = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">eps_fit</span><span class="o">.</span><span class="n">coef</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, S_2 = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">eps_fit</span><span class="o">.</span><span class="n">coef</span></a><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Å^2&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>q_max = 0.63 Å
+Best fit parameters: S_0 = 2.45, S_2 = -0.84 Å^2
+</pre></div>
+</div>
+<p>Now we can finally plot the structure factor</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">scattering_vectors</span></a><span class="p">,</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">diporder_structure_factors</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">structure_factors</span></a><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$S_{\hat \mu\hat \mu}$&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">q_rdf</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">struct_fac_rdf</span></a><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$S_{\hat \mu\hat \mu}^\mathrm</span><span class="si">{FT}</span><span class="s2">$&quot;</span>
+<span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="o">*</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.linspace.html#numpy.polynomial.polynomial.Polynomial.linspace" title="numpy.polynomial.polynomial.Polynomial.linspace" class="sphx-glr-backref-module-numpy-polynomial-polynomial sphx-glr-backref-type-py-method"><span class="n">eps_fit</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$S_0 + S_2 q^2$&quot;</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.axhline.html#matplotlib.pyplot.axhline" title="matplotlib.pyplot.axhline" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylabel.html#matplotlib.pyplot.ylabel" title="matplotlib.pyplot.ylabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$S_\mathrm{\hat\mu \hat\mu}(q)$&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;q / $Å^{-1}$&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.tight_layout.html#matplotlib.pyplot.tight_layout" title="matplotlib.pyplot.tight_layout" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlim.html#matplotlib.pyplot.xlim" title="matplotlib.pyplot.xlim" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlim</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_dipole-correlations_002.png" srcset="../_images/sphx_glr_dipole-correlations_002.png" alt="dipole correlations" class = "sphx-glr-single-img"/><p>You see that the orange and the blue curve agree. We also add the fit as a green
+dotted line. From <span class="math notranslate nohighlight">\(S_0\)</span> we can extract the dielectric constant via
+<a class="footnote-reference brackets" href="#footcite-hansen-theory-2006" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a></p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\frac{\mu^2}{\varepsilon_0} S_0 =
+\frac{(\varepsilon - 1)(2 \varepsilon + 1)}{\varepsilon}\]</div>
+</div>
+<p>This formula can be inverted and an estimator for <span class="math notranslate nohighlight">\(\varepsilon_S\)</span> can be
+obtained as we show below.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">dielectric_constant_struc_fact</span><span class="p">(</span><span class="n">S_0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">molecular_dipole_moment</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The dielectric constant calculated from the q-&gt;0 limit of the structure factor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q_0_limit : float</span>
+<span class="sd">        the q -&gt; 0 limit if the dipololar structure factor</span>
+<span class="sd">    molecular_dipole_moment : float</span>
+<span class="sd">        dipole moment of a molecule (eÅ)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dipole_moment_sq</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">molecular_dipole_moment</span>
+        <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">angstrom</span></a>
+        <span class="o">*</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">elementary_charge</span></a>
+    <span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">S_limit</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">dipole_moment_sq</span>
+        <span class="o">*</span> <span class="n">S_0</span>
+        <span class="o">/</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">epsilon_0</span></a>
+        <span class="o">/</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">elementary_charge</span></a>
+        <span class="o">/</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scipy</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">angstrom</span></a><span class="o">**</span><span class="mi">3</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span></a><span class="p">((</span><span class="n">S_limit</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">S_limit</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="n">S_limit</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>
+
+
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">epsilon_struct_fac</span></a> <span class="o">=</span> <span class="n">dielectric_constant_struc_fact</span><span class="p">(</span>
+    <span class="n">S_0</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">eps_fit</span><span class="o">.</span><span class="n">coef</span></a><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">molecular_dipole_moment</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">dipole_moment</span></a>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ɛ_S = </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">epsilon_struct_fac</span></a><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ɛ_S = 53.53
+</pre></div>
+</div>
+<p>Which is quite close the value calculated directly from the total dipole fluctuations
+of the simulations <span class="math notranslate nohighlight">\(\varepsilon_\mathrm{MBE}\approx69\)</span>. This difference may
+result in the very crude fit that is performed and it could be drastically improved by
+a Bayesian fitting method as for example for fitting the Seebeck coefficient from a
+similar structure factor <a class="footnote-reference brackets" href="#footcite-drigo-seebeck-2023" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<div class="docutils container" id="id11">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-vega-simulating-2011" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id3">2</a>)</span>
+<p>Carlos Vega and Jose L. F. Abascal. Simulating water with rigid non-polarizable models: a general perspective. <em>Phys. Chem. Chem. Phys.</em>, 13(44):19663–19688, November 2011. <a class="reference external" href="https://doi.org/10.1039/C1CP22168J">doi:10.1039/C1CP22168J</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-neumann-dipole-1983" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Martin Neumann. Dipole moment fluctuation formulas in computer simulations of polar systems. <em>Molecular Physics</em>, 50(4):841–858, November 1983. <a class="reference external" href="https://doi.org/10.1080/00268978300102721">doi:10.1080/00268978300102721</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-zhang-dipolar-2014" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">3</a><span class="fn-bracket">]</span></span>
+<p>Cui Zhang and Giulia Galli. Dipolar correlations in liquid water. <em>The Journal of Chemical Physics</em>, 141(8):084504, August 2014. <a class="reference external" href="https://doi.org/10.1063/1.4893638">doi:10.1063/1.4893638</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-zhang-computing-2016" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id5">1</a>,<a role="doc-backlink" href="#id7">2</a>)</span>
+<p>Chao Zhang, Jürg Hutter, and Michiel Sprik. Computing the Kirkwood g-Factor by Combining Constant Maxwell Electric Field and Electric Displacement Simulations: Application to the Dielectric Constant of Liquid Water. <em>J. Phys. Chem. Lett.</em>, 7(14):2696–2701, July 2016. <a class="reference external" href="https://doi.org/10.1021/acs.jpclett.6b01127">doi:10.1021/acs.jpclett.6b01127</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-frohlich-theory-1958" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">5</a><span class="fn-bracket">]</span></span>
+<p>H. Fröhlich. <em>Theory of Dielectrics: Dielectric Constant and Dielectric Loss</em>. Monographs on the Physics and Chemistry of Materials. Oxford University Press, 2 edition, 1958.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-caillol-asymptotic-1992" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">6</a><span class="fn-bracket">]</span></span>
+<p>J. M. Caillol. Asymptotic behavior of the pair-correlation function of a polar liquid. <em>The Journal of Chemical Physics</em>, 96(9):7039–7053, May 1992. <a class="reference external" href="https://doi.org/10.1063/1.462536">doi:10.1063/1.462536</a>.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-hansen-theory-2006" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">7</a><span class="fn-bracket">]</span></span>
+<p>Jean-Pierre Hansen and Ian. R. McDonald. <em>Theory of Simple Liquids</em>. Elsevier / Academic Press, 3rd ed edition, 2006. ISBN 9780080455075.</p>
+</aside>
+<aside class="footnote brackets" id="footcite-drigo-seebeck-2023" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">8</a><span class="fn-bracket">]</span></span>
+<p>Enrico Drigo and Stefano Baroni. Seebeck Coefficient of Liquid Water from Equilibrium Molecular Dynamics. <em>J. Chem. Theory Comput.</em>, 19(23):8855–8860, December 2023. <a class="reference external" href="https://doi.org/10.1021/acs.jctc.3c00760">doi:10.1021/acs.jctc.3c00760</a>.</p>
+</aside>
+</aside>
+</div>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-dipole-correlations-py">
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/8d5ce95a24d28933092964c4d515b149/dipole-correlations.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">dipole-correlations.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/230d2f5370d03662add2a274fc38dce8/dipole-correlations.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dipole-correlations.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/21e59aeb859bb82b45a74d154d721b09/dipole-correlations.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">dipole-correlations.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../analysis-modules/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Analysis modules</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="saxs.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Small-angle X-ray scattering</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Calculating and interpreting dipolar pair correlation functions</a><ul>
+<li><a class="reference internal" href="#static-dielectric-constant">Static dielectric constant</a></li>
+<li><a class="reference internal" href="#kirkwood-factor">Kirkwood factor</a></li>
+<li><a class="reference internal" href="#connecting-the-kirkwood-factor-to-real-space-dipolar-pair-correlation-functions">Connecting the Kirkwood factor to real space dipolar pair-correlation functions</a></li>
+<li><a class="reference internal" href="#dipole-structure-factor">Dipole Structure factor</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>

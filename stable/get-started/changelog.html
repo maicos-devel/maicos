@@ -1,0 +1,881 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="How-to guides" href="../examples/index.html" /><link rel="prev" title="Some conventions" href="units.html" />
+
+    <link rel="shortcut icon" href="../_static/logo.ico"/><!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
+        <title>Changelog - MAICoS</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">MAICoS</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/logo_MAICOS_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/logo_MAICOS_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Getting started</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Getting started</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="maicos.html">What is MAICoS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html">Some conventions</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Changelog</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">How-to guides</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of How-to guides</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-bash.html">Usage - command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/chemical-potential.html">Ideal component of the chemical potential</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/pair-distribution-functions.html">Pair distribution functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/dielectric-profiles.html">Dielectric profile calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/usage-python.html">Usage - Python interpreter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../examples/dipole-correlations.html">Calculating and interpreting dipolar pair correlation functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../analysis-modules/index.html">Analysis modules</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Analysis modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitycylinder.html">DensityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densityplanar.html">DensityPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/densitysphere.html">DensitySphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectriccylinder.html">DielectricCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricplanar.html">DielectricPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricspectrum.html">DielectricSpectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dielectricsphere.html">DielectricSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipoleangle.html">DipoleAngle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordercylinder.html">DiporderCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderplanar.html">DiporderPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/dipordersphere.html">DiporderSphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/diporderstructurefactor.html">DiporderStructureFactor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/kineticenergy.html">KineticEnergy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfcylinder.html">PDFCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/pdfplanar.html">PDFPlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/rdfdiporder.html">RDFDiporder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/saxs.html">Saxs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/temperatureplanar.html">TemperaturePlanar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocitycylinder.html">VelocityCylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../analysis-modules/velocityplanar.html">VelocityPlanar</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api-documentation/index.html">API documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of API documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/core.html">Core classes</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Core classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/base/index.html">Base classes</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Base classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysisbase.html">AnalysisBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/analysiscollection.html">AnalysisCollection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/base/profilebase.html">ProfileBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/planar/index.html">Planar classes</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Planar classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/planarbase.html">PlanarBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/planar/profileplanarbase.html">ProfilePlanarBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/cylinder/index.html">Cylinder classes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Cylinder classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/cylinderbase.html">CylinderBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/cylinder/profilecylinderbase.html">ProfileCylinderBase</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api-documentation/sphere/index.html">Sphere classes</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Sphere classes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/spherebase.html">SphereBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api-documentation/sphere/profilespherebase.html">ProfileSphereBase</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-documentation/lib.html">Library functions</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Library functions</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/math.html">Mathematical helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/util.html">General helper functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/weights.html">Weighting functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api-documentation/tables.html">Tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../concepts-explanations/index.html">Concepts &amp; explanations</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Concepts &amp; explanations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/general-design.html">General design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/dielectric.html">Dielectric constant measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/saxs.html">Small-angle X-ray scattering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../concepts-explanations/pdfs.html">Pair distribution functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../devdoc/index.html">Developer documentation</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Developer documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/own_module.html">Contributing your own analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/tests.html">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/documentation.html">Contributing to the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/versioning.html">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../devdoc/release.html">Release workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
+<section id="v0-11-2-2025-07-15">
+<h2>v0.11.2 (2025/07/15)<a class="headerlink" href="#v0-11-2-2025-07-15" title="Link to this heading">¶</a></h2>
+<p>Philip Loche</p>
+<ul class="simple">
+<li><p>Add united atom elements to electron density calculations (#509)</p></li>
+</ul>
+</section>
+<section id="v0-11-1-2025-07-04">
+<h2>v0.11.1 (2025/07/04)<a class="headerlink" href="#v0-11-1-2025-07-04" title="Link to this heading">¶</a></h2>
+<p>Philip Loche</p>
+<ul class="simple">
+<li><p>Provide wheels for all Python versions (#508)</p></li>
+<li><p>Run scheduled tests on MDAnalysis dev version (#506)</p></li>
+<li><p>Disable warnings in test output (#505)</p></li>
+<li><p>Update release workflow documentation (#504)</p></li>
+</ul>
+</section>
+<section id="v0-11-2025-06-25">
+<h2>v0.11 (2025/06/25)<a class="headerlink" href="#v0-11-2025-06-25" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Henrik Stooß</p>
+<ul class="simple">
+<li><p>Update GitHub Actions for building wheels (#503)</p></li>
+<li><p>Raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if data for <code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.rdf_structure_factor`()</span></code> is not
+equally spaced (#499)</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">compute_form_factor</span></code> to <code class="docutils literal notranslate"><span class="pre">atomic_form_factor</span></code>,
+<code class="docutils literal notranslate"><span class="pre">compute_rdf_structure_factor</span></code> to <code class="docutils literal notranslate"><span class="pre">rdf_structure_factor</span></code> and
+<code class="docutils literal notranslate"><span class="pre">compute_structure_factor</span></code> to <code class="docutils literal notranslate"><span class="pre">structure_factor</span></code> (#499)</p></li>
+<li><p>Clearify role of atomic form factors in documenation (#499)</p></li>
+<li><p>Fix wrong equation in <code class="docutils literal notranslate"><span class="pre">compute_structure_factor</span></code> documentation (#501)</p></li>
+<li><p>Improve issue templates (#500)</p></li>
+<li><p>Speed up electron density calculation by using a dictionary lookup (#498)</p></li>
+<li><p>Introduce <cite>sym_odd</cite> option to <cite>ProfilePlanarBase</cite> to support vectorial
+observables (#495)</p></li>
+<li><p>Base Cromer-Mann form factor on <code class="docutils literal notranslate"><span class="pre">atomgroup.elements</span></code> (#492)</p></li>
+<li><p>Add electron density weights for density modules (#493)</p></li>
+<li><p>Use gallery view for examples (#491)</p></li>
+<li><p>Create logic for stable and latest documentation versions (#489)</p></li>
+<li><p>Cleanup logos (#487)</p></li>
+<li><p>Update ignore list for codecoverage (#488)</p></li>
+<li><p>Fixed typos in documentation (#486)</p></li>
+<li><p>Change links to GitHub in documentation (#485)</p></li>
+<li><p>Fix rendering in class docstrings (#484)</p></li>
+<li><p>Move changelog test from <code class="docutils literal notranslate"><span class="pre">tox</span></code> to Gitlab CI (#483)</p></li>
+<li><p>Move from Gitlab to GitHub (#1)</p></li>
+</ul>
+</section>
+<section id="v0-10-2025-05-12">
+<h2>v0.10 (2025/05/12)<a class="headerlink" href="#v0-10-2025-05-12" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Henrik Stooß, Kira Fischer</p>
+<ul class="simple">
+<li><p>Add asv for performance regression tests (!336)</p></li>
+<li><p>Improve documentation of dielectric modules (!335)</p></li>
+<li><p>Improve loogging messages (!331)</p></li>
+<li><p>Make <code class="docutils literal notranslate"><span class="pre">project.license</span></code> a simple string according to PEP639 (!337)</p></li>
+<li><p>Render bash usage with sphinx-gallery (!334)</p></li>
+<li><p>Improve documentation of density modules (!333)</p></li>
+<li><p>Make cython logic in setup.py more robust (!330)</p></li>
+<li><p>Add example on how-to use logger within Python (!305)</p></li>
+<li><p>Add errorbars for binned q-values in SAXS module (!328)</p></li>
+<li><p>Fix averaging of structure factors and add informations about NpT and SAXS (!315)</p></li>
+<li><p>Disable tests for PMDA API (!326)</p></li>
+<li><p>Add additional elements for SAXS calculations (!325)</p></li>
+<li><p>Add more ruff linting rules (!324)</p></li>
+<li><p>Fix wrong mapping of sodium element in <code class="docutils literal notranslate"><span class="pre">atomtypes.dat</span></code> (!323)</p></li>
+<li><p>Switch to the ruff linter (!322)</p></li>
+<li><p>Make sure box dimensions are always float64, reduced output precision (#137, !321)</p></li>
+<li><p>Bump minimal Python version to 3.10 (!320)</p></li>
+</ul>
+</section>
+<section id="v0-9-2025-02-19">
+<h2>v0.9 (2025/02/19)<a class="headerlink" href="#v0-9-2025-02-19" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Marc Sauter, Kira Fischer, Federico Grasselli, Henrik Stooß,
+Adyant Agrawal</p>
+<ul class="simple">
+<li><p>Removed doubled entry for hydrogen in <code class="docutils literal notranslate"><span class="pre">sfactors.dat</span></code> (!329)</p></li>
+<li><p>Rewrite integrals in <code class="docutils literal notranslate"><span class="pre">DielectricCylinder</span></code> and <code class="docutils literal notranslate"><span class="pre">DielectricSphere</span></code> to avoid
+numerical inaccuracies from rectangle integration method (!317)</p></li>
+<li><p>Update to Numpy 2.0 and MDAnalysis version 2.8.0 (!319)</p></li>
+<li><p>Update virtualenv setup in CI (!316)</p></li>
+<li><p>Split document section “Reference guide” into “Analysis Modules” and “API
+Documentation” (#132, !314)</p></li>
+<li><p>Improve code quality by extending linting checks (!313)</p></li>
+<li><p>Added tests of the analytical error propagation (!292)</p></li>
+<li><p>Raise an error if <code class="docutils literal notranslate"><span class="pre">pack</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> and <code class="docutils literal notranslate"><span class="pre">refgroup</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code> (!311)</p></li>
+<li><p>Use glob for find modules in docs (!312)</p></li>
+<li><p>Distributing tests across multiple CPUs (!309)</p></li>
+<li><p>Use Python 3.11 as default in CI (!310)</p></li>
+<li><p>Add flag <code class="docutils literal notranslate"><span class="pre">pack</span></code> to turn off the system wrap at every frame (!308)</p></li>
+<li><p>Fix typos in <code class="docutils literal notranslate"><span class="pre">DipoleAngle</span></code> (!307)</p></li>
+<li><p>Remove handling of multiple atomgroups in favor of <code class="docutils literal notranslate"><span class="pre">AnalysisCollection</span></code> (!301)</p></li>
+<li><p>Fix openMP detection during setup (!304)</p></li>
+<li><p><a class="reference internal" href="../analysis-modules/saxs.html#maicos.Saxs" title="maicos.Saxs"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.Saxs</span></code></a> additionally provides structure factor. (!303)</p></li>
+<li><p>Remove default arguments from core classes (!302)</p></li>
+<li><p>Add an <code class="docutils literal notranslate"><span class="pre">AnalaysisCollection</span></code> class to perform multiple analyses on the same
+trajectory (!298)</p></li>
+<li><p>Remove custom module command line interface (!299)</p></li>
+<li><p>Add example for <a class="reference internal" href="../api-documentation/base/analysisbase.html#maicos.core.AnalysisBase" title="maicos.core.AnalysisBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.core.AnalysisBase</span></code></a> and rework own module section in
+developer docs (!299)</p></li>
+<li><p>Allow running an analysis with a universe without a cell (!297)</p></li>
+<li><p>Test that <code class="xref py py-class docutils literal notranslate"><span class="pre">core.AnalysisBase</span></code> API and <code class="docutils literal notranslate"><span class="pre">run</span></code> method is the same as
+<a class="reference external" href="https://docs.mdanalysis.org/stable/documentation_pages/analysis/base.html#MDAnalysis.analysis.base.AnalysisBase" title="(in MDAnalysis v2.9.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MDAnalysis.analysis.base.AnalysisBase</span></code></a> (!297)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">frames</span></code> and <code class="docutils literal notranslate"><span class="pre">progressbar_kwargs</span></code> argument to
+<a class="reference internal" href="../api-documentation/base/analysisbase.html#maicos.core.AnalysisBase.run" title="maicos.core.AnalysisBase.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maicos.core.AnalysisBase.run()</span></code></a> (!297)</p></li>
+<li><p>Update copyright year (!296)</p></li>
+<li><p>Add new diporder modules: <code class="docutils literal notranslate"><span class="pre">RDFDiporder</span></code>, <code class="docutils literal notranslate"><span class="pre">DiporderStructureFactor</span></code> (!296)</p></li>
+<li><p>Add correlation time estimate for <code class="docutils literal notranslate"><span class="pre">SAXS</span></code> module (!296)</p></li>
+<li><p>Added tests of the analytical error propagation (!292)</p></li>
+<li><p>Remove symbolic links from examples (!295)</p></li>
+</ul>
+</section>
+<section id="v0-8-2024-02-05">
+<h2>v0.8 (2024/02/05)<a class="headerlink" href="#v0-8-2024-02-05" title="Link to this heading">¶</a></h2>
+<p>Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal,
+Kira Fischer</p>
+<ul class="simple">
+<li><p>Skip test for custom modules in case the import is not working (!294)</p></li>
+<li><p>Change to CHANGELOG.rst update check so that it is only executed in MRs (!198)</p></li>
+<li><p>Rename radial distribution function to pair distribution function (!278)</p></li>
+<li><p>Add RDF derivation and explain role of dz. (!278)</p></li>
+<li><p>Implement 1D pair distribution function in RDFCylinder (!276)</p></li>
+<li><p>Sort format and add more atomtypes to <code class="docutils literal notranslate"><span class="pre">atomtypes.dat</span></code> (!291)</p></li>
+<li><p>Add grouping option to <cite>DipoleAngle</cite> module (!290)</p></li>
+<li><p>Added Support for Python 3.12 (!289)</p></li>
+<li><p>Remove suffixes <code class="docutils literal notranslate"><span class="pre">-linux</span></code>, <code class="docutils literal notranslate"><span class="pre">-macos</span></code>, <code class="docutils literal notranslate"><span class="pre">-windows</span></code> when building wheels. Platform
+will be detected automatically. (!288)</p></li>
+<li><p>Use default tox error for non-exsiting enviroment (!285)</p></li>
+<li><p>Parse documentation metadata from <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> (!287)</p></li>
+<li><p>Convert <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> into <code class="docutils literal notranslate"><span class="pre">str</span></code> when using in <code class="docutils literal notranslate"><span class="pre">sys.path.append</span></code> (#123, !286)</p></li>
+<li><p>Update dev names (!284)</p></li>
+<li><p>Improvements to documentation rendering (#122, !282)</p></li>
+<li><p>Unify Python versions in tox environments i.e. <code class="docutils literal notranslate"><span class="pre">py311-build-macos</span></code> to
+<code class="docutils literal notranslate"><span class="pre">build-macos</span></code> (!283)</p></li>
+<li><p>Remove deprecated pytest tmpdir fixture (!283)</p></li>
+<li><p>Remove deprecated <code class="docutils literal notranslate"><span class="pre">assert_almost_equal</span></code> in favor of <code class="docutils literal notranslate"><span class="pre">assert_allclose</span></code> (!283)</p></li>
+<li><p>Move from <code class="docutils literal notranslate"><span class="pre">os.path</span></code> to <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> (!283)</p></li>
+<li><p>Added Support for Python 3.11 (!283)</p></li>
+<li><p>Update MacOS images for CI (!281)</p></li>
+<li><p>Removed the obsolete option for the vacuum boundary condition in the
+<code class="docutils literal notranslate"><span class="pre">DielectricPlanar</span></code> module and prompt users to use tin-foil boundary
+conditions instead (!280).</p></li>
+<li><p>Add physical integration test to test that structure factor from Saxs is the same as
+the Fourier transformed RDF. (!279)</p></li>
+<li><p>Add example and explenation of how to relate the radial distribution function and the
+structure factor (!279)</p></li>
+<li><p>Add function <a class="reference internal" href="../api-documentation/math.html#maicos.lib.math.rdf_structure_factor" title="maicos.lib.math.rdf_structure_factor"><code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib.math.rdf_structure_factor()</span></code></a> for converting a radial
+distribution function into a structure factor. (!279)</p></li>
+<li><p>Change default biwnwidth (<code class="docutils literal notranslate"><span class="pre">dq</span></code>) in <a class="reference internal" href="../analysis-modules/saxs.html#maicos.Saxs" title="maicos.Saxs"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.Saxs</span></code></a> to <code class="docutils literal notranslate"><span class="pre">0.1</span></code>. (!279)</p></li>
+<li><p>Move <code class="docutils literal notranslate"><span class="pre">cutils</span></code> to <code class="docutils literal notranslate"><span class="pre">cmath</span></code> (!279)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">weight</span></code> argument to <code class="xref py py-func docutils literal notranslate"><span class="pre">maicos.lib._cmath.compute_structure_factor()</span></code></p></li>
+<li><p>Code cleanup of <a class="reference internal" href="../analysis-modules/saxs.html#maicos.Saxs" title="maicos.Saxs"><code class="xref py py-class docutils literal notranslate"><span class="pre">maicos.Saxs</span></code></a> (!279)</p></li>
+<li><p>Fixed markup and consistency in <code class="docutils literal notranslate"><span class="pre">correlation</span></code> function docs (!277)</p></li>
+<li><p>Add info for <code class="docutils literal notranslate"><span class="pre">DielectricPlanar</span></code> module for ignored combination of <code class="docutils literal notranslate"><span class="pre">vac=True</span></code> and
+<code class="docutils literal notranslate"><span class="pre">is_3d=False</span></code>. (!275)</p></li>
+<li><p>Add description for <cite>tox</cite> jobs (!275)</p></li>
+<li><p>Cleanup coverage config and move to <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> (!275)</p></li>
+<li><p>Changed the way number normalization works, introduced sums dict (!274)</p></li>
+<li><p>Fixed typing error in RDF modules (!273)</p></li>
+<li><p>Update docs to reflect changes in <code class="docutils literal notranslate"><span class="pre">mdacli</span></code> (!271)</p></li>
+<li><p>Add banner to MAICoS output reporting the version (!272)</p></li>
+<li><p>Update UML graphic (!269)</p></li>
+<li><p>Show warnings if set boundaries would result in wrong results (!261)</p></li>
+<li><p>Small corrections to the documentation and type hinting (!268)</p></li>
+<li><p>Add module for calculating radial distribution functions in cylinders (!242)</p></li>
+<li><p>Add modules for calculating cylindrical and spherical dipolar order parameters (!259)</p></li>
+<li><p>Fix reproducibility information in output (!263)</p></li>
+<li><p>Make savetxt work with Pathlib objects (!267)</p></li>
+<li><p>Update versionner to 0.29 (!266)</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">dipole_vector</span></code> methods from MDAnalysis (!265)</p></li>
+<li><p>Bump minimum Python version to 3.9 (!264)</p></li>
+<li><p>Fix dipole calculation in <code class="docutils literal notranslate"><span class="pre">DielectricCylinder</span></code> (!258)</p></li>
+<li><p>Add example for RDFPlanar (!256)</p></li>
+<li><p>Move geometry transformations to <code class="docutils literal notranslate"><span class="pre">lib.math</span></code> (!257)</p></li>
+<li><p>Add typehints for examples (!255)</p></li>
+<li><p>Add typehints for modules (!253)</p></li>
+<li><p>Only test minimum and maximum Python version in CI (!252)</p></li>
+<li><p>Add typehints for core classes (!251)</p></li>
+<li><p>Update documentation with parameters, returns and examples for library functions
+(!248)</p></li>
+<li><p>Update CI to use latest MacOS (!250)</p></li>
+<li><p>Add tables to documentation pages (!249)</p></li>
+<li><p>Fix links to own classes in examples (!247)</p></li>
+<li><p>Update install instructions for users and devs (!246)</p></li>
+<li><p>Show authors on website (!245)</p></li>
+<li><p>Add link to developer documentation in <code class="docutils literal notranslate"><span class="pre">CONTRIBUTING.rst</span></code> (!244)</p></li>
+<li><p>Remove Python 2.x leftover of specific <code class="docutils literal notranslate"><span class="pre">super()</span></code> call (!243)</p></li>
+<li><p>Use Gitlab for showing coverage and unit test reports (!241)</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">black</span></code> formatter and <cite>88</cite> chars/line for the code and rst files (!240)</p></li>
+<li><p>Add return values for correlation analysis to all base classes (!235)</p></li>
+<li><p>Added more linting for rst files (!239)</p></li>
+<li><p>Bump minimum version of <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> to 4.60 (!238)</p></li>
+<li><p>Add prompt toggle to examples (!236)</p></li>
+<li><p>Added description to the ideal chemical potential how-to (!232)</p></li>
+<li><p>Added quotation marks to command in tox.ini to account for spaces in paths (!232)</p></li>
+<li><p>Fixed some typos and made minor modifications to the documentation (!232)</p></li>
+<li><p>Cleanup .gitignore (!233)</p></li>
+<li><p>More consistent molecule wrapping (!230)</p></li>
+<li><p>Added missing AnalysisBase parameters to modules (!231)</p></li>
+<li><p>created dark and light images and logo (!229)</p></li>
+<li><p>Add explicit <cite>stacklevel</cite> arguments to warnings in the library (!236)</p></li>
+<li><p>Switch to the <cite>build</cite> module (!234)</p></li>
+</ul>
+</section>
+<section id="v0-7-2-2023-01-09">
+<h2>v0.7.2 (2023/01/09)<a class="headerlink" href="#v0-7-2-2023-01-09" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Henrik Stooß</p>
+<ul class="simple">
+<li><p>Remove superfluous group wise wrapping (!225)</p></li>
+<li><p>Clarify unclear definition in Dieletric modules that could lead to wrong results
+(!228)</p></li>
+<li><p>Fixed windows string manipulation in test CI (!227)</p></li>
+<li><p>Added coverage posting on GitLab (!226)</p></li>
+<li><p>Corrected wrong comparison in correlation analysis and added tests</p></li>
+<li><p>Fixed link to changelog in pyproject.toml</p></li>
+<li><p>Migrated versioneer to pyproject.toml</p></li>
+<li><p>Added Support for Python 3.11</p></li>
+</ul>
+</section>
+<section id="v0-7-1-2023-01-01">
+<h2>v0.7.1 (2023/01/01)<a class="headerlink" href="#v0-7-1-2023-01-01" title="Link to this heading">¶</a></h2>
+<p>Henrik Stooß</p>
+<ul class="simple">
+<li><p>Fix upload to PyPi. This release is identical to v0.7.</p></li>
+</ul>
+</section>
+<section id="v0-7-2022-12-27">
+<h2>v0.7 (2022/12/27)<a class="headerlink" href="#v0-7-2022-12-27" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Simon Gravelle, Marc Sauter, Henrik Stooß, Kira Fischer, Alexander
+Schlaich, Philipp Staerk</p>
+<ul class="simple">
+<li><p>Make sure citation are only printed once (!260)</p></li>
+<li><p>Added MacOS pipeline, fixed wheels (!218)</p></li>
+<li><p>Fix CHANGELOG testing (!220)</p></li>
+<li><p>Added dielectric how-to (!208)</p></li>
+<li><p>Raise an error if <code class="docutils literal notranslate"><span class="pre">unwrap=False</span></code> and <code class="docutils literal notranslate"><span class="pre">refgroup</span> <span class="pre">!=</span> <span class="pre">None</span></code> in dielectric modules
+(!215).</p></li>
+<li><p>Fix velocity profiles (!211)</p></li>
+<li><p>Added the Theory to the Dielectric docs (!201)</p></li>
+<li><p>Add a logger info for citations (!205)</p></li>
+<li><p>Rename Diporder to DiporderPlanar (!202)</p></li>
+<li><p>Change default behavior of DielectricPlanar: assume slab geometry by default (removing
+the <code class="docutils literal notranslate"><span class="pre">xy</span></code> flag and instead introduce <code class="docutils literal notranslate"><span class="pre">is_3d</span></code> for 3d-periodic systems) (!202)</p></li>
+<li><p>Rename <code class="docutils literal notranslate"><span class="pre">profile_mean</span></code> to <code class="docutils literal notranslate"><span class="pre">profile</span></code> (!202)</p></li>
+<li><p>Major improvements on the documentation (!202)</p></li>
+<li><p>Add a check if the CHANGELOG.rst has been updated (!198)</p></li>
+<li><p>Fix behaviour of refgroup (!192)</p></li>
+<li><p>Resolve +1 is summed for epsilon for each atom group (#101, !193)</p></li>
+<li><p>Flatten file structure of analysis modules (#46, !196)</p></li>
+<li><p>Consistent mass unit in docs</p></li>
+<li><p>Porting examples to sphinx-gallery (!190)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">jitter</span></code> parameter to AnalysisBase (!183)</p></li>
+<li><p>Test output messages (!191)</p></li>
+<li><p>Fixed typo in <code class="docutils literal notranslate"><span class="pre">DielectricPlanar</span></code> docs (!194)</p></li>
+<li><p>Add Sphere modules (!175)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">ProfileBase</span></code> class (!180)</p></li>
+<li><p>Slight restructure of the documenation (!189)</p></li>
+<li><p>Fix py311 windows</p></li>
+<li><p>Update build requirements for py310 and py311</p></li>
+<li><p>Merged setup.cfg into pyproject.toml (!187)</p></li>
+<li><p>Use versioneer for version info (!150)</p></li>
+<li><p>Update project urls (!185)</p></li>
+<li><p>Added repository link in the documentation (!184)</p></li>
+<li><p>Added windows CI/CD pipeline (!182)</p></li>
+<li><p>Update package discovery methods in setup.cfg</p></li>
+<li><p>Refactor CI script (!181)</p></li>
+<li><p>Fix <code class="docutils literal notranslate"><span class="pre">DielectricCylinder</span></code> (!165)</p></li>
+<li><p>Unified <code class="docutils literal notranslate"><span class="pre">n_bins</span></code> logging (#93, !179)</p></li>
+<li><p>Add MAICoS UML Class Diagramm (!178)</p></li>
+<li><p>Changed density calculation using range in np.histogram (!77)</p></li>
+<li><p>Update branching model in the documentation (!177)</p></li>
+<li><p>remove ./ from index.rst</p></li>
+<li><p>Improve documentation (!174)</p></li>
+<li><p>Added reference for SAXS calculations (!176)</p></li>
+<li><p>Update type of bin_pos in docs</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">VelocityCylinder</span></code> module</p></li>
+<li><p>Change behavior of <code class="docutils literal notranslate"><span class="pre">sort_atomgroup</span></code> (#88, !152)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_compound</span></code>: option for returning indices of topology attributes</p></li>
+<li><p>Added Tutorial for non-spatial analysis module (!170)</p></li>
+<li><p>Check atomgroups if they contain any atoms (!172)</p></li>
+<li><p>New core attributes: <code class="docutils literal notranslate"><span class="pre">bin_edges</span></code>, <code class="docutils literal notranslate"><span class="pre">bin_area</span></code>, <code class="docutils literal notranslate"><span class="pre">bin_volume</span></code>, <code class="docutils literal notranslate"><span class="pre">bin_pos</span></code> &amp;
+<code class="docutils literal notranslate"><span class="pre">bin_width</span></code> (!167)</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">frame</span></code> dict in <code class="docutils literal notranslate"><span class="pre">structure.py</span></code> (!169)</p></li>
+<li><p>Fix box dimensions for cylindrical boundaries (!168)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rmax</span></code> for cylindrical systems now uses correct dimensions</p></li>
+<li><p>Transport module documentation update (!164)</p></li>
+<li><p>Rename frame dict (!166)</p></li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">SphereBase</span></code> and <code class="docutils literal notranslate"><span class="pre">ProfileSphereBase</span></code> (!162)</p></li>
+<li><p>Relative path for data (!163)</p></li>
+<li><p>Create Linux wheels (!160)</p></li>
+<li><p>Fix <code class="docutils literal notranslate"><span class="pre">Diporder</span></code> tests (!161)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">norm=number</span></code>: Declare bins with no atoms as <code class="docutils literal notranslate"><span class="pre">nan</span></code> (!157)</p></li>
+<li><p>Simplify weight functions (!158)</p></li>
+</ul>
+</section>
+<section id="v0-6-1-2022-09-26">
+<h2>v0.6.1 (2022/09/26)<a class="headerlink" href="#v0-6-1-2022-09-26" title="Link to this heading">¶</a></h2>
+<p>Henrik Stooß</p>
+<ul class="simple">
+<li><p>Fix the output of the <cite>ChemicalPotentialPlanar</cite> module (!173)</p></li>
+</ul>
+</section>
+<section id="v0-6-2022-09-01">
+<h2>v0.6 (2022/09/01)<a class="headerlink" href="#v0-6-2022-09-01" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Simon Gravelle, Srihas Velpuri, Henrik Stooß, Alexander Schlaich,
+Maximilian Becker, Kira Fischer</p>
+<ul class="simple">
+<li><p>Write total epsilon as defined in paper (!155)</p></li>
+<li><p>Introduce generic header (!149)</p></li>
+<li><p>Fix error estimate in <code class="docutils literal notranslate"><span class="pre">EpsilonPlanar</span></code> (!153)</p></li>
+<li><p>Fix sym option in <code class="docutils literal notranslate"><span class="pre">EpsilonPlanar</span></code> (!148)</p></li>
+<li><p>Use standard error of the mean instead of variance for error estimate (!147)</p></li>
+<li><p>Make all tests that write file use temporary file directory (!151)</p></li>
+<li><p>Rewrite <code class="docutils literal notranslate"><span class="pre">Velocity</span></code> module using <code class="docutils literal notranslate"><span class="pre">ProfilePlanarBase</span></code> (!142)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">RDFPlanar</span></code> (!133)</p></li>
+<li><p>Refactor <code class="docutils literal notranslate"><span class="pre">EpsilonPlanar</span></code> (!139)</p></li>
+<li><p>Add a correlation time estimator (!137)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">frame</span></code> dict to <code class="docutils literal notranslate"><span class="pre">AnalysisBase</span></code> (!138)</p></li>
+<li><p>Generalize <code class="docutils literal notranslate"><span class="pre">comgroup</span></code> attribute to all dimensions (!132)</p></li>
+<li><p>Output headers do not require residue names anymore (!134)</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">Debyer</span></code> class (!130)</p></li>
+<li><p>Generalize <code class="docutils literal notranslate"><span class="pre">concfreq</span></code> attribute in <code class="docutils literal notranslate"><span class="pre">AnalysisBase</span></code> (!122)</p></li>
+<li><p>Fix broken binning in <code class="docutils literal notranslate"><span class="pre">EpsilonPlanar</span></code> (!125)</p></li>
+<li><p>Removed <code class="docutils literal notranslate"><span class="pre">repairMolecules</span></code> (!119)</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">grouping</span></code> and <code class="docutils literal notranslate"><span class="pre">bin_method</span></code> option (!117)</p></li>
+<li><p>Bump minimum MDAnalysis version to 2.2.0 (!117)</p></li>
+<li><p>Bump minimum Python version to 3.8 (!117)</p></li>
+<li><p>Use base units exclusively (!115)</p></li>
+<li><p>Higher tolerance for non-neutral systems (1E-4 instead of 1E-5)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">charge``neutral</span> <span class="pre">decorator</span> <span class="pre">uses</span> <span class="pre">``check_compound</span></code> now</p></li>
+<li><p>Add option to symmetrize profiles using <code class="docutils literal notranslate"><span class="pre">ProfilePlanarBase</span></code> (!116)</p></li>
+<li><p>Fix <code class="docutils literal notranslate"><span class="pre">comgroup</span></code> parameter working only in the z direction (!116)</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">center</span></code> option from <code class="docutils literal notranslate"><span class="pre">ProfileBase</span></code> (!116)</p></li>
+<li><p>Introduces new <code class="docutils literal notranslate"><span class="pre">ProfilePlanarBase</span></code> (!111)</p></li>
+<li><p>Split new <code class="docutils literal notranslate"><span class="pre">DensityPlanar</span></code> into <code class="docutils literal notranslate"><span class="pre">ChemicalPotentialPlanar</span></code>, <code class="docutils literal notranslate"><span class="pre">DensityPlanar</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TemperaturePlanar</span></code> (!111)</p></li>
+<li><p>Convert more <code class="docutils literal notranslate"><span class="pre">print</span></code> statements into logger calls (!111)</p></li>
+<li><p>Fix wrong <code class="docutils literal notranslate"><span class="pre">Diporder</span></code> normalization + tests (!111)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">zmin</span></code> and <code class="docutils literal notranslate"><span class="pre">zmax</span></code> to DensityPlanar and Diporder (!109)</p></li>
+<li><p>Fix EpsilonPlanar (!108)</p></li>
+<li><p>More tests for <code class="docutils literal notranslate"><span class="pre">DensityPlanar</span></code>, <code class="docutils literal notranslate"><span class="pre">DensityCylinder</span></code>, <code class="docutils literal notranslate"><span class="pre">KineticEnergy</span></code> and
+<code class="docutils literal notranslate"><span class="pre">DipoleAngle</span></code> (!104)</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">EpsilonBulk</span></code> (!107)</p></li>
+<li><p>Add Code of Conduct (!97)</p></li>
+<li><p>Fix lint errors (!95)</p></li>
+</ul>
+</section>
+<section id="v0-5-1-2022-02-21">
+<h2>v0.5.1 (2022/02/21)<a class="headerlink" href="#v0-5-1-2022-02-21" title="Link to this heading">¶</a></h2>
+<p>Henrik Stooß</p>
+<ul class="simple">
+<li><p>Fix pypi installation (!98)</p></li>
+</ul>
+</section>
+<section id="v0-5-2022-02-17">
+<h2>v0.5 (2022/02/17)<a class="headerlink" href="#v0-5-2022-02-17" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Srihas Velpuri, Simon Gravelle</p>
+<ul class="simple">
+<li><p>Convert Tutorials into notebooks (!93)</p></li>
+<li><p>New docs design (!93)</p></li>
+<li><p>Build gitlab docs only on master branch (!94, #62)</p></li>
+<li><p>Removed oxygen binning from diporder (!85)</p></li>
+<li><p>Improved CI including tests for building and linting</p></li>
+<li><p>Create a consistent value of <code class="docutils literal notranslate"><span class="pre">zmax</span></code> in every frame (!79)</p></li>
+<li><p>Corrected README for pypi (!83)</p></li>
+<li><p>Use Results class for attributes and improved docs (!81)</p></li>
+<li><p>Bump minimum Python version to 3.7 (!80)</p></li>
+<li><p>Remove spaghetti code in <code class="docutils literal notranslate"><span class="pre">__main__.py</span></code> and introduce <code class="docutils literal notranslate"><span class="pre">mdacli</span></code> as cli server
+library. (!80)</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">SingleGroupAnalysisBase</span></code> and <code class="docutils literal notranslate"><span class="pre">MultiGroupAnalysisBase</span></code> classes in favour of
+a unified <code class="docutils literal notranslate"><span class="pre">AnalysisBase</span></code> class (!80)</p></li>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">planar_base</span></code> decorator to a <code class="docutils literal notranslate"><span class="pre">PlanarBase</span></code> class (!80)</p></li>
+<li><p>Rename modules to be consistent with PEP8 (<code class="docutils literal notranslate"><span class="pre">density_planar</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">DensityPlanar</span></code>)
+(!80)</p></li>
+<li><p>Use Numpy’s docstyle for doc formatting (!80)</p></li>
+<li><p>Use Python’s powerful logger library instead of bare <code class="docutils literal notranslate"><span class="pre">print</span></code> (!80)</p></li>
+<li><p>Use Python 3.6 string formatting (!80)</p></li>
+<li><p>Remove <code class="docutils literal notranslate"><span class="pre">_calculate_results</span></code> methods. This method is covered by the <code class="docutils literal notranslate"><span class="pre">_conclude</span></code>
+method. (!80)</p></li>
+<li><p>Make results saving a public function (save) (!80)</p></li>
+<li><p>Added docstring Decorator for <code class="docutils literal notranslate"><span class="pre">PlanarDocstring</span></code> and <code class="docutils literal notranslate"><span class="pre">verbose</span></code> option (!80)</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">MDAnalysis</span></code>’s’ <code class="docutils literal notranslate"><span class="pre">center_of_mass</span></code> function for center of mass shifting (!80)</p></li>
+</ul>
+</section>
+<section id="v0-4-1-2021-12-17">
+<h2>v0.4.1 (2021/12/17)<a class="headerlink" href="#v0-4-1-2021-12-17" title="Link to this heading">¶</a></h2>
+<p>Philip Loche</p>
+<ul class="simple">
+<li><p>Fixed double counting of the box length in diporder (#58, !76)</p></li>
+</ul>
+</section>
+<section id="v0-4-2021-12-13">
+<h2>v0.4 (2021/12/13)<a class="headerlink" href="#v0-4-2021-12-13" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Stooß, Srihas Velpuri, Maximilian
+Becker</p>
+<ul class="simple">
+<li><p>Restructure docs and build docs for develop and release version</p></li>
+<li><p>Include README files into sphinx doc</p></li>
+<li><p>Add tutorial for density_cylinder module</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">planar_base</span></code> decorator unifying the syntax for planar analysis modules as
+<code class="docutils literal notranslate"><span class="pre">denisty_planar</span></code>, <code class="docutils literal notranslate"><span class="pre">epsilon_planar</span></code> and <code class="docutils literal notranslate"><span class="pre">diporder</span></code> (!48)</p></li>
+<li><p>Corrected time_series module and created a test for it</p></li>
+<li><p>Added support for Python 3.9</p></li>
+<li><p>Created sphinx documentation</p></li>
+<li><p>Raise error if end is to small (#40)</p></li>
+<li><p>Add sorting of atom groups into molecules, enabling import of LAMMPS data</p></li>
+<li><p>Corrected plot format selection in <code class="docutils literal notranslate"><span class="pre">dielectric_spectrum</span></code> (!66)</p></li>
+<li><p>Fixed box dimension not set properly (!64)</p></li>
+<li><p>Add docs for timeseries modulees (!72)</p></li>
+<li><p>Fixed diporder does not compute the right quantities (#55, !75)</p></li>
+<li><p>Added support of calculating the chemical potentials for multiple atomgroups.</p></li>
+<li><p>Changed the codes behaviour of calculating the chemical potential if atomgroups
+contain multiple residues.</p></li>
+</ul>
+</section>
+<section id="v0-3-2020-03-03">
+<h2>v0.3 (2020/03/03)<a class="headerlink" href="#v0-3-2020-03-03" title="Link to this heading">¶</a></h2>
+<p>Philip Loche, Amanuel Wolde-Kidan</p>
+<ul class="simple">
+<li><p>Fixed errors occurring from changes in MDAnalysis</p></li>
+<li><p>Increased minimal requirements</p></li>
+<li><p>Use new ProgressBar from MDAnalysis</p></li>
+<li><p>Increased total_charge to account for numerical inaccuracy</p></li>
+</ul>
+</section>
+<section id="v0-2-2020-04-03">
+<h2>v0.2 (2020/04/03)<a class="headerlink" href="#v0-2-2020-04-03" title="Link to this heading">¶</a></h2>
+<p>Philip Loche</p>
+<ul class="simple">
+<li><p>Added custom module</p></li>
+<li><p>Less noisy DeprecationWarning</p></li>
+<li><p>Fixed wrong center of mass velocity in velocity module</p></li>
+<li><p>Fixed documentation in diporder for P0</p></li>
+<li><p>Fixed debug if error in parsing</p></li>
+<li><p>Added checks for charge neutrality in dielectric analysis</p></li>
+<li><p>Added test files for an air-water trajectory and the diporder module</p></li>
+<li><p>Performance tweaks and tests for sfactor</p></li>
+<li><p>Check for molecular information in modules</p></li>
+</ul>
+</section>
+<section id="v0-1-2019-10-30">
+<h2>v0.1 (2019/10/30)<a class="headerlink" href="#v0-1-2019-10-30" title="Link to this heading">¶</a></h2>
+<p>Philip Loche</p>
+<ul class="simple">
+<li><p>first release out of the lab</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../examples/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">How-to guides</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="units.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Some conventions</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, MAICoS Developer Team
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-2x" href="https://github.com/maicos-devel/maicos" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Changelog</a><ul>
+<li><a class="reference internal" href="#v0-11-2-2025-07-15">v0.11.2 (2025/07/15)</a></li>
+<li><a class="reference internal" href="#v0-11-1-2025-07-04">v0.11.1 (2025/07/04)</a></li>
+<li><a class="reference internal" href="#v0-11-2025-06-25">v0.11 (2025/06/25)</a></li>
+<li><a class="reference internal" href="#v0-10-2025-05-12">v0.10 (2025/05/12)</a></li>
+<li><a class="reference internal" href="#v0-9-2025-02-19">v0.9 (2025/02/19)</a></li>
+<li><a class="reference internal" href="#v0-8-2024-02-05">v0.8 (2024/02/05)</a></li>
+<li><a class="reference internal" href="#v0-7-2-2023-01-09">v0.7.2 (2023/01/09)</a></li>
+<li><a class="reference internal" href="#v0-7-1-2023-01-01">v0.7.1 (2023/01/01)</a></li>
+<li><a class="reference internal" href="#v0-7-2022-12-27">v0.7 (2022/12/27)</a></li>
+<li><a class="reference internal" href="#v0-6-1-2022-09-26">v0.6.1 (2022/09/26)</a></li>
+<li><a class="reference internal" href="#v0-6-2022-09-01">v0.6 (2022/09/01)</a></li>
+<li><a class="reference internal" href="#v0-5-1-2022-02-21">v0.5.1 (2022/02/21)</a></li>
+<li><a class="reference internal" href="#v0-5-2022-02-17">v0.5 (2022/02/17)</a></li>
+<li><a class="reference internal" href="#v0-4-1-2021-12-17">v0.4.1 (2021/12/17)</a></li>
+<li><a class="reference internal" href="#v0-4-2021-12-13">v0.4 (2021/12/13)</a></li>
+<li><a class="reference internal" href="#v0-3-2020-03-03">v0.3 (2020/03/03)</a></li>
+<li><a class="reference internal" href="#v0-2-2020-04-03">v0.2 (2020/04/03)</a></li>
+<li><a class="reference internal" href="#v0-1-2019-10-30">v0.1 (2019/10/30)</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/toggleprompt.js?v=5801b3bb"></script>
+    </body>
+</html>
