@@ -32,6 +32,7 @@ v0.11 (2025/06/25)
 ------------------
 Philip Loche, Henrik Stooß
 
+- Implement error calculation for observables with multiple samples (#494)
 - Update GitHub Actions for building wheels (#503)
 - Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
   equally spaced (#499)

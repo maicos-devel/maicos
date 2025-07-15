@@ -236,11 +236,15 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = positions[:, self.dim]
-        hist, _ = np.histogram(
+        hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.zmin, self.zmax), weights=weights
         )
+        # TODO(@hejamu): Is this the best way to do this?
+        # Also, can we somehow abstract this away?
+        bin_indices = np.digitize(positions, bin_edges) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
 
-        return hist
+        return hist, bin_indices
 
     def _single_frame(self) -> float:
         PlanarBase._single_frame(self)
@@ -251,15 +255,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     def _conclude(self):
         PlanarBase._conclude(self)
-
+        ProfileBase._conclude(self)
         if self.sym:
             symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
             symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+
             symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
                 symmetrize(self.sums.bincount, inplace=True, is_odd=self.sym_odd)
-
-        # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
-        # this prevents symmetrizing.
-        ProfileBase._conclude(self)

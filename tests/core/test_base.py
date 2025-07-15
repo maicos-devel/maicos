@@ -73,8 +73,8 @@ class FileModuleInput(AnalysisBase):
         )
 
 
-class Series(AnalysisBase):
-    """Class creating a random time series to check observables."""
+class SingularSeries(AnalysisBase):
+    """Class creating a time series with one observable per frame."""
 
     def __init__(self, atomgroup):
         super().__init__(
@@ -92,6 +92,32 @@ class Series(AnalysisBase):
 
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
+
+
+class MultipleSeries(AnalysisBase):
+    """Class creating a time series with multiple observables per frame."""
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.population = np.random.randint(1, 10, self.n_frames)
+        self.series = []
+        for i in range(len(self.population)):
+            self.series.append(np.random.rand(self.population[i]))
+
+    def _single_frame(self):
+        self._obs.observable = np.mean(self.series[self._frame_index])
+        self._var.observable = np.var(self.series[self._frame_index])
+        self._pop.observable = self.population[self._frame_index]
 
 
 class Frame_types(AnalysisBase):
@@ -221,12 +247,24 @@ class Test_AnalysisBase:
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = Series(atomgroup=ag)
+        ana = SingularSeries(atomgroup=ag)
         ana.run()
 
         assert_allclose(ana.sums.observable, np.sum(ana.series))
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
+
+        ana = MultipleSeries(atomgroup=ag)
+        ana.run()
+        raw_series = np.concatenate(ana.series)
+
+        assert_allclose(ana.means.observable, np.mean(raw_series), rtol=1e-5)
+        assert_allclose(ana.sums.observable, np.sum(raw_series), rtol=1e-5)
+        assert_allclose(
+            ana.sems.observable,
+            np.std(raw_series) / np.sqrt(len(raw_series)),
+            rtol=1e-5,
+        )
 
     def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""

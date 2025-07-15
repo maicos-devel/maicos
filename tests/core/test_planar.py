@@ -84,8 +84,8 @@ class TestPlanarBase:
         """Planar class object."""
         return PlanarClass(ag, pos_arg=42)
 
-    def test_origi_init(self, ag):
-        """Test origin  init."""
+    def test_origin_init(self, ag):
+        """Test origin init."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, opt_arg="bar")
         assert planar_class_obj.pos_arg == 42
         assert planar_class_obj.opt_arg == "bar"
@@ -488,7 +488,7 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run()
 
         actual = profile.results.profile.flatten()
-        desired = [np.nan, np.nan, np.nan, 1, 1, 1, 1, 1, 1, 1]
+        desired = [np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 1, 1]
         desired += desired[::-1]
 
         assert_allclose(actual, desired, atol=1e-2)
@@ -510,7 +510,7 @@ class TestProfilePlanarBase:
         """Test the histogram method."""
         p = ProfilePlanarBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins), weights=None
         )
 
@@ -520,7 +520,7 @@ class TestProfilePlanarBase:
         """Test the histogram method with weights."""
         p = ProfilePlanarBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.zmin], 3 * [p.zmax], p.n_bins),
             weights=5 * np.ones(p.n_bins),
         )
@@ -536,10 +536,10 @@ class TestProfilePlanarBase:
     @pytest.mark.parametrize("n_bins", [1, 2, 3])
     def test_correlation_bin(self, params, u, n_bins):
         """Test that the center bin is taken for the analysis."""
-        L = u.dimensions[2]
-        params.update(bin_width=L / n_bins)
+        L = u.dimensions[2] / 2
+        # unverse only has particles in [0,1]
+        params.update(bin_width=L / n_bins, zmin=-1, zmax=0)
 
         profile = ProfilePlanarBase(**params).run(stop=1)
-
         selected_bin = profile._single_frame()
         assert selected_bin == profile._obs.profile[n_bins // 2]

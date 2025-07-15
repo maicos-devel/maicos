@@ -231,7 +231,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
     ) -> np.ndarray:
         positions = transform_cylinder(positions, self.box_center, self.dim)
         # Use the 2D histogram function to perform the selection in the z dimension.
-        hist, _, _ = np.histogram2d(
+        hist, bin_edges, _ = np.histogram2d(
             positions[:, 0],
             positions[:, 2],
             bins=(self.n_bins, 1),
@@ -239,8 +239,13 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):
             weights=weights,
         )
 
+        # TODO(@hejamu): Is this the best way to do this?
+        # Also, can we somehow abstract this away?
+        bin_indices = np.digitize(positions[:, 0], bin_edges) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
+
         # Reshape into 1D array
-        return hist[:, 0]
+        return hist[:, 0], bin_indices
 
     def _single_frame(self) -> float:
         CylinderBase._single_frame(self)

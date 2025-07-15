@@ -36,7 +36,7 @@ class ReferenceAtomGroups:
         return u.atoms
 
 
-class TestDiporderPlanar(ReferenceAtomGroups):
+class TestDiporderCylinder(ReferenceAtomGroups):
     """Tests for the DiporderCylinder class."""
 
     @pytest.fixture
