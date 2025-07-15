@@ -15,6 +15,30 @@ from .tables import electron_count
 from .util import Unit_vector, render_docs
 
 
+def _resolve_electron_count(element: str) -> float:
+    if element == "CH1":
+        return _resolve_electron_count("C") + _resolve_electron_count("H")
+    if element == "CH2":
+        return _resolve_electron_count("C") + 2 * _resolve_electron_count("H")
+    if element == "CH3":
+        return _resolve_electron_count("C") + 3 * _resolve_electron_count("H")
+    if element == "CH4":
+        return _resolve_electron_count("C") + 4 * _resolve_electron_count("H")
+    if element == "NH1":
+        return _resolve_electron_count("N") + _resolve_electron_count("H")
+    if element == "NH2":
+        return _resolve_electron_count("N") + 2 * _resolve_electron_count("H")
+    if element == "NH3":
+        return _resolve_electron_count("N") + 3 * _resolve_electron_count("H")
+    try:
+        return electron_count[element.title()]
+    except KeyError as e:
+        raise KeyError(
+            f"Element '{e.args[0]}' not found. Known elements are listed in the "
+            "`maicos.lib.tables.elements` set."
+        ) from e
+
+
 @render_docs
 def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.ndarray:
     """Weights for density calculations.
@@ -60,20 +84,9 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
         else:
             weights = atomgroup.total_charge(compound=grouping)
     elif dens == "electron":
-        # Cromer-Mann parameters for q=0 is the number of electrons
-        try:
-            electrons = np.array(
-                [electron_count[el.title()] for el in atomgroup.elements]
-            )
-        except KeyError as e:
-            raise KeyError(
-                f"Element '{e.args[0]}' not found. Known elements are listed in the "
-                "`maicos.lib.tables.elements` set."
-            ) from e
-        if grouping == "atoms":
-            weights = electrons
-        else:
-            weights = atomgroup.accumulate(electrons, compound=grouping)
+        weights = np.array([_resolve_electron_count(el) for el in atomgroup.elements])
+        if grouping != "atoms":
+            weights = atomgroup.accumulate(weights, compound=grouping)
     else:
         raise ValueError(
             f"'{dens}' density type is not supported. Use 'mass', 'number', 'charge' "
