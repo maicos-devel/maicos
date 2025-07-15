@@ -118,6 +118,22 @@ def test_density_weights_electron_title():
     )
 
 
+@pytest.mark.parametrize(
+    ("element", "n_electrons"),
+    [("CH1", 7), ("CH2", 8), ("CH3", 9), ("NH1", 8), ("NH2", 9), ("NH3", 10)],
+)
+def test_density_weights_electron_united_atoms(element, n_electrons):
+    """Test electron weights also for work for united atom force fields."""
+    u = mda.Universe(SPCE_GRO)
+    u.add_TopologyAttr("elements", u.atoms.n_atoms * [element])
+
+    assert_allclose(
+        maicos.lib.weights.density_weights(u.atoms, "atoms", "electron"),
+        n_electrons * np.ones(u.atoms.n_atoms, dtype=np.float64),
+        rtol=1e-3,
+    )
+
+
 def test_density_weights_electron_error():
     """Test error raise for non existing element."""
     u = mda.Universe(SPCE_GRO)
