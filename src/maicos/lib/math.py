@@ -532,10 +532,12 @@ def transform_cylinder(
     trans_positions[:, 0] = np.linalg.norm(pos_xyz_center[:, odims], axis=1)
 
     # phi component
-    np.arctan2(*pos_xyz_center[:, odims].T, out=trans_positions[:, 1])
+    trans_positions[:, 1] = np.angle(pos_xyz_center[:, odims][:, 0] + pos_xyz_center[:, odims][:, 1]*1j)
+    trans_positions[:, 1] = np.where(trans_positions[:, 1] < 0, trans_positions[:, 1] + 2*np.pi, trans_positions[:, 1])
 
     # z component
     trans_positions[:, 2] = np.copy(positions[:, dim])
+
 
     return trans_positions
 
