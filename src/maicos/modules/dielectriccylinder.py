@@ -388,7 +388,7 @@ class DielectricCylinder(CylinderBase):
 
         self.results.m_phi = self.means.m_phi
         cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
-        self.results.eps_phi = 1 + 2*np.pi *self._obs.L / self.results.bin_pos * self._pref * cov_phi  
+        self.results.eps_phi = 1 + 1 / self.results.bin_pos * self._pref * cov_phi  
 
     @render_docs
     def save(self) -> None:
