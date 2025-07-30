@@ -199,7 +199,7 @@ class DielectricCylinder(CylinderBase):
         # Use virtual cutting method (for azimuthal component)
         # ========================================================
         # number of virtual cuts ("many")
-        self.phicutwidth = 0.1 # angstrom
+        self.phicutwidth = self.vcutwidth # angstrom
 
         nbinsphi = np.ceil(self.rmax * 2 * np.pi / self.phicutwidth).astype(int)
         nbinsphi = nbinsphi //4 * 4
@@ -336,7 +336,7 @@ class DielectricCylinder(CylinderBase):
         self._obs.m_phi = -curqphi.mean(axis=0)
         # This is the systems dipole moment in z-direction and
         # not the radial integral of the dipole density.
-        self._obs.M_phi = np.sum(self._obs.bin_pos**2 * self._obs.m_phi)
+        self._obs.M_phi = np.sum(self._obs.bin_volume * self._obs.bin_pos * self._obs.m_phi)
         self._obs.mM_phi = self._obs.m_phi * self._obs.M_phi
 
         # Save the total dipole moment in z dierection for correlation analysis.
