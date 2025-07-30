@@ -216,7 +216,7 @@ class TestDielectricCylinder:
         n = int(len(dipole.atoms) / selection) if selection == 2 else len(dipole.atoms)
 
         # very fine binning to get the correct value for the dipole
-        eps = DielectricCylinder(dipole.atoms[:n], bin_width=0.02, vcutwidth=0.001)
+        eps = DielectricCylinder(dipole.atoms[:n], bin_width=0.01, vcutwidth=0.001)
         eps.run()
         # Check the dipole moment density by integrating over the system volume
         # and comparing to the total diplole moment of the system.
@@ -224,13 +224,25 @@ class TestDielectricCylinder:
         print(eps._obs.bin_volume)
         print(eps._obs.bin_width * 2 * np.pi * eps._obs.bin_pos * eps._obs.L)
         print(f"selection {selection}")
+        print(eps._obs.m_phi)
+        print(eps._obs.bin_pos[eps._obs.m_phi > 0])
         assert_allclose(
-            np.sum(eps._obs.bin_volume * eps._obs.m_phi), 4 / selection, rtol=0.1
+            np.sum(eps._obs.bin_volume * eps._obs.m_phi), 4 / selection, rtol=0.05
         )
-        assert_allclose(eps._obs.M_phi, 4 / selection, rtol=0.1)
+
+        chargepos = eps.pos_cyl[eps.atomgroup.ix, 0] * np.abs(eps.atomgroup.charges)
+        center = eps.atomgroup.accumulate(
+            chargepos, compound=eps.comp
+        ) / eps.atomgroup.accumulate(
+            np.abs(eps.atomgroup.charges), compound=eps.comp
+        )
+        rpos = center[0]
+        print(rpos)
+
+        assert_allclose(eps._obs.M_phi, 4 / selection * rpos , rtol=0.05)
         # Check that the radial dipole moment is zero. (Should be due to
         # geometry)
-        assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.01)
 
     def test_output(self, ag_single_frame, monkeypatch, tmp_path):
         """Tests output."""
