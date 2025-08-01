@@ -213,8 +213,8 @@ class DielectricCylinder(CylinderBase):
         ) / self.atomgroup.accumulate(
             np.abs(self.atomgroup.charges), compound=self.comp
         )
-        print("center in r bin of dipoles")
-        print(center)
+        #print("center in r bin of dipoles")
+        #print(center)
         testpos = center[self.inverse_ix]
 
         rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
@@ -224,35 +224,35 @@ class DielectricCylinder(CylinderBase):
         # Wrap all molecules that cross the 0, 2pi plane to their center of charge
         # tbh, we can just delete them from the atomgroup
         chargepos_phi = self.pos_cyl[self.atomgroup.ix, 1] * np.abs(self.atomgroup.charges)
-        print("chargepos")
-        print(chargepos_phi)
+        #print("chargepos")
+        #print(chargepos_phi)
         center_phi = self.atomgroup.accumulate(
             chargepos_phi, compound=self.comp
         ) / self.atomgroup.accumulate(
             np.abs(self.atomgroup.charges), compound=self.comp
         )
-        print("center_phi")
-        print(center_phi)
+        #print("center_phi")
+        #print(center_phi)
         # expand center_phi to be on a per atom basis
         test_center_phi = center_phi[self.inverse_ix]
 
         # wrap all components that cross the border at 0 and 2 pi
         pos_phi = self.pos_cyl[self.atomgroup.ix, 1]
         difference = test_center_phi - pos_phi
-        print(difference)
+        #print(difference)
         difference_bigger = np.where(np.abs(difference) * testpos > 1, 1, 0)
         difference_in_atom = difference_bigger
-        print(difference_in_atom)
+        #print(difference_in_atom)
         difference_in_molecule = self.atomgroup.accumulate(
                 difference_in_atom, compound = self.comp)
         is_diff = difference_in_molecule[self.inverse_ix]
         pos_phi = np.where(is_diff, test_center_phi, pos_phi)
-        print(pos_phi)
+        #print(pos_phi)
 
         # put the atoms in phi bins and calculate the charge in each phi bin
         phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
         phibins = np.digitize(pos_phi, phi[1:])
-        print(phibins)
+        #print(phibins)
 
         # calcualte the charge in each bin
         curQphi = np.bincount(
@@ -260,16 +260,16 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges,
             minlength=self.n_bins * nbinsphi,
         ).reshape(nbinsphi, self.n_bins)
-        print(curQphi)
+        #print(curQphi)
 
         # calculate the integral over the charge density
         area = self._obs.bin_width * self._obs.L
         curqphi = np.cumsum(curQphi, axis=0) / (area )
-        print("first cutting")
-        print(curqphi)
+        #print("first cutting")
+        #print(curqphi)
 
         # ------------- SECOND CUTTING --------------
-        print("second cutting")
+        #print("second cutting")
 
         shifted_pos = self.pos_cyl[self.atomgroup.ix, 1] + np.pi
         shifted_pos = np.mod(shifted_pos, 2 * np.pi)
@@ -286,10 +286,10 @@ class DielectricCylinder(CylinderBase):
         # wrap all components that cross the border at pi
         pos_phi = shifted_pos
         difference = test_center_phi - pos_phi
-        print(difference)
+        #print(difference)
         difference_bigger = np.where(np.abs(difference) * testpos > 1, 1, 0)
         difference_in_atom = difference_bigger
-        print(difference_in_atom)
+        #print(difference_in_atom)
         difference_in_molecule = self.atomgroup.accumulate(
                 difference_in_atom, compound = self.comp)
         is_diff = difference_in_molecule[self.inverse_ix]
@@ -299,7 +299,7 @@ class DielectricCylinder(CylinderBase):
         delta_phi = 2* np.pi / nbinsphi
         phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
         phibins = np.digitize(pos_phi, phi[1:])
-        print(phibins)
+        #print(phibins)
 
         # calcualte the charge in each bin
         curQphi = np.bincount(
@@ -307,13 +307,13 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges,
             minlength=self.n_bins * nbinsphi,
         ).reshape(nbinsphi, self.n_bins)
-        print(curQphi)
+        #print(curQphi)
 
         # calculate the integral over the charge density
         area = self._obs.bin_width * self._obs.L
         curqphi2 = np.cumsum(curQphi, axis=0) / (area )
-        print("second cutting")
-        print(curqphi2)
+        #print("second cutting")
+        #print(curqphi2)
 
 
         # puzzle the two halfs together
@@ -325,12 +325,12 @@ class DielectricCylinder(CylinderBase):
         curqphi[:quat, :] = curqphi2[half:tquat, :]
         curqphi[tquat:, :] = curqphi2[quat:half, :]
 
-        print("puzzled together")
-        print(curqphi)
+        #print("puzzled together")
+        #print(curqphi)
 
-        print("minibin volume")
-        print(self._obs.bin_width * self._obs.L * self._obs.bin_pos * delta_phi)
-        print(self._obs.bin_pos)
+        #print("minibin volume")
+        #print(self._obs.bin_width * self._obs.L * self._obs.bin_pos * delta_phi)
+        #print(self._obs.bin_pos)
 
         # average of m_phi(phi, r) over phi
         self._obs.m_phi = -curqphi.mean(axis=0)
