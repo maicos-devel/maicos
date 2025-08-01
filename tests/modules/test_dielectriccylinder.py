@@ -244,6 +244,72 @@ class TestDielectricCylinder:
         # geometry)
         assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.01)
 
+    def test_rbins_azimuthal(self):
+        """ Test the rbins in azimuthal direction """
+
+        dipole1 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole1.atoms.rotateby(90, [0, 0, 1])
+        dipole1.atoms.translate([1, 0, 0])
+
+        dipole2 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole2.atoms.rotateby(180, [0, 0, 1])
+        dipole2.atoms.translate([0, 1, 0])
+
+        dipole = mda.Merge(
+            *[dipole1.atoms, dipole2.atoms]
+        )
+
+        dipole.add_TopologyAttr('resid', [0, 1])
+        dipole.add_TopologyAttr('molnums', [0, 1])
+        dipole.dimensions = [10, 10, 10, 90, 90, 90]
+        dipole.atoms.translate(
+            dipole.dimensions[:3] / 2
+        )
+
+        eps = DielectricCylinder(dipole.atoms, bin_width=0.5, vcutwidth=0.001)
+        eps.run()
+        rbins, testrpos = eps._get_coc_rbins()
+        ind = np.argmin(np.abs(eps.results.bin_pos - 1.1))
+        print(eps.results.bin_pos)
+        print(eps._obs.bin_edges)
+        assert_allclose(rbins, [ind]*4)
+
+    def test_wrap_phi_positions(self):
+        """ test wrapping molecules that cross the phi boundary"""
+        dipole1 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole1.atoms.translate(-dipole1.atoms.center_of_mass())
+        dipole1.atoms.rotateby(90, [0, 0, 1])
+        dipole1.atoms.translate([1, 0, 0])
+
+        dipole2 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole2.atoms.translate(-dipole2.atoms.center_of_mass())
+        dipole2.atoms.rotateby(180, [0, 0, 1])
+        dipole2.atoms.translate([0, 1, 0])
+
+        dipole = mda.Merge(
+            *[dipole1.atoms, dipole2.atoms]
+        )
+
+        dipole.add_TopologyAttr('resid', [0, 1])
+        dipole.add_TopologyAttr('molnums', [0, 1])
+        dipole.dimensions = [10, 10, 10, 90, 90, 90]
+        dipole.atoms.translate(
+            dipole.dimensions[:3] / 2
+        )
+
+        eps = DielectricCylinder(dipole.atoms, bin_width=0.01, vcutwidth=0.001)
+        eps.run()
+
+        rbins, testrpos = eps._get_coc_rbins()
+        print(eps._coc_phi_shifted(shift=0))
+        pos_phi= eps._wrap_phi_positions(testrpos, shift=0)
+        print(pos_phi)
+        assert_allclose(pos_phi[0], pos_phi[1])
+        print(eps._coc_phi_shifted(shift=-np.pi/2))
+        pos_phi = eps._wrap_phi_positions(testrpos, shift=-np.pi/2)
+        assert_allclose(pos_phi[2], pos_phi[3])
+
+
     def test_output(self, ag_single_frame, monkeypatch, tmp_path):
         """Tests output."""
         monkeypatch.chdir(tmp_path)
