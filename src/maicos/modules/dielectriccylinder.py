@@ -205,54 +205,17 @@ class DielectricCylinder(CylinderBase):
         nbinsphi = nbinsphi //4 * 4
         logging.debug("Number of phi bins {nbinsphi}")
 
-        # Move all r-positions to 'center of charge' such that we avoid monopoles in
-        # r-direction. We only want to cut in z direction.
-        chargepos = self.pos_cyl[self.atomgroup.ix, 0] * np.abs(self.atomgroup.charges)
-        center = self.atomgroup.accumulate(
-            chargepos, compound=self.comp
-        ) / self.atomgroup.accumulate(
-            np.abs(self.atomgroup.charges), compound=self.comp
-        )
-        #print("center in r bin of dipoles")
-        #print(center)
-        testpos = center[self.inverse_ix]
-
-        rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
+        rbins, testrpos = self._get_coc_rbins()
 
         # ------------ FIRST CUT --------------------
         # do the first cut at the 0, 2pi plane.
         # Wrap all molecules that cross the 0, 2pi plane to their center of charge
         # tbh, we can just delete them from the atomgroup
-        chargepos_phi = self.pos_cyl[self.atomgroup.ix, 1] * np.abs(self.atomgroup.charges)
-        #print("chargepos")
-        #print(chargepos_phi)
-        center_phi = self.atomgroup.accumulate(
-            chargepos_phi, compound=self.comp
-        ) / self.atomgroup.accumulate(
-            np.abs(self.atomgroup.charges), compound=self.comp
-        )
-        #print("center_phi")
-        #print(center_phi)
-        # expand center_phi to be on a per atom basis
-        test_center_phi = center_phi[self.inverse_ix]
-
-        # wrap all components that cross the border at 0 and 2 pi
-        pos_phi = self.pos_cyl[self.atomgroup.ix, 1]
-        difference = test_center_phi - pos_phi
-        #print(difference)
-        difference_bigger = np.where(np.abs(difference) * testpos > 1, 1, 0)
-        difference_in_atom = difference_bigger
-        #print(difference_in_atom)
-        difference_in_molecule = self.atomgroup.accumulate(
-                difference_in_atom, compound = self.comp)
-        is_diff = difference_in_molecule[self.inverse_ix]
-        pos_phi = np.where(is_diff, test_center_phi, pos_phi)
-        #print(pos_phi)
+        pos_phi = self._wrap_phi_positions(testrpos, shift=0)
 
         # put the atoms in phi bins and calculate the charge in each phi bin
         phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
         phibins = np.digitize(pos_phi, phi[1:])
-        #print(phibins)
 
         # calcualte the charge in each bin
         curQphi = np.bincount(
@@ -269,37 +232,12 @@ class DielectricCylinder(CylinderBase):
         #print(curqphi)
 
         # ------------- SECOND CUTTING --------------
-        #print("second cutting")
 
-        shifted_pos = self.pos_cyl[self.atomgroup.ix, 1] + np.pi
-        shifted_pos = np.mod(shifted_pos, 2 * np.pi)
-        chargepos_phi = shifted_pos * np.abs(self.atomgroup.charges)
-        center_phi = self.atomgroup.accumulate(
-            chargepos_phi, compound=self.comp
-        ) / self.atomgroup.accumulate(
-            np.abs(self.atomgroup.charges), compound=self.comp
-        )
-        # expand center_phi to be on a per atom basis
-        test_center_phi = center_phi[self.inverse_ix]
+        # cut along at pi
+        pos_phi = self._wrap_phi_positions(testrpos, shift=np.pi)
 
-
-        # wrap all components that cross the border at pi
-        pos_phi = shifted_pos
-        difference = test_center_phi - pos_phi
-        #print(difference)
-        difference_bigger = np.where(np.abs(difference) * testpos > 1, 1, 0)
-        difference_in_atom = difference_bigger
-        #print(difference_in_atom)
-        difference_in_molecule = self.atomgroup.accumulate(
-                difference_in_atom, compound = self.comp)
-        is_diff = difference_in_molecule[self.inverse_ix]
-        pos_phi = np.where(is_diff, test_center_phi, pos_phi)
- 
         # put the atoms in phi bins and calculate the charge in each phi bin
-        delta_phi = 2* np.pi / nbinsphi
-        phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
         phibins = np.digitize(pos_phi, phi[1:])
-        #print(phibins)
 
         # calcualte the charge in each bin
         curQphi = np.bincount(
@@ -307,7 +245,6 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges,
             minlength=self.n_bins * nbinsphi,
         ).reshape(nbinsphi, self.n_bins)
-        #print(curQphi)
 
         # calculate the integral over the charge density
         area = self._obs.bin_width * self._obs.L
@@ -328,19 +265,62 @@ class DielectricCylinder(CylinderBase):
         #print("puzzled together")
         #print(curqphi)
 
-        #print("minibin volume")
-        #print(self._obs.bin_width * self._obs.L * self._obs.bin_pos * delta_phi)
-        #print(self._obs.bin_pos)
 
         # average of m_phi(phi, r) over phi
         self._obs.m_phi = -curqphi.mean(axis=0)
-        # This is the systems dipole moment in z-direction and
+        # This is the systems dipole moment in phi_direction and
         # not the radial integral of the dipole density.
+        # also it's already multiplied by 2 pi L 
         self._obs.M_phi = np.sum(self._obs.bin_volume * self._obs.bin_pos * self._obs.m_phi)
         self._obs.mM_phi = self._obs.m_phi * self._obs.M_phi
 
         # Save the total dipole moment in z dierection for correlation analysis.
         return self._obs.M_z
+
+    def _get_coc_rbins(self):
+        # Move all r-positions to 'center of charge' such that we avoid monopoles in
+        # r-direction. We only want to cut in z direction.
+        chargepos = self.pos_cyl[self.atomgroup.ix, 0] * np.abs(self.atomgroup.charges)
+        center = self.atomgroup.accumulate(
+            chargepos, compound=self.comp
+        ) / self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
+        )
+        #print("center in r bin of dipoles")
+        #print(center)
+        testpos = center[self.inverse_ix]
+
+        rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
+        return rbins, testpos
+
+    def _coc_phi_shifted(self, shift):
+        """ calculate the center of charge in phi direction """
+        pos_phi = self.pos_cyl[self.atomgroup.ix, 1] + shift
+        pos_phi = np.mod(pos_phi, 2 * np.pi)
+        chargepos_phi = pos_phi * np.abs(self.atomgroup.charges)
+        center_phi = self.atomgroup.accumulate(
+            chargepos_phi, compound=self.comp
+        ) / self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
+        )
+        # expand center_phi to be on a per atom basis
+        test_center_phi = center_phi[self.inverse_ix]
+        return test_center_phi, pos_phi
+
+    def _wrap_phi_positions(self, testrpos, shift=0):
+        """wrap molecules that cross 0 to 2pi plane to their coc"""
+        test_center_phi, pos_phi = self._coc_phi_shifted(shift)
+
+        # wrap all components that cross the border at 0 and 2 pi
+        difference = test_center_phi - pos_phi
+        difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0) #distance greater than 1 angstrom
+        difference_in_molecule = self.atomgroup.accumulate(
+                difference_in_atom, compound = self.comp)
+        is_diff = difference_in_molecule[self.inverse_ix]
+        pos_phi = np.where(is_diff, test_center_phi, pos_phi)
+        return pos_phi
+
+
 
     def _conclude(self) -> None:
         super()._conclude()
