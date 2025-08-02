@@ -1,4 +1,4 @@
-name: readthedocs/actions
+name: Read the Docs link
 
 on:
   pull_request_target:
