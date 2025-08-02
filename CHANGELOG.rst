@@ -13,8 +13,8 @@ Unreleased
 ----------
 Philip Loche
 
+- Minor streamlining of CI workflows (#515)
 - Update Python wheels building (#514)
-
 
 v0.11.2 (2025/07/15)
 --------------------
