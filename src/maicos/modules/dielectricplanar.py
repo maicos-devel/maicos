@@ -43,16 +43,16 @@ class DielectricPlanar(PlanarBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
+    ${TEMPERATURE_PARAMETER}
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
     ${PLANAR_CLASS_PARAMETERS}
     is_3d : bool
         Use 3d-periodic boundary conditions, i.e., include the dipole correction for
         the interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
     ${SYM_PARAMETER}
-    ${TEMPERATURE_PARAMETER}
     ${OUTPUT_PREFIX_PARAMETER}
-    vcutwidth : float
-        Spacing of virtual cuts (bins) along the parallel directions.
 
     Attributes
     ----------

@@ -26,8 +26,9 @@ class DensityPlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
 
     Attributes
     ----------

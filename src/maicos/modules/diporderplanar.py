@@ -26,9 +26,10 @@ class DiporderPlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
-    ${PDIM_PLANAR_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
+    ${PDIM_PLANAR_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
 
     Attributes
     ----------

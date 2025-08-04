@@ -33,13 +33,14 @@ class VelocityPlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     sym_odd : bool,
         Parity of the profile. If :obj:`False`, the profile will be symmetrized. If
         :obj:`True`, the profile is antisymmetrized. Only relevant in combination with
         ``sym``.
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
 
     Attributes
     ----------

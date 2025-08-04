@@ -205,9 +205,7 @@ qmax : float
     Ending q (1/Å)
 dq : float
     bin_width (1/Å)""",
-    PLANAR_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
-${DIM_PARAMETER}
-zmin : float
+    PLANAR_CLASS_PARAMETERS="""zmin : float
     Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
     refgroup.
 
@@ -219,7 +217,9 @@ zmax : float
 
     If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
     account.
-${BIN_WIDTH_PARAMETER}""",
+${BIN_WIDTH_PARAMETER}
+${DIM_PARAMETER}
+${BASE_CLASS_PARAMETERS}""",
     RADIAL_CLASS_PARAMETERS="""rmin : float
     Minimal radial coordinate relative to the center of mass of the refgroup for
     evaluation (in Å).
@@ -240,7 +240,7 @@ ${RADIAL_CLASS_PARAMETERS}""",
     SPHERE_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
 ${RADIAL_CLASS_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
-    PROFILE_PLANAR_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
+    PROFILE_PLANAR_CLASS_PARAMETERS="""
 ${PLANAR_CLASS_PARAMETERS}
 ${SYM_PARAMETER}
 ${PROFILE_CLASS_PARAMETERS}""",

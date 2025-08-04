@@ -27,6 +27,7 @@ class TemperaturePlanar(ProfilePlanarBase):
 
     Parameters
     ----------
+    ${ATOMGROUP_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
 
     Attributes
