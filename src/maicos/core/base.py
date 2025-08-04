@@ -87,7 +87,8 @@ class _Runner:
 
         if progressbar_kwargs is None:
             progressbar_kwargs = {}
-
+        
+        first_check = True
         for i, ts in enumerate(
             ProgressBar(
                 analysis_instances[0]._sliced_trajectory,
@@ -96,6 +97,14 @@ class _Runner:
             )
         ):
             ts_original = ts.copy()
+            dimensions = ts.dimensions
+            
+            if dimensions[-3:] is not np.array([90.0, 90.0, 90.0]):
+                if first_check:
+                    logging.warning(
+                        "The trajectory contains box-dimensions that are not orthorhombic!"
+                    )
+                first_check = False
 
             for analysis_object in analysis_instances:
                 analysis_object._call_single_frame(ts=ts, current_frame_index=i)
