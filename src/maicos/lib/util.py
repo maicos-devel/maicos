@@ -206,17 +206,17 @@ qmax : float
 dq : float
     bin_width (1/Å)""",
     PLANAR_Z_PARAMETERS="""zmin : float
-        Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
-        refgroup.
+    Minimal coordinate for evaluation (in Å) with respect to the center of mass of
+    the refgroup.
 
-        If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
-        account.
-    zmax : float
-        Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
-        refgroup.
+    If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
+    account.
+zmax : float
+    Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
+    refgroup.
 
-        If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
-        account.""",
+    If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
+    account.""",
     PLANAR_CLASS_PARAMETERS="""${PLANAR_Z_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}
 ${DIM_PARAMETER}

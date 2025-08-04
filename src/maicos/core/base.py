@@ -523,7 +523,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         verbose: bool | None = None,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
-        """${RUN_METHOD_DESCRIPTION}"""
+        """${RUN_METHOD_DESCRIPTION}"""  # noqa: D415
         return _Runner._run(
             self,
             analysis_instances=(self,),

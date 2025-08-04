@@ -44,9 +44,9 @@ class RDFDiporder(AnalysisBase):
     ----------
     ${PDF_PARAMETERS}
     norm : str, {'rdf', 'density', 'none'}
-            For 'rdf' calculate :math:`g_{ab}(r)`. For 'density' the single group density
-            :math:`n_{ab}(r)` is computed. 'none' computes the number of particles
-            occurences in each spherical shell.
+            For 'rdf' calculate :math:`g_{ab}(r)`. For 'density' the single group
+            density :math:`n_{ab}(r)` is computed. 'none' computes the number of
+            particles occurences in each spherical shell.
     ${BIN_WIDTH_PARAMETER}
     ${RADIAL_CLASS_PARAMETERS}
     ${BIN_METHOD_PARAMETER}

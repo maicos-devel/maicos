@@ -8,4 +8,4 @@ DielectricPlanar
     :undoc-members:
     :show-inheritance:
 
-.. footbibliography:: 
+.. footbibliography::
