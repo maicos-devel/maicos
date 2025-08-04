@@ -40,21 +40,21 @@ class DiporderPlanar(ProfilePlanarBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        order_parameter: str = "P0",
+        pdim: int = 2,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        refgroup: mda.AtomGroup | None = None,
         sym: bool = False,
         grouping: str = "residues",
-        unwrap: bool = True,
-        pack: bool = True,
         bin_method: str = "com",
         output: str = "diporder_planar.dat",
-        concfreq: int = 0,
-        pdim: int = 2,
-        order_parameter: str = "P0",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         normalization = "volume" if order_parameter == "P0" else "number"

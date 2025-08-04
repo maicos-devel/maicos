@@ -58,16 +58,16 @@ class DielectricSphere(SphereBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 0.1,
         temperature: float = 300,
-        output_prefix: str = "eps_sph",
-        refgroup: mda.AtomGroup | None = None,
-        concfreq: int = 0,
-        jitter: float = 0.0,
         rmin: float = 0,
         rmax: float | None = None,
+        bin_width: float = 0.1,
+        output_prefix: str = "eps_sph",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

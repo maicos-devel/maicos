@@ -55,9 +55,9 @@ class PDFCylinder(CylinderBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${PDF_PARAMETERS}
-    pdf_z_bin_width : float
+    bin_width_pdf_z : float
         Binwidth of bins in the histogram of the axial PDF (Å).
-    pdf_phi_bin_width : float
+    bin_width_pdf_phi : float
         Binwidth of bins in the histogram of the angular PDF (Å).
     drwidth : float
         radial width of a PDF cylindrical shell (Å), and axial or angular (arc) slices.
@@ -100,19 +100,19 @@ class PDFCylinder(CylinderBase):
         dmax: float | None = None,
         density: bool = False,
         origin: np.ndarray | None = None,
-        bin_method: str = "com",
-        unwrap: bool = False,
-        pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
-        jitter: float = 0.0,
-        concfreq: int = 0,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
+        bin_method: str = "com",
         output: str = "pdf.dat",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = False,
+        pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self.comp_1 = get_compound(g1)
         super().__init__(

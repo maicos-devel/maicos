@@ -42,10 +42,13 @@ class DielectricCylinder(CylinderBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${TEMPERATURE_PARAMETER}
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
     single : bool
         For a single chain of molecules the average of :math:`M` is zero. This flag sets
         :math:`\langle M \rangle = 0`.
     ${CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
 
     Attributes
@@ -67,21 +70,21 @@ class DielectricCylinder(CylinderBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 0.1,
         temperature: float = 300,
+        vcutwidth: float = 0.1,
         single: bool = False,
-        output_prefix: str = "eps_cyl",
-        refgroup: mda.AtomGroup | None = None,
-        concfreq: int = 0,
-        jitter: float = 0.0,
         dim: int = 2,
-        rmin: float = 0,
-        rmax: float | None = None,
         zmin: float | None = None,
         zmax: float | None = None,
-        vcutwidth: float = 0.1,
+        rmin: float = 0,
+        rmax: float | None = None,
+        bin_width: float = 0.1,
+        output_prefix: str = "eps_cyl",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

@@ -87,20 +87,20 @@ class DielectricPlanar(PlanarBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        temperature: float = 300,
+        vcutwidth: float = 0.1,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 0.5,
-        refgroup: mda.AtomGroup | None = None,
         is_3d: bool = False,
         sym: bool = False,
+        output_prefix: str = "eps",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        temperature: float = 300,
-        output_prefix: str = "eps",
-        concfreq: int = 0,
         jitter: float = 0.0,
-        vcutwidth: float = 0.1,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)

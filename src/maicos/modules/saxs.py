@@ -95,11 +95,6 @@ class Saxs(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        unwrap: bool = False,
-        pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
-        jitter: float = 0.0,
-        concfreq: int = 0,
         bin_spectrum: bool = True,
         qmin: float = 0,
         qmax: float = 6,
@@ -107,6 +102,11 @@ class Saxs(AnalysisBase):
         thetamin: float = 0,
         thetamax: float = 180,
         output: str = "sq.dat",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = False,
+        pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         super().__init__(

@@ -68,18 +68,18 @@ class RDFDiporder(AnalysisBase):
         self,
         g1: mda.AtomGroup,
         g2: mda.AtomGroup | None = None,
+        norm: str = "rdf",
         bin_width: float = 0.1,
         rmin: float = 0.0,
         rmax: float = 15.0,
         bin_method: str = "com",
-        norm: str = "rdf",
         grouping: str = "residues",
+        output: str = "diporderrdf.dat",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "diporderrdf.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

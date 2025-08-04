@@ -72,18 +72,18 @@ class DielectricSpectrum(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        refgroup: mda.AtomGroup | None = None,
-        unwrap: bool = True,
-        pack: bool = True,
-        concfreq: int = 0,
         temperature: float = 300,
-        output_prefix: str = "",
         segs: int = 20,
         df: float | None = None,
         bins: int = 200,
         binafter: float = 20,
         nobin: bool = False,
+        output_prefix: str = "",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)

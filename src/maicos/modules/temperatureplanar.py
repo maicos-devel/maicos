@@ -43,15 +43,15 @@ class TemperaturePlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        refgroup: mda.AtomGroup | None = None,
         sym: bool = False,
         grouping: str = "atoms",
-        unwrap: bool = True,
-        pack: bool = True,
         bin_method: str = "com",
         output: str = "temperature.dat",
-        concfreq: int = 0,
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         if grouping != "atoms":

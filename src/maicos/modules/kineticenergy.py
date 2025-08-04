@@ -51,13 +51,13 @@ class KineticEnergy(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        refpoint: str = "com",
+        output: str = "ke.dat",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "ke.dat",
-        refpoint: str = "com",
     ) -> None:
         self._locals = locals()
 

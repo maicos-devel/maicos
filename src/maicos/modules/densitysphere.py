@@ -40,17 +40,17 @@ class DensitySphere(ProfileSphereBase):
         self,
         atomgroup: mda.AtomGroup,
         dens: str = "mass",
-        bin_width: float = 1,
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: float = 1,
         grouping: str = "atoms",
-        unwrap: bool = True,
-        pack: bool = True,
         bin_method: str = "com",
         output: str = "density.dat",
-        concfreq: int = 0,
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         super().__init__(

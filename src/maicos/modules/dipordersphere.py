@@ -28,29 +28,29 @@ class DiporderSphere(ProfileSphereBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${PROFILE_SPHERE_CLASS_PARAMETERS}
 
     Attributes
     ----------
-    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+    ${PROFILE_SPHERE_CLASS_ATTRIBUTES}
 
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 1,
+        order_parameter: str = "P0",
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: float = 1,
         grouping: str = "residues",
-        unwrap: bool = True,
-        pack: bool = True,
         bin_method: str = "com",
         output: str = "diporder_sphere.dat",
-        concfreq: int = 0,
-        order_parameter: str = "P0",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = True,
+        pack: bool = True,
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         normalization = "volume" if order_parameter == "P0" else "number"
 

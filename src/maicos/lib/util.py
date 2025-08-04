@@ -148,7 +148,12 @@ self : object
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################
-    BASE_CLASS_PARAMETERS="""unwrap : bool
+    BASE_CLASS_PARAMETERS="""refgroup : MDAnalysis.core.groups.AtomGroup
+    Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation. If
+    ``refgroup`` is provided, the calculation is performed relative to the center of
+    mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are performed
+    with respect to the center of the (changing) box.
+unwrap : bool
     When :obj:`True`, molecules that are broken due to the periodic boundary conditions
     are made whole.
 
@@ -166,11 +171,6 @@ pack : bool
 
     If the input contains molecules that are already packed, speed up the calculation by
     disabling packing with ``pack=False``.
-refgroup : MDAnalysis.core.groups.AtomGroup
-    Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation. If
-    ``refgroup`` is provided, the calculation is performed relative to the center of
-    mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are performed
-    with respect to the center of the (changing) box.
 jitter : float
     Magnitude of the random noise to add to the atomic positions.
 
@@ -208,19 +208,16 @@ dq : float
     PLANAR_Z_PARAMETERS="""zmin : float
     Minimal coordinate for evaluation (in Å) with respect to the center of mass of
     the refgroup.
-
     If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
     account.
 zmax : float
     Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
     refgroup.
-
     If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
     account.""",
-    PLANAR_CLASS_PARAMETERS="""${PLANAR_Z_PARAMETERS}
-${BIN_WIDTH_PARAMETER}
-${DIM_PARAMETER}
-""",
+    PLANAR_CLASS_PARAMETERS="""${DIM_PARAMETER}
+${PLANAR_Z_PARAMETERS}
+${BIN_WIDTH_PARAMETER}""",
     RADIAL_CLASS_PARAMETERS="""rmin : float
     Minimal radial coordinate relative to the center of mass of the refgroup for
     evaluation (in Å).
@@ -236,10 +233,10 @@ g2 : MDAnalysis.core.groups.AtomGroup
     PROFILE_CLASS_PARAMETERS="""${GROUPING_PARAMETER}
 ${BIN_METHOD_PARAMETER}
 ${OUTPUT_PARAMETER}""",
-    CYLINDER_CLASS_PARAMETERS="""${PLANAR_Z_PARAMETERS}
+    CYLINDER_CLASS_PARAMETERS="""${DIM_PARAMETER}
+${PLANAR_Z_PARAMETERS}
 ${RADIAL_CLASS_PARAMETERS}
-${BIN_WIDTH_PARAMETER}
-${DIM_PARAMETER}""",
+${BIN_WIDTH_PARAMETER}""",
     SPHERE_CLASS_PARAMETERS="""${RADIAL_CLASS_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
     PROFILE_PLANAR_CLASS_PARAMETERS="""

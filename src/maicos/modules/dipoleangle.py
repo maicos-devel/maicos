@@ -49,14 +49,14 @@ class DipoleAngle(AnalysisBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        pdim: int = 2,
+        grouping: str = "residues",
+        output: str = "dipangle.dat",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
-        concfreq: int = 0,
-        grouping: str = "residues",
-        pdim: int = 2,
-        output: str = "dipangle.dat",
         jitter: float = 0.0,
+        concfreq: int = 0,
     ) -> None:
         self._locals = locals()
         self.wrap_compound = get_compound(atomgroup)
