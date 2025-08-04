@@ -111,6 +111,7 @@ class PlanarBase(AnalysisBase):
 
     def _prepare(self):
         """Prepare the planar analysis."""
+        super()._prepare()
         self._compute_lab_frame_planar()
 
         # TODO(@hejamu): There are much more wrong combinations of zmin and zmax...
@@ -130,8 +131,11 @@ class PlanarBase(AnalysisBase):
         except TypeError as err:
             raise ValueError("Binwidth must be a number.") from err
 
+        logging.info(f"Using {self.n_bins} bins.")
+
     def _single_frame(self):
         """Single frame for the planar analysis."""
+        super()._single_frame()
         self._compute_lab_frame_planar()
         self._obs.L = self.zmax - self.zmin
         self._obs.box_center = self.box_center
@@ -150,6 +154,7 @@ class PlanarBase(AnalysisBase):
 
     def _conclude(self):
         """Results calculations for the planar analysis."""
+        super()._conclude()
         # Convert coordinates back from lab frame to refgroup frame.
         self.results.bin_pos = self.means.bin_pos - self.means.box_center[self.dim]
 

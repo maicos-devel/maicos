@@ -6,17 +6,18 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
-
 import logging
 import warnings
 from collections.abc import Callable
 from datetime import datetime
+from functools import partial
 from tempfile import NamedTemporaryFile
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
 import numpy as np
 from mdacli.logger import setup_logging
+from MDAnalysis.analysis.backends import BackendBase, BackendSerial
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -52,6 +53,11 @@ class _Runner:
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int = None,
+        n_parts: int = None,
+        backend: str | BackendBase = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         self._run_locals = locals()
@@ -72,7 +78,64 @@ class _Runner:
 
         logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
 
+        # -------------------- New code --------------------
+        # default to serial execution
+        backend = "serial" if backend is None else backend
+
+        progressbar_kwargs = (
+            {} if progressbar_kwargs is None else progressbar_kwargs
+        )
+        if (progressbar_kwargs or verbose) and not (
+            backend == "serial" or isinstance(backend, BackendSerial)
+        ):
+            raise ValueError(
+                "Can not display progressbar with non-serial backend"
+            )
+
+        # if number of workers not specified, try getting the number from
+        # the backend instance if possible, or set to 1
+        if n_workers is None:
+            n_workers = (
+                backend.n_workers
+                if isinstance(backend, BackendBase)
+                and hasattr(backend, "n_workers")
+                else 1
+            )
+
+        # set n_parts and check that is has a reasonable value
+        n_parts = n_workers if n_parts is None else n_parts
+
+        # do this as early as possible to check client parameters
+        # before any computations occur
+        executor = self._configure_backend(
+            backend=backend,
+            n_workers=n_workers,
+            unsupported_backend=unsupported_backend,
+        )
+        if (
+            hasattr(executor, "n_workers") and n_parts < executor.n_workers
+        ):  # using executor's value here for non-default executors
+            warnings.warn(
+                f"Analysis not making use of all workers: {executor.n_workers=} is "
+                f"greater than {n_parts=}",
+                stacklevel=2,
+            )
+
+        computation_groups = self._setup_computation_groups(
+            start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
+        )
+        worker_funcs: dict[object: partial] = {}
+        remote_objects: list[list["AnalysisBase"]] = []
         for analysis_object in analysis_instances:
+            print(f"Running analysis {analysis_object.__class__.__name__}...")
+            analysis_object._prepare()
+
+            worker_funcs[analysis_object] = partial(
+                    analysis_object._compute,
+                    progressbar_kwargs=progressbar_kwargs,
+                    verbose=verbose,
+                )
+
             analysis_object._setup_frames(
                 analysis_object._trajectory,
                 start=start,
@@ -81,29 +144,19 @@ class _Runner:
                 frames=frames,
             )
 
-        for analysis_object in analysis_instances:
-            analysis_object._call_prepare()
 
-        if progressbar_kwargs is None:
-            progressbar_kwargs = {}
+            # get all results from workers in other processes.
+            # we need `AnalysisBase` classes
+            # since they hold `frames`, `times` and `results` attributes
+            remote_objects.append(executor.apply(
+                worker_funcs[analysis_object], computation_groups
+            ))
 
-        for i, ts in enumerate(
-            ProgressBar(
-                analysis_instances[0]._sliced_trajectory,
-                verbose=verbose,
-                **progressbar_kwargs,
-            )
-        ):
-            ts_original = ts.copy()
-
-            for analysis_object in analysis_instances:
-                analysis_object._call_single_frame(ts=ts, current_frame_index=i)
-                ts = ts_original
 
         logging.debug("Concluding analysis.")
 
         for analysis_object in analysis_instances:
-            analysis_object._call_conclude()
+            analysis_object._conclude()
 
         tempfile.close()
         return self
@@ -364,10 +417,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
-        pass  # pylint: disable=unnecessary-pass
-
-    def _call_prepare(self) -> None:
-        """Base method wrapping all _prepare logic into a single call."""
         if self.refgroup is not None:
             if (
                 not hasattr(self.refgroup, "masses")
@@ -382,8 +431,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             else:
                 self.ref_weights = self.refgroup.masses
 
-        self._prepare()
-
         if self.refgroup is not None:
             logging.info(
                 """Coordinates are relative to the center of mass of reference"""
@@ -397,10 +444,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         logging.info(f"Considered atomgroup {atomgroup_header(self.atomgroup)}.")
 
-        # Log bin information if a spatial analysis is run.
-        if hasattr(self, "n_bins"):
-            logging.info(f"Using {self.n_bins} bins.")
-
         self.timeseries = np.zeros(self.n_frames)
 
         logging.info(f"Analysing {self.n_frames} trajectory frames.")
@@ -412,10 +455,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Don't worry about normalising, just deal with a single frame.
         """
-        raise NotImplementedError("Only implemented in child classes")
-
-    def _call_single_frame(self, ts, current_frame_index) -> None:
-        """Base method wrapping all single_frame logic into a single call."""
         compatible_types = [
             np.ndarray,
             float,
@@ -426,12 +465,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             np.int32,
             np.int64,
         ]
-        self._frame_index = current_frame_index
-        self._index = self._frame_index + 1
-
-        self._ts = ts
-        self.frames[current_frame_index] = ts.frame
-        self.times[current_frame_index] = ts.time
 
         # Before we do any coordinate transformation we first unwrap the system to
         # avoid artifacts of later wrapping.
@@ -448,11 +481,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._universe.atoms.wrap(compound=self.wrap_compound)
 
         if self.jitter != 0.0:
-            ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
+            self._universe.positions += np.random.random(size=(len(self._universe.positions), 3)) * self.jitter
 
         self._obs = Results()
-
-        self.timeseries[current_frame_index] = self._single_frame()
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
@@ -503,15 +534,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Called at the end of the :meth:`run` method to finish everything up.
         """
-        pass  # pylint: disable=unnecessary-pass
-
-    def _call_conclude(self) -> None:
-        """Base method wrapping all _conclude logic into a single call."""
         self.corrtime = correlation_analysis(self.timeseries)
-
-        self._conclude()
         if self.concfreq and self.module_has_save:
             self.save()
+
 
     @render_docs
     def run(

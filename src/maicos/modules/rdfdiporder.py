@@ -115,6 +115,7 @@ class RDFDiporder(AnalysisBase):
         )
 
         self.n_bins = int(np.ceil((self.rmax - self.rmin) / self.bin_width))
+        logging.info(f"Using {self.n_bins} bins.")
 
         supported_norms = ["rdf", "density", "none"]
         if self.norm not in supported_norms:

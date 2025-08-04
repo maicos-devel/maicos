@@ -165,6 +165,7 @@ class Saxs(AnalysisBase):
 
         if self.bin_spectrum:
             self.n_bins = int(np.ceil((self.qmax - self.qmin) / self.dq))
+            logging.info(f"Using {self.n_bins} bins.")
         else:
             self.box = np.diag(
                 mda.lib.mdamath.triclinic_vectors(self._universe.dimensions)
