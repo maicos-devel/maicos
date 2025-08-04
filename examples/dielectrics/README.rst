@@ -7,9 +7,8 @@ analysis in molecular dynamics simulations.
 
 The examples in this section include:
 
-- Basic dielectric profile calculations
-- Advanced dielectric analysis techniques
-- Handling of different water models and boundary conditions
-
-These examples are particularly useful for understanding electrostatic properties
-of confined fluids and interfaces.
+- An example of how to use the fluctuation-dissipation formalism to compute
+  dielectric properties from molecular dynamics simulations, which is the
+  recommended approach.
+- An example of how one use the dielectric module to calculate dielectric
+  profiles from simulations with an explicit applied electric field.

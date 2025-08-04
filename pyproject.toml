@@ -65,7 +65,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-examples = ["matplotlib"]
+examples = ["matplotlib", "pint"]
 
 [project.urls]
 homepage = "https://www.maicos-analysis.org"

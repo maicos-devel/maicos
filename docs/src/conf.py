@@ -53,12 +53,15 @@ bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
 
 sphinx_gallery_conf = {
-    "filename_pattern": r"/*\.py",
+    "examples_dirs": "../../examples",
+    "gallery_dirs": "auto_examples",
+    "subsection_order": [
+        "../../examples/dielectrics",
+    ],
+    "filename_pattern": r"\.py",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),
     "example_extensions": {".py", ".sh"},
-    "examples_dirs": ["../../examples"],
-    "gallery_dirs": ["examples"],
     "min_reported_time": 60,
     "reference_url": {"maicos": None},
     "remove_config_comments": True,
