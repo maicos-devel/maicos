@@ -31,11 +31,11 @@ class KineticEnergy(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
     refpoint : str
         reference point for molecular center: center of mass (``"com"``) or center of
         charge (``"coc"``).
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

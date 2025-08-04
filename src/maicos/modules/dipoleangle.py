@@ -28,10 +28,10 @@ class DipoleAngle(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
-    ${GROUPING_PARAMETER}
     ${PDIM_PLANAR_PARAMETER}
+    ${GROUPING_PARAMETER}
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

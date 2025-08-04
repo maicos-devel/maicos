@@ -41,9 +41,9 @@ class DiporderStructureFactor(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
     ${Q_SPACE_PARAMETERS}
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

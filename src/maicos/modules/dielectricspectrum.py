@@ -40,9 +40,7 @@ class DielectricSpectrum(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
-    ${OUTPUT_PREFIX_PARAMETER}
     segs : int
         Sets the number of segments the trajectory is broken into.
     df : float
@@ -58,6 +56,8 @@ class DielectricSpectrum(AnalysisBase):
     nobin : bool
         Prevents the data from being binned altogether. This can result in very large
         plot files and errors.
+    ${OUTPUT_PREFIX_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

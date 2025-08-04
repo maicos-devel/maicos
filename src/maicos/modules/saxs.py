@@ -61,7 +61,6 @@ class Saxs(AnalysisBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${BASE_CLASS_PARAMETERS}
     bin_spectrum : bool
         Bin the spectrum. If :py:obj:`False` Miller indices of q-vector are returned.
         Only works for NVT simulations.
@@ -71,6 +70,7 @@ class Saxs(AnalysisBase):
     thetamax : float
         Maximal angle (°) between the q vectors and the z-axis.
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------
