@@ -26,8 +26,9 @@ class DensitySphere(ProfileSphereBase):
 
     Parameters
     ----------
-    ${PROFILE_SPHERE_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PROFILE_SPHERE_CLASS_PARAMETERS}
 
     Attributes
     ----------

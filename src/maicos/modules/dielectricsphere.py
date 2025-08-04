@@ -39,9 +39,10 @@ class DielectricSphere(SphereBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${SPHERE_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
+    ${SPHERE_CLASS_PARAMETERS}
     ${OUTPUT_PREFIX_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

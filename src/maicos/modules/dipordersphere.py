@@ -26,8 +26,9 @@ class DiporderSphere(ProfileSphereBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
 
     Attributes
     ----------
