@@ -26,8 +26,9 @@ class DensityCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
 
     Attributes
     ----------

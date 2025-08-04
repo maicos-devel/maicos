@@ -53,6 +53,7 @@ class PDFCylinder(CylinderBase):
 
     Parameters
     ----------
+    ${ATOMGROUP_PARAMETER}
     ${PDF_PARAMETERS}
     pdf_z_bin_width : float
         Binwidth of bins in the histogram of the axial PDF (Å).
@@ -69,9 +70,10 @@ class PDFCylinder(CylinderBase):
     origin : numpy.ndarray
         Set origin of the cylindrical coordinate system (x,y,z). If :obj:`None` the
         origin will be set according to the ``refgroup`` parameter.
-    ${BIN_METHOD_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
+    ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

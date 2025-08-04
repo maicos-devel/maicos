@@ -33,9 +33,10 @@ class VelocityCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
 
     Attributes
     ----------

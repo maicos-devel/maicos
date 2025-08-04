@@ -70,6 +70,7 @@ class PDFPlanar(PlanarBase):
 
     Parameters
     ----------
+    ${PDF_PARAMETERS}
     pdf_bin_width : float
         Binwidth of bins in the histogram of the PDF (Å).
     dzheight : float
@@ -86,10 +87,10 @@ class PDFPlanar(PlanarBase):
         Minimum pairwise distance between ``g1`` and ``g2`` (Å).
     dmax : float
         Maximum pairwise distance between ``g1`` and ``g2`` (Å).
-    ${PDF_PARAMETERS}
     ${PLANAR_CLASS_PARAMETERS}
     ${BIN_METHOD_PARAMETER}
     ${OUTPUT_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

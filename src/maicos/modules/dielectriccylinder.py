@@ -41,11 +41,12 @@ class DielectricCylinder(CylinderBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${CYLINDER_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
     single : bool
         For a single chain of molecules the average of :math:`M` is zero. This flag sets
         :math:`\langle M \rangle = 0`.
+    ${CYLINDER_CLASS_PARAMETERS}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

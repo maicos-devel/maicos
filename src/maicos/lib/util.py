@@ -205,21 +205,22 @@ qmax : float
     Ending q (1/Å)
 dq : float
     bin_width (1/Å)""",
-    PLANAR_CLASS_PARAMETERS="""zmin : float
-    Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
-    refgroup.
+    PLANAR_Z_PARAMETERS="""zmin : float
+        Minimal coordinate for evaluation (in Å) with respect to the center of mass of the
+        refgroup.
 
-    If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
-    account.
-zmax : float
-    Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
-    refgroup.
+        If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
+        account.
+    zmax : float
+        Maximal coordinate for evaluation (in Å) with respect to the center of mass of the
+        refgroup.
 
-    If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
-    account.
+        If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
+        account.""",
+    PLANAR_CLASS_PARAMETERS="""${PLANAR_Z_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}
 ${DIM_PARAMETER}
-${BASE_CLASS_PARAMETERS}""",
+""",
     RADIAL_CLASS_PARAMETERS="""rmin : float
     Minimal radial coordinate relative to the center of mass of the refgroup for
     evaluation (in Å).
@@ -235,18 +236,21 @@ g2 : MDAnalysis.core.groups.AtomGroup
     PROFILE_CLASS_PARAMETERS="""${GROUPING_PARAMETER}
 ${BIN_METHOD_PARAMETER}
 ${OUTPUT_PARAMETER}""",
-    CYLINDER_CLASS_PARAMETERS="""${PLANAR_CLASS_PARAMETERS}
-${RADIAL_CLASS_PARAMETERS}""",
+    CYLINDER_CLASS_PARAMETERS="""${PLANAR_Z_PARAMETERS}
+${RADIAL_CLASS_PARAMETERS}
+${BIN_WIDTH_PARAMETER}
+${DIM_PARAMETER}""",
     SPHERE_CLASS_PARAMETERS="""${BASE_CLASS_PARAMETERS}
 ${RADIAL_CLASS_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
     PROFILE_PLANAR_CLASS_PARAMETERS="""
 ${PLANAR_CLASS_PARAMETERS}
 ${SYM_PARAMETER}
-${PROFILE_CLASS_PARAMETERS}""",
-    PROFILE_CYLINDER_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
-${CYLINDER_CLASS_PARAMETERS}
-${PROFILE_CLASS_PARAMETERS}""",
+${PROFILE_CLASS_PARAMETERS}
+${BASE_CLASS_PARAMETERS}""",
+    PROFILE_CYLINDER_CLASS_PARAMETERS="""${CYLINDER_CLASS_PARAMETERS}
+${PROFILE_CLASS_PARAMETERS}
+${BASE_CLASS_PARAMETERS}""",
     PROFILE_SPHERE_CLASS_PARAMETERS="""${ATOMGROUP_PARAMETER}
 ${SPHERE_CLASS_PARAMETERS}
 ${PROFILE_CLASS_PARAMETERS}""",

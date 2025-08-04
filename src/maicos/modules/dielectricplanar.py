@@ -53,6 +53,7 @@ class DielectricPlanar(PlanarBase):
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
     ${SYM_PARAMETER}
     ${OUTPUT_PREFIX_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
 
     Attributes
     ----------

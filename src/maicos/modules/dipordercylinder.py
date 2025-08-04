@@ -26,9 +26,10 @@ class DiporderCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    ${PDIM_RADIAL_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
+    ${PDIM_RADIAL_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
 
     Attributes
     ----------
