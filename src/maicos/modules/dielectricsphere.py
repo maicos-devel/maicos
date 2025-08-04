@@ -52,9 +52,6 @@ class DielectricSphere(SphereBase):
     results.deps_rad : numpy.ndarray
         Uncertainty of inverse radial dielectric profile
 
-    References
-    ----------
-    .. footbibliography::
 
     """
 

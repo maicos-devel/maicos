@@ -4,6 +4,6 @@ DiporderSphere
 ##############
 
 .. autoclass:: maicos.DiporderSphere
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

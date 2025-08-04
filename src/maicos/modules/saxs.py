@@ -90,10 +90,6 @@ class Saxs(AnalysisBase):
         standard error of the scattering intensities :math:`I(q)`
         (only available if ``bin_spectrum==True``).
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(

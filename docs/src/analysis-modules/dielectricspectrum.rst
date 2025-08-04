@@ -4,6 +4,8 @@ DielectricSpectrum
 ##################
 
 .. autoclass:: maicos.DielectricSpectrum
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

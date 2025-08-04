@@ -4,6 +4,8 @@ RDFDiporder
 #######################
 
 .. autoclass:: maicos.RDFDiporder
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

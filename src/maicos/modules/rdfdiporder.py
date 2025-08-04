@@ -62,10 +62,6 @@ class RDFDiporder(AnalysisBase):
         RDF either in :math:`\text{eÅ}^{-2}` if norm is ``"rdf"`` or ``"density"`` or
         :math:`\text{eÅ}` if norm is ``"none"``.
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(

@@ -63,9 +63,6 @@ class DielectricSpectrum(AnalysisBase):
     ----------
     results
 
-    References
-    ----------
-    .. footbibliography::
 
     """
 

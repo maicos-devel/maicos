@@ -44,10 +44,6 @@ class DipoleAngle(AnalysisBase):
     results.cos_theta_ij : numpy.ndarray
         Product :math:`\cos` of dipole i and cos of dipole j (``i != j``).
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(

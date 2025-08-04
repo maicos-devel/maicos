@@ -4,6 +4,8 @@ DipoleAngle
 ###########
 
 .. autoclass:: maicos.DipoleAngle
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

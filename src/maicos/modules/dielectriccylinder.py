@@ -62,10 +62,6 @@ class DielectricCylinder(CylinderBase):
     results.deps_r : numpy.ndarray
         Estimated uncertainty of inverse radial dielectric profile
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(

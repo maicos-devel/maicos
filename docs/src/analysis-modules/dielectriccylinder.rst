@@ -4,6 +4,8 @@ DielectricCylinder
 ##################
 
 .. autoclass:: maicos.DielectricCylinder
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

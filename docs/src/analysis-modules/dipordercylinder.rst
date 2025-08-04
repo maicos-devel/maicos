@@ -4,6 +4,6 @@ DiporderCylinder
 ################
 
 .. autoclass:: maicos.DiporderCylinder
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

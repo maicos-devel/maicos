@@ -46,10 +46,6 @@ class KineticEnergy(AnalysisBase):
     results.rot : numpy.ndarray
         rotational kinetic energy (kJ/mol).
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(

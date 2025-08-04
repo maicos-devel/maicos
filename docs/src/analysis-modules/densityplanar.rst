@@ -6,6 +6,6 @@ DensityPlanar
 .. _label_density_planar:
 
 .. autoclass:: maicos.DensityPlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

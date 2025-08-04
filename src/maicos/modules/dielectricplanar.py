@@ -81,9 +81,6 @@ class DielectricPlanar(PlanarBase):
         Reduced collective contribution of the inverse perpendicular dielectric profile
         :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}}(z) - 1)`
 
-    References
-    ----------
-    .. footbibliography::
 
     """
 

@@ -4,6 +4,6 @@ VelocityPlanar
 ##############
 
 .. autoclass:: maicos.VelocityPlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

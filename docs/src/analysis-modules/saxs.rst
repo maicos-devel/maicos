@@ -4,6 +4,9 @@ Saxs
 ####
 
 .. autoclass:: maicos.Saxs
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+
+.. footbibliography::

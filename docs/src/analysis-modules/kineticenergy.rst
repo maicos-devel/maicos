@@ -4,6 +4,8 @@ KineticEnergy
 #############
 
 .. autoclass:: maicos.KineticEnergy
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

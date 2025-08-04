@@ -4,6 +4,6 @@ DiporderStructureFactor
 #######################
 
 .. autoclass:: maicos.DiporderStructureFactor
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
