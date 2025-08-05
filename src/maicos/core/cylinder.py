@@ -129,8 +129,6 @@ class CylinderBase(PlanarBase):
         except TypeError as err:
             raise ValueError("Binwidth must be a number.") from err
 
-        logging.info(f"Using {self.n_bins} bins.")
-
     def _single_frame(self):
         """Single frame for the cylinder analysis."""
         super()._single_frame()

@@ -122,8 +122,6 @@ class SphereBase(AnalysisBase):
         except TypeError as err:
             raise ValueError("Binwidth must be a number.") from err
 
-        logging.info(f"Using {self.n_bins} bins.")
-
     def _single_frame(self):
         """Single frame for the sphercial analysis."""
         self._compute_lab_frame_sphere()

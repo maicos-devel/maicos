@@ -6,6 +6,7 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Base class for building Analysis classes."""
+
 import logging
 import warnings
 from collections.abc import Callable
@@ -27,7 +28,6 @@ from .._version import get_versions
 from ..lib.math import center_cluster, new_mean, new_variance
 from ..lib.util import (
     atomgroup_header,
-    correlation_analysis,
     get_center,
     get_cli_input,
     get_module_input_str,
@@ -82,23 +82,18 @@ class _Runner:
         # default to serial execution
         backend = "serial" if backend is None else backend
 
-        progressbar_kwargs = (
-            {} if progressbar_kwargs is None else progressbar_kwargs
-        )
+        progressbar_kwargs = {} if progressbar_kwargs is None else progressbar_kwargs
         if (progressbar_kwargs or verbose) and not (
             backend == "serial" or isinstance(backend, BackendSerial)
         ):
-            raise ValueError(
-                "Can not display progressbar with non-serial backend"
-            )
+            raise ValueError("Can not display progressbar with non-serial backend")
 
         # if number of workers not specified, try getting the number from
         # the backend instance if possible, or set to 1
         if n_workers is None:
             n_workers = (
                 backend.n_workers
-                if isinstance(backend, BackendBase)
-                and hasattr(backend, "n_workers")
+                if isinstance(backend, BackendBase) and hasattr(backend, "n_workers")
                 else 1
             )
 
@@ -124,17 +119,14 @@ class _Runner:
         computation_groups = self._setup_computation_groups(
             start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
         )
-        worker_funcs: dict[object: partial] = {}
-        remote_objects: list[list["AnalysisBase"]] = []
-        for analysis_object in analysis_instances:
-            print(f"Running analysis {analysis_object.__class__.__name__}...")
-            analysis_object._prepare()
 
-            worker_funcs[analysis_object] = partial(
-                    analysis_object._compute,
-                    progressbar_kwargs=progressbar_kwargs,
-                    verbose=verbose,
-                )
+        remote_objects: dict[object : list[AnalysisBase]] = {}
+        for analysis_object in analysis_instances:
+            worker_funcs = partial(
+                analysis_object._compute,
+                progressbar_kwargs=progressbar_kwargs,
+                verbose=verbose,
+            )
 
             analysis_object._setup_frames(
                 analysis_object._trajectory,
@@ -144,19 +136,30 @@ class _Runner:
                 frames=frames,
             )
 
-
             # get all results from workers in other processes.
             # we need `AnalysisBase` classes
             # since they hold `frames`, `times` and `results` attributes
-            remote_objects.append(executor.apply(
-                worker_funcs[analysis_object], computation_groups
-            ))
+            remote_objects[analysis_object] = executor.apply(
+                worker_funcs, computation_groups
+            )
 
+        for analysis_object in analysis_instances:
+            analysis_object.frames = np.hstack(
+                [obj.frames for obj in remote_objects[analysis_object]]
+            )
+            analysis_object.times = np.hstack(
+                [obj.times for obj in remote_objects[analysis_object]]
+            )
+
+            # aggregate results from results obtained in remote workers
+            # remote_results = [obj.results for obj in remote_objects]
+            # results_aggregator = self._get_aggregator()
+            # self.results = results_aggregator.merge(remote_results)
 
         logging.debug("Concluding analysis.")
 
         for analysis_object in analysis_instances:
-            analysis_object._conclude()
+            analysis_object._call_conclude()
 
         tempfile.close()
         return self
@@ -415,8 +418,64 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         """Center of the simulation cell."""
         return self.box_lengths / 2
 
+    def _compute(
+        self,
+        indexed_frames: np.ndarray,
+        verbose: bool = None,
+        *,
+        progressbar_kwargs=None,
+    ) -> "AnalysisBase":
+        """Perform the calculation on a balanced slice of frames
+        that have been setup prior to that using _setup_computation_groups()
+
+        Parameters
+        ----------
+        indexed_frames : np.ndarray
+            np.ndarray of (n, 2) shape, where first column is frame iteration
+            indices and second is frame numbers
+
+        verbose : bool, optional
+            Turn on verbosity
+
+        progressbar_kwargs : dict, optional
+            ProgressBar keywords with custom parameters regarding progress bar
+            position, etc; see :class:`MDAnalysis.lib.log.ProgressBar`
+            for full list.
+
+
+        .. versionadded:: 2.8.0
+        """  # noqa: D205, D415
+        if progressbar_kwargs is None:
+            progressbar_kwargs = {}
+        logging.info("Choosing frames to analyze")
+        # if verbose unchanged, use class default
+        verbose = getattr(self, "_verbose", False) if verbose is None else verbose
+
+        frames = indexed_frames[:, 1]
+
+        logging.info("Starting preparation")
+        self._prepare_sliced_trajectory(slicer=frames)
+        self._call_prepare()
+        if len(frames) == 0:  # if `frames` were empty in `run` or `stop=0`
+            return self
+
+        for idx, ts in enumerate(
+            ProgressBar(self._sliced_trajectory, verbose=verbose, **progressbar_kwargs)
+        ):
+            self._frame_index = idx  # accessed later by subclasses
+            self._ts = ts
+            self.frames[idx] = ts.frame
+            self.times[idx] = ts.time
+            self._call_single_frame(ts, current_frame_index=idx)
+        logging.info("Finishing up")
+        return self
+
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
+        pass  # pylint: disable=unnecessary-pass
+
+    def _call_prepare(self) -> None:
+        """Base method wrapping all _prepare logic into a single call."""
         if self.refgroup is not None:
             if (
                 not hasattr(self.refgroup, "masses")
@@ -431,6 +490,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             else:
                 self.ref_weights = self.refgroup.masses
 
+        self._prepare()
+
         if self.refgroup is not None:
             logging.info(
                 """Coordinates are relative to the center of mass of reference"""
@@ -444,6 +505,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         logging.info(f"Considered atomgroup {atomgroup_header(self.atomgroup)}.")
 
+        # Log bin information if a spatial analysis is run.
+        if hasattr(self, "n_bins"):
+            logging.info(f"Using {self.n_bins} bins.")
+
         self.timeseries = np.zeros(self.n_frames)
 
         logging.info(f"Analysing {self.n_frames} trajectory frames.")
@@ -455,6 +520,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Don't worry about normalising, just deal with a single frame.
         """
+        raise NotImplementedError("Only implemented in child classes")
+
+    def _call_single_frame(self, ts, current_frame_index) -> None:
+        """Base method wrapping all single_frame logic into a single call."""
         compatible_types = [
             np.ndarray,
             float,
@@ -465,6 +534,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             np.int32,
             np.int64,
         ]
+        self._frame_index = current_frame_index
+        self._index = self._frame_index + 1
+
+        self._ts = ts
+        self.frames[current_frame_index] = ts.frame
+        self.times[current_frame_index] = ts.time
 
         # Before we do any coordinate transformation we first unwrap the system to
         # avoid artifacts of later wrapping.
@@ -481,9 +556,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._universe.atoms.wrap(compound=self.wrap_compound)
 
         if self.jitter != 0.0:
-            self._universe.positions += np.random.random(size=(len(self._universe.positions), 3)) * self.jitter
+            ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
 
         self._obs = Results()
+
+        self.timeseries[current_frame_index] = self._single_frame()
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
@@ -534,10 +611,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Called at the end of the :meth:`run` method to finish everything up.
         """
-        self.corrtime = correlation_analysis(self.timeseries)
-        if self.concfreq and self.module_has_save:
-            self.save()
+        pass  # pylint: disable=unnecessary-pass
 
+    def _call_conclude(self) -> None:
+        """Base method wrapping all _conclude logic into a single call."""
+        # self.corrtime = correlation_analysis(self.timeseries)
+        pass
+        # self._conclude()
+        # if self.concfreq and self.module_has_save:
+        #    self.save()
 
     @render_docs
     def run(
@@ -547,6 +629,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int = None,
+        n_parts: int = None,
+        backend: str | BackendBase = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         """Iterate over the trajectory."""
@@ -558,6 +645,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             step=step,
             frames=frames,
             verbose=verbose,
+            n_workers=n_workers,
+            n_parts=n_parts,
+            backend=backend,
+            unsupported_backend=unsupported_backend,
             progressbar_kwargs=progressbar_kwargs,
         )
 
@@ -712,6 +803,11 @@ class AnalysisCollection(_Runner):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int = None,
+        n_parts: int = None,
+        backend: str | BackendBase = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         """${RUN_METHOD_DESCRIPTION}"""  # noqa: D415
@@ -723,6 +819,10 @@ class AnalysisCollection(_Runner):
             step=step,
             frames=frames,
             verbose=verbose,
+            n_workers=n_workers,
+            n_parts=n_parts,
+            backend=backend,
+            unsupported_backend=unsupported_backend,
             progressbar_kwargs=progressbar_kwargs,
         )
 
@@ -742,6 +842,41 @@ class AnalysisCollection(_Runner):
                     "this instance can not be written to disk.",
                     stacklevel=2,
                 )
+
+    def _configure_backend(
+        self,
+        backend: str | BackendBase,
+        n_workers: int,
+        unsupported_backend: bool = False,
+    ) -> BackendBase:
+        backends = []
+        for analysis_object in self._analysis_instances:
+            backends.append(
+                analysis_object._configure_backend(
+                    backend=backend,
+                    n_workers=n_workers,
+                    unsupported_backend=unsupported_backend,
+                )
+            )
+
+        if all(isinstance(b, type(backends[0])) for b in backends):
+            return backends[0]
+        raise ValueError(
+            "All analysis instances must use the same backend. "
+            f"Found: {[type(b) for b in backends]}"
+        )
+
+    def _setup_computation_groups(
+        self,
+        n_parts: int,
+        start: int = None,
+        stop: int = None,
+        step: int = None,
+        frames: slice | np.ndarray = None,
+    ) -> list[np.ndarray]:
+        return self._analysis_instances[0]._setup_computation_groups(
+            n_parts=n_parts, start=start, stop=stop, step=step, frames=frames
+        )
 
 
 @render_docs

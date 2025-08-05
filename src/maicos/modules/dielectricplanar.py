@@ -86,6 +86,16 @@ class DielectricPlanar(PlanarBase):
 
     """
 
+    _analysis_algorithm_is_parallelizable = True
+
+    @classmethod
+    def get_supported_backends(cls):
+        return (
+            "serial",
+            "multiprocessing",
+            "dask",
+        )
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -126,6 +136,7 @@ class DielectricPlanar(PlanarBase):
             wrap_compound=wrap_compound,
             concfreq=concfreq,
         )
+
         self.is_3d = is_3d
         self.sym = sym
 
