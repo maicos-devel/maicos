@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche
 
+- Small cleanup of build workflow (#521)
 - Minor streamlining of CI workflows (#515)
 - Update Python wheels building (#514)
 
