@@ -496,7 +496,7 @@ class Test_AnalysisBase:
             np.int64,
         ],
     )
-    def test_bin_width_not_a_number(self, ag, typefunc):
+    def test_bin_width(self, ag, typefunc):
         """Test if various types for bin_wdith are supported."""
         ana_obj = AnalysisBase(
             atomgroup=ag,
