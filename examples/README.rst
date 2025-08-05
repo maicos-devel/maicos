@@ -1,5 +1,3 @@
-.. _userdoc-how-to:
-
 How-to guides
 =============
 
@@ -13,3 +11,6 @@ For running the examples install maicos with the ``examples`` optional dependenc
 .. code-block:: bash
 
     pip install maicos[examples]
+
+Example are split into :ref:`userdoc-how-to-basics` and
+:ref:`userdoc-how-to-dielectrics`.

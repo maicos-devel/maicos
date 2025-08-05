@@ -12,17 +12,18 @@ from pathlib import Path
 
 DIR_PATH = Path(__file__).parent
 EXAMPLES = DIR_PATH / ".." / ".." / "examples"
+BASIC_EXAMPLES = EXAMPLES / "basics"
 
 
 # bulk water (NpT)
 WATER_GRO_NPT = DIR_PATH / "water/water.gro"
-WATER_TRR_NPT = EXAMPLES / "water.trr"
+WATER_TRR_NPT = BASIC_EXAMPLES / "water.trr"
 WATER_2F_TRR_NPT = DIR_PATH / "water/water_two_frames.trr"
-WATER_TPR_NPT = EXAMPLES / "water.tpr"
+WATER_TPR_NPT = BASIC_EXAMPLES / "water.tpr"
 
 # bulk water (NVT)
-WATER_TPR_NVT = EXAMPLES / "water_nvt.tpr"
-WATER_XTC_NVT = EXAMPLES / "water_nvt.xtc"
+WATER_TPR_NVT = BASIC_EXAMPLES / "water_nvt.tpr"
+WATER_XTC_NVT = BASIC_EXAMPLES / "water_nvt.xtc"
 
 # bulk water (NVE)
 WATER_TPR_NVE = DIR_PATH / "kineticenergy/nve.tpr"

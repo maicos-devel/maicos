@@ -54,10 +54,7 @@ bibtex_reference_style = "author_year"
 
 sphinx_gallery_conf = {
     "examples_dirs": "../../examples",
-    "gallery_dirs": "auto_examples",
-    "subsection_order": [
-        "../../examples/dielectrics",
-    ],
+    "gallery_dirs": "examples",
     "filename_pattern": r"\.py",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),

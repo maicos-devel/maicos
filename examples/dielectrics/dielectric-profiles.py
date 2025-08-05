@@ -29,7 +29,7 @@ In the following, we will give an example of a trajectory of water confined by g
 sheets simulated via GROMACS. We assume that the GROMACS topology is given by
 `graphene_water.tpr` and the trajectory is given by `graphene_water.xtc`. Both can be
 downloaded under :download:`topology <graphene_water.tpr>` and :download:`trajectory
-<graphene_water.xtc>`, respectively.
+<graphene_water_nofield.xtc>`, respectively.
 
 From these files you can create a MDAnalysis universe object.
 """  # noqa: D415
