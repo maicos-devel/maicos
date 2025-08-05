@@ -29,6 +29,7 @@ class DensityPlanar(ProfilePlanarBase):
     ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -50,15 +51,15 @@ class DensityPlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        sym: bool = False,
-        grouping: str = "atoms",
         bin_method: str = "com",
-        output: str = "density.dat",
+        grouping: str = "atoms",
+        sym: bool = False,
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

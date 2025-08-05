@@ -46,14 +46,14 @@ class DielectricPlanar(PlanarBase):
     ${TEMPERATURE_PARAMETER}
     vcutwidth : float
         Spacing of virtual cuts (bins) along the parallel directions.
-    ${PLANAR_CLASS_PARAMETERS}
     is_3d : bool
         Use 3d-periodic boundary conditions, i.e., include the dipole correction for
         the interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
+    ${PLANAR_CLASS_PARAMETERS}
     ${SYM_PARAMETER}
-    ${OUTPUT_PREFIX_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -89,18 +89,18 @@ class DielectricPlanar(PlanarBase):
         atomgroup: mda.AtomGroup,
         temperature: float = 300,
         vcutwidth: float = 0.1,
+        is_3d: bool = False,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 0.5,
-        is_3d: bool = False,
         sym: bool = False,
-        output_prefix: str = "eps",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output_prefix: str = "eps",
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)

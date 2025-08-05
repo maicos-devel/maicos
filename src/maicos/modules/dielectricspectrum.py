@@ -56,8 +56,8 @@ class DielectricSpectrum(AnalysisBase):
     nobin : bool
         Prevents the data from being binned altogether. This can result in very large
         plot files and errors.
-    ${OUTPUT_PREFIX_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -78,12 +78,12 @@ class DielectricSpectrum(AnalysisBase):
         bins: int = 200,
         binafter: float = 20,
         nobin: bool = False,
-        output_prefix: str = "",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output_prefix: str = "",
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)

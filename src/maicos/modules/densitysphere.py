@@ -29,6 +29,7 @@ class DensitySphere(ProfileSphereBase):
     ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
     ${PROFILE_SPHERE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -43,14 +44,14 @@ class DensitySphere(ProfileSphereBase):
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
-        grouping: str = "atoms",
         bin_method: str = "com",
-        output: str = "density.dat",
+        grouping: str = "atoms",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

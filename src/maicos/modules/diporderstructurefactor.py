@@ -42,10 +42,10 @@ class DiporderStructureFactor(AnalysisBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${Q_SPACE_PARAMETERS}
-    ${GROUPING_PARAMETER}
     ${BIN_METHOD_PARAMETER}
-    ${OUTPUT_PARAMETER}
+    ${GROUPING_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -62,14 +62,14 @@ class DiporderStructureFactor(AnalysisBase):
         qmin: float = 0,
         qmax: float = 6,
         dq: float = 0.01,
-        grouping: str = "molecules",
         bin_method: str = "com",
-        output: str = "sq.dat",
+        grouping: str = "molecules",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "sq.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

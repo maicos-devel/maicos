@@ -29,6 +29,7 @@ class DiporderSphere(ProfileSphereBase):
     ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
     ${PROFILE_SPHERE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -43,14 +44,14 @@ class DiporderSphere(ProfileSphereBase):
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
-        grouping: str = "residues",
         bin_method: str = "com",
-        output: str = "diporder_sphere.dat",
+        grouping: str = "residues",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "diporder_sphere.dat",
     ) -> None:
         normalization = "volume" if order_parameter == "P0" else "number"
 

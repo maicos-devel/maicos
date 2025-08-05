@@ -41,8 +41,8 @@ class DielectricSphere(SphereBase):
     ${ATOMGROUP_PARAMETER}
     ${TEMPERATURE_PARAMETER}
     ${SPHERE_CLASS_PARAMETERS}
-    ${OUTPUT_PREFIX_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -62,12 +62,12 @@ class DielectricSphere(SphereBase):
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 0.1,
-        output_prefix: str = "eps_sph",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output_prefix: str = "eps_sph",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

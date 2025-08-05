@@ -30,6 +30,7 @@ class DiporderPlanar(ProfilePlanarBase):
     ${ORDER_PARAMETER_PARAMETER}
     ${PDIM_PLANAR_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -46,15 +47,15 @@ class DiporderPlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        sym: bool = False,
-        grouping: str = "residues",
         bin_method: str = "com",
-        output: str = "diporder_planar.dat",
+        grouping: str = "residues",
+        sym: bool = False,
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "diporder_planar.dat",
     ) -> None:
         self._locals = locals()
         normalization = "volume" if order_parameter == "P0" else "number"

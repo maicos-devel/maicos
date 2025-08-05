@@ -41,6 +41,7 @@ class VelocityPlanar(ProfilePlanarBase):
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -58,15 +59,15 @@ class VelocityPlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1.0,
-        sym: bool = False,
-        grouping: str = "atoms",
         bin_method: str = "com",
-        output: str = "velocity.dat",
+        grouping: str = "atoms",
+        sym: bool = False,
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

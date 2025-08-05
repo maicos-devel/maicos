@@ -30,8 +30,8 @@ class DipoleAngle(AnalysisBase):
     ${ATOMGROUP_PARAMETER}
     ${PDIM_PLANAR_PARAMETER}
     ${GROUPING_PARAMETER}
-    ${OUTPUT_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -51,12 +51,12 @@ class DipoleAngle(AnalysisBase):
         atomgroup: mda.AtomGroup,
         pdim: int = 2,
         grouping: str = "residues",
-        output: str = "dipangle.dat",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "dipangle.dat",
     ) -> None:
         self._locals = locals()
         self.wrap_compound = get_compound(atomgroup)

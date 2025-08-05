@@ -89,8 +89,8 @@ class PDFPlanar(PlanarBase):
         Maximum pairwise distance between ``g1`` and ``g2`` (Å).
     ${PLANAR_CLASS_PARAMETERS}
     ${BIN_METHOD_PARAMETER}
-    ${OUTPUT_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -115,12 +115,12 @@ class PDFPlanar(PlanarBase):
         zmax: float | None = None,
         bin_width: float = 1,
         bin_method: str = "com",
-        output: str = "pdf.dat",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "pdf.dat",
     ) -> None:
         self._locals = locals()
         self.comp_1 = get_compound(g1)

@@ -47,12 +47,12 @@ class RDFDiporder(AnalysisBase):
             For 'rdf' calculate :math:`g_{ab}(r)`. For 'density' the single group
             density :math:`n_{ab}(r)` is computed. 'none' computes the number of
             particles occurences in each spherical shell.
-    ${BIN_WIDTH_PARAMETER}
     ${RADIAL_CLASS_PARAMETERS}
+    ${BIN_WIDTH_PARAMETER}
     ${BIN_METHOD_PARAMETER}
     ${GROUPING_PARAMETER}
-    ${OUTPUT_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -69,17 +69,17 @@ class RDFDiporder(AnalysisBase):
         g1: mda.AtomGroup,
         g2: mda.AtomGroup | None = None,
         norm: str = "rdf",
-        bin_width: float = 0.1,
         rmin: float = 0.0,
         rmax: float = 15.0,
+        bin_width: float = 0.1,
         bin_method: str = "com",
         grouping: str = "residues",
-        output: str = "diporderrdf.dat",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "diporderrdf.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

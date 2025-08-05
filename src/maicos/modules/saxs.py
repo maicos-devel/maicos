@@ -69,8 +69,8 @@ class Saxs(AnalysisBase):
         Minimal angle (°) between the q vectors and the z-axis.
     thetamax : float
         Maximal angle (°) between the q vectors and the z-axis.
-    ${OUTPUT_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -101,12 +101,12 @@ class Saxs(AnalysisBase):
         dq: float = 0.1,
         thetamin: float = 0,
         thetamax: float = 180,
-        output: str = "sq.dat",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "sq.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

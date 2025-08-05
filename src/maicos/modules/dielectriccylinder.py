@@ -48,8 +48,8 @@ class DielectricCylinder(CylinderBase):
         For a single chain of molecules the average of :math:`M` is zero. This flag sets
         :math:`\langle M \rangle = 0`.
     ${CYLINDER_CLASS_PARAMETERS}
-    ${OUTPUT_PREFIX_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -79,12 +79,12 @@ class DielectricCylinder(CylinderBase):
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 0.1,
-        output_prefix: str = "eps_cyl",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output_prefix: str = "eps_cyl",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

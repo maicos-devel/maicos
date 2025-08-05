@@ -34,8 +34,8 @@ class KineticEnergy(AnalysisBase):
     refpoint : str
         reference point for molecular center: center of mass (``"com"``) or center of
         charge (``"coc"``).
-    ${OUTPUT_PARAMETER}
     ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -52,12 +52,12 @@ class KineticEnergy(AnalysisBase):
         self,
         atomgroup: mda.AtomGroup,
         refpoint: str = "com",
-        output: str = "ke.dat",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = False,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "ke.dat",
     ) -> None:
         self._locals = locals()
 

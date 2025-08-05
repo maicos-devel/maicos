@@ -30,6 +30,7 @@ class DiporderCylinder(ProfileCylinderBase):
     ${ORDER_PARAMETER_PARAMETER}
     ${PDIM_RADIAL_PARAMETER}
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -48,14 +49,14 @@ class DiporderCylinder(ProfileCylinderBase):
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
-        grouping: str = "residues",
         bin_method: str = "com",
-        output: str = "diporder_cylinder.dat",
+        grouping: str = "residues",
         refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
+        output: str = "diporder_cylinder.dat",
     ) -> None:
         normalization = "volume" if order_parameter == "P0" else "number"
 
