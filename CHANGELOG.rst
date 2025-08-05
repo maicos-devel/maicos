@@ -11,10 +11,11 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche
+Philip Loche, Kira Fischer
 
 - Minor streamlining of CI workflows (#515)
 - Update Python wheels building (#514)
+- Sort parameters in docs (#519)
 
 v0.11.2 (2025/07/15)
 --------------------
