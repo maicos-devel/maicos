@@ -385,9 +385,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         if hasattr(self, "_bin_width"):
             if not isinstance(self._bin_width, numbers.Real):
-                raise TypeError("Binwidth must be a number.")
+                raise TypeError(
+                    "Binwidth must be a real number but is of type "
+                    f"'{type(self._bin_width).__name__}'."
+                )
             if self._bin_width <= 0:
-                raise ValueError("Binwidth must be a positive number.")
+                raise ValueError(
+                    f"Binwidth must be a positive number but is {self._bin_width}."
+                )
 
         self._prepare()
 

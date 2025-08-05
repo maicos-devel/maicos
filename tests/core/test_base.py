@@ -531,7 +531,8 @@ class Test_AnalysisBase:
 
         ana_obj._bin_width = "x"
 
-        with pytest.raises(TypeError, match=r"Binwidth must be a number."):
+        match = "Binwidth must be a real number but is of type 'str'."
+        with pytest.raises(TypeError, match=match):
             ana_obj.run()
 
     @pytest.mark.parametrize("bin_width", [0, -0.5])
@@ -549,7 +550,8 @@ class Test_AnalysisBase:
 
         ana_obj._bin_width = bin_width
 
-        with pytest.raises(ValueError, match=r"Binwidth must be a positive number."):
+        match = rf"Binwidth must be a positive number but is {bin_width}."
+        with pytest.raises(ValueError, match=match):
             ana_obj.run()
 
     def test_n_bins(self, ag, caplog):
