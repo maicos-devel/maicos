@@ -245,7 +245,7 @@ class DielectricSpectrum(AnalysisBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         np.save(self.output_prefix + "tseries.npy", self.results.t)
 
         with Path(self.output_prefix + "V.txt").open(mode="w") as Vfile:

@@ -30,6 +30,8 @@ DOC_DICT = dict(
     # DESCRIPTION SECTION
     #####################
     SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
+    SAVE_METHOD_PREFIX_DESCRIPTION=r"""Save results of analysis to files specified by
+``output_prefix``.""",
     DENSITY_DESCRIPTION_1=r"""Calculations are carried out for ``mass``
 :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`, partial ``charge``
 :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})` density

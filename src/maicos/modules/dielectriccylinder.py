@@ -244,7 +244,7 @@ class DielectricCylinder(CylinderBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         outdata_z = np.array(
             [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
         ).T

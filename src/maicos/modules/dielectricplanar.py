@@ -330,7 +330,7 @@ class DielectricPlanar(PlanarBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         columns = ["position [Å]"]
         columns.append("ε^-1_⟂ - 1")
         columns.append("Δε^-1_⟂")
