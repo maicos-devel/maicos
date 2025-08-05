@@ -8,6 +8,7 @@
 """Base class for building Analysis classes."""
 
 import logging
+import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
@@ -381,6 +382,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
             else:
                 self.ref_weights = self.refgroup.masses
+
+        if hasattr(self, "_bin_width"):
+            if not isinstance(self._bin_width, numbers.Real):
+                raise TypeError("Binwidth must be a number.")
+            if self._bin_width <= 0:
+                raise ValueError("Binwidth must be a positive number.")
 
         self._prepare()
 

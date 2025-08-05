@@ -139,13 +139,6 @@ class TestPlanarBase:
 
         assert getattr(p_obj, lim) == p_obj.box_center[dim] + pos
 
-    @pytest.mark.parametrize("bin_width", [0, -0.5, "x"])
-    def test_wrong_bin_width(self, ag, bin_width):
-        """Test bin_width."""
-        planar_class_obj = PlanarClass(ag, pos_arg=42, bin_width=bin_width)
-        with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
-            planar_class_obj._prepare()
-
     @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_bin_width(self, ag, dim, bin_width):

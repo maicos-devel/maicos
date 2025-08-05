@@ -113,14 +113,8 @@ class SphereBase(AnalysisBase):
         if self._rmax is not None and self._rmax <= self.rmin:
             raise ValueError("`rmax` can not be smaller than or equal to `rmin`!")
 
-        try:
-            if self._bin_width > 0:
-                R = self.rmax - self.rmin
-                self.n_bins = int(np.ceil(R / self._bin_width))
-            else:
-                raise ValueError("Binwidth must be a positive number.")
-        except TypeError as err:
-            raise ValueError("Binwidth must be a number.") from err
+        R = self.rmax - self.rmin
+        self.n_bins = int(np.ceil(R / self._bin_width))
 
     def _single_frame(self):
         """Single frame for the sphercial analysis."""

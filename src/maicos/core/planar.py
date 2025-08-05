@@ -121,14 +121,8 @@ class PlanarBase(AnalysisBase):
         ):
             raise ValueError("`zmax` can not be smaller or equal than `zmin`!")
 
-        try:
-            if self._bin_width > 0:
-                L = self.zmax - self.zmin
-                self.n_bins = int(np.ceil(L / self._bin_width))
-            else:
-                raise ValueError("Binwidth must be a positive number.")
-        except TypeError as err:
-            raise ValueError("Binwidth must be a number.") from err
+        L = self.zmax - self.zmin
+        self.n_bins = int(np.ceil(L / self._bin_width))
 
     def _single_frame(self):
         """Single frame for the planar analysis."""
