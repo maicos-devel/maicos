@@ -23,8 +23,6 @@ dielectric profiles for planar pores.
 """
 # %%
 import scipy.constants
-import pint
-ureg = pint.UnitRegistry()
 
 # %%
 # Next, we define the formulas for direct calculation of dielectric profiles.
@@ -78,7 +76,7 @@ u = mda.Universe('./graphene_water.tpr', './graphene_water_nofield.xtc',
                  transformations=[cut_yeh_box])
 eps = maicos.DielectricPlanar(u.select_atoms('resname SOL'),
                               bin_width=0.3, unwrap=False)
-eps.run(verbose=True)
+eps.run()
 eps_means = eps.means
 
 m0_perp = eps_means['m_perp']
@@ -99,7 +97,7 @@ u_par = mda.Universe('./graphene_water.tpr', './graphene_water_par.xtc',
                      transformations=[cut_yeh_box])
 eps_par = maicos.DielectricPlanar(u_par.select_atoms('resname SOL'),
                                   bin_width=0.3, unwrap=False)
-eps_par.run(verbose=True)
+eps_par.run()
 m_par = eps_par.means['m_par'][:, 0]  # the field is applied in the x direction
 
 # u_perp = mda.Universe('./graphene_water_perp.tpr', './graphene_water_perp.xtc')
@@ -107,7 +105,7 @@ u_perp = mda.Universe('./graphene_water.tpr', './graphene_water_perp.xtc',
                       transformations=[cut_yeh_box])
 eps_perp = maicos.DielectricPlanar(u_perp.select_atoms('resname SOL'),
                                    bin_width=0.3, unwrap=False)
-eps_perp.run(verbose=True)
+eps_perp.run()
 m_perp = eps_perp.means['m_perp']  # the field is applied in the z direction
 # %%
 # This allows us to calculate the dielectric profiles using the formulas
@@ -134,6 +132,8 @@ plt.axhline(1/71)
 plt.ylabel(r'$\varepsilon_{\perp}^{-1}$')
 plt.xlabel(r'$z$ [$\AA$]')
 plt.show()
+
+# %%
 
 plt.plot(z, eps_par, label='parallel')
 plt.axhline(71)
