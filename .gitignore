@@ -20,6 +20,7 @@ __pycache__/
 build/
 dist/
 sg_execution_times.rst
+_version.py
 
 # Allow maicos share text files
 !maicos/share/*.dat

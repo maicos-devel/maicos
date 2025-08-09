@@ -201,12 +201,6 @@ normalization : {``"none"``, ``"number"``, ``"volume"``}
     normalization is performed. If `number`, the histogram is divided by the number of
     occurences in each bin. If `volume`, the profile is divided by the volume of each
     bin.""",
-    Q_SPACE_PARAMETERS="""qmin : float
-    Starting q (1/Å)
-qmax : float
-    Ending q (1/Å)
-dq : float
-    bin_width (1/Å)""",
     PLANAR_Z_PARAMETERS="""zmin : float
     Minimal coordinate for evaluation (in Å) with respect to the center of mass of
     the refgroup.

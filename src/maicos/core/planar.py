@@ -149,7 +149,7 @@ class PlanarBase(AnalysisBase):
 
 
 @render_docs
-class ProfilePlanarBase(PlanarBase, ProfileBase):
+class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
     """Base class for computing profiles in a cartesian geometry.
 
     ${CORRELATION_INFO_RADIAL}

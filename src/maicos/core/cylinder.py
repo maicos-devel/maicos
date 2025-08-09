@@ -145,7 +145,7 @@ class CylinderBase(PlanarBase):
 
 
 @render_docs
-class ProfileCylinderBase(CylinderBase, ProfileBase):
+class ProfileCylinderBase(CylinderBase, ProfileBase):  # type: ignore
     """Base class for computing radial profiles in a cylindrical geometry.
 
     ${CORRELATION_INFO_RADIAL}

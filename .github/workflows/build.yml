@@ -6,7 +6,6 @@ on:
       # build wheels in PR if this file changed
       - ".github/workflows/build.yml"
       # build wheels in PR if any of the build system files changed
-      - "**/setup.py"
       - "**/pyproject.toml"
       - "**/MANIFEST.in"
   schedule:
@@ -16,29 +15,8 @@ on:
     # allow manual triggering of the workflow
 
 jobs:
-  build-wheels:
-    name: wheels / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # macos-13 is an intel runner, macos-15 is apple silicon
-        os: [ubuntu-24.04, ubuntu-24.04-arm, windows-2025, macos-13, macos-15]
-
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v3.2.1
-
-      - uses: actions/upload-artifact@v5
-        with:
-          name: wheel-${{ matrix.os }}
-          path: ./wheelhouse/*.whl
-
-  build-sdist:
-    name: sdist
+  build:
+    name: build
     runs-on: ubuntu-latest
 
     steps:
@@ -55,18 +33,20 @@ jobs:
       - name: Install dependencies
         run: python -m pip install tox
 
-      - name: Test build integrity and create sdist
+      - name: Test build integrity and build sdist
         run: tox -e build
 
       - uses: actions/upload-artifact@v5
         with:
-          name: sdist
-          path: dist/*.tar.gz
+          name: files
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
 
   release:
     name: Release package
     if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'workflow_dispatch'
-    needs: [build-wheels, build-sdist]
+    needs: [build]
     runs-on: ubuntu-latest
     environment:
       name: pypi

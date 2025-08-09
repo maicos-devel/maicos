@@ -23,7 +23,7 @@ from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from .._version import get_versions
+from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
@@ -34,9 +34,6 @@ from ..lib.util import (
     maicos_banner,
     render_docs,
 )
-
-__version__ = get_versions()["version"]
-del get_versions
 
 
 class _Runner:

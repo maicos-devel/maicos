@@ -1,20 +1,7 @@
 [build-system]
-# These are the assumed default build requirements from pip:
-# https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = [
-    "cython>=0.28",
-    "packaging",
-    # numpy requirement for wheel builds for distribution on PyPI - building
-    # against 2.x yields wheels that are also compatible with numpy 1.x at
-    # runtime.
-    # Note that building against numpy 1.x works fine too - users and
-    # redistributors can do this by installing the numpy version they like and
-    # disabling build isolation.
-    "numpy>=2.0.0",
-    # Set to minimum version of setuptools that allows pyproject.toml
-    "setuptools>=77",
-    "setuptools-git-versioning<2",
-    "versioneer[toml]",
+    "setuptools >= 77",
+    "setuptools_scm >= 8",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -79,13 +66,7 @@ twitter = "https://twitter.com/maicos_analysis"
 maicos = "maicos.__main__:main"
 
 [tool.check-manifest]
-# ignore files missing in VCS
-ignore = ["src/maicos/lib/_cmath.c"]
-
-[tool.mypy]
-exclude = ["docs/src/examples"]
-follow_imports = 'skip'
-ignore_missing_imports = true
+ignore = ["src/maicos/_version.py"]
 
 [tool.coverage.paths]
 source = ["src/maicos", "*/site-packages"]
@@ -94,6 +75,16 @@ source = ["src/maicos", "*/site-packages"]
 skip_covered = true
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:"]
+
+[tool.mypy]
+exclude = ["docs/src/examples"]
+follow_imports = 'skip'
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# temporary workaround until we have proper types for `means` and `sems` attributes
+module = "maicos.modules.*"
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
@@ -106,7 +97,7 @@ addopts = [
 ]
 
 [tool.ruff]
-exclude = ["versioneer.py", "docs/src/examples/**", "src/maicos/_version.py"]
+exclude = ["docs/src/examples/**", "src/maicos/_version.py"]
 line-length = 88
 
 [tool.ruff.lint]
@@ -126,9 +117,9 @@ extend-select = [
     "TD",  # TODO checks (e.g., TODO comments without author)
     "LOG",  # Logging checks
     "G",  # Logging formatting checks
-    "T20", # Check for print statements
-    "ARG", # Checks for unused arguments
-    "PTH", # Check for instances where pathlib should be used
+    "T20",  # Check for print statements
+    "ARG",  # Checks for unused arguments
+    "PTH",  # Check for instances where pathlib should be used
     "FLY",  # Checks for str.join() which can be written as f-strings
     "TRY",  # Checks for try/except blocks
 ]
@@ -152,7 +143,7 @@ ignore = [
     "T20",  # Don't require any docstrings in these directories
     "D212",  # docstring summary not starting at first line
     "D205",  # 1 blank line required between summary line and description
-]  
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["maicos"]
@@ -163,9 +154,5 @@ docstring-code-format = true
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440"
-versionfile_source = "src/maicos/_version.py"
-versionfile_build = "maicos/_version.py"
-tag_prefix = "v"
+[tool.setuptools_scm]
+version_file = "src/maicos/_version.py"

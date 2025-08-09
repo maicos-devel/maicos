@@ -137,7 +137,7 @@ class SphereBase(AnalysisBase):
 
 
 @render_docs
-class ProfileSphereBase(SphereBase, ProfileBase):
+class ProfileSphereBase(SphereBase, ProfileBase):  # type: ignore
     """Base class for computing radial profiles in a spherical geometry.
 
     ${CORRELATION_INFO_RADIAL}

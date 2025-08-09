@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Clean dist files after tox -e build."""
 from pathlib import Path
 

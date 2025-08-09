@@ -22,7 +22,7 @@ from MDAnalysisTests.core.util import UnWrapUniverse
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import DensityPlanar, _version
+from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -539,9 +539,7 @@ class Test_AnalysisBase:
             r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
             in "".join([rec.message for rec in caplog.records])
         )
-        assert _version.get_versions()["version"] in "".join(
-            [rec.message for rec in caplog.records]
-        )
+        assert __version__ in "".join([rec.message for rec in caplog.records])
 
     @pytest.mark.parametrize(
         "typefunc",

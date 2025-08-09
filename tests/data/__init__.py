@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """init file for datafiles."""
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #
@@ -24,10 +24,6 @@ WATER_TPR_NPT = BASIC_EXAMPLES / "water.tpr"
 # bulk water (NVT)
 WATER_TPR_NVT = BASIC_EXAMPLES / "water_nvt.tpr"
 WATER_XTC_NVT = BASIC_EXAMPLES / "water_nvt.xtc"
-
-# bulk water (NVE)
-WATER_TPR_NVE = DIR_PATH / "kineticenergy/nve.tpr"
-WATER_TRR_NVE = DIR_PATH / "kineticenergy/nve.trr"
 
 # air-water interface
 AIRWATER_GRO = DIR_PATH / "airwater/airwater.gro"

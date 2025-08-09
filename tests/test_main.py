@@ -34,6 +34,16 @@ class Test_parse_args:
     @pytest.mark.parametrize("module", tuple(available_modules))
     def test_available_modules(self, module):
         """Test available modules."""
+        if module in [
+            "DielectricSpectrum",
+            "DipoleAngle",
+            "DiporderStructureFactor",
+            "KineticEnergy",
+            "RDFDiporder",
+            "Saxs",
+        ]:
+            pytest.skip(f"Skipping '{module}' as it has been moved or removed")
+
         subprocess.check_call(["maicos", module, "--help"])
 
     @pytest.mark.parametrize("args", ["version", "help"])

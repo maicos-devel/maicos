@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Check if the CHANGELOG has been modified with respect to the main branch."""
 import os
 

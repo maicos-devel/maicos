@@ -13,6 +13,11 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
 
+- Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.
+  (#524)
+- Move ``Saxs``, ``DiporderStructureFactor``, ``RDFDiporder``, ``lib.math.atomic_form_factor``,
+  ``lib.math.rdf_structure_factor``,  to scatterkit package. (#524)
+- Remove ``KineticEnergy`` and ``DipoleAngle`` module. (#524)
 - Implement error calculation for observables with multiple samples (#494)
 - Bump minimal Python version to 3.11 and MDAnalysis to 2.10.0 (#529)
 - Added support for Python 3.14 in CI workflows (#529)
