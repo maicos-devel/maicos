@@ -27,8 +27,8 @@ profiles for planar pores.
 # %%
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
-import scipy.constants
 import numpy as np
+import scipy.constants
 
 import maicos
 
@@ -98,13 +98,12 @@ def cut_yeh_box(ts):
 
 def write_means(fn, eps):
     """Function to save the relevant polarization densities into a txt file"""
-    eps_means = [eps.means[m] for m in eps.means if 'm_' in m]
+    eps_means = [eps.means[m] for m in eps.means if "m_" in m]
 
-    # Only read in the x-component, because the field is in this direction                                                                             
+    # Only read in the x-component, because the field is in this direction
     eps_means[0] = eps_means[0][:, 0]
     eps_means = np.array(eps_means)
-    np.savetxt(fn, eps_means,
-               header='cols: m_par mm_par m_perp mm_perp')
+    np.savetxt(fn, eps_means, header="cols: m_par mm_par m_perp mm_perp")
 
 
 # This code calculates the polarization densities for the simulation
@@ -118,9 +117,9 @@ eps = maicos.DielectricPlanar(
     u.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
 )
 eps.run()
-write_means('./m_nofield.dat', eps)
+write_means("./m_nofield.dat", eps)
 
-eps_means = np.loadtxt('./m_nofield.dat')
+eps_means = np.loadtxt("./m_nofield.dat")
 
 m0_perp = eps_means[2, :]  # third row is m_perp
 m0_par = eps_means[0, :]  # first row is m_par in x-dir
@@ -156,8 +155,8 @@ m0_par = eps_means[0, :]  # first row is m_par in x-dir
 # m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
 # write_means('./m_perpfield.dat', eps_perp)
 # ```
-m_par = np.loadtxt('./m_parfield.dat')[0, :]  # first row is m_par
-m_perp = np.loadtxt('./m_perpfield.dat')[2, :]  # first row is m_perp
+m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
+m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
 
 # %%
 #
