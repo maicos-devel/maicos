@@ -5,7 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-""".._howto-dielectric-applied:
+""".. _howto-dielectric-applied:
 
 Dielectric Profile Calculations from Applied Field
 ==================================================
@@ -28,6 +28,7 @@ profiles for planar pores.
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import scipy.constants
+import numpy as np
 
 import maicos
 
@@ -95,6 +96,19 @@ def cut_yeh_box(ts):
     return ts
 
 
+def write_means(fn, eps):
+    """Function to save the relevant polarization densities into a txt file"""
+    eps_means = [eps.means[m] for m in eps.means if 'm_' in m]
+
+    # Only read in the x-component, because the field is in this direction                                                                             
+    eps_means[0] = eps_means[0][:, 0]
+    eps_means = np.array(eps_means)
+    np.savetxt(fn, eps_means,
+               header='cols: m_par mm_par m_perp mm_perp')
+
+
+# This code calculates the polarization densities for the simulation
+# with no applied field, we use the output of a precalculated trajectory
 u = mda.Universe(
     "./graphene_water.tpr",
     "./graphene_water_nofield.xtc",
@@ -103,13 +117,13 @@ u = mda.Universe(
 eps = maicos.DielectricPlanar(
     u.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
 )
-eps.run(stop=100)
-eps_means = eps.means
+eps.run()
+write_means('./m_nofield.dat', eps)
 
-m0_perp = eps_means["m_perp"]
-# take the x component, since the field is also applied in the x direction
-# for the applied field simulations
-m0_par = eps_means["m_par"][:, 0]
+eps_means = np.loadtxt('./m_nofield.dat')
+
+m0_perp = eps_means[2, :]  # third row is m_perp
+m0_par = eps_means[0, :]  # first row is m_par in x-dir
 
 # %%
 #
@@ -119,24 +133,32 @@ m0_par = eps_means["m_par"][:, 0]
 # component in the direction of the applied field.
 #
 # Now we can do the same for the applied field simulations.
+# In order to space on time and storage, we only show here the code that
+# would be needed to do so.
 
-u_par = mda.Universe(
-    "./graphene_water.tpr", "./graphene_water_par.xtc", transformations=[cut_yeh_box]
-)
-eps_par = maicos.DielectricPlanar(
-    u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
-)
-eps_par.run(stop=100)
-m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
+# ```
+# u_par = mda.Universe(
+#     "./graphene_water.tpr", "./graphene_water_par.xtc", transformations=[cut_yeh_box]
+# )
+# eps_par = maicos.DielectricPlanar(
+#     u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+# )
+# eps_par.run()
+# m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
+# write_means('./m_parfield.dat', eps_par)
+# u_perp = mda.Universe(
+#     "./graphene_water.tpr", "./graphene_water_perp.xtc", transformations=[cut_yeh_box]
+# )
+# eps_perp = maicos.DielectricPlanar(
+#     u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+# )
+# eps_perp.run()
+# m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
+# write_means('./m_perpfield.dat', eps_perp)
+# ```
+m_par = np.loadtxt('./m_parfield.dat')[0, :]  # first row is m_par
+m_perp = np.loadtxt('./m_perpfield.dat')[2, :]  # first row is m_perp
 
-u_perp = mda.Universe(
-    "./graphene_water.tpr", "./graphene_water_perp.xtc", transformations=[cut_yeh_box]
-)
-eps_perp = maicos.DielectricPlanar(
-    u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
-)
-eps_perp.run(stop=100)
-m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
 # %%
 #
 # This allows us to calculate the dielectric profiles using the formulas defined above.
