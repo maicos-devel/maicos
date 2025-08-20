@@ -44,13 +44,14 @@ import maicos
 u = mda.Universe("./graphene_water.tpr", "./graphene_water_nofield.xtc")
 
 # %%
+#
 # This universe object can then be passed to the dielectric profile analysis object,
-# documented in :class:`maicos.DielectricPlanar`. It expects
-# you to pass the atom groups you want to perform the analysis for. In our example, we
-# have graphene walls and SPC/E water confined between them, where we are interested in
-# the dielectric behavior of the fluid. Thus, we will first select the water as an
-# MDAnalysis atom group using :meth:`MDAnalysis.core.groups.AtomGroup.select_atoms`. In
-# this case we select the water by filtering for the residue named ``SOL``.
+# documented in :class:`maicos.DielectricPlanar`. It expects you to pass the atom groups
+# you want to perform the analysis for. In our example, we have graphene walls and SPC/E
+# water confined between them, where we are interested in the dielectric behavior of the
+# fluid. Thus, we will first select the water as an MDAnalysis atom group using
+# :meth:`MDAnalysis.core.groups.AtomGroup.select_atoms`. In this case we select the
+# water by filtering for the residue named ``SOL``.
 #
 # According to the discussion above, we use an unwrapped trajectory and set the ``unwrap
 # = False`` keyword.
@@ -72,10 +73,10 @@ water = u.select_atoms("resname SOL")
 analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 
 # %%
+#
 # This creates the analysis object, but does not yet perform the analysis. To this end
-# we call the member function :meth:`run
-# <maicos.DielectricPlanar.run>`. We may set the ``verbose``
-# keyword to :obj:`True` to get additional information like a progress bar.
+# we call the member function :meth:`run <maicos.DielectricPlanar.run>`. We may set the
+# ``verbose`` keyword to :obj:`True` to get additional information like a progress bar.
 #
 # Here you also have the chance to set ``start`` and ``stop`` keywords to specify which
 # frames the analysis should start at and where to end. One can also specify a ``step``
@@ -84,6 +85,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 analysis_obj.run(step=5)
 
 # %%
+#
 # Here we use ``step = 5`` to run a fast analysis. You may reduce the ``step`` parameter
 # to gain a higher accuracy. Note that the analysis issues a warning concerning the
 # correlation time of the trajectory, which is automatically calculated as an indication
@@ -98,8 +100,7 @@ analysis_obj.run(step=5)
 # attributes that can be accessed directly. For example, the bin positions are stored in
 # the ``bin_pos`` attribute, the parallel and perpendicular dielectric profiles in the
 # ``eps_par`` and ``eps_perp`` attributes respectively. (See
-# :class:`maicos.DielectricPlanar` for a full list of
-# attributes.)
+# :class:`maicos.DielectricPlanar` for a full list of attributes.)
 #
 # For this example, we plot both profiles using matplotlib. Note that MAICoS always
 # centers the system at the origin or the selected refgroup, so here we set the limits
