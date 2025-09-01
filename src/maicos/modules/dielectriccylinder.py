@@ -348,6 +348,12 @@ class DielectricCylinder(CylinderBase):
                 + self.sems.m_r**2 * self.means.M_r**2
                 + self.means.m_r**2 * self.sems.M_r**2
             )
+
+            dcov_phi = np.sqrt(
+                self.sems.mM_phi**2
+                + self.sems.m_phi**2 * self.means.M_phi**2
+                + self.means.m_phi**2 * self.sems.M_phi**2
+            )
         else:
             # <M> = 0 for a single line of water molecules.
             cov_z = self.means.mM_z
@@ -367,7 +373,8 @@ class DielectricCylinder(CylinderBase):
 
         self.results.m_phi = self.means.m_phi
         cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
-        self.results.eps_phi = 1 + 1 / self.results.bin_pos * self._pref * cov_phi  
+        self.results.eps_phi = 1 / self.results.bin_pos * self._pref * cov_phi  
+        self.results.deps_phi = 1 / self.results.bin_pos * self._pref * dcov_phi
 
     @render_docs
     def save(self) -> None:
@@ -380,7 +387,7 @@ class DielectricCylinder(CylinderBase):
         ).T
 
         outdata_phi = np.array(
-                [self.results.bin_pos, self.results.eps_phi, self.results.m_phi]
+                [self.results.bin_pos, self.results.eps_phi, self.results.deps_phi, self.results.m_phi]
                 ).T
 
         columns = ["positions [Å]"]
@@ -401,7 +408,7 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["ε_phi", "m_phi"]
+        columns += ["ε_phi", "Δε_phi", "m_phi"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
