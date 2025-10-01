@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer
 
+- Update CI action dependencies (#526) 
 - Update CI action dependencies (#525)
 - Simplify bin width validation (#522)
 - Small cleanup of build workflow (#521)
