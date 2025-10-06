@@ -194,9 +194,9 @@ class Test_AnalysisBase:
 
         Run this test first since warning will be only emmitted once.
         """
+        assert len(ag.universe.trajectory) > 1  # ensure multi-frame trajectory
         for ts in ag.universe.trajectory:
             ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
-
         conclude = Conclude(ag)
         conclude.run()
 
