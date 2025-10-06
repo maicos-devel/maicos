@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche, Kira Fischer
+Philip Loche, Kira Fischer, Francis Jose
 
+- Warn if box is not orthorhombic (#523)
 - Update CI action dependencies (#526) 
 - Update CI action dependencies (#525)
 - Simplify bin width validation (#522)

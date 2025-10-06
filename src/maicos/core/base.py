@@ -87,8 +87,7 @@ class _Runner:
 
         if progressbar_kwargs is None:
             progressbar_kwargs = {}
-        
-        first_check = True
+
         for i, ts in enumerate(
             ProgressBar(
                 analysis_instances[0]._sliced_trajectory,
@@ -97,14 +96,6 @@ class _Runner:
             )
         ):
             ts_original = ts.copy()
-            dimensions = ts.dimensions
-            
-            if dimensions[-3:] is not np.array([90.0, 90.0, 90.0]):
-                if first_check:
-                    logging.warning(
-                        "The trajectory contains box-dimensions that are not orthorhombic!"
-                    )
-                first_check = False
 
             for analysis_object in analysis_instances:
                 analysis_object._call_single_frame(ts=ts, current_frame_index=i)
@@ -463,10 +454,18 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             t = self.box_center - com_refgroup
             self._universe.atoms.translate(t)
 
-        # If universe has a cell we wrap the compound into the primary unit cell to
-        # use all compounds for the analysis.
-        if self.pack and self._universe.dimensions is not None:
-            self._universe.atoms.wrap(compound=self.wrap_compound)
+        if self._universe.dimensions is not None:
+            if ts.dimensions[-3:] is not np.array([90.0, 90.0, 90.0]):
+                warnings.warn(
+                    "The trajectory contains box-dimensions that are not "
+                    "orthorhombic! Continue with caution.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            # If universe has a cell we wrap the compound into the primary unit cell to
+            # use all compounds for the analysis.
+            if self.pack:
+                self._universe.atoms.wrap(compound=self.wrap_compound)
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter

@@ -189,6 +189,26 @@ class Test_AnalysisBase:
         """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
         return mda.Universe(PSF, DCD)
 
+    def test_triclinic_warning(self, ag, caplog):
+        """Test that the triclinic warning is displayed.
+
+        Run this test first since warning will be only emmitted once.
+        """
+        for ts in ag.universe.trajectory:
+            ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
+
+        conclude = Conclude(ag)
+        conclude.run()
+
+        warnings = [rec.message for rec in caplog.records]
+        assert len(warnings) == 1
+
+        match = (
+            "The trajectory contains box-dimensions that are not orthorhombic! "
+            "Continue with caution."
+        )
+        assert match in warnings[0]
+
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
         a = AnalysisBase(
