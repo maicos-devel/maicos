@@ -361,9 +361,11 @@ class DielectricCylinder(CylinderBase):
             dcov_z = self.sems.mM_z
             dcov_r = self.sems.mM_r
 
+        self.results.m_z = self.means.m_z
         self.results.eps_z = self._pref * cov_z
         self.results.deps_z = self._pref * dcov_z
 
+        self.results.m_r = self.means.m_r
         self.results.eps_r = -(
             2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * cov_r
         )
@@ -380,10 +382,10 @@ class DielectricCylinder(CylinderBase):
     def save(self) -> None:
         """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
         outdata_z = np.array(
-            [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
+            [self.results.bin_pos, self.results.eps_z, self.results.deps_z, self.results.m_z]
         ).T
         outdata_r = np.array(
-            [self.results.bin_pos, self.results.eps_r, self.results.deps_r]
+            [self.results.bin_pos, self.results.eps_r, self.results.deps_r, self.results.m_r]
         ).T
 
         outdata_phi = np.array(
@@ -408,7 +410,7 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["ε_phi", "Δε_phi", "m_phi"]
+        columns += ["ε_phi - 1", "Δε_phi", "m_phi"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
