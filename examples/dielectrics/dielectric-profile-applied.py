@@ -97,7 +97,7 @@ def cut_yeh_box(ts):
 
 
 def write_means(fn, eps):
-    """Function to save the relevant polarization densities into a txt file"""
+    """Function to save the relevant polarization densities into a txt file."""
     eps_means = [eps.means[m] for m in eps.means if "m_" in m]
 
     # Only read in the x-component, because the field is in this direction
@@ -155,8 +155,8 @@ m0_par = eps_means[0, :]  # first row is m_par in x-dir
 # m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
 # write_means('./m_perpfield.dat', eps_perp)
 # ```
-m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
-m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
+# m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
+# m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
 
 # %%
 #
@@ -164,10 +164,10 @@ m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
 # THe example data was calculated for an applied field of strength 0.005 V/A in the
 # parallel direction and 0.02 V/A in the perpendicular direction.
 
-z = eps.results.bin_pos
+# z = eps.results.bin_pos
 
-eps_par = direct_eps_par(m=m_par, m0=m0_par, E=0.005)
-eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
+# eps_par = direct_eps_par(m=m_par, m0=m0_par, E=0.005)
+# eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
 
 # %%
 #
@@ -178,10 +178,10 @@ eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
 # faster than the perpendicular. Still, we provide the code to symmetrize the
 # perpendicular profiles as well.
 
-eps_par = (eps_par + eps_par[::-1]) / 2
+# eps_par = (eps_par + eps_par[::-1]) / 2
 # eps_perp = (eps_perp + eps_perp[::-1]) / 2
 
-plt.plot(z, eps_perp, label="perpendicular")
+# plt.plot(z, eps_perp, label="perpendicular")
 plt.axhline(1 / 71)
 
 plt.ylabel(r"$\varepsilon_{\perp}^{-1}$")
@@ -190,7 +190,7 @@ plt.show()
 
 # %%
 
-plt.plot(z, eps_par, label="parallel")
+# plt.plot(z, eps_par, label="parallel")
 plt.axhline(71)
 plt.xlabel(r"$z$ [$\AA$]")
 plt.ylabel(r"$\varepsilon_{\parallel}$")

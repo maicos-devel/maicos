@@ -10,7 +10,7 @@ This sections describes MAICoS, how to install it, and its most basic commands.
 
     maicos
     installation
-    ../examples/usage-python
-    ../examples/usage-bash
+    ../examples/basics/usage-python
+    ../examples/basics/usage-bash
     units
     changelog

@@ -1,3 +1,5 @@
+.. _userdoc-how-to:
+
 How-to guides
 =============
 
