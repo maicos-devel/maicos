@@ -144,6 +144,12 @@ def diporder_weights(
 
     return weights
 
+def charge_theta_weights(
+        atomgroup: mda.AtomGroup,
+        get_unit_vectors: Unit_vector)
+
+    weights = atomgroup.charges * get_unit_vectors[0]
+    return weights
 
 def diporder_pair_weights(
     g1: mda.AtomGroup, g2: mda.AtomGroup, compound: str

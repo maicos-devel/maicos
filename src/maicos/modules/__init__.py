@@ -27,6 +27,7 @@ from .saxs import Saxs
 from .temperatureplanar import TemperaturePlanar
 from .velocitycylinder import VelocityCylinder
 from .velocityplanar import VelocityPlanar
+from .chargexcylinder import ChargeXCylinder
 
 __all__ = [
     "DensityCylinder",
