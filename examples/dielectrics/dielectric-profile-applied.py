@@ -89,7 +89,7 @@ def direct_eps_perp(m, m0, E=0.02):
 # space.
 
 
-def cut_yeh_box(ts):
+def cut_yeh_berkovitz_box(ts):
     """Cut the simulation box, removing the vacuum for Yeh-Berkovitz."""
     dims = ts.dimensions
     ts.dimensions = [dims[0], dims[1], dims[2] / 3, 90, 90, 90]
@@ -111,7 +111,7 @@ def write_means(fn, eps):
 u = mda.Universe(
     "./graphene_water.tpr",
     "./graphene_water_nofield.xtc",
-    transformations=[cut_yeh_box],
+    transformations=[cut_yeh_berkovitz_box],
 )
 eps = maicos.DielectricPlanar(
     u.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
@@ -121,8 +121,8 @@ write_means("./m_nofield.dat", eps)
 
 eps_means = np.loadtxt("./m_nofield.dat")
 
-m0_perp = eps_means[2, :]  # third row is m_perp
-m0_par = eps_means[0, :]  # first row is m_par in x-dir
+# m0_perp = eps_means[2, :]  # third row is m_perp
+# m0_par = eps_means[0, :]  # first row is m_par in x-dir
 
 # %%
 #
@@ -155,8 +155,10 @@ m0_par = eps_means[0, :]  # first row is m_par in x-dir
 # m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
 # write_means('./m_perpfield.dat', eps_perp)
 # ```
-# m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
-# m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
+m0_par = np.loadtxt("./m_nofield.dat")[0, :]  # first row is m_par
+m0_perp = np.loadtxt("./m_nofield.dat")[2, :]
+m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
+m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
 
 # %%
 #
@@ -164,10 +166,10 @@ m0_par = eps_means[0, :]  # first row is m_par in x-dir
 # THe example data was calculated for an applied field of strength 0.005 V/A in the
 # parallel direction and 0.02 V/A in the perpendicular direction.
 
-# z = eps.results.bin_pos
+z = eps.results.bin_pos
 
-# eps_par = direct_eps_par(m=m_par, m0=m0_par, E=0.005)
-# eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
+eps_par = direct_eps_par(m=m_par, m0=m0_par, E=0.005)
+eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
 
 # %%
 #
@@ -178,10 +180,10 @@ m0_par = eps_means[0, :]  # first row is m_par in x-dir
 # faster than the perpendicular. Still, we provide the code to symmetrize the
 # perpendicular profiles as well.
 
-# eps_par = (eps_par + eps_par[::-1]) / 2
-# eps_perp = (eps_perp + eps_perp[::-1]) / 2
+eps_par = (eps_par + eps_par[::-1]) / 2
+eps_perp = (eps_perp + eps_perp[::-1]) / 2
 
-# plt.plot(z, eps_perp, label="perpendicular")
+plt.plot(z, eps_perp, label="perpendicular")
 plt.axhline(1 / 71)
 
 plt.ylabel(r"$\varepsilon_{\perp}^{-1}$")
@@ -190,7 +192,7 @@ plt.show()
 
 # %%
 
-# plt.plot(z, eps_par, label="parallel")
+plt.plot(z, eps_par, label="parallel")
 plt.axhline(71)
 plt.xlabel(r"$z$ [$\AA$]")
 plt.ylabel(r"$\varepsilon_{\parallel}$")
