@@ -142,7 +142,8 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #    .. code-block:: python
 #
 #       u_par = mda.Universe(
-#           "./graphene_water.tpr", "./graphene_water_par.xtc", transformations=[cut_yeh_box]
+#           "./graphene_water.tpr", "./graphene_water_par.xtc",
+#           transformations=[cut_yeh_box]
 #       )
 #       eps_par = maicos.DielectricPlanar(
 #           u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
@@ -151,7 +152,8 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #       m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
 #       write_means('./m_parfield.dat', eps_par)
 #       u_perp = mda.Universe(
-#           "./graphene_water.tpr", "./graphene_water_perp.xtc", transformations=[cut_yeh_box]
+#           "./graphene_water.tpr", "./graphene_water_perp.xtc",
+#           transformations=[cut_yeh_box]
 #       )
 #       eps_perp = maicos.DielectricPlanar(
 #           u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
