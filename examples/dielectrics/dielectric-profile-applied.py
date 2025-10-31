@@ -132,33 +132,38 @@ eps_means = np.loadtxt("./m_nofield.dat")
 # component in the direction of the applied field.
 #
 # Now we can do the same for the applied field simulations.
-# In order to space on time and storage, we only show here the code that
-# would be needed to do so.
+#
+# .. details:: Example code for applied field simulations
+#    :class: dropdown
+#
+#    In order to save on time and storage, we only show here the code that
+#    would be needed to do so.
+#
+#    .. code-block:: python
+#
+#       u_par = mda.Universe(
+#           "./graphene_water.tpr", "./graphene_water_par.xtc", transformations=[cut_yeh_box]
+#       )
+#       eps_par = maicos.DielectricPlanar(
+#           u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+#       )
+#       eps_par.run()
+#       m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
+#       write_means('./m_parfield.dat', eps_par)
+#       u_perp = mda.Universe(
+#           "./graphene_water.tpr", "./graphene_water_perp.xtc", transformations=[cut_yeh_box]
+#       )
+#       eps_perp = maicos.DielectricPlanar(
+#           u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+#       )
+#       eps_perp.run()
+#       m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
+#       write_means('./m_perpfield.dat', eps_perp)
 
-# ```
-# u_par = mda.Universe(
-#     "./graphene_water.tpr", "./graphene_water_par.xtc", transformations=[cut_yeh_box]
-# )
-# eps_par = maicos.DielectricPlanar(
-#     u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
-# )
-# eps_par.run()
-# m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
-# write_means('./m_parfield.dat', eps_par)
-# u_perp = mda.Universe(
-#     "./graphene_water.tpr", "./graphene_water_perp.xtc", transformations=[cut_yeh_box]
-# )
-# eps_perp = maicos.DielectricPlanar(
-#     u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
-# )
-# eps_perp.run()
-# m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
-# write_means('./m_perpfield.dat', eps_perp)
-# ```
 m0_par = np.loadtxt("./m_nofield.dat")[0, :]  # first row is m_par
 m0_perp = np.loadtxt("./m_nofield.dat")[2, :]
 m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
-m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # first row is m_perp
+m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # third row is m_perp in dir of field
 
 # %%
 #
