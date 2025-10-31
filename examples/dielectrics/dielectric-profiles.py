@@ -41,7 +41,7 @@ import numpy as np
 
 import maicos
 
-u = mda.Universe("./graphene_water.tpr", "./graphene_water_nofield.xtc")
+u = mda.Universe("graphene_water.tpr", "graphene_water_nofield.xtc")
 
 # %%
 #
