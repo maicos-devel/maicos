@@ -52,11 +52,11 @@ import maicos
 # confined in a 2D slit made of NaCl atoms, where the two water/solid interfaces are
 # normal to the axis :math:`z` as shown in the snapshot below:
 #
-# .. image:: ../../static/slit-flow-dark.png
+# .. image:: ../../../static/slit-flow-dark.png
 #   :alt: Snapshot Slit Flow System
 #   :class: only-dark
 #
-# .. image:: ../../static/slit-flow-light.png
+# .. image:: ../../../static/slit-flow-light.png
 #   :alt: Snapshot Slit Flow System
 #   :class: only-light
 #

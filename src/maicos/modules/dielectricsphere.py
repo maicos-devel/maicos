@@ -27,9 +27,9 @@ class DielectricSphere(SphereBase):
     located at the center of the simulation box (default) or at the center of mass of
     the ``refgroup``, if provided.
 
-    For usage, please refer to :ref:`How-to: Dielectric
-    constant<sphx_glr_examples_dielectrics_dielectric-profiles.py>` and for details on
-    the theory see :ref:`dielectric-explanations`.
+    For usage, please refer to
+    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` and for details on the
+    theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the radial (:math:`r`) component is used.
     ${CORRELATION_INFO}

@@ -30,7 +30,7 @@ class DielectricPlanar(PlanarBase):
     parameter.
 
     For usage please refer to the
-    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py>` example and for details
+    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` example and for details
     on the theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the norm of the parallel total dipole moment is used.
