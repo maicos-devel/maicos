@@ -9,9 +9,9 @@
 Dielectric Profile Calculations from Applied Field
 ==================================================
 
-This tutorial demonstrates how to calculate dielectric profiles using the "direct"
+This tutorial demonstrates how to calculate dielectric profiles using the applied field
 method, where an applied electric field simulation is used to compute dielectric
-profiles for planar pores.
+profiles for planar geometries.
 
 .. note::
 
@@ -32,7 +32,7 @@ import scipy.constants
 import maicos
 
 # %%
-# Next, we define the formulas for direct calculation of dielectric profiles. These are
+# Next, we define the formulas for the calculation of dielectric profiles. These are
 # given by the following equations, first for the parallel component:
 #
 # .. math:: \varepsilon_{\parallel}^{-1} = \frac{\epsilon_0 E_\parallel + m_\parallel -
