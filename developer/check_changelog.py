@@ -34,8 +34,7 @@ if file.strip() == workfile.strip():
     changed_files = [x for x in changed_files if not x.startswith(".github/")]
     if len(changed_files) > 0:
         raise ChangelogError("You have not updated the CHANGELOG file. Please "
-                             f"add a summary of your additions to {changelog}. "
-                             f"Changed files: {changed_files}")
+                             f"add a summary of your additions to {changelog}.")
     else:
         print("No changes detected.")
 else:
