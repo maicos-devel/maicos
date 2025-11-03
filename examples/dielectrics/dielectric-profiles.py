@@ -9,9 +9,6 @@
 Dielectric profile calculation
 ==============================
 
-Basic usage
------------
-
 In the following example, we will show how to calculate the dielectric profiles as
 described in :ref:`dielectric-explanations`.
 

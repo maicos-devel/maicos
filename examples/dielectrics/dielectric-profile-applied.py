@@ -40,9 +40,12 @@ import maicos
 #
 # and for the perpendicular component:
 #
-# .. math:: \varepsilon_{\perp}^{-1} = \frac{D - m + m_0}{D},
+# .. math:: \varepsilon_{\perp}^{-1} =
+#               \frac{D_{\perp} - m_{\perp} + m_{0,\perp}}{D_{\perp}},
 #
-# where :math:`D = \epsilon_0 E` is the electric displacement field, :math:`m`
+# where :math:`D_{\perp} = \epsilon_0 E` is the electric displacement field,
+# :math:`m_{\perp}` is the perpendicular polarization density, and :math:`m_{0, \perp}`
+# is the reference perpendicular polarization density.
 #
 unit_e = scipy.constants.e  # elementary charge in C
 unit_a = scipy.constants.angstrom  # angstrom in m
@@ -88,13 +91,6 @@ def direct_eps_perp(m, m0, E=0.02):
 # space.
 
 
-def cut_yeh_berkovitz_box(ts):
-    """Cut the simulation box, removing the vacuum for Yeh-Berkovitz."""
-    dims = ts.dimensions
-    ts.dimensions = [dims[0], dims[1], dims[2] / 3, 90, 90, 90]
-    return ts
-
-
 def write_means(fn, eps):
     """Function to save the relevant polarization densities into a txt file."""
     eps_means = [eps.means[m] for m in eps.means if "m_" in m]
@@ -107,21 +103,17 @@ def write_means(fn, eps):
 
 # This code calculates the polarization densities for the simulation
 # with no applied field, we use the output of a precalculated trajectory
-u = mda.Universe(
-    "./graphene_water.tpr",
-    "./graphene_water_nofield.xtc",
-    transformations=[cut_yeh_berkovitz_box],
-)
+u = mda.Universe("./graphene_water.tpr", "./graphene_water_nofield.xtc")
 eps = maicos.DielectricPlanar(
-    u.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+    u.select_atoms("resname SOL"),
+    bin_width=0.3,
+    unwrap=False,
+    zmin=u.dimensions[2] / 2,
+    zmax=u.dimensions[2] / 2 + u.dimensions[2] / 3,
 )
 eps.run()
-write_means("./m_nofield.dat", eps)
+write_means("m_nofield.dat", eps)
 
-eps_means = np.loadtxt("./m_nofield.dat")
-
-# m0_perp = eps_means[2, :]  # third row is m_perp
-# m0_par = eps_means[0, :]  # first row is m_par in x-dir
 
 # %%
 #
@@ -140,31 +132,33 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #
 #    .. code-block:: python
 #
-#       u_par = mda.Universe(
-#           "./graphene_water.tpr", "./graphene_water_par.xtc",
-#           transformations=[cut_yeh_box]
-#       )
+#       u_par = mda.Universe("graphene_water.tpr", "graphene_water_par.xtc")
 #       eps_par = maicos.DielectricPlanar(
-#           u_par.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+#           u_par.select_atoms("resname SOL"),
+#           bin_width=0.3,
+#           unwrap=False,
+#           zmin=u.dimensions[2] / 2,
+#           zmax=u.dimensions[2] / 2 + u.dimensions[2] / 3,
 #       )
 #       eps_par.run()
 #       m_par = eps_par.means["m_par"][:, 0]  # the field is applied in the x direction
-#       write_means('./m_parfield.dat', eps_par)
-#       u_perp = mda.Universe(
-#           "./graphene_water.tpr", "./graphene_water_perp.xtc",
-#           transformations=[cut_yeh_box]
-#       )
+#       write_means('m_parfield.dat', eps_par)
+#       u_perp = mda.Universe("graphene_water.tpr", "graphene_water_perp.xtc")
 #       eps_perp = maicos.DielectricPlanar(
-#           u_perp.select_atoms("resname SOL"), bin_width=0.3, unwrap=False
+#           u_perp.select_atoms("resname SOL"),
+#           bin_width=0.3,
+#           unwrap=False,
+#           zmin=u.dimensions[2] / 2,
+#           zmax=u.dimensions[2] / 2 + u.dimensions[2] / 3,
 #       )
 #       eps_perp.run()
 #       m_perp = eps_perp.means["m_perp"]  # the field is applied in the z direction
-#       write_means('./m_perpfield.dat', eps_perp)
+#       write_means('m_perpfield.dat', eps_perp)
 
-m0_par = np.loadtxt("./m_nofield.dat")[0, :]  # first row is m_par
-m0_perp = np.loadtxt("./m_nofield.dat")[2, :]
-m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
-m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # third row is m_perp in dir of field
+m0_par = np.loadtxt("m_nofield.dat")[0, :]  # first row is m_par
+m0_perp = np.loadtxt("m_nofield.dat")[2, :]  # third row is m_perp
+m_par = np.loadtxt("m_parfield.dat")[0, :]  # first row is m_par
+m_perp = np.loadtxt("m_perpfield.dat")[2, :]  # third row is m_perp in dir of field
 
 # %%
 #
@@ -181,7 +175,7 @@ eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
 #
 # If we apply a field we introduce asymmetry in the system, so it is good practice to
 # symmetrize the profiles. This way the profile will be the same as those determined
-# from fluctuation-dissipation formalisms, which assume perfect symmetry.
+# from the fluctuation-dissipation formalism, which assumes perfect symmetry.
 
 eps_par = (eps_par + eps_par[::-1]) / 2
 eps_perp = (eps_perp + eps_perp[::-1]) / 2
