@@ -14,8 +14,7 @@ Unreleased
 Philip Loche, Kira Fischer, Francis Jose
 
 - Warn if box is not orthorhombic (#523)
-- Update CI action dependencies (#526) 
-- Update CI action dependencies (#525)
+- Update CI action dependencies (#525, #526, #527)
 - Simplify bin width validation (#522)
 - Small cleanup of build workflow (#521)
 - Minor streamlining of CI workflows (#515)
