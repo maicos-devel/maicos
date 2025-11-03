@@ -13,8 +13,8 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk
 
-- Bump minimal Python version to 3.11 and MDAnalysis to 2.10.0 (#XXX)
-- Added support for Python 3.14 in CI workflows (#XXX)
+- Bump minimal Python version to 3.11 and MDAnalysis to 2.10.0 (#529)
+- Added support for Python 3.14 in CI workflows (#529)
 - Add additional examples for dielectric profile analysis (#518)
 - Changelog check ignores .github folder (#537)
 - Warn if box is not orthorhombic (#523)
