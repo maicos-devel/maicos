@@ -78,7 +78,7 @@ analysis_obj = maicos.DielectricPlanar(water, bin_width=0.1, refgroup=water)
 # frames the analysis should start at and where to end. One can also specify a ``step``
 # keyword to only analyze every ``step`` frames.
 
-analysis_obj.run(step=5)
+_ = analysis_obj.run(step=5)
 
 # %%
 #
