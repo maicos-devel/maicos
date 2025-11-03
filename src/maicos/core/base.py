@@ -24,7 +24,7 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .._version import get_versions
-from ..lib.math import center_cluster, parallel_welford
+from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
     correlation_analysis,
@@ -494,13 +494,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                self.pop[key], self.means[key], self.M2[key] = parallel_welford(  # type: ignore
-                    self._pop[key],  # type: ignore
-                    self.pop[key],  # type: ignore
-                    self._obs[key],  # type: ignore
-                    self.means[key],  # type: ignore
-                    self._var[key] * self._pop[key],  # type: ignore
-                    self.M2[key],  # type: ignore
+                self.pop[key], self.means[key], self.M2[key] = (  # type: ignore
+                    combine_subsample_variance(  # type: ignore
+                        self._pop[key],  # type: ignore
+                        self.pop[key],  # type: ignore
+                        self._obs[key],  # type: ignore
+                        self.means[key],  # type: ignore
+                        self._var[key] * self._pop[key],  # type: ignore
+                        self.M2[key],  # type: ignore
+                    )
                 )
 
                 self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore

@@ -44,7 +44,7 @@ from :attr:`self._obs`:
 
 For subsequent frames MAICoS updates these accumulators using a numerically
 stable parallel Welford algorithm (see
-:func:`maicos.lib.math.parallel_welford`). This merge-based approach supports
+:func:`maicos.lib.math.combine_subsample_variance`). This merge-based approach supports
 vectorised observables and is suitable for combining statistics from separate
 blocks of frames.
 

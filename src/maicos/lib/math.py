@@ -826,8 +826,7 @@ def rdf_structure_factor(
     return q, struct_factor
 
 
-# TODO(@hejamu): Find better name
-def parallel_welford(n_A, n_B, mu_A, mu_B, M_A, M_B):
+def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """Calculate the mean and variance of two datasets of arbitrary size.
 
     Given two datasets of arbitrary size, this function calculates the mean and
