@@ -16,7 +16,6 @@ Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk
 - Add additional examples for dielectric profile analysis (#518)
 - Warn if box is not orthorhombic (#523)
 - Update CI action dependencies (#526)
-- Update CI action dependencies (#526)
 - Update CI action dependencies (#525)
 - Simplify bin width validation (#522)
 - Small cleanup of build workflow (#521)

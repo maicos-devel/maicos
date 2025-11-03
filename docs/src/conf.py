@@ -54,16 +54,16 @@ bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
 
 sphinx_gallery_conf = {
-    "examples_dirs": "../../examples",
-    "gallery_dirs": "examples",
-    "filename_pattern": r"\.py",
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),
     "example_extensions": {".py", ".sh"},
+    "examples_dirs": "../../examples",
+    "filename_pattern": r"\.py",
+    "gallery_dirs": "examples",
     "min_reported_time": 60,
+    "prefer_full_module": ["maicos"],
     "reference_url": {"maicos": None},
     "remove_config_comments": True,
-    "prefer_full_module": ["maicos"],
 }
 
 # Add any paths that contain templates here, relative to this directory.

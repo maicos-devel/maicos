@@ -159,15 +159,15 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #       write_means('./m_perpfield.dat', eps_perp)
 
 m0_par = np.loadtxt("./m_nofield.dat")[0, :]  # first row is m_par
-m0_perp = np.loadtxt("./m_nofield.dat")[2, :]
+m0_perp = np.loadtxt("./m_nofield.dat")[2, :]  # third row is m_perp in dir of field
 m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
 m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # third row is m_perp in dir of field
 
 # %%
 #
 # This allows us to calculate the dielectric profiles using the formulas defined above.
-# THe example data was calculated for an applied field of strength 0.005 V/A in the
-# parallel direction and 0.02 V/A in the perpendicular direction.
+# The example data was calculated for an applied field of strength 0.005 V/A in the
+# parallel direction and 0.02 V/Å in the perpendicular direction.
 
 z = eps.results.bin_pos
 
