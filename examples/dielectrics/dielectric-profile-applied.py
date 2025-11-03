@@ -5,14 +5,13 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-""".. _howto-dielectric-applied:
-
+"""
 Dielectric Profile Calculations from Applied Field
 ==================================================
 
-This tutorial demonstrates how to calculate dielectric profiles using the "direct"
+This tutorial demonstrates how to calculate dielectric profiles using the applied field
 method, where an applied electric field simulation is used to compute dielectric
-profiles for planar pores.
+profiles for planar geometries.
 
 .. note::
 
@@ -33,7 +32,7 @@ import scipy.constants
 import maicos
 
 # %%
-# Next, we define the formulas for direct calculation of dielectric profiles. These are
+# Next, we define the formulas for the calculation of dielectric profiles. These are
 # given by the following equations, first for the parallel component:
 #
 # .. math:: \varepsilon_{\parallel}^{-1} = \frac{\epsilon_0 E_\parallel + m_\parallel -
@@ -170,8 +169,8 @@ m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # third row is m_perp in dir of 
 # %%
 #
 # This allows us to calculate the dielectric profiles using the formulas defined above.
-# THe example data was calculated for an applied field of strength 0.005 V/A in the
-# parallel direction and 0.02 V/A in the perpendicular direction.
+# The example data was calculated for an applied field of strength 0.005 V/Å in the
+# parallel direction and 0.02 V/Å in the perpendicular direction.
 
 z = eps.results.bin_pos
 
