@@ -22,7 +22,7 @@ with open(os.path.join(repo_path, changelog)) as f:
     workfile = f.read()
 
 if file.strip() == workfile.strip():
-    # Get all commits since main branch
+    # Check for changed files and ignore .github/ changes
     head_commit = repo.head.commit
     diff = head_commit.diff("origin/main")
     changed_files = []
@@ -32,6 +32,7 @@ if file.strip() == workfile.strip():
         if x.b_blob is not None and x.b_blob.path not in changed_files:
             changed_files.append(x.b_blob.path)
     changed_files = [x for x in changed_files if not x.startswith(".github/")]
+
     if len(changed_files) > 0:
         raise ChangelogError("You have not updated the CHANGELOG file. Please "
                              f"add a summary of your additions to {changelog}.")
