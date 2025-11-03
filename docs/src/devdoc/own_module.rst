@@ -24,7 +24,7 @@ For further questions feel free to ask us on our Discord_ server.
 
 
 Observable averaging and error estimation
-========================================
+-----------------------------------------
 
 When writing modules for MAICoS you will collect per-frame observables in the
 ``self._obs`` object inside your :meth:`_single_frame` method. Each entry in
@@ -35,11 +35,10 @@ by using the bin numbers provided by the Base classes.)
 On the first analysed frame MAICoS initialises several internal accumulators
 from ``self._obs``:
 
-- ``sums``: running sums of the observables (used for totals or mean
-	accumulation)
+- ``sums``: running sums of the observables (used for totals or mean accumulation)
 - ``means``: running means (initialised from the first-frame values)
-- ``sems``: standard errors of the mean (initially zero or NaN arrays with
-	the correct shape)
+- ``sems``: standard errors of the mean (initially zero or NaN arrays with the correct
+  shape)
 - ``pop``: integer counts per observable/bin
 - ``M2``: running M2 accumulator used for variance/error estimation
 
@@ -61,13 +60,13 @@ judge the statistical independence of samples and the reliability of the
 estimated ``sems``.
 
 Guidelines for module authors
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 - Make sure per-frame observables have a consistent shape across frames.
 - Use numeric types (scalars or numpy arrays). Unsupported types will raise a
-	``TypeError`` during the first aggregation step.
+  ``TypeError`` during the first aggregation step.
 - If you compute per-bin averages or use weighting, ensure you also provide a
-	matching population/count so the averaging code can correctly compute SEMs.
+  matching population/count so the averaging code can correctly compute SEMs.
 
 Following these conventions ensures that MAICoS can provide correct means,
 errors and correlation estimates for your analysis module.
