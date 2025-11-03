@@ -470,9 +470,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
 
-        self._obs = Results()
-        self._var = Results()
-        self._pop = Results()
+        # For the current frame
+        self._obs = Results()  # observable (or mean of the samples)
+        self._var = Results()  # variance of the samples
+        self._pop = Results()  # count of samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
@@ -488,6 +489,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
                 if key not in self._pop:
+                    # Observable is a single sample, so _pop is 1 and _var is 0
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
@@ -509,11 +511,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).
-            self.sums = Results()
-            self.means = Results()
-            self.sems = Results()
-            self.pop = Results()
-            self.M2 = Results()
+            self.sums = Results()  # sum of the observables across frames
+            self.means = Results()  # mean of the observables across frames
+            self.sems = Results()  # standard error of the mean across frames
+            self.pop = Results()  # count of samples across frames
+            self.M2 = Results()  # second moment of the samples across frames
 
             for key in self._obs:
                 if type(self._obs[key]) not in compatible_types:
