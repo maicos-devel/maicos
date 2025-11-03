@@ -484,6 +484,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.means  # type: ignore  # noqa B018
             self.sems  # type: ignore  # noqa B018
 
+            # Take the data from the current frame and update the means and sems
             for key in self._obs:
                 # Sanitize the data type of the observable
                 if isinstance(self._obs[key], list):
