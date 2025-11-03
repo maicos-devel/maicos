@@ -21,3 +21,54 @@ Finally, also provide meaningful tests for your module in ``test/modules``.
 For further questions feel free to ask us on our Discord_ server.
 
 .. _`Discord`: https://discord.gg/mnrEQWVAed
+
+
+Observable averaging and error estimation
+========================================
+
+When writing modules for MAICoS you will collect per-frame observables in the
+``self._obs`` object inside your :meth:`_single_frame` method. Each entry in
+``self._obs`` should be a numeric scalar or a numpy array. Make sure to keep
+the shape of any array-valued observables consistent across frames. (For example
+by using the bin numbers provided by the Base classes.)
+
+On the first analysed frame MAICoS initialises several internal accumulators
+from ``self._obs``:
+
+- ``sums``: running sums of the observables (used for totals or mean
+	accumulation)
+- ``means``: running means (initialised from the first-frame values)
+- ``sems``: standard errors of the mean (initially zero or NaN arrays with
+	the correct shape)
+- ``pop``: integer counts per observable/bin
+- ``M2``: running M2 accumulator used for variance/error estimation
+
+For subsequent frames MAICoS updates these accumulators using a numerically
+stable parallel Welford algorithm (see
+:func:`maicos.lib.math.parallel_welford`). This merge-based approach supports
+vectorised observables and is suitable for combining statistics from separate
+blocks of frames.
+
+After merging, the standard error of the mean (SEM) is computed from the
+running accumulators and stored in ``sems``. The per-observable running sums
+are also updated and available in ``sums``.
+
+If your :meth:`_single_frame` returns a float, MAICoS collects it into
+``self.timeseries`` and later analyses the series for autocorrelation using
+:func:`maicos.lib.util.correlation_analysis` during :meth:`_call_conclude`.
+The resulting correlation time is stored as ``self.corrtime`` and can help you
+judge the statistical independence of samples and the reliability of the
+estimated ``sems``.
+
+Guidelines for module authors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Make sure per-frame observables have a consistent shape across frames.
+- Use numeric types (scalars or numpy arrays). Unsupported types will raise a
+	``TypeError`` during the first aggregation step.
+- If you compute per-bin averages or use weighting, ensure you also provide a
+	matching population/count so the averaging code can correctly compute SEMs.
+
+Following these conventions ensures that MAICoS can provide correct means,
+errors and correlation estimates for your analysis module.
+
