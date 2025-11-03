@@ -5,8 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-""".. _howto-dielectric-applied:
-
+"""
 Dielectric Profile Calculations from Applied Field
 ==================================================
 
@@ -133,11 +132,8 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #
 # Now we can do the same for the applied field simulations.
 #
-# .. details:: Example code for applied field simulations
+# .. details:: Show the example code to analyse applied field simulations
 #    :class: dropdown
-#
-#    In order to save on time and storage, we only show here the code that
-#    would be needed to do so.
 #
 #    .. code-block:: python
 #

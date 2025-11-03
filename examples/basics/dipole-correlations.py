@@ -5,8 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r""".. _howto-spatial-dipole-dipole-correlations:
-
+r"""
 Calculating and interpreting dipolar pair correlation functions
 ===============================================================
 
@@ -268,9 +267,9 @@ diporder_structure_factors = maicos.DiporderStructureFactor(atomgroup=u.atoms, d
 diporder_structure_factors.run()
 
 # %%
-# As also shown :ref:`how to on SAXS calculations <howto-saxs>` the structure factor can
-# also be obtained directly from the real space correlation functions using Fourier
-# transformation via
+# As also shown in the :ref:`sphx_glr_examples_basics_saxs.py` example, the structure
+# factor can also be obtained directly from the real space correlation functions using
+# Fourier transformation via
 #
 # .. math:: S_{\hat{\boldsymbol{\mu}} \hat{\boldsymbol{\mu}}}^\mathrm{FT}(q) = 1 + 4 \pi
 #     \rho \int_0^\infty \mathrm{d}r r \frac{\sin(qr)}{q} g_{\hat \mu\hat \mu}(r)\,,

@@ -200,7 +200,7 @@ therefore usually be preferred :footcite:p:`sedlmeier_spatial_2011`.
 
 To compare the RDF and the structure factor you can use
 :func:`maicos.lib.math.rdf_structure_factor`. For a detailed example take
-a look at :ref:`howto-saxs`.
+a look at :ref:`sphx_glr_examples_basics_saxs.py`.
 
 References
 ----------

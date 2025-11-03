@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.mathjax",  # Render math via JavaScript
     "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
     "sphinxcontrib.bibtex",  # Cite references using a bibtex file
+    "sphinxcontrib.details.directive",  # details directive for collapsible content
     "sphinx_toggleprompt",  # button to examples to toggle prompts
 ]
 

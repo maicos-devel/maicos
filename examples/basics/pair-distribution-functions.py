@@ -5,8 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-""".. _howto-pair-distribution-functions:
-
+"""
 Pair distribution functions
 ===========================
 

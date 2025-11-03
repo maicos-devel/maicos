@@ -38,7 +38,7 @@ class RDFDiporder(AnalysisBase):
     the largest possible :math:`r` value.
 
     For an detailed example on the usage refer to the :ref:`how-to on dipolar
-    correlation functions <howto-spatial-dipole-dipole-correlations>`.
+    correlation functions <sphx_glr_examples_basics_dipole-correlations.py>`.
 
     Parameters
     ----------

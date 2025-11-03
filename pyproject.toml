@@ -149,7 +149,11 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/{docs,examples}/*" = ["T20"]  # Don't require any docstrings in these directories
+"**/{docs,examples}/*" = [
+    "T20",  # Don't require any docstrings in these directories
+    "D212",  # docstring summary not starting at first line
+    "D205",  # 1 blank line required between summary line and description
+]  
 
 [tool.ruff.lint.isort]
 known-first-party = ["maicos"]

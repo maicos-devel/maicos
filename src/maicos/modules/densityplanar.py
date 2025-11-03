@@ -39,7 +39,7 @@ class DensityPlanar(ProfilePlanarBase):
     -----
     Partial mass density profiles can be used to calculate the ideal component of the
     chemical potential. For details, take a look at the corresponding :ref:`How-to
-    guide<howto-chemical-potential>`.
+    guide<sphx_glr_examples_basics_chemical-potential.py>`.
 
     """
 

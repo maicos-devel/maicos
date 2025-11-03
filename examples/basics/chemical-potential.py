@@ -5,8 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r""".. _howto-chemical-potential:
-
+r"""
 Ideal component of the chemical potential
 =========================================
 

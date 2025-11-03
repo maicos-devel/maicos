@@ -56,7 +56,8 @@ class Saxs(AnalysisBase):
     For the correlation time estimation the module will use the value of the scattering
     intensity with the largest possible :math:`q` value.
 
-    For an example on the usage refer to :ref:`How-to: SAXS<howto-saxs>`.
+    For an example on the usage refer to :ref:`How-to:
+    SAXS<sphx_glr_examples_basics_saxs.py>`.
 
     Parameters
     ----------

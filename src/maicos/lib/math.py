@@ -792,7 +792,7 @@ def rdf_structure_factor(
     where :math:`q` is the magnitude of the scattering vector. The calculation is
     performed via a discrete sine transform as implemented in :func:`scipy.fftpack.dst`.
 
-    For an `example` take a look at :ref:`howto-saxs`.
+    For an `example` take a look at :ref:`sphx_glr_examples_basics_saxs.py`.
 
     Parameters
     ----------

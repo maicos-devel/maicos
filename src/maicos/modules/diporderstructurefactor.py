@@ -35,8 +35,9 @@ class DiporderStructureFactor(AnalysisBase):
     factor with the smallest possible :math:`q` value.
 
     For an detailed example on the usage refer to the :ref:`how-to on dipolar
-    correlation functions <howto-spatial-dipole-dipole-correlations>`. For general
-    details on the theory behind the structure factor refer to :ref:`saxs-explanations`.
+    correlation functions <sphx_glr_examples_basics_dipole-correlations.py>`. For
+    general details on the theory behind the structure factor refer to
+    :ref:`saxs-explanations`.
 
     Parameters
     ----------

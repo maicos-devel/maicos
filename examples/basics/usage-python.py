@@ -5,10 +5,9 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-""".. _usage-python:
-
+"""
 Usage - Python interpreter
-##########################
+==========================
 
 To follow this tutorial, it is assumed that MAICoS has been :ref:`installed
 <label_installation>` on your computer.
