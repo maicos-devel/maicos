@@ -59,11 +59,11 @@ The resulting correlation time is stored as :attr:`self.corrtime` and can help y
 judge the statistical independence of samples and the reliability of the
 estimated :attr:`self.sems`.
 
-Guidelines for module authors
------------------------------
+Guidelines for observable collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Make sure per-frame observables have a consistent shape across frames.
-- Use numeric types (scalars or numpy arrays). Unsupported types will :exc:`TypeError` during the first aggregation step.
+- Use numeric types (scalars or numpy arrays). Unsupported types will raise a :exc:`TypeError` during the first aggregation step.
 - If you compute per-bin averages or use weighting, ensure you also provide a
   matching population/count so the averaging code can correctly compute SEMs.
 
