@@ -13,6 +13,7 @@ import warnings
 from collections.abc import Callable
 from datetime import datetime
 from tempfile import NamedTemporaryFile
+from typing import Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -21,7 +22,6 @@ from mdacli.logger import setup_logging
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
-from typing_extensions import Self
 
 from .._version import get_versions
 from ..lib.math import center_cluster, new_mean, new_variance
