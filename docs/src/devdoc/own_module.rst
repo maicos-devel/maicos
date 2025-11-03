@@ -26,7 +26,7 @@ For further questions feel free to ask us on our Discord_ server.
 Observable averaging and error estimation
 -----------------------------------------
 
-When writing modules for MAICoS you will collect per-frame observables in the
+When writing own modules, ``MAICoS`` will collect per-frame observables in the private attribute
 ``self._obs`` object inside your :meth:`_single_frame` method. Each entry in
 ``self._obs`` should be a numeric scalar or a numpy array. Make sure to keep
 the shape of any array-valued observables consistent across frames. (For example
