@@ -5,13 +5,14 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""
+""".. _howto-dielectric-applied:
+
 Dielectric Profile Calculations from Applied Field
 ==================================================
 
-This tutorial demonstrates how to calculate dielectric profiles using the applied field
+This tutorial demonstrates how to calculate dielectric profiles using the "direct"
 method, where an applied electric field simulation is used to compute dielectric
-profiles for planar geometries.
+profiles for planar pores.
 
 .. note::
 
@@ -32,7 +33,7 @@ import scipy.constants
 import maicos
 
 # %%
-# Next, we define the formulas for the calculation of dielectric profiles. These are
+# Next, we define the formulas for direct calculation of dielectric profiles. These are
 # given by the following equations, first for the parallel component:
 #
 # .. math:: \varepsilon_{\parallel}^{-1} = \frac{\epsilon_0 E_\parallel + m_\parallel -
@@ -132,8 +133,11 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #
 # Now we can do the same for the applied field simulations.
 #
-# .. details:: Show the example code to analyse applied field simulations
+# .. details:: Example code for applied field simulations
 #    :class: dropdown
+#
+#    In order to save on time and storage, we only show here the code that
+#    would be needed to do so.
 #
 #    .. code-block:: python
 #
@@ -159,15 +163,15 @@ eps_means = np.loadtxt("./m_nofield.dat")
 #       write_means('./m_perpfield.dat', eps_perp)
 
 m0_par = np.loadtxt("./m_nofield.dat")[0, :]  # first row is m_par
-m0_perp = np.loadtxt("./m_nofield.dat")[2, :]  # third row is m_perp in dir of field
+m0_perp = np.loadtxt("./m_nofield.dat")[2, :]
 m_par = np.loadtxt("./m_parfield.dat")[0, :]  # first row is m_par
 m_perp = np.loadtxt("./m_perpfield.dat")[2, :]  # third row is m_perp in dir of field
 
 # %%
 #
 # This allows us to calculate the dielectric profiles using the formulas defined above.
-# The example data was calculated for an applied field of strength 0.005 V/A in the
-# parallel direction and 0.02 V/Å in the perpendicular direction.
+# THe example data was calculated for an applied field of strength 0.005 V/A in the
+# parallel direction and 0.02 V/A in the perpendicular direction.
 
 z = eps.results.bin_pos
 
@@ -178,10 +182,7 @@ eps_perp = direct_eps_perp(m=m_perp, m0=m0_perp, E=0.02)
 #
 # If we apply a field we introduce asymmetry in the system, so it is good practice to
 # symmetrize the profiles. This way the profile will be the same as those determined
-# from fluctuation-dissipation formalisms, which assume perfect symmetry. Because of the
-# short trajectories, we use this only for the parallel profiles, which converge much
-# faster than the perpendicular. Still, we provide the code to symmetrize the
-# perpendicular profiles as well.
+# from fluctuation-dissipation formalisms, which assume perfect symmetry.
 
 eps_par = (eps_par + eps_par[::-1]) / 2
 eps_perp = (eps_perp + eps_perp[::-1]) / 2
