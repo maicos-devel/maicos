@@ -8,6 +8,7 @@
 """Base class for planar analysis."""
 
 import logging
+import warnings
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -243,6 +244,27 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
     def _single_frame(self) -> float:
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
+        
+         # Warn if user-defined bounds exceed current box dimensions
+        current_box_length = self.box_lengths[self.dim]
+        if self._zmin is not None and abs(self._zmin) > current_box_length / 2:
+            warnings.warn(
+                f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
+                f"box length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
+                f"Consider letting MAICoS calculate bounds automatically (zmin=None) "
+                f"or manually determine safe bounds from the smallest box vector across frames.",
+                UserWarning,
+                stacklevel=2
+            )
+        if self._zmax is not None and abs(self._zmax) > current_box_length / 2:
+            warnings.warn(
+                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current "
+                f"box length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
+                f"Consider letting MAICoS calculate bounds automatically (zmax=None) "
+                f"or manually determine safe bounds from the smallest box vector across frames.",
+                UserWarning,
+                stacklevel=2
+            )
 
         # Take the center bin for correlation analysis.
         return self._obs.profile[self.n_bins // 2]
