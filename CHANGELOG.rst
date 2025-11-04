@@ -11,8 +11,10 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer
+Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
+Francis Jose
 
+- Warn user or default to current frame dimension (#534)
 - Splitting basic and advanced usage in Getting Started (#535)
 - Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
