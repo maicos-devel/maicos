@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
 
+- Update issue templates (#530)
 - Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.
   (#524)
 - Move ``Saxs``, ``DiporderStructureFactor``, ``RDFDiporder``, ``lib.math.atomic_form_factor``,
