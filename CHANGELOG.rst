@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
 
+- Remove ``diporder_pair_weights`` function (#531)
 - Update issue templates (#530)
 - Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.
   (#524)
