@@ -159,10 +159,10 @@ class TestDielectricPlanar:
         dipole moment density is integrated over the entire system and checked against
         total dipole moment.
 
-        This test is a variation of `test_single_dipole_orientations` to catch problems
-        with system scaling of shifting that are not catched by the single dipole test.
-        For example if some positions of charges are erroneously shifted out of the
-        system.
+        This test is a variation of ``test_single_dipole_orientations`` to catch
+        problems with system scaling of shifting that are not catched by the single
+        dipole test. For example if some positions of charges are erroneously shifted
+        out of the system.
 
         """
         xx, yy, zz = np.meshgrid(

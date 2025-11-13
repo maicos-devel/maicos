@@ -45,9 +45,9 @@ def line_of_water_molecules(
 ):
     """Create an MDAnalysis universe with regularly spaced molecules.
 
-    The molecules are placed along a line `distance` apart, have an orientation
-    controlled by `angle_deg` and `axis_rotation`. All the molecules have the same
-    velocities `myvel`.
+    The molecules are placed along a line ``distance`` apart, have an orientation
+    controlled by ``angle_deg`` and ``axis_rotation``. All the molecules have the same
+    velocities ``myvel``.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ def line_of_water_molecules(
     distance : float
         distance between the molecules.
     angle_deg : float, List[float]
-        angle by which the molecules will be rotated. If `angle_deg` is float all
+        angle by which the molecules will be rotated. If ``angle_deg`` is float all
         molecules will be rotated by the same angle. If List[float] each molecule will
         be rotated by a different angle.
     axis_rotation : tuple[float, float, float]
@@ -126,8 +126,8 @@ def circle_of_water_molecules(
 ):
     """Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
 
-    Molecules are placed on a circle of radius `radius` around the box center. The box
-    dimensions are set to 20x20x20. The radius must be smaller than 10!
+    Molecules are placed on a circle of radius ``radius`` around the box center. The box
+    dimensions are set to ``20x20x20``. The radius must be smaller than 10!
     """
     if radius > 10:
         raise ValueError("radius has to be smaller than 10")

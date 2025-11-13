@@ -11,7 +11,7 @@ import MDAnalysis as mda
 
 
 class DielectricSpectrum:
-    """Class has been moved to the `spectrakit` package."""
+    """Class has been moved to the ``spectrakit`` package."""
 
     def __init__(
         self,

@@ -315,7 +315,7 @@ def correlation_analysis(timeseries: np.ndarray) -> float:
     Returns
     -------
     corrtime: float
-        Estimated correlation time of `timeseries`.
+        Estimated correlation time of ``timeseries``.
 
     """
     if np.any(np.isnan(timeseries)):
@@ -369,7 +369,7 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     Raises
     ------
     AttributeError
-        `atomgroup` is missing any connection information"
+        ``atomgroup`` is missing any connection information"
 
     """
     if hasattr(atomgroup, "molnums"):
@@ -474,7 +474,7 @@ def charge_neutral(filter: str) -> Callable:
     ----------
     filter : str
         Filter type to control warning filter. Common values are: "error" or "default"
-        See `warnings.simplefilter` for more options.
+        See :func:`warnings.simplefilter` for more options.
 
     """
 
@@ -514,7 +514,7 @@ def charge_neutral(filter: str) -> Callable:
 
 
 def unwrap_refgroup(original_class):
-    """Class decorator error if `unwrap = False` and `refgroup != None`."""
+    """Class decorator error if ``unwrap = False`` and ``refgroup != None``."""
 
     def unwrap_check(function):
         @functools.wraps(function)
@@ -722,8 +722,8 @@ def unit_vectors_cylinder(
     Returns
     -------
     numpy.ndarray
-        Array of the calculated unit vectors with shape (3,) for `pdim='z'` and shape
-        (3,n) for `pdim='r'`. The length of `n` depends on the grouping.
+        Array of the calculated unit vectors with shape (3,) for ``pdim='z'`` and shape
+        (3,n) for ``pdim='r'``. The length of ``n`` depends on the grouping.
 
     """
     # We do NOT transform ``unit_vectors`` into cylindrical coordinates, because all
@@ -764,7 +764,7 @@ def unit_vectors_sphere(
     Returns
     -------
     numpy.ndarray
-        Array of the calculated unit vectors with shape (3,n). The length of `n`
+        Array of the calculated unit vectors with shape (3,n). The length of ``n``
         depends on the grouping.
 
     """

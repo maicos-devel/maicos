@@ -11,7 +11,7 @@ import MDAnalysis as mda
 
 
 class DiporderStructureFactor:
-    """Class has been moved to the `scatterkit` package."""
+    """Class has been moved to the ``scatterkit`` package."""
 
     def __init__(
         self,

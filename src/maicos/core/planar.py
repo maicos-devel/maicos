@@ -48,7 +48,7 @@ class PlanarBase(AnalysisBase):
     _obs.bin_area : numpy.ndarray, (n_bins)
         Area of the rectangle of each bin in the current frame. Calculated via
         :math:`L_x \cdot L_y / N_\mathrm{bins}` where :math:`L_x` and :math:`L_y` are
-        the box lengths perpendicular to the dimension of evaluations given by `dim`.
+        the box lengths perpendicular to the dimension of evaluations given by ``dim``.
         :math:`N_\mathrm{bins}` is the number of bins.
     _obs.bin_volume : numpy.ndarray, (n_bins)
         Volume of an cuboid of each bin (in Å^3) in the current frame.

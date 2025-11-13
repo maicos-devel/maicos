@@ -23,7 +23,7 @@ from .planar import PlanarBase
 class CylinderBase(PlanarBase):
     r"""Analysis class providing options and attributes for a cylinder system.
 
-    Provide the results attribute `r`.
+    Provide the results attribute ``r``.
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ class CylinderBase(PlanarBase):
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
     pos_cyl : numpy.ndarray
-        positions in cylinder coordinats (r, phi, z)
+        positions in cylinder coordinats ``(r, phi, z)``
     _obs.R : float
         Average length (in Å) along the radial dimension in the current frame.
     _obs.bin_pos : numpy.ndarray, (n_bins)
@@ -46,11 +46,12 @@ class CylinderBase(PlanarBase):
         Edges of the bins (in Å) in the current frame.
     _obs.bin_area : numpy.ndarray, (n_bins)
         Area of the annulus pf the each bin in the current frame. Calculated via
-        :math:`\pi \left( r_{i+1}^2 - r_i^2 \right)` where `i` is the index of the bin.
+        :math:`\pi \left( r_{i+1}^2 - r_i^2 \right)` where :math:`i` is the index of the
+        bin.
     _obs.bin_volume : numpy.ndarray, (n_bins)
         Volume of an hollow cylinder of each bin (in Å^3) in the current frame.
-        Calculated via :math:`\pi L \left( r_{i+1}^2 - r_i^2 \right)` where `i` is the
-        index of the bin.
+        Calculated via :math:`\pi L \left( r_{i+1}^2 - r_i^2 \right)` where :math:`i` is
+        the index of the bin.
 
     """
 
