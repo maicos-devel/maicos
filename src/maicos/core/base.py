@@ -16,6 +16,7 @@ from tempfile import NamedTemporaryFile
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
+from MDAnalysis.analysis.results import ResultsGroup
 import numpy as np
 from mdacli.logger import setup_logging
 from MDAnalysis.analysis.backends import BackendBase, BackendSerial
@@ -150,11 +151,23 @@ class _Runner:
             analysis_object.times = np.hstack(
                 [obj.times for obj in remote_objects[analysis_object]]
             )
+            analysis_object._obs = remote_objects[analysis_object][0]._obs
+            for key in analysis_object._obs:
+                analysis_object._obs[key] = np.hstack(
+                    [obj._obs[key][..., None] for obj in remote_objects[analysis_object]]
+                )
 
-            # aggregate results from results obtained in remote workers
-            # remote_results = [obj.results for obj in remote_objects]
-            # results_aggregator = self._get_aggregator()
-            # self.results = results_aggregator.merge(remote_results)
+
+        # aggregate results from results obtained in remote workers
+        for analysis_object in analysis_instances:
+            remote_results = [obj.results for obj in remote_objects[analysis_object]]
+            results_aggregator = self._get_aggregator()
+            analysis_object.results = results_aggregator.merge(remote_results)
+
+            remote_means = [obj.means for obj in remote_objects[analysis_object]]
+            means_aggregator = self._get_means_aggregator(remote_means[0])
+            print(remote_means)
+            analysis_object.means = means_aggregator.merge(remote_means)
 
         logging.debug("Concluding analysis.")
 
@@ -163,6 +176,17 @@ class _Runner:
 
         tempfile.close()
         return self
+
+    def _get_aggregator(self) -> ResultsGroup:
+        return ResultsGroup(lookup=None)
+
+    def _get_means_aggregator(self, keys) -> ResultsGroup:
+        lookup = {}
+        for key in keys:
+            lookup[key] = np.mean
+        return ResultsGroup(lookup=lookup)
+
+
 
 
 @render_docs
@@ -616,8 +640,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
         # self.corrtime = correlation_analysis(self.timeseries)
+        #self._conclude()
         pass
-        # self._conclude()
         # if self.concfreq and self.module_has_save:
         #    self.save()
 
