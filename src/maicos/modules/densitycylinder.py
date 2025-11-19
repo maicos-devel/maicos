@@ -26,8 +26,10 @@ class DensityCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -42,17 +44,17 @@ class DensityCylinder(ProfileCylinderBase):
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
-        bin_width: float = 1,
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: float = 1,
+        bin_method: str = "com",
         grouping: str = "atoms",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "density.dat",
         concfreq: int = 0,
         jitter: float = 0.0,
+        output: str = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

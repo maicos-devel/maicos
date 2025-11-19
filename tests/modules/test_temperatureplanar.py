@@ -62,3 +62,8 @@ class TestTemperatureProfile(ReferenceAtomGroups):
         ag_v = line_of_water_molecules(n_molecules=1, myvel=tuple(myvel))
         temp = TemperaturePlanar(ag_v, bin_width=ag_v.dimensions[dim]).run()
         assert_allclose(temp.results.profile.mean(), 3.611, rtol=1e-1)
+
+    def test_wrong_grouping(self, ag):
+        """Test a wrong grouping choice."""
+        with pytest.raises(ValueError, match="Invalid choice"):
+            TemperaturePlanar(ag, grouping="molecules").run()

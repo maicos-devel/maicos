@@ -30,8 +30,9 @@ class DielectricCylinder(CylinderBase):
     the simulation box (default) or at the center of mass of the ``refgroup``, if
     provided.
 
-    For usage please refer to :ref:`How-to: Dielectric constant<howto-dielectric>` and
-    for details on the theory see :ref:`dielectric-explanations`.
+    For usage please refer to the
+    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` example and for details
+    on the theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the component along the :math:`z`-axis is used.
     ${CORRELATION_INFO}
@@ -41,11 +42,15 @@ class DielectricCylinder(CylinderBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${CYLINDER_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
     single : bool
         For a single chain of molecules the average of :math:`M` is zero. This flag sets
         :math:`\langle M \rangle = 0`.
+    ${CYLINDER_CLASS_PARAMETERS}
+    ${BASE_CLASS_PARAMETERS}
+    ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
     ----------
@@ -61,30 +66,26 @@ class DielectricCylinder(CylinderBase):
     results.deps_r : numpy.ndarray
         Estimated uncertainty of inverse radial dielectric profile
 
-    References
-    ----------
-    .. footbibliography::
-
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 0.1,
         temperature: float = 300,
+        vcutwidth: float = 0.1,
         single: bool = False,
-        output_prefix: str = "eps_cyl",
-        refgroup: mda.AtomGroup | None = None,
-        concfreq: int = 0,
-        jitter: float = 0.0,
         dim: int = 2,
-        rmin: float = 0,
-        rmax: float | None = None,
         zmin: float | None = None,
         zmax: float | None = None,
-        vcutwidth: float = 0.1,
+        rmin: float = 0,
+        rmax: float | None = None,
+        bin_width: float = 0.1,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
+        output_prefix: str = "eps_cyl",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -244,7 +245,7 @@ class DielectricCylinder(CylinderBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         outdata_z = np.array(
             [self.results.bin_pos, self.results.eps_z, self.results.deps_z]
         ).T

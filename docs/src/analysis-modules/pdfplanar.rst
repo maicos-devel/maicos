@@ -4,6 +4,6 @@ PDFPlanar
 #########
 
 .. autoclass:: maicos.PDFPlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

@@ -29,8 +29,9 @@ class DielectricPlanar(PlanarBase):
     direction yielding the component normal to the surface and defined by the ``dim``
     parameter.
 
-    For usage please refer to :ref:`How-to: Dielectric constant<howto-dielectric>` and
-    for details on the theory see :ref:`dielectric-explanations`.
+    For usage please refer to the
+    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` example and for details
+    on the theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the norm of the parallel total dipole moment is used.
     ${CORRELATION_INFO}
@@ -43,16 +44,17 @@ class DielectricPlanar(PlanarBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${PLANAR_CLASS_PARAMETERS}
+    ${TEMPERATURE_PARAMETER}
+    vcutwidth : float
+        Spacing of virtual cuts (bins) along the parallel directions.
     is_3d : bool
         Use 3d-periodic boundary conditions, i.e., include the dipole correction for
         the interaction between periodic images
         :footcite:p:`sternCalculationDielectricPermittivity2003`.
+    ${PLANAR_CLASS_PARAMETERS}
     ${SYM_PARAMETER}
-    ${TEMPERATURE_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     ${OUTPUT_PREFIX_PARAMETER}
-    vcutwidth : float
-        Spacing of virtual cuts (bins) along the parallel directions.
 
     Attributes
     ----------
@@ -80,9 +82,6 @@ class DielectricPlanar(PlanarBase):
         Reduced collective contribution of the inverse perpendicular dielectric profile
         :math:`(\varepsilon^{-1}_{\perp,\mathrm{coll}}(z) - 1)`
 
-    References
-    ----------
-    .. footbibliography::
 
     """
 
@@ -99,20 +98,20 @@ class DielectricPlanar(PlanarBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        temperature: float = 300,
+        vcutwidth: float = 0.1,
+        is_3d: bool = False,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 0.5,
-        refgroup: mda.AtomGroup | None = None,
-        is_3d: bool = False,
         sym: bool = False,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        temperature: float = 300,
-        output_prefix: str = "eps",
-        concfreq: int = 0,
         jitter: float = 0.0,
-        vcutwidth: float = 0.1,
+        concfreq: int = 0,
+        output_prefix: str = "eps",
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)
@@ -343,7 +342,7 @@ class DielectricPlanar(PlanarBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         columns = ["position [Å]"]
         columns.append("ε^-1_⟂ - 1")
         columns.append("Δε^-1_⟂")

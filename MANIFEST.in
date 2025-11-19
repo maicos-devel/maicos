@@ -1,15 +1,11 @@
-graft docs
 graft src
-
-# If you are encounter problems with .c file use
-# git update-index --assume-unchanged src/maicos/lib/*.c
 
 include *.rst
 include LICENSE
-include versioneer.py
 
 prune .tox
 prune developer
+prune docs
 prune examples
 prune tests
 prune benchmarks
@@ -21,5 +17,3 @@ exclude .readthedocs.yml
 exclude .codecov.yml
 exclude tox.ini
 exclude asv.conf.json
-
-global-exclude *.py[cod] __pycache__/* *.so *.dylib

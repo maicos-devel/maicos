@@ -4,6 +4,8 @@ DielectricPlanar
 ################
 
 .. autoclass:: maicos.DielectricPlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
+
+.. footbibliography::

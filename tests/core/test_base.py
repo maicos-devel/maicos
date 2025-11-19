@@ -22,7 +22,7 @@ from MDAnalysisTests.core.util import UnWrapUniverse
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import DensityPlanar, _version
+from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -73,8 +73,8 @@ class FileModuleInput(AnalysisBase):
         )
 
 
-class Series(AnalysisBase):
-    """Class creating a random time series to check observables."""
+class SingularSeries(AnalysisBase):
+    """Class creating a time series with one observable per frame."""
 
     def __init__(self, atomgroup):
         super().__init__(
@@ -92,6 +92,32 @@ class Series(AnalysisBase):
 
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
+
+
+class MultipleSeries(AnalysisBase):
+    """Class creating a time series with multiple observables per frame."""
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.population = np.random.randint(1, 10, self.n_frames)
+        self.series = []
+        for i in range(len(self.population)):
+            self.series.append(np.random.rand(self.population[i]))
+
+    def _single_frame(self):
+        self._obs.observable = np.mean(self.series[self._frame_index])
+        self._var.observable = np.var(self.series[self._frame_index])
+        self._pop.observable = self.population[self._frame_index]
 
 
 class Frame_types(AnalysisBase):
@@ -189,6 +215,26 @@ class Test_AnalysisBase:
         """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
         return mda.Universe(PSF, DCD)
 
+    def test_triclinic_warning(self, ag, caplog):
+        """Test that the triclinic warning is displayed.
+
+        Run this test first since warning will be only emmitted once.
+        """
+        assert len(ag.universe.trajectory) > 1  # ensure multi-frame trajectory
+        for ts in ag.universe.trajectory:
+            ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
+        conclude = Conclude(ag)
+        conclude.run()
+
+        warnings = [rec.message for rec in caplog.records]
+        assert len(warnings) == 1
+
+        match = (
+            "The trajectory contains box-dimensions that are not orthorhombic! "
+            "Continue with caution."
+        )
+        assert match in warnings[0]
+
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
         a = AnalysisBase(
@@ -221,12 +267,24 @@ class Test_AnalysisBase:
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = Series(atomgroup=ag)
+        ana = SingularSeries(atomgroup=ag)
         ana.run()
 
         assert_allclose(ana.sums.observable, np.sum(ana.series))
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
+
+        ana = MultipleSeries(atomgroup=ag)
+        ana.run()
+        raw_series = np.concatenate(ana.series)
+
+        assert_allclose(ana.means.observable, np.mean(raw_series), rtol=1e-5)
+        assert_allclose(ana.sums.observable, np.sum(raw_series), rtol=1e-5)
+        assert_allclose(
+            ana.sems.observable,
+            np.std(raw_series) / np.sqrt(len(raw_series)),
+            rtol=1e-5,
+        )
 
     def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""
@@ -481,9 +539,76 @@ class Test_AnalysisBase:
             r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
             in "".join([rec.message for rec in caplog.records])
         )
-        assert _version.get_versions()["version"] in "".join(
-            [rec.message for rec in caplog.records]
+        assert __version__ in "".join([rec.message for rec in caplog.records])
+
+    @pytest.mark.parametrize(
+        "typefunc",
+        [
+            int,
+            float,
+            np.float32,
+            np.float64,
+            np.int32,
+            np.int64,
+        ],
+    )
+    def test_bin_width(self, ag, typefunc):
+        """Test if various types for bin_wdith are supported."""
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
         )
+
+        ana_obj._bin_width = typefunc(1.0)
+
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        ana_obj.run(stop=1)
+        assert ana_obj._bin_width == typefunc(1.0)
+
+    def test_bin_width_not_a_number(self, ag):
+        """Test error raise that bin_width is not a number."""
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        ana_obj._bin_width = "x"
+
+        match = "Binwidth must be a real number but is of type 'str'."
+        with pytest.raises(TypeError, match=match):
+            ana_obj.run()
+
+    @pytest.mark.parametrize("bin_width", [0, -0.5])
+    def test_negative_bin_width(self, ag, bin_width):
+        """Test error raise for negative bin_width."""
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        ana_obj._bin_width = bin_width
+
+        match = rf"Binwidth must be a positive number but is {bin_width}."
+        with pytest.raises(ValueError, match=match):
+            ana_obj.run()
 
     def test_n_bins(self, ag, caplog):
         """Test `n_bins` logger info."""

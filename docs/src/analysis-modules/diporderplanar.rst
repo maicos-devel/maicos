@@ -4,6 +4,6 @@ DiporderPlanar
 ##############
 
 .. autoclass:: maicos.DiporderPlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

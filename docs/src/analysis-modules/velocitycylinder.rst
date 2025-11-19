@@ -4,6 +4,6 @@ VelocityCylinder
 ################
 
 .. autoclass:: maicos.VelocityCylinder
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

@@ -2,38 +2,6 @@
 Release workflow
 ================
 
-Versioneer (optional)
----------------------
-
-1. Upgrade versioneer if a new `version`_ is available.
-
-2. Check the `upgrade notes`_ if additional steps are required
-
-3. Upgrade versioneer
-
-   .. code-block:: bash
-
-    pip3 install --upgrade versioneer
-
-4. Remove the old versioneer.py file
-
-   .. code-block:: bash
-
-    rm versioneer.py
-
-5. Install new versioneer.py file
-
-   .. code-block:: bash
-
-    python3 -m versioneer install --vendor
-
-   Revert the changes in ``src/maicos/__init__.py``
-
-6. Commit changes
-
-Create release
---------------
-
 1. **Prepare a Release Pull Request**
 
    - Based on the main branch create branch ``release-x.y.z`` and a PR.
@@ -87,6 +55,4 @@ After the release
 
 Add a placeholder section titled *Unreleased* for future updates.
 
-.. _`version` : https://pypi.org/project/versioneer
-.. _`upgrade notes` : https://github.com/python-versioneer/python-versioneer/blob/master/UPGRADING.md
 .. _`web interface` : https://github.com/maicos-devel/maicos/releases

@@ -27,9 +27,9 @@ class DielectricSphere(SphereBase):
     located at the center of the simulation box (default) or at the center of mass of
     the ``refgroup``, if provided.
 
-    For usage, please refer to :ref:`How-to: Dielectric
-    constant<howto-dielectric>` and for details on the theory see
-    :ref:`dielectric-explanations`.
+    For usage, please refer to
+    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` and for details on the
+    theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the radial (:math:`r`) component is used.
     ${CORRELATION_INFO}
@@ -39,8 +39,9 @@ class DielectricSphere(SphereBase):
     Parameters
     ----------
     ${ATOMGROUP_PARAMETER}
-    ${SPHERE_CLASS_PARAMETERS}
     ${TEMPERATURE_PARAMETER}
+    ${SPHERE_CLASS_PARAMETERS}
+    ${BASE_CLASS_PARAMETERS}
     ${OUTPUT_PREFIX_PARAMETER}
 
     Attributes
@@ -51,25 +52,22 @@ class DielectricSphere(SphereBase):
     results.deps_rad : numpy.ndarray
         Uncertainty of inverse radial dielectric profile
 
-    References
-    ----------
-    .. footbibliography::
 
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 0.1,
         temperature: float = 300,
-        output_prefix: str = "eps_sph",
-        refgroup: mda.AtomGroup | None = None,
-        concfreq: int = 0,
-        jitter: float = 0.0,
         rmin: float = 0,
         rmax: float | None = None,
+        bin_width: float = 0.1,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
+        output_prefix: str = "eps_sph",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -168,7 +166,7 @@ class DielectricSphere(SphereBase):
 
     @render_docs
     def save(self) -> None:
-        """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T

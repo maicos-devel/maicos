@@ -113,14 +113,8 @@ class SphereBase(AnalysisBase):
         if self._rmax is not None and self._rmax <= self.rmin:
             raise ValueError("`rmax` can not be smaller than or equal to `rmin`!")
 
-        try:
-            if self._bin_width > 0:
-                R = self.rmax - self.rmin
-                self.n_bins = int(np.ceil(R / self._bin_width))
-            else:
-                raise ValueError("Binwidth must be a positive number.")
-        except TypeError as err:
-            raise ValueError("Binwidth must be a number.") from err
+        R = self.rmax - self.rmin
+        self.n_bins = int(np.ceil(R / self._bin_width))
 
     def _single_frame(self):
         """Single frame for the sphercial analysis."""
@@ -143,7 +137,7 @@ class SphereBase(AnalysisBase):
 
 
 @render_docs
-class ProfileSphereBase(SphereBase, ProfileBase):
+class ProfileSphereBase(SphereBase, ProfileBase):  # type: ignore
     """Base class for computing radial profiles in a spherical geometry.
 
     ${CORRELATION_INFO_RADIAL}
@@ -216,11 +210,16 @@ class ProfileSphereBase(SphereBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = transform_sphere(positions, origin=self.box_center)[:, 0]
-        hist, _ = np.histogram(
+        hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.rmin, self.rmax), weights=weights
         )
 
-        return hist
+        # TODO(@hejamu): Is this the best way to do this?
+        # Also, can we somehow abstract this away?
+        bin_indices = np.digitize(positions, bin_edges) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
+
+        return hist, bin_indices
 
     def _single_frame(self) -> float:
         SphereBase._single_frame(self)

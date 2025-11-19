@@ -27,7 +27,9 @@ class TemperaturePlanar(ProfilePlanarBase):
 
     Parameters
     ----------
+    ${ATOMGROUP_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -42,15 +44,15 @@ class TemperaturePlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        refgroup: mda.AtomGroup | None = None,
-        sym: bool = False,
+        bin_method: str = "com",
         grouping: str = "atoms",
+        sym: bool = False,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "temperature.dat",
-        concfreq: int = 0,
         jitter: float = 0.0,
+        concfreq: int = 0,
+        output: str = "temperature.dat",
     ) -> None:
         self._locals = locals()
         if grouping != "atoms":

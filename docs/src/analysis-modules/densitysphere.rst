@@ -4,6 +4,6 @@ DensitySphere
 #############
 
 .. autoclass:: maicos.DensitySphere
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

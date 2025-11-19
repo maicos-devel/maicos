@@ -26,8 +26,10 @@ class DensityPlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -37,7 +39,7 @@ class DensityPlanar(ProfilePlanarBase):
     -----
     Partial mass density profiles can be used to calculate the ideal component of the
     chemical potential. For details, take a look at the corresponding :ref:`How-to
-    guide<howto-chemical-potential>`.
+    guide<sphx_glr_examples_basics_chemical-potential.py>`.
 
     """
 
@@ -49,15 +51,15 @@ class DensityPlanar(ProfilePlanarBase):
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1,
-        refgroup: mda.AtomGroup | None = None,
-        sym: bool = False,
+        bin_method: str = "com",
         grouping: str = "atoms",
+        sym: bool = False,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "density.dat",
-        concfreq: int = 0,
         jitter: float = 0.0,
+        concfreq: int = 0,
+        output: str = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

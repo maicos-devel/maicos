@@ -4,6 +4,6 @@ PDFCylinder
 ###########
 
 .. autoclass:: maicos.modules.pdfcylinder.PDFCylinder
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:

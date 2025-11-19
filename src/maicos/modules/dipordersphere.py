@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
@@ -26,30 +26,32 @@ class DiporderSphere(ProfileSphereBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
+    ${PROFILE_SPHERE_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
-    ${PROFILE_CYLINDER_CLASS_ATTRIBUTES}
+    ${PROFILE_SPHERE_CLASS_ATTRIBUTES}
 
     """
 
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        bin_width: float = 1,
+        order_parameter: str = "P0",
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: float = 1,
+        bin_method: str = "com",
         grouping: str = "residues",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "diporder_sphere.dat",
-        concfreq: int = 0,
-        order_parameter: str = "P0",
         jitter: float = 0.0,
+        concfreq: int = 0,
+        output: str = "diporder_sphere.dat",
     ) -> None:
         normalization = "volume" if order_parameter == "P0" else "number"
 

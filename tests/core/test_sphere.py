@@ -95,13 +95,6 @@ class TestSphereBase:
         with pytest.raises(ValueError, match="can not be smaller"):
             sphere_class_obj._prepare()
 
-    @pytest.mark.parametrize("bin_width", [0, -0.5, "x"])
-    def test_wrong_bin_width(self, ag, bin_width):
-        """Test bin_width error."""
-        sphere_class_obj = SphereClass(ag, pos_arg=42, bin_width=bin_width)
-        with pytest.raises(ValueError, match=r"Binwidth must be a.* number."):
-            sphere_class_obj._prepare()
-
     @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
     def test_bin_width(self, ag, bin_width):
         """Test bin_width."""
@@ -532,7 +525,7 @@ class TestProfileSphereBase:
         """Test the histogram method."""
         p = ProfileSphereBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins), weights=None
         )
 
@@ -542,7 +535,7 @@ class TestProfileSphereBase:
         """Test the histogram method with weights."""
         p = ProfileSphereBase(**params)
         p._prepare()
-        hist = p._compute_histogram(
+        hist, _ = p._compute_histogram(
             np.linspace(3 * [p.rmin], 3 * [p.rmax], p.n_bins),
             weights=5 * np.ones(p.n_bins),
         )

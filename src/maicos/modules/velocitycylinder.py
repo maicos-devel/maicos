@@ -33,9 +33,11 @@ class VelocityCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -46,22 +48,22 @@ class VelocityCylinder(ProfileCylinderBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        vdim: int = 0,
+        flux: bool = False,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
-        bin_width: int = 1,
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: int = 1,
+        bin_method: str = "com",
         grouping: str = "atoms",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "velocity.dat",
-        concfreq: int = 0,
         jitter: float = 0.0,
-        vdim: int = 0,
-        flux: bool = False,
+        concfreq: int = 0,
+        output: str = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

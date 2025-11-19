@@ -121,14 +121,8 @@ class PlanarBase(AnalysisBase):
         ):
             raise ValueError("`zmax` can not be smaller or equal than `zmin`!")
 
-        try:
-            if self._bin_width > 0:
-                L = self.zmax - self.zmin
-                self.n_bins = int(np.ceil(L / self._bin_width))
-            else:
-                raise ValueError("Binwidth must be a positive number.")
-        except TypeError as err:
-            raise ValueError("Binwidth must be a number.") from err
+        L = self.zmax - self.zmin
+        self.n_bins = int(np.ceil(L / self._bin_width))
 
     def _single_frame(self):
         """Single frame for the planar analysis."""
@@ -155,7 +149,7 @@ class PlanarBase(AnalysisBase):
 
 
 @render_docs
-class ProfilePlanarBase(PlanarBase, ProfileBase):
+class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
     """Base class for computing profiles in a cartesian geometry.
 
     ${CORRELATION_INFO_RADIAL}
@@ -236,11 +230,15 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
         positions = positions[:, self.dim]
-        hist, _ = np.histogram(
+        hist, bin_edges = np.histogram(
             positions, bins=self.n_bins, range=(self.zmin, self.zmax), weights=weights
         )
+        # TODO(@hejamu): Is this the best way to do this?
+        # Also, can we somehow abstract this away?
+        bin_indices = np.digitize(positions, bin_edges) - 1
+        bin_indices[bin_indices == self.n_bins] = -1
 
-        return hist
+        return hist, bin_indices
 
     def _single_frame(self) -> float:
         PlanarBase._single_frame(self)
@@ -251,15 +249,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):
 
     def _conclude(self):
         PlanarBase._conclude(self)
-
+        ProfileBase._conclude(self)
         if self.sym:
             symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
             symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+
             symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
                 symmetrize(self.sums.bincount, inplace=True, is_odd=self.sym_odd)
-
-        # Call conclude after symmetrize since `_concude` sets empty bins to `nan` and
-        # this prevents symmetrizing.
-        ProfileBase._conclude(self)

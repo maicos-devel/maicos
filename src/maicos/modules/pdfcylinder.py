@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
@@ -53,10 +53,11 @@ class PDFCylinder(CylinderBase):
 
     Parameters
     ----------
+    ${ATOMGROUP_PARAMETER}
     ${PDF_PARAMETERS}
-    pdf_z_bin_width : float
+    bin_width_pdf_z : float
         Binwidth of bins in the histogram of the axial PDF (Å).
-    pdf_phi_bin_width : float
+    bin_width_pdf_phi : float
         Binwidth of bins in the histogram of the angular PDF (Å).
     drwidth : float
         radial width of a PDF cylindrical shell (Å), and axial or angular (arc) slices.
@@ -69,8 +70,9 @@ class PDFCylinder(CylinderBase):
     origin : numpy.ndarray
         Set origin of the cylindrical coordinate system (x,y,z). If :obj:`None` the
         origin will be set according to the ``refgroup`` parameter.
-    ${BIN_METHOD_PARAMETER}
     ${CYLINDER_CLASS_PARAMETERS}
+    ${BIN_METHOD_PARAMETER}
+    ${BASE_CLASS_PARAMETERS}
     ${OUTPUT_PARAMETER}
 
     Attributes
@@ -98,18 +100,18 @@ class PDFCylinder(CylinderBase):
         dmax: float | None = None,
         density: bool = False,
         origin: np.ndarray | None = None,
-        bin_method: str = "com",
-        unwrap: bool = False,
-        pack: bool = True,
-        refgroup: mda.AtomGroup | None = None,
-        jitter: float = 0.0,
-        concfreq: int = 0,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
+        bin_method: str = "com",
+        refgroup: mda.AtomGroup | None = None,
+        unwrap: bool = False,
+        pack: bool = True,
+        jitter: float = 0.0,
+        concfreq: int = 0,
         output: str = "pdf.dat",
     ) -> None:
         self.comp_1 = get_compound(g1)

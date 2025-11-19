@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Copyright (c) 2025 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
@@ -26,9 +26,11 @@ class DiporderCylinder(ProfileCylinderBase):
 
     Parameters
     ----------
-    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
-    ${PDIM_RADIAL_PARAMETER}
+    ${ATOMGROUP_PARAMETER}
     ${ORDER_PARAMETER_PARAMETER}
+    ${PDIM_RADIAL_PARAMETER}
+    ${PROFILE_CYLINDER_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -39,22 +41,22 @@ class DiporderCylinder(ProfileCylinderBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        order_parameter: str = "P0",
+        pdim: str = "r",
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
-        bin_width: float = 1,
         rmin: float = 0,
         rmax: float | None = None,
-        refgroup: mda.AtomGroup | None = None,
+        bin_width: float = 1,
+        bin_method: str = "com",
         grouping: str = "residues",
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "diporder_cylinder.dat",
-        concfreq: int = 0,
-        pdim: str = "r",
-        order_parameter: str = "P0",
         jitter: float = 0.0,
+        concfreq: int = 0,
+        output: str = "diporder_cylinder.dat",
     ) -> None:
         normalization = "volume" if order_parameter == "P0" else "number"
 

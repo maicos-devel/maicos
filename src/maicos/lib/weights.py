@@ -178,19 +178,6 @@ def diporder_weights(
     return weights
 
 
-def diporder_pair_weights(
-    g1: mda.AtomGroup, g2: mda.AtomGroup, compound: str
-) -> np.ndarray:
-    """Normalized dipole moments as weights for general diporder RDF calculations."""
-    dipoles_1 = g1.dipole_vector(compound=compound)
-    dipoles_2 = g2.dipole_vector(compound=compound)
-
-    dipoles_1 /= np.linalg.norm(dipoles_1, axis=1)[:, np.newaxis]
-    dipoles_2 /= np.linalg.norm(dipoles_2, axis=1)[:, np.newaxis]
-
-    return dipoles_1 @ dipoles_2.T
-
-
 @render_docs
 def velocity_weights(atomgroup: mda.AtomGroup, grouping: str, vdim: int) -> np.ndarray:
     """Weights for velocity calculations.

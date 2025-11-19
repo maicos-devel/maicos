@@ -33,13 +33,15 @@ class VelocityPlanar(ProfilePlanarBase):
 
     Parameters
     ----------
-    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${ATOMGROUP_PARAMETER}
     sym_odd : bool,
         Parity of the profile. If :obj:`False`, the profile will be symmetrized. If
         :obj:`True`, the profile is antisymmetrized. Only relevant in combination with
         ``sym``.
     ${VDIM_PARAMETER}
     ${FLUX_PARAMETER}
+    ${PROFILE_PLANAR_CLASS_PARAMETERS}
+    ${OUTPUT_PARAMETER}
 
     Attributes
     ----------
@@ -50,22 +52,22 @@ class VelocityPlanar(ProfilePlanarBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
+        sym_odd: bool = False,
+        vdim: int = 0,
+        flux: bool = False,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
         bin_width: float = 1.0,
-        refgroup: mda.AtomGroup | None = None,
-        sym: bool = False,
-        sym_odd: bool = False,
+        bin_method: str = "com",
         grouping: str = "atoms",
+        sym: bool = False,
+        refgroup: mda.AtomGroup | None = None,
         unwrap: bool = True,
         pack: bool = True,
-        bin_method: str = "com",
-        output: str = "velocity.dat",
-        concfreq: int = 0,
-        vdim: int = 0,
-        flux: bool = False,
         jitter: float = 0.0,
+        concfreq: int = 0,
+        output: str = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

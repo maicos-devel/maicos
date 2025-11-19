@@ -3,7 +3,6 @@ coverage:
     - "examples/.*"
     - "src/maicos/_version.py"
     - "tests/.*"
-    - "versioneer.py"
   status:
     project:
       default:

@@ -4,6 +4,6 @@ TemperaturePlanar
 #################
 
 .. autoclass:: maicos.TemperaturePlanar
-    :members:
+    :members: +run, save
     :undoc-members:
     :show-inheritance:
