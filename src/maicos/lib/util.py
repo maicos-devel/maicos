@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Protocol
 
 import MDAnalysis as mda
+from MDAnalysis.analysis.results import ResultsGroup
 import numpy as np
 from scipy.signal import find_peaks
 
@@ -867,3 +868,38 @@ def get_module_input_str(module_obj):
         module_input = f"{module_name}(*args).run(*args)"
 
     return module_input
+
+class ResultsAggregator():
+    """based on mda.analysis.results.ResultsGroup"""
+    
+    def __init__(self):
+        pass
+
+    def merge(self, means: Sequence[Results], stds: Sequence[Results], batch_sizes: list[int]):
+        merged_means = Results()
+        merged_stds = Results()
+
+        for key in means.keys():
+            means_of_t = [obj[key] for obj in means]
+            merged_means[key] = self.weighted_means(means_of_t, batch_sizes)
+            stds_of_t = [obj[key] for obj in stds]
+            merged_stds[key] = self.weighted_std(stds_of_t, means_of_t, batch_sizes)
+
+        return merged_means, merged_stds
+
+    @staticmethod
+    def weighted_mean(arrs: list[np.ndarray], batch_sizes: list[int]):
+        arrs = np.array(arrs)
+        batch_sizes = np.array(batch_sizes)
+        return np.sum(arrs * batch_sizes, axis=0) / np.sum(batch_sizes)
+
+    @staticmethod
+    def weighted_std(stds: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]):
+        stds = np.array(stds)
+        means = np.array(means)
+
+        for std, mean, batch_sizes in 
+        
+
+
+

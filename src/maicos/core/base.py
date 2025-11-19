@@ -188,7 +188,6 @@ class _Runner:
 
 
 
-
 @render_docs
 class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     """Base class derived from MDAnalysis for defining multi-frame analysis.
