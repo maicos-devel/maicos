@@ -876,8 +876,6 @@ class ResultsAggregator():
 
         for key in means[0].keys():
             means_of_t = [obj[key] for obj in means]
-            print(key)
-            print(means_of_t)
             merged_means[key] = ResultsAggregator.weighted_mean(means_of_t, batch_sizes)
             sems_of_t = [obj[key] for obj in sems]
             merged_sems[key] = ResultsAggregator.weighted_sem(sems_of_t, means_of_t, batch_sizes)
@@ -889,7 +887,7 @@ class ResultsAggregator():
         arrs = np.array(arrs)
         batch_sizes = np.array(batch_sizes)
         batch_sizes = ResultsAggregator._match_dims(arrs, batch_sizes)
-        return np.sum(arrs * batch_sizes[:, np.newaxis], axis=0) / np.sum(batch_sizes)
+        return np.sum(arrs * batch_sizes, axis=0) / np.sum(batch_sizes)
 
     @staticmethod
     def weighted_sem(sems: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]):
@@ -902,7 +900,7 @@ class ResultsAggregator():
         batch_sizes = ResultsAggregator._match_dims(sems, batch_sizes)
         Ms = sems**2 * (batch_sizes)**2
 
-        M_tot = np.sum(Ms) + np.sum((means - mean_total)**2, axis=0) * batch_sizes
+        M_tot = np.sum(Ms, axis=0) + np.sum((means - mean_total)**2 * batch_sizes, axis=0)
         N_tot = np.sum(batch_sizes)
         sem_tot = np.sqrt(M_tot / N_tot**2)
         return sem_tot

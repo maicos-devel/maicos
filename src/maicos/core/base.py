@@ -30,6 +30,7 @@ from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
+    correlation_analysis,
     get_center,
     get_cli_input,
     get_module_input_str,
@@ -136,6 +137,8 @@ class _Runner:
                 frames=frames,
             )
 
+            analysis_object._call_prepare()
+
             # get all results from workers in other processes.
             # we need `AnalysisBase` classes
             # since they hold `frames`, `times` and `results` attributes
@@ -150,6 +153,10 @@ class _Runner:
             analysis_object.times = np.hstack(
                 [obj.times for obj in remote_objects[analysis_object]]
             )
+            analysis_object.timeseries = np.hstack(
+                [obj.timeseries for obj in remote_objects[analysis_object]]
+            )
+
             analysis_object._obs = remote_objects[analysis_object][0]._obs
             for key in analysis_object._obs:
                 analysis_object._obs[key] = np.hstack(
@@ -160,7 +167,6 @@ class _Runner:
         # aggregate results from results obtained in remote workers
         for analysis_object in analysis_instances:
             n_frames = [obj.n_frames for obj in remote_objects[analysis_object]]
-            print(n_frames)
 
             remote_means = [obj.means for obj in remote_objects[analysis_object]]
             remote_sems = [obj.sems for obj in remote_objects[analysis_object]]
@@ -170,6 +176,7 @@ class _Runner:
                     results_aggregator.merge(remote_means, remote_sems, n_frames)
 
         logging.debug("Concluding analysis.")
+        
 
         for analysis_object in analysis_instances:
             analysis_object._call_conclude()
@@ -676,11 +683,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
-        # self.corrtime = correlation_analysis(self.timeseries)
-        #self._conclude()
-        pass
-        # if self.concfreq and self.module_has_save:
-        #    self.save()
+        self.corrtime = correlation_analysis(self.timeseries)
+        self._conclude()
+        if self.concfreq and self.module_has_save:
+            self.save()
 
     @render_docs
     def run(
