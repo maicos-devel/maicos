@@ -15,14 +15,14 @@ import sys
 import warnings
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, Sequence
 
 import MDAnalysis as mda
-from MDAnalysis.analysis.results import ResultsGroup
+from MDAnalysis.analysis.results import Results
 import numpy as np
 from scipy.signal import find_peaks
 
-from maicos.lib.math import correlation_time
+from maicos.lib.math import correlation_time, combine_subsample_variance
 
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
@@ -870,31 +870,48 @@ class ResultsAggregator():
     def __init__(self):
         pass
 
-    def merge(self, means: Sequence[Results], stds: Sequence[Results], batch_sizes: list[int]):
+    def merge(self, means: Sequence[Results], sems: Sequence[Results], batch_sizes: list[int]):
         merged_means = Results()
-        merged_stds = Results()
+        merged_sems = Results()
 
-        for key in means.keys():
+        for key in means[0].keys():
             means_of_t = [obj[key] for obj in means]
-            merged_means[key] = self.weighted_means(means_of_t, batch_sizes)
-            stds_of_t = [obj[key] for obj in stds]
-            merged_stds[key] = self.weighted_std(stds_of_t, means_of_t, batch_sizes)
+            print(key)
+            print(means_of_t)
+            merged_means[key] = ResultsAggregator.weighted_mean(means_of_t, batch_sizes)
+            sems_of_t = [obj[key] for obj in sems]
+            merged_sems[key] = ResultsAggregator.weighted_sem(sems_of_t, means_of_t, batch_sizes)
 
-        return merged_means, merged_stds
+        return merged_means, merged_sems
 
     @staticmethod
     def weighted_mean(arrs: list[np.ndarray], batch_sizes: list[int]):
         arrs = np.array(arrs)
         batch_sizes = np.array(batch_sizes)
-        return np.sum(arrs * batch_sizes, axis=0) / np.sum(batch_sizes)
+        batch_sizes = ResultsAggregator._match_dims(arrs, batch_sizes)
+        return np.sum(arrs * batch_sizes[:, np.newaxis], axis=0) / np.sum(batch_sizes)
 
     @staticmethod
-    def weighted_std(stds: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]):
-        stds = np.array(stds)
+    def weighted_sem(sems: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]):
+        mean_total = ResultsAggregator.weighted_mean(means, batch_sizes)
         means = np.array(means)
 
-        for std, mean, batch_sizes in 
-        
+        batch_sizes = np.array(batch_sizes)
+
+        sems = np.array(sems)
+        batch_sizes = ResultsAggregator._match_dims(sems, batch_sizes)
+        Ms = sems**2 * (batch_sizes)
+
+        M_tot = np.sum(Ms) + np.sum((means - mean_total)**2, axis=0) * batch_sizes
+        N_tot = np.sum(batch_sizes)
+        sem_tot = np.sqrt(M_tot / N_tot)
+        return sem_tot
+
+    @staticmethod
+    def _match_dims(big_arr, small_arr):
+        dims = len(big_arr.shape)
+        n_batches = small_arr.shape[0]
+        return np.reshape(small_arr, [n_batches] + [1] * (dims - 1))
 
 
 

@@ -35,6 +35,7 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
+    ResultsAggregator
 )
 
 
@@ -158,14 +159,15 @@ class _Runner:
 
         # aggregate results from results obtained in remote workers
         for analysis_object in analysis_instances:
-            remote_results = [obj.results for obj in remote_objects[analysis_object]]
-            results_aggregator = self._get_aggregator()
-            analysis_object.results = results_aggregator.merge(remote_results)
+            n_frames = [obj.n_frames for obj in remote_objects[analysis_object]]
+            print(n_frames)
 
             remote_means = [obj.means for obj in remote_objects[analysis_object]]
-            means_aggregator = self._get_means_aggregator(remote_means[0])
-            print(remote_means)
-            analysis_object.means = means_aggregator.merge(remote_means)
+            remote_sems = [obj.sems for obj in remote_objects[analysis_object]]
+            results_aggregator = self._get_aggregator()
+
+            analysis_object.means, analysis_object.sems = \
+                    results_aggregator.merge(remote_means, remote_sems, n_frames)
 
         logging.debug("Concluding analysis.")
 
@@ -175,16 +177,8 @@ class _Runner:
         tempfile.close()
         return self
 
-    def _get_aggregator(self) -> ResultsGroup:
-        return ResultsGroup(lookup=None)
-
-    def _get_means_aggregator(self, keys) -> ResultsGroup:
-        lookup = {}
-        for key in keys:
-            lookup[key] = np.mean
-        return ResultsGroup(lookup=lookup)
-
-
+    def _get_aggregator(self) -> ResultsAggregator:
+        return ResultsAggregator()
 
 @render_docs
 class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
