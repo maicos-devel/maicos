@@ -900,11 +900,11 @@ class ResultsAggregator():
 
         sems = np.array(sems)
         batch_sizes = ResultsAggregator._match_dims(sems, batch_sizes)
-        Ms = sems**2 * (batch_sizes)
+        Ms = sems**2 * (batch_sizes)**2
 
         M_tot = np.sum(Ms) + np.sum((means - mean_total)**2, axis=0) * batch_sizes
         N_tot = np.sum(batch_sizes)
-        sem_tot = np.sqrt(M_tot / N_tot)
+        sem_tot = np.sqrt(M_tot / N_tot**2)
         return sem_tot
 
     @staticmethod
