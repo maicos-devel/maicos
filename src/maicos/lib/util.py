@@ -882,6 +882,17 @@ class ResultsAggregator():
 
         return merged_means, merged_sems
 
+    def merge_sums(self, sums: Sequence[Results]):
+        merged_sums = Results()
+
+        for key in sums[0].keys():
+            sums_of_t = [obj[key] for obj in sums]
+            merged_sums[key] = np.sum(np.array(sums_of_t), axis=0)
+
+        return merged_sums
+
+
+
     @staticmethod
     def weighted_mean(arrs: list[np.ndarray], batch_sizes: list[int]):
         arrs = np.array(arrs)

@@ -172,8 +172,12 @@ class _Runner:
             remote_sems = [obj.sems for obj in remote_objects[analysis_object]]
             results_aggregator = self._get_aggregator()
 
+            remote_sums = [obj.sums for obj in remote_objects[analysis_object]]
+
             analysis_object.means, analysis_object.sems = \
                     results_aggregator.merge(remote_means, remote_sems, n_frames)
+
+            analysis_object.sums = results_aggregator.merge_sums(remote_sums)
 
         logging.debug("Concluding analysis.")
         
@@ -361,6 +365,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     362631.65
 
     """
+
+    @classmethod
+    def get_supported_backends(cls):
+        return (
+            "serial"
+        )
+
 
     def __init__(
         self,
