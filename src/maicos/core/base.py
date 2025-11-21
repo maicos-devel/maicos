@@ -18,7 +18,6 @@ from typing import Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
-from MDAnalysis.analysis.results import ResultsGroup
 import numpy as np
 from mdacli.logger import setup_logging
 from MDAnalysis.analysis.backends import BackendBase, BackendSerial
@@ -29,6 +28,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
+    ResultsAggregator,
     atomgroup_header,
     correlation_analysis,
     get_center,
@@ -36,7 +36,6 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
-    ResultsAggregator
 )
 
 
@@ -54,8 +53,8 @@ class _Runner:
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
-        n_workers: int = None,
-        n_parts: int = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
         backend: str | BackendBase = None,
         *,
         unsupported_backend: bool = False,
@@ -157,15 +156,8 @@ class _Runner:
                 [obj.timeseries for obj in remote_objects[analysis_object]]
             )
 
-            #analysis_object._obs = remote_objects[analysis_object][0]._obs
-            #for key in analysis_object._obs:
-            #    analysis_object._obs[key] = np.hstack(
-            #        [np.expand_dims(obj._obs[key], -1) for obj in remote_objects[analysis_object]]
-            #    )
-
-
-        # aggregate results from results obtained in remote workers
         for analysis_object in analysis_instances:
+            # aggregate results from results obtained in remote workers
             n_frames = [obj.n_frames for obj in remote_objects[analysis_object]]
 
             remote_means = [obj.means for obj in remote_objects[analysis_object]]
@@ -174,13 +166,13 @@ class _Runner:
 
             remote_sums = [obj.sums for obj in remote_objects[analysis_object]]
 
-            analysis_object.means, analysis_object.sems = \
-                    results_aggregator.merge(remote_means, remote_sems, n_frames)
+            analysis_object.means, analysis_object.sems = results_aggregator.merge(
+                remote_means, remote_sems, n_frames
+            )
 
             analysis_object.sums = results_aggregator.merge_sums(remote_sums)
 
         logging.debug("Concluding analysis.")
-        
 
         for analysis_object in analysis_instances:
             analysis_object._call_conclude()
@@ -190,6 +182,7 @@ class _Runner:
 
     def _get_maicos_aggregator(self) -> ResultsAggregator:
         return ResultsAggregator()
+
 
 @render_docs
 class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
@@ -368,10 +361,27 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     @classmethod
     def get_supported_backends(cls):
-        return (
-            "serial"
-        )
+        """Tuple with backends supported by the core library for a given class.
 
+        User can pass either one of these values as ``backend=...`` to
+        :meth:`run()` method, or a custom object that has ``apply`` method
+        (see documentation for :meth:`run()`):
+
+         - 'serial': no parallelization
+         - 'multiprocessing': parallelization using `multiprocessing.Pool`
+         - 'dask': parallelization using `dask.delayed.compute()`. Requires
+           installation of `mdanalysis[dask]`
+
+        If you want to add your own backend to an existing class, pass a
+        :class:`backends.BackendBase` subclass (see its documentation to learn
+        how to implement it properly), and specify ``unsupported_backend=True``.
+
+        Returns
+        -------
+        tuple
+            names of built-in backends that can be used in :meth:`run(backend=...)`
+        """
+        return ("serial",)
 
     def __init__(
         self,
@@ -707,9 +717,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
-        n_workers: int = None,
-        n_parts: int = None,
-        backend: str | BackendBase = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
+        backend: str | BackendBase | None = None,
         *,
         unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
@@ -881,8 +891,8 @@ class AnalysisCollection(_Runner):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
-        n_workers: int = None,
-        n_parts: int = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
         backend: str | BackendBase = None,
         *,
         unsupported_backend: bool = False,
@@ -946,10 +956,10 @@ class AnalysisCollection(_Runner):
 
     def _setup_computation_groups(
         self,
-        n_parts: int,
-        start: int = None,
-        stop: int = None,
-        step: int = None,
+        n_parts: int | None,
+        start: int | None = None,
+        stop: int | None = None,
+        step: int | None = None,
         frames: slice | np.ndarray = None,
     ) -> list[np.ndarray]:
         return self._analysis_instances[0]._setup_computation_groups(

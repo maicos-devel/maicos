@@ -89,6 +89,7 @@ class DielectricPlanar(PlanarBase):
 
     @classmethod
     def get_supported_backends(cls):
+        """Tuple with backends supported by DielectricPlanar."""
         return (
             "serial",
             "multiprocessing",
