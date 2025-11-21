@@ -39,7 +39,7 @@ from ..lib.util import (
 )
 
 
-class _Runner:
+class _Runner(MDAnalysis.analysis.base.AnalysisBase):
     """Private Runner class that provides a common ``run`` method.
 
     Class is used inside ``AnalysisBase`` as well as in ``AnalysisCollection``
@@ -120,7 +120,7 @@ class _Runner:
             start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
         )
 
-        remote_objects: dict[object : list[AnalysisBase]] = {}
+        remote_objects: dict[AnalysisBase, AnalysisBase] = {}
         for analysis_object in analysis_instances:
             worker_funcs = partial(
                 analysis_object._compute,
@@ -464,7 +464,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def _compute(
         self,
         indexed_frames: np.ndarray,
-        verbose: bool = None,
+        verbose: bool | None = None,
         *,
         progressbar_kwargs=None,
     ) -> "AnalysisBase":
@@ -960,7 +960,7 @@ class AnalysisCollection(_Runner):
         start: int | None = None,
         stop: int | None = None,
         step: int | None = None,
-        frames: slice | np.ndarray = None,
+        frames: slice | np.ndarray | None = None,
     ) -> list[np.ndarray]:
         return self._analysis_instances[0]._setup_computation_groups(
             n_parts=n_parts, start=start, stop=stop, step=step, frames=frames
