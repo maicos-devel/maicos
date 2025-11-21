@@ -194,7 +194,7 @@ def test_get_module_input_str(ag):
 
     assert (
         ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
-        "progressbar_kwargs=None)" in module_input
+        "n_workers=None, n_parts=None, backend=None)" in module_input
     )
 
     # Test if the set test_input parameter is written correctly
@@ -208,7 +208,7 @@ def test_get_module_input_str(ag):
     module_input = maicos.lib.util.get_module_input_str(ana)
     assert (
         ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
-        "progressbar_kwargs=None)" in module_input
+        "n_workers=None, n_parts=None, backend=None)" in module_input
     )
 
 

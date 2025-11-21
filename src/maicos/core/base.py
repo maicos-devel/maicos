@@ -157,11 +157,11 @@ class _Runner:
                 [obj.timeseries for obj in remote_objects[analysis_object]]
             )
 
-            analysis_object._obs = remote_objects[analysis_object][0]._obs
-            for key in analysis_object._obs:
-                analysis_object._obs[key] = np.hstack(
-                    [obj._obs[key][..., None] for obj in remote_objects[analysis_object]]
-                )
+            #analysis_object._obs = remote_objects[analysis_object][0]._obs
+            #for key in analysis_object._obs:
+            #    analysis_object._obs[key] = np.hstack(
+            #        [np.expand_dims(obj._obs[key], -1) for obj in remote_objects[analysis_object]]
+            #    )
 
 
         # aggregate results from results obtained in remote workers
@@ -170,7 +170,7 @@ class _Runner:
 
             remote_means = [obj.means for obj in remote_objects[analysis_object]]
             remote_sems = [obj.sems for obj in remote_objects[analysis_object]]
-            results_aggregator = self._get_aggregator()
+            results_aggregator = self._get_maicos_aggregator()
 
             remote_sums = [obj.sums for obj in remote_objects[analysis_object]]
 
@@ -188,7 +188,7 @@ class _Runner:
         tempfile.close()
         return self
 
-    def _get_aggregator(self) -> ResultsAggregator:
+    def _get_maicos_aggregator(self) -> ResultsAggregator:
         return ResultsAggregator()
 
 @render_docs

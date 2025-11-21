@@ -353,7 +353,7 @@ class Test_AnalysisBase:
         with Path("test_default.dat").open() as f:
             assert (
                 ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
-                "progressbar_kwargs=None)" in f.read()
+                "n_workers=None, n_parts=None, backend=None)" in f.read()
             )
 
         # Test if the set test_input parameter is written correctly
@@ -369,7 +369,7 @@ class Test_AnalysisBase:
         with Path("test_run.dat").open() as f:
             assert (
                 ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
-                "progressbar_kwargs=None)" in f.read()
+                "n_workers=None, n_parts=None, backend=None)" in f.read()
             )
 
     @pytest.mark.parametrize(
