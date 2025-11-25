@@ -60,7 +60,7 @@ sphinx_gallery_conf = {
     "example_extensions": {".py", ".sh"},
     "examples_dirs": ["../../examples", "get-started/tabs"],
     "filename_pattern": r"\.py",
-    "gallery_dirs": ["examples", "get-started/res-tabs"],
+    "gallery_dirs": ["generated_examples", "get-started/generated_tabs"],
     "min_reported_time": 60,
     "prefer_full_module": ["maicos"],
     "reference_url": {"maicos": None},

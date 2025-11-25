@@ -68,11 +68,6 @@ maicos = "maicos.__main__:main"
 [tool.check-manifest]
 ignore = ["src/maicos/_version.py"]
 
-[tool.mypy]
-exclude = ["docs/src/examples", "docs/src/get-started"]
-follow_imports = 'skip'
-ignore_missing_imports = true
-
 [tool.coverage.paths]
 source = ["src/maicos", "*/site-packages"]
 
@@ -80,6 +75,14 @@ source = ["src/maicos", "*/site-packages"]
 skip_covered = true
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:"]
+
+[tool.mypy]
+exclude = [
+    "docs/src/generated_examples",
+    "docs/src/get-started/generated_tabs",
+]
+follow_imports = 'skip'
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # temporary workaround until we have proper types for `means` and `sems` attributes
