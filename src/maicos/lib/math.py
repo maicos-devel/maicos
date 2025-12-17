@@ -163,6 +163,29 @@ def correlation_time(
         If mintime is larger than the length of the timeseries.
     ValueError
         If method is not one of "sokal" or "chodera".
+        
+    Examples
+    --------
+    Generate a stochastic signal with a known correlation time and recover it::
+
+    import numpy as np
+    from maicos.lib.math import correlation_time, correlation
+
+    rng = np.random.default_rng(42)
+
+    tau_true = 2.0
+    n = 5000
+
+    x = np.zeros(n)
+    for i in range(1, n):
+        x[i] = x[i-1] * np.exp(-1.0 / tau_true) + rng.normal()
+
+    tau_est = correlation_time(x)
+    print(tau_est)
+
+    corr = correlation(x)
+
+
 
     References
     ----------
