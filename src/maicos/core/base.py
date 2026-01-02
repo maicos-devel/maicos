@@ -791,7 +791,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             f"{module_name} is part of MAICoS v{__version__}\n\n"
             f"Command line:    {get_cli_input()}\n"
             f"Module input:    {module_input}\n\n"
-            f"Statistics over {self._index} frames\n\n"
+            #f"Statistics over {self._index} frames\n\n"
             f"Considered atomgroups:\n"
             f"{atomgroups}\n"
             f"{messages}\n\n"

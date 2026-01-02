@@ -31,6 +31,12 @@ if __name__ == "__main__":
     means = np.copy(ana_obj.results.eps_perp)
     stds = np.copy(ana_obj.results.deps_perp)
 
+    ana_obj = maicos.DielectricPlanar(u.atoms, unwrap=True)
+    ana_obj2 = maicos.DielectricPlanar(u.atoms, unwrap=False)
+
+    ana_collection = maicos.core.AnalysisCollection(*[ana_obj])
+
+
     ana_collection.run(verbose=True, n_workers=1, backend='serial', step=10)
 
     print("asserting that they are the same")

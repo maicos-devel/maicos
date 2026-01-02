@@ -68,6 +68,17 @@ class DielectricCylinder(CylinderBase):
 
     """
 
+    _analysis_algorithm_is_parallelizable = True
+
+    @classmethod
+    def get_supported_backends(cls):
+        """Tuple with backends supported by DielectricPlanar."""
+        return (
+            "serial",
+            "multiprocessing",
+            "dask",
+        )
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -237,10 +248,10 @@ class DielectricCylinder(CylinderBase):
         self.results.deps_z = self._pref * dcov_z
 
         self.results.eps_r = -(
-            2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * cov_r
+            2 * np.pi * self.means.L * self._pref * self.results.bin_pos * cov_r
         )
         self.results.deps_r = (
-            2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * dcov_r
+            2 * np.pi * self.means.L * self._pref * self.results.bin_pos * dcov_r
         )
 
     @render_docs
