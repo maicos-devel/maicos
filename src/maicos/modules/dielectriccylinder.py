@@ -338,6 +338,7 @@ class DielectricCylinder(CylinderBase):
             # dipole density. M_z = 2 pi L \int_0^R dr r m(r)
             cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
             cov_r = self.means.mM_r - self.means.m_r * self.means.M_r
+            cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
 
             dcov_z = np.sqrt(
                 self.sems.mM_z**2
@@ -359,9 +360,10 @@ class DielectricCylinder(CylinderBase):
             # <M> = 0 for a single line of water molecules.
             cov_z = self.means.mM_z
             cov_r = self.means.mM_r
+            cov_phi = self.means.mM_phi
             dcov_z = self.sems.mM_z
             dcov_r = self.sems.mM_r
-
+            dcov_phi = self.sems.mM_phi
 
         self.results.m_z = self.means.m_z
         self.results.dm_z = self.sems.m_z
@@ -380,7 +382,6 @@ class DielectricCylinder(CylinderBase):
         self.results.m_phi = self.means.m_phi
         self.results.dm_phi = self.sems.m_phi
 
-        cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
         self.results.eps_phi = 1 / self.results.bin_pos * self._pref * cov_phi  
         self.results.deps_phi = 1 / self.results.bin_pos * self._pref * dcov_phi
 
