@@ -13,6 +13,7 @@ Unreleased
 ----------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
 
+- Add azimuthal component to ``DielectricCylinder`` (#543)
 - Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
 - Update issue templates (#530)
