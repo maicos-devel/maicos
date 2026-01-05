@@ -216,8 +216,10 @@ class DielectricCylinder(CylinderBase):
 
         # ------------ FIRST CUT --------------------
         # do the first cut at the 0, 2pi plane.
-        # Wrap all molecules that cross the 0, 2pi plane to their center of charge
-        # tbh, we can just delete them from the atomgroup
+        # Wrap all molecules that cross the 0, 2pi plane to their center of charge.
+        # Thus excess charges across virtual cuts are only from molecules at the cut.
+        # And not from molecules across the first cut (the 0, 2pi) plane.
+        # Note: Instead of wrapping we could also delete them from the atomgroup.
         pos_phi = self._wrap_phi_positions(testrpos, shift=0)
 
         # put the atoms in phi bins and calculate the charge in each phi bin
