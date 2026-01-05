@@ -11,7 +11,7 @@ Basic usage - Python interpreter
 
 # .. import
 
-To tart, let us first import ``Matplotlib``, ``MDAnalysis`` and ``MAICoS``
+To start, let us first import ``Matplotlib``, ``MDAnalysis`` and ``MAICoS``
 """  # noqa: D415
 
 # %%
