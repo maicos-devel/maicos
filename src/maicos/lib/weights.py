@@ -113,7 +113,7 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     Raises
     ------
     NotImplementedError
-        Currently only works for `grouping='atoms'`
+        Currently only works for ``grouping='atoms'``
 
     """
     if grouping != "atoms":

@@ -14,6 +14,7 @@ Unreleased
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer
 
 - Splitting basic and advanced usage in Getting Started (#535)
+- Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
 - Update issue templates (#530)
 - Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.

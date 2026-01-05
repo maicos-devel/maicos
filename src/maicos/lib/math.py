@@ -503,8 +503,8 @@ def transform_cylinder(
 ) -> np.ndarray:
     """Transform positions into cylinder coordinates.
 
-    The origin of th coordinate system is at `origin`, the direction of the cylinder is
-    defined by `dim`.
+    The origin of th coordinate system is at ``origin``, the direction of the cylinder
+    is defined by ``dim``.
 
     Parameters
     ----------
@@ -543,14 +543,14 @@ def transform_cylinder(
 def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     """Transform positions into spherical coordinates.
 
-    The origin of the new coordinate system is at `origin`.
+    The origin of the new coordinate system is at ``origin``.
 
     Parameters
     ----------
     positions : numpy.ndarray
-        Cartesian coordinates (x,y,z)
+        Cartesian coordinates ``(x,y,z)``
     origin : numpy.ndarray
-        Origin of the new spherical coordinate system (x,y,z).
+        Origin of the new spherical coordinate system ``(x,y,z)``.
 
     Returns
     -------

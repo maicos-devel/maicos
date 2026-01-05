@@ -114,7 +114,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     The class is designed as a template for creating multi-frame analyses. This class
     will automatically take care of setting up the trajectory reader for iterating, and
     it offers to show a progress meter. Computed results are stored inside the
-    :attr:`results` attribute. To define a new analysis, `AnalysisBase` needs to be
+    :attr:`results` attribute. To define a new analysis, ``AnalysisBase`` needs to be
     subclassed and :meth:`_single_frame` must be defined. It is also possible to define
     :meth:`_prepare` and :meth:`_conclude` for pre- and post-processing. All results
     should be stored as attributes of the :class:`MDAnalysis.analysis.base.Results`
@@ -170,7 +170,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     Raises
     ------
     ValueError
-        If any of the provided AtomGroups (`atomgroup` or `refgroup`) does
+        If any of the provided AtomGroups (``atomgroup`` or ``refgroup``) does
         not contain any atoms.
 
     Example

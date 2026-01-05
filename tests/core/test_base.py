@@ -151,7 +151,7 @@ class Conclude(AnalysisBase):
     """Class to test the _conclude method.
 
     A new file with a file name of the current analysis frame number is created every
-    time the `_conclude` method is called.
+    time the ``_conclude`` method is called.
     """
 
     def __init__(
@@ -897,8 +897,8 @@ class TestAnalysisCollection:
 class Test_ProfileBase:
     """Test class for the ProfileBase Class.
 
-    The single_frame is for now extensivley tested in the child `ProfilePlanarBase`,
-    `ProfileCylinderBase` and `ProfileSphereBase` for simple physical system.
+    The single_frame is for now extensivley tested in the child ``ProfilePlanarBase``,
+    ``ProfileCylinderBase`` and ``ProfileSphereBase`` for simple physical system.
     """
 
     @pytest.fixture
