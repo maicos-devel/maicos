@@ -262,7 +262,7 @@ def unwrap_refgroup_class(**kwargs):
 
 
 class TestWrapRefgroup:
-    """Test the `unwrap_refgroup` decorator."""
+    """Test the ``unwrap_refgroup`` decorator."""
 
     def test_unwrap_refgroup(self):
         """Test to raise an error if unwrap and refgroup."""
@@ -370,7 +370,7 @@ class TestCorrelationAnalysis:
 
 
 class Testget_center:
-    """Test the `get_center` function."""
+    """Test the ``get_center`` function."""
 
     compounds = ["group", "segments", "residues", "molecules", "fragments"]
 
@@ -416,7 +416,7 @@ class Testget_center:
 
 
 class TestUnitVectors:
-    """Test the `unit_vectors` functions."""
+    """Test the ``unit_vectors`` functions."""
 
     @pytest.mark.parametrize("pdim", [0, 1, 2])
     def test_unit_vectors_planar(self, pdim):
