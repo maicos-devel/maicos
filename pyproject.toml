@@ -77,7 +77,10 @@ show_missing = true
 exclude_lines = ["if __name__ == .__main__.:"]
 
 [tool.mypy]
-exclude = ["docs/src/examples"]
+exclude = [
+    "docs/src/generated_examples",
+    "docs/src/get-started/generated_tabs",
+]
 follow_imports = 'skip'
 ignore_missing_imports = true
 

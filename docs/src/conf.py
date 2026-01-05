@@ -46,6 +46,7 @@ extensions = [
     "sphinxcontrib.bibtex",  # Cite references using a bibtex file
     "sphinxcontrib.details.directive",  # details directive for collapsible content
     "sphinx_toggleprompt",  # button to examples to toggle prompts
+    "sphinx_tabs.tabs",
 ]
 
 # The path to the bibtex file
@@ -57,9 +58,9 @@ sphinx_gallery_conf = {
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),
     "example_extensions": {".py", ".sh"},
-    "examples_dirs": "../../examples",
+    "examples_dirs": ["../../examples", "get-started/tabs"],
     "filename_pattern": r"\.py",
-    "gallery_dirs": "examples",
+    "gallery_dirs": ["generated_examples", "get-started/generated_tabs"],
     "min_reported_time": 60,
     "prefer_full_module": ["maicos"],
     "reference_url": {"maicos": None},
@@ -87,7 +88,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: list[str] = []
+exclude_patterns: list[str] = ["get-started/tabs/GALLERY_HEADER.rst"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "tango"

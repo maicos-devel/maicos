@@ -28,8 +28,8 @@ class DielectricSphere(SphereBase):
     the ``refgroup``, if provided.
 
     For usage, please refer to
-    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` and for details on the
-    theory see :ref:`dielectric-explanations`.
+    :ref:`sphx_glr_generated_examples_dielectrics_dielectric-profiles.py` and for
+    details on the theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the radial (:math:`r`) component is used.
     ${CORRELATION_INFO}
