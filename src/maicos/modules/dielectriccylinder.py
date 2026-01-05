@@ -226,7 +226,7 @@ class DielectricCylinder(CylinderBase):
         phi = (np.arange(nbinsphi)) * (2 * np.pi / nbinsphi)
         phibins = np.digitize(pos_phi, phi[1:])
 
-        # calcualte the charge in each bin
+        # calculate the charge in each bin
         curQphi = np.bincount(
             rbins + self.n_bins * phibins,
             weights=self.atomgroup.charges,
@@ -287,7 +287,7 @@ class DielectricCylinder(CylinderBase):
         return self._obs.M_z
 
     def _get_coc_rbins(self):
-        """Move all r-positions to 'center of charge'.
+        """Move all r-positions to 'center of absolute charge'.
 
         Thus we avoid monopoles in r-direction.
         We only want to cut in phi and z direction.
