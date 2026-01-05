@@ -7,3 +7,4 @@ sphinxcontrib-details-directive
 sphinx-toggleprompt
 sphinx-tabs
 tomli
+docutils<0.22  # temporary fix for compatibility issues with Sphinx
