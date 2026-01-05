@@ -368,10 +368,10 @@ def test_transform_cylinder():
     assert_allclose(pos_cyl[:, 0], np.sqrt(2))
 
     # phi component
-    assert_allclose(pos_cyl[0, 1], np.pi * 5/4)
-    assert_allclose(pos_cyl[1, 1], np.pi * 3/4)
-    assert_allclose(pos_cyl[2, 1], np.pi * 1/4)
-    assert_allclose(pos_cyl[3, 1], np.pi * 7/4)
+    assert_allclose(pos_cyl[0, 1], np.pi * 5 / 4)
+    assert_allclose(pos_cyl[1, 1], np.pi * 3 / 4)
+    assert_allclose(pos_cyl[2, 1], np.pi * 1 / 4)
+    assert_allclose(pos_cyl[3, 1], np.pi * 7 / 4)
 
     # z component
     assert_equal(pos_cyl[:, 2], sel.positions[:, 2])

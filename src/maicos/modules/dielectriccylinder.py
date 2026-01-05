@@ -206,10 +206,10 @@ class DielectricCylinder(CylinderBase):
         # Use virtual cutting method (for azimuthal component)
         # ========================================================
         # number of virtual cuts ("many")
-        self.phicutwidth = self.vcutwidth # angstrom
+        self.phicutwidth = self.vcutwidth  # angstrom
 
         nbinsphi = np.ceil(self.rmax * 2 * np.pi / self.phicutwidth).astype(int)
-        nbinsphi = nbinsphi //4 * 4
+        nbinsphi = nbinsphi // 4 * 4
         logging.debug("Number of phi bins {nbinsphi}")
 
         rbins, testrpos = self._get_coc_rbins()
@@ -230,13 +230,13 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges,
             minlength=self.n_bins * nbinsphi,
         ).reshape(nbinsphi, self.n_bins)
-        #print(curQphi)
+        # print(curQphi)
 
         # calculate the integral over the charge density
         area = self._obs.bin_width * self._obs.L
-        curqphi = np.cumsum(curQphi, axis=0) / (area )
-        #print("first cutting")
-        #print(curqphi)
+        curqphi = np.cumsum(curQphi, axis=0) / (area)
+        # print("first cutting")
+        # print(curqphi)
 
         # ------------- SECOND CUTTING --------------
 
@@ -255,30 +255,30 @@ class DielectricCylinder(CylinderBase):
 
         # calculate the integral over the charge density
         area = self._obs.bin_width * self._obs.L
-        curqphi2 = np.cumsum(curQphi, axis=0) / (area )
-        #print("second cutting")
-        #print(curqphi2)
-
+        curqphi2 = np.cumsum(curQphi, axis=0) / (area)
+        # print("second cutting")
+        # print(curqphi2)
 
         # puzzle the two halfs together
         whole = curqphi.shape[0]
         quat = whole // 4
-        half = quat*2
-        tquat = quat*3
+        half = quat * 2
+        tquat = quat * 3
 
         curqphi[:quat, :] = curqphi2[half:tquat, :]
         curqphi[tquat:, :] = curqphi2[quat:half, :]
 
-        #print("puzzled together")
-        #print(curqphi)
-
+        # print("puzzled together")
+        # print(curqphi)
 
         # average of m_phi(phi, r) over phi
         self._obs.m_phi = -curqphi.mean(axis=0)
         # This is the systems dipole moment in phi_direction and
         # not the radial integral of the dipole density.
-        # also it's already multiplied by 2 pi L 
-        self._obs.M_phi = np.sum(self._obs.bin_volume * self._obs.bin_pos * self._obs.m_phi)
+        # also it's already multiplied by 2 pi L
+        self._obs.M_phi = np.sum(
+            self._obs.bin_volume * self._obs.bin_pos * self._obs.m_phi
+        )
         self._obs.mM_phi = self._obs.m_phi * self._obs.M_phi
 
         # Save the total dipole moment in z dierection for correlation analysis.
@@ -286,6 +286,7 @@ class DielectricCylinder(CylinderBase):
 
     def _get_coc_rbins(self):
         """Move all r-positions to 'center of charge'.
+
         Thus we avoid monopoles in r-direction.
         We only want to cut in phi and z direction.
         """
@@ -320,14 +321,14 @@ class DielectricCylinder(CylinderBase):
 
         # wrap all components that cross the border at 0 and 2 pi
         difference = test_center_phi - pos_phi
-        #check if there are atoms within the molecule with a 
-        #distance greater than 1 angstrom
-        difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0) 
+        # check if there are atoms within the molecule with a
+        # distance greater than 1 angstrom
+        difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0)
         difference_in_molecule = self.atomgroup.accumulate(
-                difference_in_atom, compound = self.comp)
+            difference_in_atom, compound=self.comp
+        )
         is_diff = difference_in_molecule[self.inverse_ix]
-        pos_phi = np.where(is_diff, test_center_phi, pos_phi)
-        return pos_phi
+        return np.where(is_diff, test_center_phi, pos_phi)
 
     def _conclude(self) -> None:
         super()._conclude()
@@ -389,22 +390,40 @@ class DielectricCylinder(CylinderBase):
         self.results.m_phi = self.means.m_phi
         self.results.dm_phi = self.sems.m_phi
 
-        self.results.eps_phi = 1 / self.results.bin_pos * self._pref * cov_phi  
+        self.results.eps_phi = 1 / self.results.bin_pos * self._pref * cov_phi
         self.results.deps_phi = 1 / self.results.bin_pos * self._pref * dcov_phi
 
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
         outdata_z = np.array(
-            [self.results.bin_pos, self.results.eps_z, self.results.deps_z, self.results.m_z, self.results.dm_z]
+            [
+                self.results.bin_pos,
+                self.results.eps_z,
+                self.results.deps_z,
+                self.results.m_z,
+                self.results.dm_z,
+            ]
         ).T
         outdata_r = np.array(
-            [self.results.bin_pos, self.results.eps_r, self.results.deps_r, self.results.m_r, self.results.dm_r]
+            [
+                self.results.bin_pos,
+                self.results.eps_r,
+                self.results.deps_r,
+                self.results.m_r,
+                self.results.dm_r,
+            ]
         ).T
 
         outdata_phi = np.array(
-                [self.results.bin_pos, self.results.eps_phi, self.results.deps_phi, self.results.m_phi, self.results.dm_phi]
-                ).T
+            [
+                self.results.bin_pos,
+                self.results.eps_phi,
+                self.results.deps_phi,
+                self.results.m_phi,
+                self.results.dm_phi,
+            ]
+        ).T
 
         columns = ["positions [Å]"]
 
@@ -429,5 +448,3 @@ class DielectricCylinder(CylinderBase):
         self.savetxt(
             "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
         )
-
-

@@ -28,7 +28,6 @@ from data import (  # noqa: E402
     WATER_TRR_NPT,
 )
 from util import error_prop  # noqa: E402
-from maicos.lib.util import get_compound
 
 
 class TestDielectricCylinder:
@@ -183,9 +182,9 @@ class TestDielectricCylinder:
     def test_azimuthal_dipole_orientations(self, selection):
         """Check azimuthal dipole moment density.
 
-        create 4 dipoles pointing in the azimuthal direction and check if the volume
-        integral over the azimuthal dipole moment density equals the total azimuthal dipole
-        moment of the system.
+            create 4 dipoles pointing in the azimuthal direction and check if the
+            volume integral over the azimuthal dipole moment density equals the total
+        azimuthal dipole moment of the system.
         """
         dipole1 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
         dipole1.atoms.rotateby(90, [0, 0, 1])
@@ -206,8 +205,8 @@ class TestDielectricCylinder:
             *[dipole1.atoms, dipole2.atoms, dipole3.atoms, dipole4.atoms]
         )
 
-        dipole.add_TopologyAttr('resid', [0, 1, 2, 3])
-        dipole.add_TopologyAttr('molnums', [0, 1, 2, 3])
+        dipole.add_TopologyAttr("resid", [0, 1, 2, 3])
+        dipole.add_TopologyAttr("molnums", [0, 1, 2, 3])
         dipole.dimensions = [10, 10, 10, 90, 90, 90]
         dipole.atoms.translate(
             -dipole.atoms.center_of_mass() + dipole.dimensions[:3] / 2
@@ -220,12 +219,12 @@ class TestDielectricCylinder:
         eps.run()
         # Check the dipole moment density by integrating over the system volume
         # and comparing to the total diplole moment of the system.
-        print(eps._obs.m_phi)
-        print(eps._obs.bin_volume)
-        print(eps._obs.bin_width * 2 * np.pi * eps._obs.bin_pos * eps._obs.L)
-        print(f"selection {selection}")
-        print(eps._obs.m_phi)
-        print(eps._obs.bin_pos[eps._obs.m_phi > 0])
+        # print(eps._obs.m_phi)
+        # print(eps._obs.bin_volume)
+        # print(eps._obs.bin_width * 2 * np.pi * eps._obs.bin_pos * eps._obs.L)
+        # print(f"selection {selection}")
+        # print(eps._obs.m_phi)
+        # print(eps._obs.bin_pos[eps._obs.m_phi > 0])
         assert_allclose(
             np.sum(eps._obs.bin_volume * eps._obs.m_phi), 4 / selection, rtol=0.05
         )
@@ -233,20 +232,17 @@ class TestDielectricCylinder:
         chargepos = eps.pos_cyl[eps.atomgroup.ix, 0] * np.abs(eps.atomgroup.charges)
         center = eps.atomgroup.accumulate(
             chargepos, compound=eps.comp
-        ) / eps.atomgroup.accumulate(
-            np.abs(eps.atomgroup.charges), compound=eps.comp
-        )
+        ) / eps.atomgroup.accumulate(np.abs(eps.atomgroup.charges), compound=eps.comp)
         rpos = center[0]
-        print(rpos)
+        # print(rpos)
 
-        assert_allclose(eps._obs.M_phi, 4 / selection * rpos , rtol=0.05)
+        assert_allclose(eps._obs.M_phi, 4 / selection * rpos, rtol=0.05)
         # Check that the radial dipole moment is zero. (Should be due to
         # geometry)
         assert_allclose(np.sum(eps._obs.m_r), 0, rtol=0.01)
 
     def test_rbins_azimuthal(self):
-        """ Test the rbins in azimuthal direction """
-
+        """Test the rbins in azimuthal direction."""
         dipole1 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
         dipole1.atoms.rotateby(90, [0, 0, 1])
         dipole1.atoms.translate([1, 0, 0])
@@ -255,27 +251,23 @@ class TestDielectricCylinder:
         dipole2.atoms.rotateby(180, [0, 0, 1])
         dipole2.atoms.translate([0, 1, 0])
 
-        dipole = mda.Merge(
-            *[dipole1.atoms, dipole2.atoms]
-        )
+        dipole = mda.Merge(*[dipole1.atoms, dipole2.atoms])
 
-        dipole.add_TopologyAttr('resid', [0, 1])
-        dipole.add_TopologyAttr('molnums', [0, 1])
+        dipole.add_TopologyAttr("resid", [0, 1])
+        dipole.add_TopologyAttr("molnums", [0, 1])
         dipole.dimensions = [10, 10, 10, 90, 90, 90]
-        dipole.atoms.translate(
-            dipole.dimensions[:3] / 2
-        )
+        dipole.atoms.translate(dipole.dimensions[:3] / 2)
 
         eps = DielectricCylinder(dipole.atoms, bin_width=0.5, vcutwidth=0.001)
         eps.run()
         rbins, testrpos = eps._get_coc_rbins()
         ind = np.argmin(np.abs(eps.results.bin_pos - 1.1))
-        print(eps.results.bin_pos)
-        print(eps._obs.bin_edges)
-        assert_allclose(rbins, [ind]*4)
+        # print(eps.results.bin_pos)
+        # print(eps._obs.bin_edges)
+        assert_allclose(rbins, [ind] * 4)
 
     def test_wrap_phi_positions(self):
-        """ test wrapping molecules that cross the phi boundary"""
+        """Test wrapping molecules that cross the phi boundary."""
         dipole1 = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
         dipole1.atoms.translate(-dipole1.atoms.center_of_mass())
         dipole1.atoms.rotateby(90, [0, 0, 1])
@@ -286,29 +278,21 @@ class TestDielectricCylinder:
         dipole2.atoms.rotateby(180, [0, 0, 1])
         dipole2.atoms.translate([0, 1, 0])
 
-        dipole = mda.Merge(
-            *[dipole1.atoms, dipole2.atoms]
-        )
+        dipole = mda.Merge(*[dipole1.atoms, dipole2.atoms])
 
-        dipole.add_TopologyAttr('resid', [0, 1])
-        dipole.add_TopologyAttr('molnums', [0, 1])
+        dipole.add_TopologyAttr("resid", [0, 1])
+        dipole.add_TopologyAttr("molnums", [0, 1])
         dipole.dimensions = [10, 10, 10, 90, 90, 90]
-        dipole.atoms.translate(
-            dipole.dimensions[:3] / 2
-        )
+        dipole.atoms.translate(dipole.dimensions[:3] / 2)
 
         eps = DielectricCylinder(dipole.atoms, bin_width=0.01, vcutwidth=0.001)
         eps.run()
 
         rbins, testrpos = eps._get_coc_rbins()
-        print(eps._coc_phi_shifted(shift=0))
-        pos_phi= eps._wrap_phi_positions(testrpos, shift=0)
-        print(pos_phi)
+        pos_phi = eps._wrap_phi_positions(testrpos, shift=0)
         assert_allclose(pos_phi[0], pos_phi[1])
-        print(eps._coc_phi_shifted(shift=-np.pi/2))
-        pos_phi = eps._wrap_phi_positions(testrpos, shift=-np.pi/2)
+        pos_phi = eps._wrap_phi_positions(testrpos, shift=-np.pi / 2)
         assert_allclose(pos_phi[2], pos_phi[3])
-
 
     def test_output(self, ag_single_frame, monkeypatch, tmp_path):
         """Tests output."""
