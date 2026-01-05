@@ -22,9 +22,10 @@ from ..lib.util import charge_neutral, citation_reminder, get_compound, render_d
 class DielectricCylinder(CylinderBase):
     r"""Cylindrical dielectric profiles.
 
-    Computes the axial :math:`\varepsilon_z(r)` and inverse radial
-    :math:`\varepsilon_r^{-1}(r)` components of the cylindrical dielectric tensor
-    :math:`\varepsilon`. The components are binned along the radial direction of the
+    Computes the axial :math:`\varepsilon_z(r)`, azimuthal :math:`\varepsilon_{\phi}(r)`
+    and inverse radial :math:`\varepsilon_r^{-1}(r)` components of the cylindrical
+    dielectric tensor :math:`\varepsilon`.
+    The components are binned along the radial direction of the
     cylinder. The :math:`z`-axis of the cylinder is pointing in the direction given by
     the ``dim`` parameter. The center of the cylinder is either located at the center of
     the simulation box (default) or at the center of mass of the ``refgroup``, if
@@ -65,6 +66,12 @@ class DielectricCylinder(CylinderBase):
         :math:`(\varepsilon^{-1}_r(r) - 1)`
     results.deps_r : numpy.ndarray
         Estimated uncertainty of inverse radial dielectric profile
+    results.eps_phi : numpy.ndarray
+        Reduced azimuthal dielectric profile
+        :math:`(\varepsilon_{\phi}(r) - 1)`
+    results.deps_phi : numpy.ndarray
+        Estimated uncertainty of azimuthal dielectric profile.
+
 
     """
 
@@ -121,7 +128,7 @@ class DielectricCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         logging.info(
-            "Analysis of the axial and inverse radial "
+            "Analysis of the axial, azimuthal and inverse radial "
             "components of the cylindrical dielectric tensor."
         )
         # Print Philip Loche citation
@@ -278,23 +285,23 @@ class DielectricCylinder(CylinderBase):
         return self._obs.M_z
 
     def _get_coc_rbins(self):
-        # Move all r-positions to 'center of charge' such that we avoid monopoles in
-        # r-direction. We only want to cut in z direction.
+        """Move all r-positions to 'center of charge'.
+        Thus we avoid monopoles in r-direction.
+        We only want to cut in phi and z direction.
+        """
         chargepos = self.pos_cyl[self.atomgroup.ix, 0] * np.abs(self.atomgroup.charges)
         center = self.atomgroup.accumulate(
             chargepos, compound=self.comp
         ) / self.atomgroup.accumulate(
             np.abs(self.atomgroup.charges), compound=self.comp
         )
-        #print("center in r bin of dipoles")
-        #print(center)
         testpos = center[self.inverse_ix]
 
         rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
         return rbins, testpos
 
     def _coc_phi_shifted(self, shift):
-        """ calculate the center of charge in phi direction """
+        """Calculate the center of charge in phi direction."""
         pos_phi = self.pos_cyl[self.atomgroup.ix, 1] + shift
         pos_phi = np.mod(pos_phi, 2 * np.pi)
         chargepos_phi = pos_phi * np.abs(self.atomgroup.charges)
@@ -308,19 +315,19 @@ class DielectricCylinder(CylinderBase):
         return test_center_phi, pos_phi
 
     def _wrap_phi_positions(self, testrpos, shift=0):
-        """wrap molecules that cross 0 to 2pi plane to their coc"""
+        """Wrap molecules that cross 0 to 2pi plane to their center of charge."""
         test_center_phi, pos_phi = self._coc_phi_shifted(shift)
 
         # wrap all components that cross the border at 0 and 2 pi
         difference = test_center_phi - pos_phi
-        difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0) #distance greater than 1 angstrom
+        #check if there are atoms within the molecule with a 
+        #distance greater than 1 angstrom
+        difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0) 
         difference_in_molecule = self.atomgroup.accumulate(
                 difference_in_atom, compound = self.comp)
         is_diff = difference_in_molecule[self.inverse_ix]
         pos_phi = np.where(is_diff, test_center_phi, pos_phi)
         return pos_phi
-
-
 
     def _conclude(self) -> None:
         super()._conclude()
