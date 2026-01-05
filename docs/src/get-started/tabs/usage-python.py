@@ -31,7 +31,7 @@ import maicos
 u = mda.Universe("slit_flow.tpr", "slit_flow.trr")
 # %%
 #
-# Let us print a few information about the trajectory:
+# Let us print some information about the trajectory:
 
 print(f"Number of frames in the trajectory is {u.trajectory.n_frames}.")
 timestep = round(u.trajectory.dt, 2)
@@ -42,7 +42,7 @@ print(f"Total simulation time is {total_time} ps.")
 #
 # .. selection
 #
-# Now, we define an atom group containing the oxygen and the hydrogen atoms:
+# Now, we define an atomgroup containing the oxygen and the hydrogen atoms:
 #
 # .. start_basic_group_py
 
@@ -50,7 +50,7 @@ group_H2O = u.select_atoms("type OW HW")
 
 # %%
 #
-# Let us print a few information about the groups
+# Let us print some information about the groups
 
 print(f"Number of water molecules is {group_H2O.n_atoms // 3}.")
 
