@@ -6,8 +6,8 @@
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-Advanced - Python interpreter
-=============================
+Advanced usage
+==============
 
 The requirements to follow the tutorial are the same than for the basic example.
 
