@@ -12,6 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
+from functools import partial
 from tempfile import NamedTemporaryFile
 from typing import Self
 
@@ -19,6 +20,7 @@ import MDAnalysis as mda
 import MDAnalysis.analysis.base
 import numpy as np
 from mdacli.logger import setup_logging
+from MDAnalysis.analysis.backends import BackendBase, BackendSerial
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -26,6 +28,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
+    ResultsAggregator,
     atomgroup_header,
     correlation_analysis,
     get_center,
@@ -36,7 +39,7 @@ from ..lib.util import (
 )
 
 
-class _Runner:
+class _Runner(MDAnalysis.analysis.base.AnalysisBase):
     """Private Runner class that provides a common ``run`` method.
 
     Class is used inside ``AnalysisBase`` as well as in ``AnalysisCollection``
@@ -50,6 +53,11 @@ class _Runner:
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
+        backend: str | BackendBase = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         self._run_locals = locals()
@@ -70,7 +78,56 @@ class _Runner:
 
         logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
 
+        # -------------------- New code --------------------
+        # default to serial execution
+        backend = "serial" if backend is None else backend
+
+        progressbar_kwargs = {} if progressbar_kwargs is None else progressbar_kwargs
+        if (progressbar_kwargs or verbose) and not (
+            backend == "serial" or isinstance(backend, BackendSerial)
+        ):
+            raise ValueError("Can not display progressbar with non-serial backend")
+
+        # if number of workers not specified, try getting the number from
+        # the backend instance if possible, or set to 1
+        if n_workers is None:
+            n_workers = (
+                backend.n_workers
+                if isinstance(backend, BackendBase) and hasattr(backend, "n_workers")
+                else 1
+            )
+
+        # set n_parts and check that is has a reasonable value
+        n_parts = n_workers if n_parts is None else n_parts
+
+        # do this as early as possible to check client parameters
+        # before any computations occur
+        executor = self._configure_backend(
+            backend=backend,
+            n_workers=n_workers,
+            unsupported_backend=unsupported_backend,
+        )
+        if (
+            hasattr(executor, "n_workers") and n_parts < executor.n_workers
+        ):  # using executor's value here for non-default executors
+            warnings.warn(
+                f"Analysis not making use of all workers: {executor.n_workers=} is "
+                f"greater than {n_parts=}",
+                stacklevel=2,
+            )
+
+        computation_groups = self._setup_computation_groups(
+            start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
+        )
+
+        remote_objects: dict[AnalysisBase, AnalysisBase] = {}
         for analysis_object in analysis_instances:
+            worker_funcs = partial(
+                analysis_object._compute,
+                progressbar_kwargs=progressbar_kwargs,
+                verbose=verbose,
+            )
+
             analysis_object._setup_frames(
                 analysis_object._trajectory,
                 start=start,
@@ -79,24 +136,41 @@ class _Runner:
                 frames=frames,
             )
 
-        for analysis_object in analysis_instances:
             analysis_object._call_prepare()
 
-        if progressbar_kwargs is None:
-            progressbar_kwargs = {}
-
-        for i, ts in enumerate(
-            ProgressBar(
-                analysis_instances[0]._sliced_trajectory,
-                verbose=verbose,
-                **progressbar_kwargs,
+            # get all results from workers in other processes.
+            # we need `AnalysisBase` classes
+            # since they hold `frames`, `times` and `results` attributes
+            remote_objects[analysis_object] = executor.apply(
+                worker_funcs, computation_groups
             )
-        ):
-            ts_original = ts.copy()
 
-            for analysis_object in analysis_instances:
-                analysis_object._call_single_frame(ts=ts, current_frame_index=i)
-                ts = ts_original
+        for analysis_object in analysis_instances:
+            analysis_object.frames = np.hstack(
+                [obj.frames for obj in remote_objects[analysis_object]]
+            )
+            analysis_object.times = np.hstack(
+                [obj.times for obj in remote_objects[analysis_object]]
+            )
+            analysis_object.timeseries = np.hstack(
+                [obj.timeseries for obj in remote_objects[analysis_object]]
+            )
+
+        for analysis_object in analysis_instances:
+            # aggregate results from results obtained in remote workers
+            n_frames = [obj.n_frames for obj in remote_objects[analysis_object]]
+
+            remote_means = [obj.means for obj in remote_objects[analysis_object]]
+            remote_sems = [obj.sems for obj in remote_objects[analysis_object]]
+            results_aggregator = self._get_maicos_aggregator()
+
+            remote_sums = [obj.sums for obj in remote_objects[analysis_object]]
+
+            analysis_object.means, analysis_object.sems = results_aggregator.merge(
+                remote_means, remote_sems, n_frames
+            )
+
+            analysis_object.sums = results_aggregator.merge_sums(remote_sums)
 
         logging.debug("Concluding analysis.")
 
@@ -105,6 +179,9 @@ class _Runner:
 
         tempfile.close()
         return self
+
+    def _get_maicos_aggregator(self) -> ResultsAggregator:
+        return ResultsAggregator()
 
 
 @render_docs
@@ -282,6 +359,30 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
+    @classmethod
+    def get_supported_backends(cls):
+        """Tuple with backends supported by the core library for a given class.
+
+        User can pass either one of these values as ``backend=...`` to
+        :meth:`run()` method, or a custom object that has ``apply`` method
+        (see documentation for :meth:`run()`):
+
+         - 'serial': no parallelization
+         - 'multiprocessing': parallelization using `multiprocessing.Pool`
+         - 'dask': parallelization using `dask.delayed.compute()`. Requires
+           installation of `mdanalysis[dask]`
+
+        If you want to add your own backend to an existing class, pass a
+        :class:`backends.BackendBase` subclass (see its documentation to learn
+        how to implement it properly), and specify ``unsupported_backend=True``.
+
+        Returns
+        -------
+        tuple
+            names of built-in backends that can be used in :meth:`run(backend=...)`
+        """
+        return ("serial",)
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -359,6 +460,58 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def box_center(self) -> np.ndarray:
         """Center of the simulation cell."""
         return self.box_lengths / 2
+
+    def _compute(
+        self,
+        indexed_frames: np.ndarray,
+        verbose: bool | None = None,
+        *,
+        progressbar_kwargs=None,
+    ) -> "AnalysisBase":
+        """Perform the calculation on a balanced slice of frames
+        that have been setup prior to that using _setup_computation_groups()
+
+        Parameters
+        ----------
+        indexed_frames : np.ndarray
+            np.ndarray of (n, 2) shape, where first column is frame iteration
+            indices and second is frame numbers
+
+        verbose : bool, optional
+            Turn on verbosity
+
+        progressbar_kwargs : dict, optional
+            ProgressBar keywords with custom parameters regarding progress bar
+            position, etc; see :class:`MDAnalysis.lib.log.ProgressBar`
+            for full list.
+
+
+        .. versionadded:: 2.8.0
+        """  # noqa: D205, D415
+        if progressbar_kwargs is None:
+            progressbar_kwargs = {}
+        logging.info("Choosing frames to analyze")
+        # if verbose unchanged, use class default
+        verbose = getattr(self, "_verbose", False) if verbose is None else verbose
+
+        frames = indexed_frames[:, 1]
+
+        logging.info("Starting preparation")
+        self._prepare_sliced_trajectory(slicer=frames)
+        self._call_prepare()
+        if len(frames) == 0:  # if `frames` were empty in `run` or `stop=0`
+            return self
+
+        for idx, ts in enumerate(
+            ProgressBar(self._sliced_trajectory, verbose=verbose, **progressbar_kwargs)
+        ):
+            self._frame_index = idx  # accessed later by subclasses
+            self._ts = ts
+            self.frames[idx] = ts.frame
+            self.times[idx] = ts.time
+            self._call_single_frame(ts, current_frame_index=idx)
+        logging.info("Finishing up")
+        return self
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
@@ -552,7 +705,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
         self.corrtime = correlation_analysis(self.timeseries)
-
         self._conclude()
         if self.concfreq and self.module_has_save:
             self.save()
@@ -565,6 +717,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
+        backend: str | BackendBase | None = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         """${RUN_METHOD_DESCRIPTION}"""  # noqa: D415
@@ -576,6 +733,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             step=step,
             frames=frames,
             verbose=verbose,
+            n_workers=n_workers,
+            n_parts=n_parts,
+            backend=backend,
+            unsupported_backend=unsupported_backend,
             progressbar_kwargs=progressbar_kwargs,
         )
 
@@ -630,7 +791,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             f"{module_name} is part of MAICoS v{__version__}\n\n"
             f"Command line:    {get_cli_input()}\n"
             f"Module input:    {module_input}\n\n"
-            f"Statistics over {self._index} frames\n\n"
+            #f"Statistics over {self._index} frames\n\n"
             f"Considered atomgroups:\n"
             f"{atomgroups}\n"
             f"{messages}\n\n"
@@ -730,6 +891,11 @@ class AnalysisCollection(_Runner):
         step: int | None = None,
         frames: int | None = None,
         verbose: bool | None = None,
+        n_workers: int | None = None,
+        n_parts: int | None = None,
+        backend: str | BackendBase = None,
+        *,
+        unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         """${RUN_METHOD_DESCRIPTION}"""  # noqa: D415
@@ -741,6 +907,10 @@ class AnalysisCollection(_Runner):
             step=step,
             frames=frames,
             verbose=verbose,
+            n_workers=n_workers,
+            n_parts=n_parts,
+            backend=backend,
+            unsupported_backend=unsupported_backend,
             progressbar_kwargs=progressbar_kwargs,
         )
 
@@ -760,6 +930,41 @@ class AnalysisCollection(_Runner):
                     "this instance can not be written to disk.",
                     stacklevel=2,
                 )
+
+    def _configure_backend(
+        self,
+        backend: str | BackendBase,
+        n_workers: int,
+        unsupported_backend: bool = False,
+    ) -> BackendBase:
+        backends = []
+        for analysis_object in self._analysis_instances:
+            backends.append(
+                analysis_object._configure_backend(
+                    backend=backend,
+                    n_workers=n_workers,
+                    unsupported_backend=unsupported_backend,
+                )
+            )
+
+        if all(isinstance(b, type(backends[0])) for b in backends):
+            return backends[0]
+        raise ValueError(
+            "All analysis instances must use the same backend. "
+            f"Found: {[type(b) for b in backends]}"
+        )
+
+    def _setup_computation_groups(
+        self,
+        n_parts: int | None,
+        start: int | None = None,
+        stop: int | None = None,
+        step: int | None = None,
+        frames: slice | np.ndarray | None = None,
+    ) -> list[np.ndarray]:
+        return self._analysis_instances[0]._setup_computation_groups(
+            n_parts=n_parts, start=start, stop=stop, step=step, frames=frames
+        )
 
 
 @render_docs
