@@ -500,11 +500,11 @@ class TestUnitVectors:
 class TestResultsAggregator:
     """Test the ResultsAggregator for the parallel analysis implementation."""
 
-    @pytest.fixture
-    def rand_data(self): 
-        return np.random.rand(64)
+    @pytest.fixture(params=[(64, 1), (64, 5)])
+    def data(self, request):
+        return np.random.rand(*request.param)
 
-    def test_means(self, rand_data):
+    def test_means(self, data):
         n_batches = 4
         batch_size = 16
         bs = batch_size
@@ -513,7 +513,7 @@ class TestResultsAggregator:
         for i in range(n_batches): 
             start = i*bs
             end = start + bs
-            means.append(np.mean(rand_data[start:end]))
+            means.append(np.mean(data[start:end], axis=0))
 
         batch_sizes = [batch_size] * n_batches
 
@@ -521,9 +521,9 @@ class TestResultsAggregator:
 
         weighted_mean = agg.weighted_mean(means, batch_sizes)
 
-        assert_allclose(weighted_mean, np.mean(rand_data))
+        assert_allclose(weighted_mean, np.mean(data, axis=0))
          
-    def test_sems(self, rand_data):
+    def test_sems(self, data):
         n_batches = 4
         batch_size = 16
         bs = batch_size
@@ -533,8 +533,8 @@ class TestResultsAggregator:
         for i in range(n_batches): 
             start = i*bs
             end = start + bs
-            sems.append(np.std(rand_data[start:end])/np.sqrt(bs))
-            means.append(np.mean(rand_data[start:end]))
+            sems.append(np.std(data[start:end], axis=0)/np.sqrt(bs))
+            means.append(np.mean(data[start:end], axis=0))
 
         batch_sizes = [batch_size] * n_batches
 
@@ -542,7 +542,7 @@ class TestResultsAggregator:
 
         weighted_sem = agg.weighted_sem(sems, means, batch_sizes)
 
-        assert_allclose(weighted_sem, np.std(rand_data)/np.sqrt(64))
+        assert_allclose(weighted_sem, np.std(data, axis=0)/np.sqrt(64))
 
         
 
