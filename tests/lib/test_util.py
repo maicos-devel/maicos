@@ -496,3 +496,53 @@ class TestUnitVectors:
         transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
 
         assert_allclose(transform, unit_vectors)
+
+class TestResultsAggregator:
+    """Test the ResultsAggregator for the parallel analysis implementation."""
+
+    @pytest.fixture
+    def rand_data(self): 
+        return np.random.rand(64)
+
+    def test_means(self, rand_data):
+        n_batches = 4
+        batch_size = 16
+        bs = batch_size
+            
+        means = []
+        for i in range(n_batches): 
+            start = i*bs
+            end = start + bs
+            means.append(np.mean(rand_data[start:end]))
+
+        batch_sizes = [batch_size] * n_batches
+
+        agg = maicos.lib.util.ResultsAggregator()
+
+        weighted_mean = agg.weighted_mean(means, batch_sizes)
+
+        assert_allclose(weighted_mean, np.mean(rand_data))
+         
+    def test_sems(self, rand_data):
+        n_batches = 4
+        batch_size = 16
+        bs = batch_size
+            
+        sems = []
+        means = []
+        for i in range(n_batches): 
+            start = i*bs
+            end = start + bs
+            sems.append(np.std(rand_data[start:end])/np.sqrt(bs))
+            means.append(np.mean(rand_data[start:end]))
+
+        batch_sizes = [batch_size] * n_batches
+
+        agg = maicos.lib.util.ResultsAggregator()
+
+        weighted_sem = agg.weighted_sem(sems, means, batch_sizes)
+
+        assert_allclose(weighted_sem, np.std(rand_data)/np.sqrt(64))
+
+        
+
