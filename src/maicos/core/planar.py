@@ -250,22 +250,20 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         if self._zmin is not None and abs(self._zmin) > current_box_length / 2:
             warnings.warn(
                 f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
-                f"box length ({current_box_length / 2:.2f} Å) "
-                f"along dimension {self.dim}. "
-                f"Consider letting MAICoS calculate bounds automatically (zmin=None) "
-                f"or manually determine safe bounds "
-                f"from the smallest box vector across frames.",
+                f"box length ({current_box_length / 2:.2f} Å) along dimension "
+                f"{self.dim}. Consider letting MAICoS calculate bounds automatically by"
+                "setting zmin to `None` or manually determine safe bounds from the "
+                "smallest box vector across frames.",
                 UserWarning,
                 stacklevel=2,
             )
         if self._zmax is not None and abs(self._zmax) > current_box_length / 2:
             warnings.warn(
-                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current "
-                f"box length ({current_box_length / 2:.2f} Å) "
-                f"along dimension {self.dim}. "
+                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
+                f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
                 f"Consider letting MAICoS calculate bounds automatically (zmax=None) "
-                f"or manually determine safe bounds "
-                f"from the smallest box vector across frames.",
+                f"or manually determine safe bounds from the smallest box vector "
+                "across frames.",
                 UserWarning,
                 stacklevel=2,
             )
