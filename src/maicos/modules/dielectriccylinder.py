@@ -104,6 +104,7 @@ class DielectricCylinder(CylinderBase):
         jitter: float = 0.0,
         concfreq: int = 0,
         output_prefix: str = "eps_cyl",
+        nz_bins = 1,
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -131,7 +132,6 @@ class DielectricCylinder(CylinderBase):
             rmin=rmin,
             rmax=rmax,
             wrap_compound=self.comp,
-            nz_bins=1,
         )
         self.output_prefix = output_prefix
         self.temperature = temperature
@@ -160,7 +160,7 @@ class DielectricCylinder(CylinderBase):
         rbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 0], self._obs.bin_edges[1:-1])
 
         # TODO: make molecules whole, or alternatively, move the z position to center of charge
-        self._obs.L_zbin = self._obs.L * / self.nz_bins
+        self._obs.L_zbin = self._obs.L / self.nz_bins
         
         zbins, coc_zpos = self._get_coc_zbins()
 
@@ -169,7 +169,7 @@ class DielectricCylinder(CylinderBase):
             rbins + self.n_bins * zbins,
             weights=self.atomgroup.charges,
             minlength=self.n_bins * self.nz_bins,
-        ).reshape(self.nzbins, self.n_bins)
+        ).reshape(self.nz_bins, self.n_bins)
 
         # In literature, the charge density is integrated along the radial direction to
         # get the dipole moment density. We can rewrite the integral by identifying:
@@ -195,7 +195,7 @@ class DielectricCylinder(CylinderBase):
         # direction, but it keeps the nomenclature consistent across all of the
         # dielectric modules.
         self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width, axis=-1)
-        self._obs.mM_r = self._obs.m_r * self._obs.M_r
+        self._obs.mM_r = self._obs.m_r * np.expand_dims(self._obs.M_r, axis=-1)
 
         # Use virtual cutting method (for axial component)
         # ========================================================
@@ -343,7 +343,7 @@ class DielectricCylinder(CylinderBase):
         )
         coc_positions = center[self.inverse_ix]
 
-        zbins = np.digitize(coc_positions, zbin_edges[1:])
+        zbins = np.digitize(coc_positions, z_bin_edges[1:])
 
         return zbins, coc_positions
 
@@ -392,7 +392,7 @@ class DielectricCylinder(CylinderBase):
             # the total dipole moment in z-direction, not the radial integral of the
             # dipole density. M_z = 2 pi L \int_0^R dr r m(r)
             cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
-            cov_r = self.means.mM_r - self.means.m_r * self.means.M_r
+            cov_r = self.means.mM_r - self.means.m_r * np.expand_dims(self.means.M_r, axis=-1)
             cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
 
             dcov_z = np.sqrt(
@@ -402,8 +402,8 @@ class DielectricCylinder(CylinderBase):
             )
             dcov_r = np.sqrt(
                 self.sems.mM_r**2
-                + self.sems.m_r**2 * self.means.M_r**2
-                + self.means.m_r**2 * self.sems.M_r**2
+                + self.sems.m_r**2 * np.expand_dims(self.means.M_r, axis=-1)**2
+                + self.means.m_r**2 * np.expand_dims(self.sems.M_r, axis=-1)**2
             )
 
             dcov_phi = np.sqrt(
