@@ -131,11 +131,14 @@ class DielectricCylinder(CylinderBase):
             rmin=rmin,
             rmax=rmax,
             wrap_compound=self.comp,
+            nz_bins=1,
         )
         self.output_prefix = output_prefix
         self.temperature = temperature
         self.single = single
         self.vcutwidth = vcutwidth
+        self.nz_bins = nz_bins
+        
 
     def _prepare(self) -> None:
         logging.info(
@@ -151,21 +154,26 @@ class DielectricCylinder(CylinderBase):
         super()._single_frame()
 
         # Precalculate the bins each atom belongs to.
-        rbins = np.digitize(self.pos_cyl[:, 0], self._obs.bin_edges[1:-1])
+        rbins = np.digitize(self.pos_cyl[self.atomgroup.ix, 0], self._obs.bin_edges[1:-1])
+
+        # TODO: make molecules whole, or alternatively, move the z position to center of charge
+        self._obs.L_zbin = self._obs.L * / self.nz_bins
+        
+        zbins, coc_zpos = self._get_coc_zbins()
 
         # Calculate the charge per bin for the selected atomgroup.
         curQ_r = np.bincount(
-            rbins[self.atomgroup.ix],
+            rbins + self.n_bins * zbins,
             weights=self.atomgroup.charges,
-            minlength=self.n_bins,
-        )
+            minlength=self.n_bins * self.nz_bins,
+        ).reshape(self.nzbins, self.n_bins)
 
         # In literature, the charge density is integrated along the radial direction to
         # get the dipole moment density. We can rewrite the integral by identifying:
         # q(a) = 2π * L * int_0^a ρ(r) * r dr,
         # where q(a) is the charge enclosed within a cylinder of radius a and length L.
         # This allows us to avoid numerical errors.
-        self._obs.m_r = -np.cumsum(curQ_r) / 2 / np.pi / self._obs.L / self._obs.bin_pos
+        self._obs.m_r = -np.cumsum(curQ_r, axis=-1) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos
 
         # Same as above, but for the whole system.
         curQ_r_tot = np.bincount(
@@ -173,7 +181,7 @@ class DielectricCylinder(CylinderBase):
         )
 
         self._obs.m_r_tot = (
-            -np.cumsum(curQ_r_tot) / 2 / np.pi / self._obs.L / self._obs.bin_pos
+            -np.cumsum(curQ_r_tot) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos
         )
 
         # Note that M_r is not really the total system dipole moment in radial
@@ -313,6 +321,25 @@ class DielectricCylinder(CylinderBase):
 
         rbins = np.digitize(testpos, self._obs.bin_edges[1:-1])
         return rbins, testpos
+
+    def _get_coc_zbins(self):
+        """Move all z positions to "center of absolute charge".
+
+        Thus we can use z-binning."""
+
+        z_bin_edges = (np.arange(self.nz_bins)) * (self._obs.L_zbin)
+        chargepos = self.pos_cyl[self.atomgroup.ix, 2] * np.abs(self.atomgroup.charges)
+        center = self.atomgroup.accumulate(
+            chargepos, compound=self.comp
+        ) / self.atomgroup.accumulate(
+            np.abs(self.atomgroup.charges), compound=self.comp
+        )
+        coc_positions = center[self.inverse_ix]
+
+        zbins = np.digitize(coc_positions, zbin_edges[1:])
+
+        return zbins, coc_positions
+
 
     def _coc_phi_shifted(self, shift):
         """Calculate the center of charge in phi direction."""
