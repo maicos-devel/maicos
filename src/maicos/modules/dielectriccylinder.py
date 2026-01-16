@@ -163,6 +163,7 @@ class DielectricCylinder(CylinderBase):
         self._obs.L_zbin = self._obs.L / self.nz_bins
         
         zbins, coc_zpos = self._get_coc_zbins()
+        #print(zbins, coc_zpos)
 
         # Calculate the charge per bin for the selected atomgroup.
         curQ_r = np.bincount(
@@ -170,13 +171,14 @@ class DielectricCylinder(CylinderBase):
             weights=self.atomgroup.charges,
             minlength=self.n_bins * self.nz_bins,
         ).reshape(self.nz_bins, self.n_bins)
+        #print(curQ_r)
 
         # In literature, the charge density is integrated along the radial direction to
         # get the dipole moment density. We can rewrite the integral by identifying:
         # q(a) = 2π * L * int_0^a ρ(r) * r dr,
         # where q(a) is the charge enclosed within a cylinder of radius a and length L.
         # This allows us to avoid numerical errors.
-        self._obs.m_r = -np.cumsum(curQ_r, axis=-1) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos # might have to expand dims of bin_pos
+        self._obs.m_r = -np.cumsum(curQ_r, axis=1) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos # might have to expand dims of bin_pos
 
 
         # NOTE: the z_binning only works, if there is nothing but water in the system :)
@@ -188,14 +190,15 @@ class DielectricCylinder(CylinderBase):
         """
 
         self._obs.m_r_tot = (
-            -np.cumsum(curQ_r, axis=-1) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos
+            -np.cumsum(curQ_r, axis=1) / 2 / np.pi / self._obs.L_zbin / self._obs.bin_pos
         )
 
         # Note that M_r is not really the total system dipole moment in radial
         # direction, but it keeps the nomenclature consistent across all of the
         # dielectric modules.
-        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width, axis=-1)
-        self._obs.mM_r = self._obs.m_r * np.expand_dims(self._obs.M_r, axis=-1)
+        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width, axis=1)
+        #print(np.expand_dims(self._obs.M_r, axis=1).shape)
+        self._obs.mM_r = self._obs.m_r * np.expand_dims(self._obs.M_r, axis=1)
 
         # Use virtual cutting method (for axial component)
         # ========================================================
@@ -336,6 +339,7 @@ class DielectricCylinder(CylinderBase):
 
         z_bin_edges = (np.arange(self.nz_bins)) * (self._obs.L_zbin)
         chargepos = self.pos_cyl[self.atomgroup.ix, 2] * np.abs(self.atomgroup.charges)
+        #print(chargepos)
         center = self.atomgroup.accumulate(
             chargepos, compound=self.comp
         ) / self.atomgroup.accumulate(
@@ -392,7 +396,7 @@ class DielectricCylinder(CylinderBase):
             # the total dipole moment in z-direction, not the radial integral of the
             # dipole density. M_z = 2 pi L \int_0^R dr r m(r)
             cov_z = self.means.mM_z - self.means.m_z * self.means.M_z
-            cov_r = self.means.mM_r - self.means.m_r * np.expand_dims(self.means.M_r, axis=-1)
+            cov_r = self.means.mM_r - self.means.m_r * np.expand_dims(self.means.M_r, axis=1)
             cov_phi = self.means.mM_phi - self.means.m_phi * self.means.M_phi
 
             dcov_z = np.sqrt(
@@ -425,11 +429,10 @@ class DielectricCylinder(CylinderBase):
         self.results.eps_z = self._pref * cov_z
         self.results.deps_z = self._pref * dcov_z
 
-        self.results.m_r = np.mean(self.means.m_r, axis=0)
-        self.results.dm_r = np.mean(self.sems.m_r, axis=0)
-        self.results.eps_r = -np.mean(
-            2 * np.pi * self.means.L * self._pref * self.results.bin_pos * cov_r,
-            axis=0
+        self.results.m_r = self.means.m_r
+        self.results.dm_r = self.sems.m_r
+        self.results.eps_r = -(
+            2 * np.pi * self.means.L_zbin * self._pref * self.results.bin_pos * cov_r
         )
         self.results.deps_r = np.mean(
             2 * np.pi * self.means.L * self._pref * self.results.bin_pos * dcov_r,
