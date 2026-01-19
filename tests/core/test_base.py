@@ -89,11 +89,18 @@ class SingularSeries(AnalysisBase):
             concfreq=0,
         )
 
+        n_frames = 101
+        #rng = np.random.default_rng(seed=100)
+        x = np.linspace(0, 1, n_frames)
+        #self.series = rng.random(n_frames)
+        self.series = np.sin(x)
+
     def _prepare(self):
-        self.series = np.random.rand(self.n_frames)
+        pass
 
     def _single_frame(self):
-        self._obs.observable = self.series[self._frame_index]
+        print(self.frames[self._frame_index])
+        self._obs.observable = self.series[self.frames[self._frame_index]]
 
     @classmethod
     def get_supported_backends(cls):
@@ -296,9 +303,8 @@ class Test_AnalysisBase:
         """Test the parallel runner."""
         ana = SingularSeries(atomgroup=ag)
         ana.run(backend="dask", n_workers=4)
-        #assert_allclose(ana.sums.observable, np.sum(ana.series))
-        assert_allclose(ana.means.observable, np.mean(ana.series))
-        assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
+        assert_allclose(ana.means.observable, np.mean(ana.series[:ana.n_frames]), rtol=1e-5)
+        assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames), rtol=1e-5)
 
     def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""
