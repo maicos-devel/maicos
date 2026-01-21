@@ -612,22 +612,28 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
 
     return n_AB, mu_AB, M_AB
 
-def accumulate(atomgroup, attribute, function=np.add, compound="group"):
+def accumulate(mdagroup, attribute, function=np.add, compound="group"):
     """A faster accumulate than MDAnalysis accumulate."""
+
+    atoms = mdagroup.atoms
 
     # Get the attribute values
     if isinstance(attribute, str):
-        attribute_values = getattr(atomgroup, attribute)
+        attribute_values = getattr(atoms, attribute)
     else:
         attribute_values = np.asarray(attribute)
-        if len(attribute_values) != len(atomgroup):
+        if len(attribute_values) != len(atoms):
             raise ValueError(
                 "The input array length ({}) does not match "
                 "the number of atoms ({}) in the group."
-                "".format(len(attribute_values), len(atomgroup))
+                "".format(len(attribute_values), len(atoms))
                 )
 
-    compound_indices = atomgroup._get_compound_indices(compound)
+
+    if compound == "group":
+        return function.reduce(attribute_values, axis=0)
+
+    compound_indices = mdagroup._get_compound_indices(compound)
 
     # Resort the attribute values, so that atoms which belong to the same compound
     # are next to each other

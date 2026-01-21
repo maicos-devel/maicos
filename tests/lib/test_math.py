@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import MDAnalysis as mda
+from MDAnalysis.exceptions import NoDataError
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_equal, assert_almost_equal
