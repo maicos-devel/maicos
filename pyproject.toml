@@ -96,7 +96,6 @@ addopts = [
     "--cov-append",
     "--cov-report=",
     "--import-mode=append",
-    "--disable-warnings",
 ]
 
 [tool.ruff]

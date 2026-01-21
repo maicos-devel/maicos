@@ -536,3 +536,21 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run(stop=1)
         selected_bin = profile._single_frame()
         assert selected_bin == profile._obs.profile[n_bins // 2]
+
+    def test_warn_zmin_exceeds_half_box(self, params, caplog):
+        """Test warning when zmin exceeds half the box length."""
+        params = params.copy()
+        params.update(zmin=-1.6)
+        with caplog.at_level(logging.WARNING):
+            ProfilePlanarBase(**params).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmin" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
+    def test_warn_zmax_exceeds_half_box(self, params, caplog):
+        """Test warning when zmax exceeds half the box length."""
+        params = params.copy()
+        params.update(zmax=1.6)
+        with caplog.at_level(logging.WARNING):
+            ProfilePlanarBase(**params).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmax" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"

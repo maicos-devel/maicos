@@ -8,7 +8,6 @@
 """Base class for planar analysis."""
 
 import logging
-import warnings
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -227,6 +226,9 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
 
         logging.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
 
+        self._warned_zmin = False
+        self._warned_zmax = False
+
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
@@ -245,28 +247,33 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 
-        # Warn if user-defined bounds exceed current box dimensions
         current_box_length = self.box_lengths[self.dim]
-        if self._zmin is not None and abs(self._zmin) > current_box_length / 2:
-            warnings.warn(
+        if (
+            not self._warned_zmin
+            and self._zmin is not None
+            and abs(self._zmin) > current_box_length / 2
+        ):
+            logging.warning(
                 f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
                 f"box length ({current_box_length / 2:.2f} Å) along dimension "
-                f"{self.dim}. Consider letting MAICoS calculate bounds automatically by"
-                "setting zmin to `None` or manually determine safe bounds from the "
-                "smallest box vector across frames.",
-                UserWarning,
-                stacklevel=2,
+                f"{self.dim}. Consider letting MAICoS calculate bounds automatically "
+                "by setting zmin to `None` or manually determine safe bounds from the "
+                "smallest box vector across frames."
             )
-        if self._zmax is not None and abs(self._zmax) > current_box_length / 2:
-            warnings.warn(
+            self._warned_zmin = True
+        if (
+            not self._warned_zmax
+            and self._zmax is not None
+            and abs(self._zmax) > current_box_length / 2
+        ):
+            logging.warning(
                 f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
                 f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
-                f"Consider letting MAICoS calculate bounds automatically (zmax=None) "
-                f"or manually determine safe bounds from the smallest box vector "
-                "across frames.",
-                UserWarning,
-                stacklevel=2,
+                "Consider letting MAICoS calculate bounds automatically (zmax=None) "
+                "or manually determine safe bounds from the smallest box vector "
+                "across frames."
             )
+            self._warned_zmax = True
         # Take the center bin for correlation analysis.
         return self._obs.profile[self.n_bins // 2]
 
