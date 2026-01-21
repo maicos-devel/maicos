@@ -14,6 +14,7 @@ Unreleased
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer
 
 - Implement `maicos.lib.math.accumulate` as fast alternative (#546)
+- Removed unused ``lib.util.bin`` function (#544)
 - Splitting basic and advanced usage in Getting Started (#535)
 - Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
