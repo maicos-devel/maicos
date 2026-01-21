@@ -11,10 +11,10 @@ import sys
 from pathlib import Path
 
 import MDAnalysis as mda
-from MDAnalysis.exceptions import NoDataError
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_equal, assert_almost_equal
+from MDAnalysis.exceptions import NoDataError
+from numpy.testing import assert_allclose, assert_almost_equal, assert_equal
 
 import maicos.lib.math
 import maicos.lib.util
@@ -25,11 +25,10 @@ from data import (  # noqa: E402
     SPCE_ITP,
     WATER_GRO_NPT,
     WATER_TPR_NPT,
-    WATER_TRR_NPT,
 )
-
-from MDAnalysisTests.datafiles import PSF, DCD, GRO
 from MDAnalysisTests.core.util import UnWrapUniverse
+from MDAnalysisTests.datafiles import DCD, GRO, PSF
+
 
 def generate_correlated_data(T, repeat, seed=0):
     """Generate correlated data to be used in test_correlation_time.
@@ -458,50 +457,58 @@ def test_combine_subsample_variance_empty():
     assert np.isnan(mu_AB)
     assert np.isnan(M_AB)
 
+
 def test_accumulate():
-    """Test the accumulate function, with a simple universe. 
-    And compare to the MDAnalysis accumulate."""
-    
+    """Test the maicos accumulate against the MDAnalysis accumulate."""
     u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
 
     # compare accumulation of the position times the mass
     mass_times_position = u.atoms.positions * np.expand_dims(u.atoms.masses, axis=-1)
     acc_mda = u.atoms.accumulate(mass_times_position, compound="residues")
-    acc_maicos = maicos.lib.math.accumulate(u.atoms, mass_times_position, compound="residues")
+    acc_maicos = maicos.lib.math.accumulate(
+        u.atoms, mass_times_position, compound="residues"
+    )
 
     assert_allclose(acc_mda, acc_maicos)
 
+
 levels = ("atoms", "residues", "segments")
-class TestAccumulate(object):
-    """Tests the functionality of maicos.lib.accumulate"""
+
+
+class TestAccumulate:
+    """Tests for maicos.lib.accumulate."""
 
     @pytest.fixture(params=levels)
     def group(self, request):
+        """Import MDA universe."""
         u = mda.Universe(PSF, DCD)
         return getattr(u, request.param)
 
     def test_accumulate_str_attribute(self, group):
+        """Test accumulate attribute argument."""
         assert_almost_equal(
             maicos.lib.math.accumulate(group, "masses"), np.sum(group.atoms.masses)
         )
 
     def test_accumulate_different_func(self, group):
+        """Test accumulate against other numpy functions."""
         assert_almost_equal(
             maicos.lib.math.accumulate(group, "masses", function=np.multiply),
             np.prod(group.atoms.masses),
         )
 
     @pytest.mark.parametrize(
-        "name, compound",
-        (
+        ("name", "compound"),
+        [
             ("resindices", "residues"),
             ("segindices", "segments"),
             ("molnums", "molecules"),
             ("fragindices", "fragments"),
-        ),
+        ],
     )
     @pytest.mark.parametrize("level", levels)
     def test_accumulate_str_attribute_compounds(self, name, compound, level):
+        """Test accumulate with string attribute and compounds."""
         u = UnWrapUniverse()
         group = getattr(u, level)
         ref = [sum(a.masses) for a in group.atoms.groupby(name).values()]
@@ -509,44 +516,51 @@ class TestAccumulate(object):
         assert_almost_equal(vals, ref, decimal=5)
 
     def test_accumulate_wrongname(self, group):
+        """Test accumulate with wrong attribute name."""
         with pytest.raises(AttributeError):
             maicos.lib.math.accumulate(group, "foo")
 
     def test_accumulate_wrongcomponent(self, group):
-        with pytest.raises(ValueError):
+        """Test accumulate with wrong compound name."""
+        with pytest.raises(ValueError, match="Unknown compound: foo"):
             maicos.lib.math.accumulate(group, "masses", compound="foo")
 
     @pytest.mark.parametrize("level", levels)
     def test_accumulate_nobonds(self, level):
+        """Test accumulate when no bonds are present."""
         group = getattr(mda.Universe(GRO), level)
         with pytest.raises(NoDataError):
             maicos.lib.math.accumulate(group, "masses", compound="fragments")
 
     @pytest.mark.parametrize("level", levels)
     def test_accumulate_nomolnums(self, level):
+        """Test accumulate when molnums are not present."""
         group = getattr(mda.Universe(GRO), level)
         with pytest.raises(NoDataError):
             maicos.lib.math.accumulate(group, "masses", compound="molecules")
 
     def test_accumulate_array_attribute(self, group):
+        """Test accumulate with given array attribute."""
         a = np.ones((len(group.atoms), 2, 5))
         assert_equal(maicos.lib.math.accumulate(group, a), np.sum(a, axis=0))
 
     def test_accumulate_array_attribute_wrongshape(self, group):
-        with pytest.raises(ValueError):
+        """Test that ValueError is raised for wrong shaped array."""
+        with pytest.raises(ValueError, match="The input array length"):
             maicos.lib.math.accumulate(group, np.ones(len(group.atoms) - 1))
 
     @pytest.mark.parametrize(
-        "name, compound",
-        (
+        ("name", "compound"),
+        [
             ("resindices", "residues"),
             ("segindices", "segments"),
             ("molnums", "molecules"),
             ("fragindices", "fragments"),
-        ),
+        ],
     )
     @pytest.mark.parametrize("level", levels)
     def test_accumulate_array_attribute_compounds(self, name, compound, level):
+        """Test accumulate with array attribute and compounds."""
         u = UnWrapUniverse()
         group = getattr(u, level)
         ref = [
@@ -558,4 +572,4 @@ class TestAccumulate(object):
                 group, np.ones((len(group.atoms), 2, 5)), compound=compound
             ),
             ref,
-        ) 
+        )

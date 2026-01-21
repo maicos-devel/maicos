@@ -612,9 +612,9 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
 
     return n_AB, mu_AB, M_AB
 
+
 def accumulate(mdagroup, attribute, function=np.add, compound="group"):
     """A faster accumulate than MDAnalysis accumulate."""
-
     atoms = mdagroup.atoms
 
     # Get the attribute values
@@ -624,11 +624,9 @@ def accumulate(mdagroup, attribute, function=np.add, compound="group"):
         attribute_values = np.asarray(attribute)
         if len(attribute_values) != len(atoms):
             raise ValueError(
-                "The input array length ({}) does not match "
-                "the number of atoms ({}) in the group."
-                "".format(len(attribute_values), len(atoms))
-                )
-
+                f"The input array length ({len(attribute_values)}) does not match "
+                f"the number of atoms ({len(atoms)}) in the group."
+            )
 
     if compound == "group":
         return function.reduce(attribute_values, axis=0)
@@ -639,11 +637,11 @@ def accumulate(mdagroup, attribute, function=np.add, compound="group"):
     # are next to each other
     sort_indices = np.argsort(compound_indices)
     compound_indices = compound_indices[sort_indices]
-    attribute_values = attribute_values[sort_indices]    
+    attribute_values = attribute_values[sort_indices]
 
     # Get the indices for reduceat
     # Return the indices at which the the compound index changes
-    acc_indices = np.where(np.roll(compound_indices,1)!=compound_indices)[0]
+    acc_indices = np.where(np.roll(compound_indices, 1) != compound_indices)[0]
     n_compounds = len(acc_indices)
 
     # Create the accumulated output array
@@ -654,4 +652,3 @@ def accumulate(mdagroup, attribute, function=np.add, compound="group"):
     function.reduceat(attribute_values, acc_indices, axis=0, out=accumulation)
 
     return accumulation
-     
