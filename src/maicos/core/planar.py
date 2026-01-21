@@ -96,13 +96,48 @@ class PlanarBase(AnalysisBase):
 
     def _compute_lab_frame_planar(self):
         """Compute lab limits `zmin` and `zmax`."""
+        current_box_length = self.box_lengths[self.dim]
+
+        if (
+            np.abs(current_box_length - self.initial_box_length)
+            / self.initial_box_length
+            > 0.05
+            and not self._warned_box_length
+        ):
+            logging.warning(
+                f"Box length along dimension {self.dim} has changed more than 5 % "
+                "since the start of the analysis. This may lead to unexpected "
+                "behavior due to a fixed number of bins."
+            )
+            self._warned_box_length = True
+
         if self._zmin is None:
             self.zmin = 0
+        elif abs(self._zmin) > current_box_length / 2 and not self._warned_zmin:
+            logging.warning(
+                f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
+                f"box length ({current_box_length / 2:.2f} Å) along dimension "
+                f"{self.dim}. Consider letting MAICoS calculate bounds automatically "
+                "by setting zmin to `None` or manually determine safe bounds from the "
+                "smallest box vector across frames."
+            )
+            self._warned_zmin = True
+            self.zmin = self.box_center[self.dim] + self._zmin
         else:
             self.zmin = self.box_center[self.dim] + self._zmin
 
         if self._zmax is None:
             self.zmax = self.box_lengths[self.dim]
+        elif abs(self._zmax) > current_box_length / 2 and not self._warned_zmax:
+            logging.warning(
+                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
+                f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
+                "Consider letting MAICoS calculate bounds automatically (zmax=None) "
+                "or manually determine safe bounds from the smallest box vector "
+                "across frames."
+            )
+            self._warned_zmax = True
+            self.zmax = self.box_center[self.dim] + self._zmax
         else:
             self.zmax = self.box_center[self.dim] + self._zmax
         # enforce calculations in double precision
@@ -111,8 +146,11 @@ class PlanarBase(AnalysisBase):
 
     def _prepare(self):
         """Prepare the planar analysis."""
+        self._warned_zmin = False
+        self._warned_zmax = False
+        self._warned_box_length = False
+        self.initial_box_length = self.box_lengths[self.dim]
         self._compute_lab_frame_planar()
-
         # TODO(@hejamu): There are much more wrong combinations of zmin and zmax...
         if (
             self._zmax is not None
@@ -226,9 +264,6 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
 
         logging.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
 
-        self._warned_zmin = False
-        self._warned_zmax = False
-
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None
     ) -> np.ndarray:
@@ -247,33 +282,6 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         PlanarBase._single_frame(self)
         ProfileBase._single_frame(self)
 
-        current_box_length = self.box_lengths[self.dim]
-        if (
-            not self._warned_zmin
-            and self._zmin is not None
-            and abs(self._zmin) > current_box_length / 2
-        ):
-            logging.warning(
-                f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
-                f"box length ({current_box_length / 2:.2f} Å) along dimension "
-                f"{self.dim}. Consider letting MAICoS calculate bounds automatically "
-                "by setting zmin to `None` or manually determine safe bounds from the "
-                "smallest box vector across frames."
-            )
-            self._warned_zmin = True
-        if (
-            not self._warned_zmax
-            and self._zmax is not None
-            and abs(self._zmax) > current_box_length / 2
-        ):
-            logging.warning(
-                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
-                f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
-                "Consider letting MAICoS calculate bounds automatically (zmax=None) "
-                "or manually determine safe bounds from the smallest box vector "
-                "across frames."
-            )
-            self._warned_zmax = True
         # Take the center bin for correlation analysis.
         return self._obs.profile[self.n_bins // 2]
 

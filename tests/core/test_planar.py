@@ -124,6 +124,7 @@ class TestPlanarBase:
     def test_compute_lab_frame_planar_default(self, ag, dim):
         """Test lab frame values with default values."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
+        planar_class_obj._prepare()
         planar_class_obj._compute_lab_frame_planar()
 
         assert planar_class_obj.zmin == 0
@@ -135,6 +136,7 @@ class TestPlanarBase:
     def test_compute_lab_frame_planar(self, ag, lim, pos, dim):
         """Test lab frame values with explicit values."""
         p_obj = PlanarClass(ag, **{"pos_arg": 42, "dim": dim, lim: pos})
+        p_obj._prepare()
         p_obj._compute_lab_frame_planar()
 
         assert getattr(p_obj, lim) == p_obj.box_center[dim] + pos
@@ -298,6 +300,32 @@ class TestPlanarBase:
         bin_pos += planar_class_obj.means.bin_width / 2
 
         assert_allclose(planar_class_obj.results.bin_pos, bin_pos, atol=1e-15)
+
+    def test_warn_zmin_exceeds_half_box(self, ag, caplog):
+        """Test warning when zmin exceeds half the box length."""
+        zmin = ag.universe.dimensions[2] / 2 + 1
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42, zmin=-zmin).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmin" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
+    def test_warn_zmax_exceeds_half_box(self, ag, caplog):
+        """Test warning when zmax exceeds half the box length."""
+        zmax = ag.universe.dimensions[2] / 2 + 1
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42, zmax=zmax).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmax" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
+    def test_warn_box_changed(self, ag, caplog):
+        """Test warning when box size changed more than 5 %."""
+        ag.universe.trajectory[1].dimensions[2] *= 1.1  # increase box size by 10 %
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42).run(stop=3)
+        warnings = [
+            r for r in caplog.records if "Box length along dimension" in r.message
+        ]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
 
 
 class TestPlanarBaseChilds:
@@ -536,21 +564,3 @@ class TestProfilePlanarBase:
         profile = ProfilePlanarBase(**params).run(stop=1)
         selected_bin = profile._single_frame()
         assert selected_bin == profile._obs.profile[n_bins // 2]
-
-    def test_warn_zmin_exceeds_half_box(self, params, caplog):
-        """Test warning when zmin exceeds half the box length."""
-        params = params.copy()
-        params.update(zmin=-1.6)
-        with caplog.at_level(logging.WARNING):
-            ProfilePlanarBase(**params).run(stop=3)
-        warnings = [r for r in caplog.records if "User-defined zmin" in r.message]
-        assert len(warnings) == 1, "Warning should be raised exactly once"
-
-    def test_warn_zmax_exceeds_half_box(self, params, caplog):
-        """Test warning when zmax exceeds half the box length."""
-        params = params.copy()
-        params.update(zmax=1.6)
-        with caplog.at_level(logging.WARNING):
-            ProfilePlanarBase(**params).run(stop=3)
-        warnings = [r for r in caplog.records if "User-defined zmax" in r.message]
-        assert len(warnings) == 1, "Warning should be raised exactly once"
