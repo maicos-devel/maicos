@@ -613,7 +613,7 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     return n_AB, mu_AB, M_AB
 
 
-def accumulate(mdagroup, attribute, function=np.add, compound="group"):
+def accumulate(mdagroup: mda.AtomGroup, attribute, function=np.add, compound="group"):
     """A faster accumulate than MDAnalysis accumulate."""
     atoms = mdagroup.atoms
 

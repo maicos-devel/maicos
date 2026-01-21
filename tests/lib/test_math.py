@@ -522,7 +522,7 @@ class TestAccumulate:
 
     def test_accumulate_wrongcomponent(self, group):
         """Test accumulate with wrong compound name."""
-        with pytest.raises(ValueError, match="Unknown compound: foo"):
+        with pytest.raises(ValueError, match="Unrecognized compound definition:"):
             maicos.lib.math.accumulate(group, "masses", compound="foo")
 
     @pytest.mark.parametrize("level", levels)
