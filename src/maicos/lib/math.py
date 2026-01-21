@@ -611,3 +611,44 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB
+
+def accumulate(atomgroup, attribute, function=np.add, compound="group"):
+    """A faster accumulate than MDAnalysis accumulate."""
+
+    positions = atomgroup.atoms.positions
+    multiplied = positions * attribute
+
+    # Get the attribute values
+    if isinstance(attribute, str):
+        attribute_values = getattr(atomgroup, attribute)
+    else:
+        attribute_values = np.asarray(attribute)
+        if len(attribute_values) != len(atomgroup):
+            raise ValueError(
+                "The input array length ({}) does not match "
+                "the number of atoms ({}) in the group."
+                "".format(len(attribute_values), len(atomgroup))
+                )
+
+    compound_indices = atomgroup._get_compound_indices(compound)
+
+    # Resort the attribute values, so that atoms which belong to the same compound
+    # are next to each other
+    sort_indices = np.argsort(compound_indices)
+    compound_indices = compound_indices[sort_indices]
+    attribute_values = attribute_values[sort_indices]    
+
+    # Get the indices for reduceat
+    # Return the indices at which the the compound index changes
+    acc_indices = np.where(np.roll(compound_indices,1)!=compound_indices)[0]
+    n_compounds = len(acc_indices)
+
+    # Create the accumulated output array
+    higher_dims = list(attribute_values.shape[1:])
+    accumulation = np.empty([n_compounds] + higher_dims)
+
+    # Use reduceat to apply the function (e.g. np.sum) compoundwise
+    function.reduceat(attribute_values, acc_indices, axis=0, out=accumulation)
+
+    return accumulation
+     

@@ -19,8 +19,13 @@ import maicos.lib.math
 import maicos.lib.util
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
-
+from data import (  # noqa: E402
+    SPCE_GRO,
+    SPCE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 
 def generate_correlated_data(T, repeat, seed=0):
     """Generate correlated data to be used in test_correlation_time.
@@ -448,3 +453,17 @@ def test_combine_subsample_variance_empty():
     assert n_AB == 0
     assert np.isnan(mu_AB)
     assert np.isnan(M_AB)
+
+def test_accumulate():
+    """Test the accumulate function, with a simple universe."""
+    
+    u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
+
+    # compare accumulation of the position times the mass
+    mass_times_position = u.atoms.positions * np.expand_dims(u.atoms.masses, axis=-1)
+    acc_mda = u.atoms.accumulate(mass_times_position, compound="residues")
+    acc_maicos = maicos.lib.math.accumulate(u.atoms, mass_times_position, compound="residues")
+
+    assert_allclose(acc_mda, acc_maicos)
+
+ 
