@@ -9,6 +9,8 @@ r"""Module for computing spherical dipolar order parameters."""
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
@@ -82,5 +84,5 @@ class DiporderSphere(ProfileSphereBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the spherical dipolar order parameters.")
+        logger.info("Analysis of the spherical dipolar order parameters.")
         super()._prepare()

@@ -9,6 +9,8 @@ r"""Module for computing 1D cylindrical pair distribution functions."""
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
@@ -160,7 +162,7 @@ class PDFCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logging.info("Analysis of the cylindrical pair distribution function.")
+        logger.info("Analysis of the cylindrical pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center
@@ -195,7 +197,7 @@ class PDFCylinder(CylinderBase):
                 "`coc`."
             )
 
-        logging.info(
+        logger.info(
             f"Using {self.nbins_pdf_phi} pdf bins in phi direction and "
             f"{self.nbins_pdf_z} in z direction."
         )

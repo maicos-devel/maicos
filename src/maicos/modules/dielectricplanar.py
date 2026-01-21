@@ -9,6 +9,8 @@
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 import numpy as np
 import scipy.constants
@@ -107,7 +109,7 @@ class DielectricPlanar(PlanarBase):
         wrap_compound = get_compound(atomgroup)
 
         if zmin is not None or zmax is not None:
-            logging.warning(
+            logger.warning(
                 "Setting `zmin` and `zmax` might cut off molecules. This will lead to "
                 "severe artifacts in the dielectric profiles."
             )
@@ -134,12 +136,12 @@ class DielectricPlanar(PlanarBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self) -> None:
-        logging.info(
+        logger.info(
             "Analysis of the parallel and inverse perpendicular "
             "components of the planar dielectric tensor."
         )
         # Print Alex Schlaich citation
-        logging.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
+        logger.info(citation_reminder("10.1103/PhysRevLett.117.048001"))
 
         super()._prepare()
 

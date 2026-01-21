@@ -9,6 +9,8 @@
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -96,5 +98,5 @@ class VelocityPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the velocity profile.")
+        logger.info("Analysis of the velocity profile.")
         super()._prepare()

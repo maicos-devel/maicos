@@ -9,6 +9,8 @@
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 import numpy as np
 import scipy.constants
@@ -74,7 +76,7 @@ class DielectricSphere(SphereBase):
         ix = atomgroup._get_compound_indices(self.comp)
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
         if rmin != 0 or rmax is not None:
-            logging.warning(
+            logger.warning(
                 "Setting `rmin` and `rmax` might cut off molecules. This will lead to "
                 "severe artifacts in the dielectric profiles."
             )
@@ -96,12 +98,12 @@ class DielectricSphere(SphereBase):
         self.temperature = temperature
 
     def _prepare(self) -> None:
-        logging.info(
+        logger.info(
             "Analysis of the inverse radial component "
             "of the spherical dielectric tensor."
         )
         # Print the Christian Schaaf citation
-        logging.info(citation_reminder("10.1103/PhysRevE.92.032718"))
+        logger.info(citation_reminder("10.1103/PhysRevE.92.032718"))
 
         super()._prepare()
 

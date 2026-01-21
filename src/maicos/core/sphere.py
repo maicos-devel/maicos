@@ -8,6 +8,8 @@
 """Base class for spherical analysis."""
 
 import logging
+
+logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -90,7 +92,7 @@ class SphereBase(AnalysisBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logging.warning(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -201,7 +203,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):  # type: ignore
         SphereBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(
+        logger.info(
             """Profile along the radial coordinate in a spherical """
             """coordinate system."""
         )

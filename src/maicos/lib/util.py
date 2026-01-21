@@ -10,6 +10,8 @@
 import functools
 import inspect
 import logging
+
+logger = logging.getLogger("MAICoS")
 import re
 import sys
 import warnings
@@ -375,10 +377,10 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     if hasattr(atomgroup, "molnums"):
         return "molecules"
     if hasattr(atomgroup, "fragments"):
-        logging.info("Cannot use 'molecules'. Falling back to 'fragments'")
+        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
     if hasattr(atomgroup, "residues"):
-        logging.info("Cannot use 'fragments'. Falling back to 'residues'")
+        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
     raise AttributeError("Missing any connection information in `atomgroup`.")
 
@@ -416,7 +418,7 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
 
     """
     if not hasattr(AtomGroup, "types"):
-        logging.warning(
+        logger.warning(
             "AtomGroup does not contain atom types. Not writing AtomGroup information "
             "to output."
         )

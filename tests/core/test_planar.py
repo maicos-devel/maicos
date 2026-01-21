@@ -9,6 +9,8 @@
 
 import inspect
 import logging
+
+logger = logging.getLogger("MAICoS")
 import sys
 from pathlib import Path
 

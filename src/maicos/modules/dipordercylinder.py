@@ -9,6 +9,8 @@ r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
@@ -94,5 +96,5 @@ class DiporderCylinder(ProfileCylinderBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the cylindrical dipolar order parameters.")
+        logger.info("Analysis of the cylindrical dipolar order parameters.")
         super()._prepare()

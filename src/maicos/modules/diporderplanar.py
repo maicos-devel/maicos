@@ -9,6 +9,8 @@ r"""Module for computing planar dipolar order parameters."""
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -90,5 +92,5 @@ class DiporderPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the cartesian dipolar order parameters.")
+        logger.info("Analysis of the cartesian dipolar order parameters.")
         super()._prepare()

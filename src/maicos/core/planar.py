@@ -8,6 +8,9 @@
 """Base class for planar analysis."""
 
 import logging
+
+logger = logging.getLogger("MAICoS")
+logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -104,7 +107,7 @@ class PlanarBase(AnalysisBase):
             > 0.05
             and not self._warned_box_length
         ):
-            logging.warning(
+            logger.warning(
                 f"Box length along dimension {self.dim} has changed more than 5 % "
                 "since the start of the analysis. This may lead to unexpected "
                 "behavior due to a fixed number of bins."
@@ -114,7 +117,7 @@ class PlanarBase(AnalysisBase):
         if self._zmin is None:
             self.zmin = 0
         elif abs(self._zmin) > current_box_length / 2 and not self._warned_zmin:
-            logging.warning(
+            logger.warning(
                 f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
                 f"box length ({current_box_length / 2:.2f} Å) along dimension "
                 f"{self.dim}. Consider letting MAICoS calculate bounds automatically "
@@ -129,7 +132,7 @@ class PlanarBase(AnalysisBase):
         if self._zmax is None:
             self.zmax = self.box_lengths[self.dim]
         elif abs(self._zmax) > current_box_length / 2 and not self._warned_zmax:
-            logging.warning(
+            logger.warning(
                 f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
                 f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
                 "Consider letting MAICoS calculate bounds automatically (zmax=None) "
@@ -262,7 +265,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         PlanarBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
+        logger.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
 
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None

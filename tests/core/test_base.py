@@ -9,6 +9,8 @@
 
 import inspect
 import logging
+
+logger = logging.getLogger("MAICoS")
 import sys
 from pathlib import Path
 
@@ -224,7 +226,8 @@ class Test_AnalysisBase:
         for ts in ag.universe.trajectory:
             ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
         conclude = Conclude(ag)
-        conclude.run()
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
 
         warnings = [rec.message for rec in caplog.records]
         assert len(warnings) == 1
@@ -234,6 +237,17 @@ class Test_AnalysisBase:
             "Continue with caution."
         )
         assert match in warnings[0]
+
+        caplog.clear()
+
+        for ts in ag.universe.trajectory:
+            ts.dimensions = np.array([30, 30, 30, 90, 90, 90])
+        conclude = Conclude(ag)
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
+
+        warnings = [rec.message for rec in caplog.records]
+        assert len(warnings) == 0
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""

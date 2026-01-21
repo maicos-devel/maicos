@@ -9,6 +9,8 @@
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -80,5 +82,5 @@ class TemperaturePlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of temperature profiles.")
+        logger.info("Analysis of temperature profiles.")
         super()._prepare()

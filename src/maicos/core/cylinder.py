@@ -8,6 +8,8 @@
 """Base class for cylindrical analysis."""
 
 import logging
+
+logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -96,7 +98,7 @@ class CylinderBase(PlanarBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logging.warning(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -216,7 +218,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):  # type: ignore
         CylinderBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(
+        logger.info(
             f"""Profile along the radial axis in a cylindrical coordinate system,"""
             f""" with the {"xyz"[self.dim]}-axis as cylindrical axis."""
         )

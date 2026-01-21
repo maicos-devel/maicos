@@ -9,6 +9,8 @@
 
 import logging
 
+logger = logging.getLogger("MAICoS")
+logger = logging.getLogger("MAICoS")
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
@@ -84,5 +86,5 @@ class DensityPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info(f"Analysis of the {self._locals['dens']} density profile.")
+        logger.info(f"Analysis of the {self._locals['dens']} density profile.")
         super()._prepare()
