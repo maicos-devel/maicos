@@ -615,9 +615,6 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
 def accumulate(atomgroup, attribute, function=np.add, compound="group"):
     """A faster accumulate than MDAnalysis accumulate."""
 
-    positions = atomgroup.atoms.positions
-    multiplied = positions * attribute
-
     # Get the attribute values
     if isinstance(attribute, str):
         attribute_values = getattr(atomgroup, attribute)
