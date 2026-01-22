@@ -321,7 +321,9 @@ class TestPlanarBase:
 
     def test_warn_box_changed(self, ag, caplog):
         """Test warning when box size changed more than 5 %."""
-        ag.universe.trajectory[1].dimensions[2] *= 1.1  # increase box size by 10 %
+        ag.universe.trajectory[1].dimensions = np.array([25,25,65,90,90,90])  # increase box size by 10 %
+        for ts in ag.universe.trajectory:
+            print("Box dimensions:", ts.dimensions)
         with caplog.at_level(logging.WARNING):
             PlanarClass(ag, pos_arg=42).run(stop=3)
         warnings = [
@@ -336,7 +338,7 @@ class TestPlanarBaseChilds:
     @pytest.fixture
     def ag_single_frame(self):
         """Import MDA univers."""
-        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT, in_memory=True)
         return u.atoms
 
     members = []

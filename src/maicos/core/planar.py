@@ -10,7 +10,6 @@
 import logging
 
 logger = logging.getLogger("MAICoS")
-logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -100,7 +99,6 @@ class PlanarBase(AnalysisBase):
     def _compute_lab_frame_planar(self):
         """Compute lab limits `zmin` and `zmax`."""
         current_box_length = self.box_lengths[self.dim]
-
         if (
             np.abs(current_box_length - self.initial_box_length)
             / self.initial_box_length
