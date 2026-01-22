@@ -9,13 +9,13 @@ r"""Module for computing planar dipolar order parameters."""
 
 import logging
 
-logger = logging.getLogger("MAICoS")
-
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

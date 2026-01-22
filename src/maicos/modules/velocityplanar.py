@@ -9,13 +9,13 @@
 
 import logging
 
-logger = logging.getLogger("MAICoS")
-
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import velocity_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

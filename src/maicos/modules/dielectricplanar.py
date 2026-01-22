@@ -9,8 +9,6 @@
 
 import logging
 
-logger = logging.getLogger("MAICoS")
-
 import MDAnalysis as mda
 import numpy as np
 import scipy.constants
@@ -18,6 +16,8 @@ import scipy.constants
 from ..core import PlanarBase
 from ..lib.math import symmetrize
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

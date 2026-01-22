@@ -8,8 +8,6 @@
 """Base class for planar analysis."""
 
 import logging
-
-logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -18,6 +16,8 @@ import numpy as np
 from ..lib.math import symmetrize
 from ..lib.util import render_docs
 from .base import AnalysisBase, ProfileBase
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

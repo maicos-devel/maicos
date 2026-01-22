@@ -8,8 +8,6 @@
 """Base class for spherical analysis."""
 
 import logging
-
-logger = logging.getLogger("MAICoS")
 from collections.abc import Callable
 
 import MDAnalysis as mda
@@ -19,6 +17,8 @@ from ..lib.math import transform_sphere
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

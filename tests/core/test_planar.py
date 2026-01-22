@@ -9,8 +9,6 @@
 
 import inspect
 import logging
-
-logger = logging.getLogger("MAICoS")
 import sys
 from pathlib import Path
 
@@ -23,6 +21,9 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos
 from maicos.core import CylinderBase, PlanarBase, ProfilePlanarBase
 from maicos.lib.weights import density_weights
+
+logger = logging.getLogger(__name__)
+
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -321,9 +322,7 @@ class TestPlanarBase:
 
     def test_warn_box_changed(self, ag, caplog):
         """Test warning when box size changed more than 5 %."""
-        ag.universe.trajectory[1].dimensions = np.array([25,25,65,90,90,90])  # increase box size by 10 %
-        for ts in ag.universe.trajectory:
-            print("Box dimensions:", ts.dimensions)
+        ag.universe.trajectory[1].dimensions = np.array([25, 25, 65, 90, 90, 90])
         with caplog.at_level(logging.WARNING):
             PlanarClass(ag, pos_arg=42).run(stop=3)
         warnings = [

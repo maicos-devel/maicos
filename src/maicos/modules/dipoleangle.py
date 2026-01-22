@@ -7,7 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing dipole angle timeseries."""
 
+import logging
+
 import MDAnalysis as mda
+
+logger = logging.getLogger(__name__)
 
 
 class DipoleAngle:

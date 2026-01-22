@@ -9,8 +9,6 @@ r"""Module for computing 1D cylindrical pair distribution functions."""
 
 import logging
 
-logger = logging.getLogger("MAICoS")
-
 import MDAnalysis as mda
 import numpy as np
 from MDAnalysis.lib.distances import capped_distance
@@ -18,6 +16,8 @@ from MDAnalysis.lib.distances import capped_distance
 from ..core import CylinderBase
 from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

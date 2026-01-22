@@ -8,9 +8,6 @@
 """Base class for building Analysis classes."""
 
 import logging
-
-logger = logging.getLogger("MAICoS")
-
 import numbers
 import warnings
 from collections.abc import Callable
@@ -36,6 +33,8 @@ from ..lib.util import (
     render_docs,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class _Runner:
     """Private Runner class that provides a common ``run`` method.
@@ -55,20 +54,29 @@ class _Runner:
     ) -> Self:
         self._run_locals = locals()
 
-        level = logging.INFO if verbose else logging.WARNING
-
-        logging.basicConfig()
-        logging.captureWarnings(True)
-
-        if logger.level > level:
-            logger.setLevel(level)
-
-        logger.debug("Choosing frames to analyze")
-
         if frames is not None and not all(opt is None for opt in [start, stop, step]):
             raise ValueError("start/stop/step cannot be combined with frames")
 
+        level = logging.INFO if verbose else logging.WARNING
+        # Don't touch the log level if manually set below INFO by the user
+        if logger.level == 0:
+            logger.setLevel(level)
+        elif logger.level < logging.INFO:
+            # User set log level manually to DEBUG or similar
+            pass
+        else:
+            # User set log level manually to WARNING or INFO
+            # Use the provided verbose option
+            logger.setLevel(level)
+        # Configure the root logger if not already configured
+        logging.basicConfig(format="{message}", style="{")
+
+        # Redirect warnings (from the warnings library) to the logging system
+        logging.captureWarnings(True)
+
         logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
+
+        logger.debug("Choosing frames to analyze")
 
         for analysis_object in analysis_instances:
             analysis_object._setup_frames(
@@ -96,9 +104,10 @@ class _Runner:
         ):
             ts_original = ts.copy()
 
-            for analysis_object in analysis_instances:
-                analysis_object._call_single_frame(ts=ts, current_frame_index=i)
-                ts = ts_original
+            with logging_redirect_tqdm():
+                for analysis_object in analysis_instances:
+                    analysis_object._call_single_frame(ts=ts, current_frame_index=i)
+                    ts = ts_original
 
         logger.debug("Concluding analysis.")
 

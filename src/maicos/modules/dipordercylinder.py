@@ -9,13 +9,13 @@ r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
 
-logger = logging.getLogger("MAICoS")
-
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
 from ..lib.util import render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs

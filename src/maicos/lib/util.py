@@ -10,8 +10,6 @@
 import functools
 import inspect
 import logging
-
-logger = logging.getLogger("MAICoS")
 import re
 import sys
 import warnings
@@ -24,6 +22,8 @@ import numpy as np
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
+
+logger = logging.getLogger(__name__)
 
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
@@ -799,18 +799,26 @@ def maicos_banner(version: str = "", frame_char: str = "-") -> str:
         formatted banner
 
     """
-    banner = rf"""
+    banner = r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @                  __  __              _____    _____            _____         @
 @    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|        @
 @   /  |     \    | \  / |    /  \      | |   | |        ___   | (___          @
 @  () ||| |  ()   | |\/| |   / /\ \     | |   | |       / _ \   \___ \         @
-@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @
+@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @"""
+    if len(version) < 8:
+        banner += rf"""
 @    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/ {version:^8}@
+@                                                                              @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"""
+    else:
+        banner += rf"""
+@    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/         @
+@                                                                              @
+@{version:^78}@
 @                                                                              @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
-
     return banner.replace("@", frame_char)
 
 
