@@ -83,7 +83,7 @@ class _Runner:
                 frames=frames,
             )
             # Reset the trajectory reader to ensure _prepare uses the first frame
-            analysis_object._sliced_trajectory[0]  # TODO(@hejamu): Test this
+            analysis_object._sliced_trajectory[0]
 
         for analysis_object in analysis_instances:
             analysis_object._call_prepare()
