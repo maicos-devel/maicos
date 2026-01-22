@@ -57,22 +57,18 @@ class _Runner:
         if frames is not None and not all(opt is None for opt in [start, stop, step]):
             raise ValueError("start/stop/step cannot be combined with frames")
 
-        level = logging.INFO if verbose else logging.WARNING
-        # Don't touch the log level if manually set below INFO by the user
-        if logger.level == 0:
-            logger.setLevel(level)
-        elif logger.level < logging.INFO:
-            # User set log level manually to DEBUG or similar
-            pass
-        else:
-            # User set log level manually to WARNING or INFO
-            # Use the provided verbose option
-            logger.setLevel(level)
         # Configure the root logger if not already configured
-        logging.basicConfig(format="{message}", style="{")
-
+        logging.basicConfig()
         # Redirect warnings (from the warnings library) to the logging system
         logging.captureWarnings(True)
+
+        level = logging.INFO if verbose else logging.WARNING
+
+        parent_logger = logging.getLogger("maicos")
+        if parent_logger.level >= logging.INFO or parent_logger.level == 0:
+            # User set log level manually to WARNING or INFO or not set at all
+            # Overwrite based on the verbose option
+            parent_logger.setLevel(level)
 
         logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
 
@@ -306,6 +302,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         concfreq: int,
         wrap_compound: str,
     ) -> None:
+        logger.debug("Debug logging activated")
         self.atomgroup = atomgroup
 
         if self.atomgroup.n_atoms == 0:
@@ -344,7 +341,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             raise ValueError("Universe does not have `dimensions` and can't be packed!")
 
         if self.unwrap and self.wrap_compound == "atoms":
-            logger.warning(
+            logger.debug(
                 "Unwrapping in combination with the "
                 "`wrap_compound='atoms` is superfluous. "
                 "`unwrap` will be set to `False`."
