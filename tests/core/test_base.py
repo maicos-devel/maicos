@@ -9,6 +9,7 @@
 
 import inspect
 import logging
+
 import sys
 from pathlib import Path
 
@@ -238,6 +239,7 @@ class Test_AnalysisBase:
 
         caplog.clear()
 
+        # Do the crosscheck that no warning is emitted for orthorhombic boxes
         for ts in ag.universe.trajectory:
             ts.dimensions = np.array([30, 30, 30, 90, 90, 90])
         conclude = Conclude(ag)

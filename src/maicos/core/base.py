@@ -197,7 +197,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     >>> from maicos.core import AnalysisBase
     >>> from maicos.lib.util import render_docs
 
-    >>> logger = logging.getLogger("MAICoS")
+    >>> logger = logging.getLogger(__name__)
 
     Adding logging messages to your code makes debugging easier.
 
