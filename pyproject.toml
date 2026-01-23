@@ -46,7 +46,7 @@ name = "maicos"
 readme = "README.rst"
 requires-python = ">=3.11"
 dependencies = [
-    "mdacli>=0.1.35",
+    "mdacli>=0.2",
     "MDAnalysis>=2.10.0",
 ]
 
