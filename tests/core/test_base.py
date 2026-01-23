@@ -585,7 +585,6 @@ class Test_AnalysisBase:
             r"#    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|"
             in caplog.text
         )
-        print(caplog.text)
         assert __version__ in caplog.text
 
     @pytest.mark.parametrize(

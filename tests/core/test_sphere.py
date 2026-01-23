@@ -8,10 +8,8 @@
 """Tests for the spherical base classes."""
 
 import inspect
-import logging
 import sys
 from pathlib import Path
-from tabnanny import verbose
 
 import MDAnalysis as mda
 import numpy as np
