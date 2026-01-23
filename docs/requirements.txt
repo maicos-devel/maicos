@@ -1,10 +1,9 @@
 furo
 setuptools  # required for sphinxcontrib-bibtex together with Python 3.12
-sphinx>=7.2.2
+sphinx
 sphinx-gallery
 sphinxcontrib-bibtex
 sphinxcontrib-details-directive
 sphinx-toggleprompt
 sphinx-tabs
-tomli
-docutils<0.22  # temporary fix for compatibility issues with Sphinx
+docutils
