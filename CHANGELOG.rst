@@ -14,6 +14,7 @@ Unreleased
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
 Francis Jose
 
+- Internal restructure API documentation sources into *core* and *lib* sections (#548)
 - Update copyright year to 2026 (#549)
 - Use standard library ``tomllib`` instead of ``tomli`` for docs (#547)
 - Added warnings for PlanarBase (#534)
