@@ -12,12 +12,11 @@ This file does only contain a selection of the most common options. For a full l
 the documentation: http://www.sphinx-doc.org/en/master/config
 """
 
+import tomllib
 from datetime import datetime
 from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
-import tomli
-
 import maicos
 
 ROOT = Path("../../")
@@ -25,7 +24,7 @@ ROOT = Path("../../")
 # -- Project information -----------------------------------------------------
 
 with Path(ROOT / "pyproject.toml").open(mode="rb") as fp:
-    project_dict = tomli.load(fp)["project"]
+    project_dict = tomllib.load(fp)["project"]
 
 project = project_dict["name"]
 author = maicos.__authors__

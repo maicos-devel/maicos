@@ -14,6 +14,7 @@ Unreleased
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
 Francis Jose
 
+- Use standard library ``tomllib`` instead of ``tomli`` for docs (#547)
 - Added warnings for PlanarBase (#534)
 - Streamlined logging (#534)
 - Removed unused ``lib.util.bin`` function (#544)
