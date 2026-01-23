@@ -6,4 +6,5 @@ sphinxcontrib-bibtex
 sphinxcontrib-details-directive
 sphinx-toggleprompt
 sphinx-tabs
-docutils<0.22
+#docutils
+docutils<0.22  # Temporary fix. Remove once https://github.com/executablebooks/sphinx-tabs/pull/207 is released
