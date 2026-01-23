@@ -15,6 +15,8 @@ from ..core import ProfileSphereBase
 from ..lib.util import render_docs, unit_vectors_sphere
 from ..lib.weights import diporder_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class DiporderSphere(ProfileSphereBase):
@@ -82,5 +84,5 @@ class DiporderSphere(ProfileSphereBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the spherical dipolar order parameters.")
+        logger.info("Analysis of the spherical dipolar order parameters.")
         super()._prepare()

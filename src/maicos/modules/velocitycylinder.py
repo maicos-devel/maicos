@@ -15,6 +15,8 @@ from ..core import ProfileCylinderBase
 from ..lib.util import render_docs
 from ..lib.weights import velocity_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class VelocityCylinder(ProfileCylinderBase):
@@ -92,5 +94,5 @@ class VelocityCylinder(ProfileCylinderBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the velocity profile.")
+        logger.info("Analysis of the velocity profile.")
         super()._prepare()

@@ -4,9 +4,6 @@
 *.lock
 *.dat
 
-# Cython generated files
-_cmath.c
-
 # Unit test / coverage reports
 .tox/
 .asv/

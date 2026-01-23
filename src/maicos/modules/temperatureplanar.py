@@ -15,6 +15,8 @@ from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import temperature_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class TemperaturePlanar(ProfilePlanarBase):
@@ -80,5 +82,5 @@ class TemperaturePlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of temperature profiles.")
+        logger.info("Analysis of temperature profiles.")
         super()._prepare()

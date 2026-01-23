@@ -16,6 +16,8 @@ import scipy.constants
 from ..core import CylinderBase
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 @charge_neutral(filter="error")
@@ -93,7 +95,7 @@ class DielectricCylinder(CylinderBase):
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
         if zmin is not None or zmax is not None or rmin != 0 or rmax is not None:
-            logging.warning(
+            logger.warning(
                 "Setting `rmin` and `rmax` (as well as `zmin` and `zmax`) might cut "
                 "off molecules. This will lead to severe artifacts in the dielectric "
                 "profiles."
@@ -120,12 +122,12 @@ class DielectricCylinder(CylinderBase):
         self.vcutwidth = vcutwidth
 
     def _prepare(self) -> None:
-        logging.info(
+        logger.info(
             "Analysis of the axial and inverse radial "
             "components of the cylindrical dielectric tensor."
         )
         # Print Philip Loche citation
-        logging.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
+        logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 
         super()._prepare()
 

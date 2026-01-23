@@ -15,6 +15,8 @@ from ..core import ProfilePlanarBase
 from ..lib.util import render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class DiporderPlanar(ProfilePlanarBase):
@@ -90,5 +92,5 @@ class DiporderPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the cartesian dipolar order parameters.")
+        logger.info("Analysis of the cartesian dipolar order parameters.")
         super()._prepare()

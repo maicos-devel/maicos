@@ -15,6 +15,8 @@ from ..core import ProfileCylinderBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class DensityCylinder(ProfileCylinderBase):
@@ -79,5 +81,5 @@ class DensityCylinder(ProfileCylinderBase):
         )
 
     def _prepare(self):
-        logging.info(f"Analysis of the {self._locals['dens']} density profile.")
+        logger.info(f"Analysis of the {self._locals['dens']} density profile.")
         super()._prepare()

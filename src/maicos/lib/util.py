@@ -23,6 +23,8 @@ from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
 
+logger = logging.getLogger(__name__)
+
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(
@@ -375,10 +377,10 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     if hasattr(atomgroup, "molnums"):
         return "molecules"
     if hasattr(atomgroup, "fragments"):
-        logging.info("Cannot use 'molecules'. Falling back to 'fragments'")
+        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
     if hasattr(atomgroup, "residues"):
-        logging.info("Cannot use 'fragments'. Falling back to 'residues'")
+        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
     raise AttributeError("Missing any connection information in `atomgroup`.")
 
@@ -416,7 +418,7 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
 
     """
     if not hasattr(AtomGroup, "types"):
-        logging.warning(
+        logger.warning(
             "AtomGroup does not contain atom types. Not writing AtomGroup information "
             "to output."
         )
@@ -760,18 +762,27 @@ def maicos_banner(version: str = "", frame_char: str = "-") -> str:
         formatted banner
 
     """
-    banner = rf"""
+    banner = r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @                  __  __              _____    _____            _____         @
 @    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|        @
 @   /  |     \    | \  / |    /  \      | |   | |        ___   | (___          @
 @  () ||| |  ()   | |\/| |   / /\ \     | |   | |       / _ \   \___ \         @
-@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @
+@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @"""
+    if len(version) < 8:
+        banner += rf"""
 @    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/ {version:^8}@
 @                                                                              @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
-
+    else:
+        banner += rf"""
+@    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/         @
+@                                                                              @
+@{version:^78}@
+@                                                                              @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     return banner.replace("@", frame_char)
 
 

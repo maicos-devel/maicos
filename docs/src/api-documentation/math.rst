@@ -7,8 +7,3 @@ Mathematical helper functions
     :members:
     :undoc-members:
     :show-inheritance:
-
-.. automodule:: maicos.lib._cmath
-    :members:
-    :undoc-members:
-    :show-inheritance:

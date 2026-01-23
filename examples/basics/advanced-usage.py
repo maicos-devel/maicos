@@ -17,7 +17,6 @@ and create our groups.
 # %%
 
 import logging
-import sys
 
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
@@ -207,9 +206,10 @@ dplan_verbose.run(verbose=True)
 # during the analysis of your trajectory. If you also want to show the `DEBUG` messages
 # you can configure the logger accordingly.
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-dplan_verbose.run(verbose=True)
-logging.disable(logging.WARNING)
+logger = logging.getLogger("maicos")
+logger.setLevel(logging.DEBUG)
+dplan_verbose.run()
+logger.setLevel(logging.NOTSET)
 
 # %%
 # For additional options take a look at the `HOWTO

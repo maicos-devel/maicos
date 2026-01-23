@@ -15,6 +15,8 @@ from ..core import ProfileCylinderBase
 from ..lib.util import render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class DiporderCylinder(ProfileCylinderBase):
@@ -94,5 +96,5 @@ class DiporderCylinder(ProfileCylinderBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the cylindrical dipolar order parameters.")
+        logger.info("Analysis of the cylindrical dipolar order parameters.")
         super()._prepare()

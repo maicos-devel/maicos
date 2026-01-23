@@ -215,6 +215,40 @@ class Test_AnalysisBase:
         """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
         return mda.Universe(PSF, DCD)
 
+    def test_trajectory_starting_frame(self, ag):
+        """Test that the trajectory is rewound to the first frame.
+
+        The AnalysisBase should rewind the trajectory so that the _prepare method
+        consistently sees the first frame.
+        """
+        # We select a frame from the middle, since we want to rewind to the first frame
+        # of a sliced trajectory.
+        params = dict(
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+        positions = ag.universe.trajectory[5].positions.copy()
+
+        ana_obj = AnalysisBase(ag, **params)
+
+        def _prepare(self):
+            self.check_frame_data = self.atomgroup.positions
+
+        # TODO(@hejamu): Create a Subclass of AnalysisBase
+        # with stub methods to reuse in other tests
+        ana_obj._prepare = lambda: _prepare(ana_obj)
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        ana_obj.run(start=5)
+
+        # check_frame_data should contain the positions of the first frame _prepare saw
+        assert np.all(ana_obj.check_frame_data == positions)
+
     def test_triclinic_warning(self, ag, caplog):
         """Test that the triclinic warning is displayed.
 
@@ -224,7 +258,8 @@ class Test_AnalysisBase:
         for ts in ag.universe.trajectory:
             ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
         conclude = Conclude(ag)
-        conclude.run()
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
 
         warnings = [rec.message for rec in caplog.records]
         assert len(warnings) == 1
@@ -234,6 +269,18 @@ class Test_AnalysisBase:
             "Continue with caution."
         )
         assert match in warnings[0]
+
+        caplog.clear()
+
+        # Do the crosscheck that no warning is emitted for orthorhombic boxes
+        for ts in ag.universe.trajectory:
+            ts.dimensions = np.array([30, 30, 30, 90, 90, 90])
+        conclude = Conclude(ag)
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
+
+        warnings = [rec.message for rec in caplog.records]
+        assert len(warnings) == 0
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
@@ -532,14 +579,13 @@ class Test_AnalysisBase:
         ana_obj._single_frame = lambda: None
         ana_obj._conclude = lambda: None
 
-        caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
         assert (
-            r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
-            in "".join([rec.message for rec in caplog.records])
+            r"#    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|"
+            in caplog.text
         )
-        assert __version__ in "".join([rec.message for rec in caplog.records])
+        assert __version__ in caplog.text
 
     @pytest.mark.parametrize(
         "typefunc",
@@ -629,10 +675,9 @@ class Test_AnalysisBase:
 
         ana_obj.n_bins = 10
 
-        caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
-        assert "Using 10 bins." in [rec.message for rec in caplog.records]
+        assert "Using 10 bins." in caplog.text
 
     def test_info_log_verbose(self, ag, caplog):
         """Test that logger infos are printed."""
@@ -652,30 +697,27 @@ class Test_AnalysisBase:
         ana_obj._conclude = lambda: None
 
         caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
         analysis_msg = "Analysing 1 trajectory frames."
 
-        # INFO log messages should always be in the logger
-        messages = [rec.message for rec in caplog.records]
-        assert analysis_msg in messages
+        # INFO log messages should be in the logger when verbose=True
+        assert analysis_msg in caplog.text
 
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
-        caplog.set_level(logging.WARNING)
-        profile = AnalysisBase(
-            atomgroup=ag,
-            unwrap=True,
-            pack=True,
-            wrap_compound="atoms",
-            refgroup=None,
-            jitter=0.0,
-            concfreq=0,
-        )
+        with caplog.at_level(logging.DEBUG, logger="maicos.core.base"):
+            profile = AnalysisBase(
+                atomgroup=ag,
+                unwrap=True,
+                pack=True,
+                wrap_compound="atoms",
+                refgroup=None,
+                jitter=0.0,
+                concfreq=0,
+            )
 
-        msgs = [rec.message for rec in caplog.records]
-        # Assume wrap warning is first warning recorded
-        assert "'atoms` is superfluous." in msgs[0]
+        assert "'atoms` is superfluous." in caplog.text
 
         assert profile.unwrap is False
 

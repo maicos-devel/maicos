@@ -22,6 +22,9 @@ import maicos
 from maicos.core import CylinderBase, PlanarBase, ProfilePlanarBase
 from maicos.lib.weights import density_weights
 
+logger = logging.getLogger(__name__)
+
+
 sys.path.append(str(Path(__file__).parents[1]))
 
 from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
@@ -76,7 +79,7 @@ class TestPlanarBase:
     @pytest.fixture
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
+        u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR, in_memory=True)
         return u.atoms
 
     @pytest.fixture
@@ -124,6 +127,7 @@ class TestPlanarBase:
     def test_compute_lab_frame_planar_default(self, ag, dim):
         """Test lab frame values with default values."""
         planar_class_obj = PlanarClass(ag, pos_arg=42, dim=dim)
+        planar_class_obj._prepare()
         planar_class_obj._compute_lab_frame_planar()
 
         assert planar_class_obj.zmin == 0
@@ -135,6 +139,7 @@ class TestPlanarBase:
     def test_compute_lab_frame_planar(self, ag, lim, pos, dim):
         """Test lab frame values with explicit values."""
         p_obj = PlanarClass(ag, **{"pos_arg": 42, "dim": dim, lim: pos})
+        p_obj._prepare()
         p_obj._compute_lab_frame_planar()
 
         assert getattr(p_obj, lim) == p_obj.box_center[dim] + pos
@@ -190,12 +195,10 @@ class TestPlanarBase:
 
     def test_n_bins(self, planar_class_obj, caplog):
         """Test n bins."""
-        planar_class_obj._verbose = True
-        caplog.set_level(logging.INFO)
-        planar_class_obj.run()
+        planar_class_obj.run(verbose=True)
 
         assert planar_class_obj.n_bins == 60
-        assert "Using 60 bins." in [rec.message for rec in caplog.records]
+        assert "Using 60 bins." in caplog.text
 
     def test_zmin_default(self, ag):
         """Test default zmin."""
@@ -299,6 +302,32 @@ class TestPlanarBase:
 
         assert_allclose(planar_class_obj.results.bin_pos, bin_pos, atol=1e-15)
 
+    def test_warn_zmin_exceeds_half_box(self, ag, caplog):
+        """Test warning when zmin exceeds half the box length."""
+        zmin = ag.universe.dimensions[2] / 2 + 1
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42, zmin=-zmin).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmin" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
+    def test_warn_zmax_exceeds_half_box(self, ag, caplog):
+        """Test warning when zmax exceeds half the box length."""
+        zmax = ag.universe.dimensions[2] / 2 + 1
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42, zmax=zmax).run(stop=3)
+        warnings = [r for r in caplog.records if "User-defined zmax" in r.message]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
+    def test_warn_box_changed(self, ag, caplog):
+        """Test warning when box size changed more than 5 %."""
+        ag.universe.trajectory[1].dimensions = np.array([25, 25, 65, 90, 90, 90])
+        with caplog.at_level(logging.WARNING):
+            PlanarClass(ag, pos_arg=42).run(stop=3)
+        warnings = [
+            r for r in caplog.records if "Box length along dimension" in r.message
+        ]
+        assert len(warnings) == 1, "Warning should be raised exactly once"
+
 
 class TestPlanarBaseChilds:
     """Tests for the PlanarBase child classes."""
@@ -306,7 +335,7 @@ class TestPlanarBaseChilds:
     @pytest.fixture
     def ag_single_frame(self):
         """Import MDA univers."""
-        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
+        u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT, in_memory=True)
         return u.atoms
 
     members = []
