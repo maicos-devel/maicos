@@ -9,8 +9,8 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
-v0.11.3 (2026/01/23)
---------------------
+v0.12 (2026/01/23)
+------------------
 Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
 Francis Jose
 
