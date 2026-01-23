@@ -9,5 +9,5 @@ used.
 .. toctree::
    :maxdepth: 2
 
-   core
-   lib
+   core/index
+   lib/index
