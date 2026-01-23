@@ -79,7 +79,7 @@ class TestPlanarBase:
     @pytest.fixture
     def ag(self):
         """Import MDA universe."""
-        u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR)
+        u = mda.Universe(AIRWATER_TPR, AIRWATER_TRR, in_memory=True)
         return u.atoms
 
     @pytest.fixture
@@ -195,12 +195,10 @@ class TestPlanarBase:
 
     def test_n_bins(self, planar_class_obj, caplog):
         """Test n bins."""
-        planar_class_obj._verbose = True
-        caplog.set_level(logging.INFO)
-        planar_class_obj.run()
+        planar_class_obj.run(verbose=True)
 
         assert planar_class_obj.n_bins == 60
-        assert "Using 60 bins." in [rec.message for rec in caplog.records]
+        assert "Using 60 bins." in caplog.text
 
     def test_zmin_default(self, ag):
         """Test default zmin."""

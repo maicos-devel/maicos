@@ -582,9 +582,10 @@ class Test_AnalysisBase:
         ana_obj.run(stop=1, verbose=True)
 
         assert (
-            r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
+            r"#    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|"
             in caplog.text
         )
+        print(caplog.text)
         assert __version__ in caplog.text
 
     @pytest.mark.parametrize(
