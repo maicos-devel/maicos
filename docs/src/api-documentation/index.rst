@@ -3,8 +3,8 @@
 API documentation
 #################
 
-The API documentation gives details on how the additional *functions* and classes can be
-used.
+The API documentation gives details on how the additional *functions* and *classes* can
+be used.
 
 .. toctree::
    :maxdepth: 2
