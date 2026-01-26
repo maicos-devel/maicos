@@ -434,6 +434,7 @@ class DielectricCylinder(CylinderBase):
                 self.results.deps_r,
                 self.results.m_r,
                 self.results.dm_r,
+                self.results.deps_r_new,
             ]
         ).T
 
@@ -457,7 +458,7 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["ε^-1_r - 1", "Δε^-1_r", "m_r", "Δm_r"]
+        columns += ["ε^-1_r - 1", "Δε^-1_r", "m_r", "Δm_r", "delta_eps_new"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_r.dat"), outdata_r, columns=columns
