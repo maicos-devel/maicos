@@ -180,6 +180,7 @@ class DielectricCylinder(CylinderBase):
         # direction, but it keeps the nomenclature consistent across all of the
         # dielectric modules.
         self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
+        self._obs.M_r_2 = self._obs.M_r**2
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
         # Use virtual cutting method (for axial component)
@@ -372,6 +373,11 @@ class DielectricCylinder(CylinderBase):
                 + self.means.m_r**2 * self.sems.M_r**2
             )
 
+            dcov_r_new = np.sqrt(
+                self.sems.m_r**2 * self.means.M_r_2
+                + ( self.means.mM_r - self.means.m_r * self.means.M_r)**2
+            )
+
             dcov_phi = np.sqrt(
                 self.sems.mM_phi**2
                 + self.sems.m_phi**2 * self.means.M_phi**2
@@ -398,6 +404,9 @@ class DielectricCylinder(CylinderBase):
         )
         self.results.deps_r = (
             2 * np.pi * self.means.L * self._pref * self.results.bin_pos * dcov_r
+        )
+        self.result.deps_r_new = (
+            2 * np.pi * self.means.L * self._pref * self.results.bin_pos * dcov_r_new
         )
 
         self.results.m_phi = self.means.m_phi
