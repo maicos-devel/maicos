@@ -27,8 +27,8 @@ Contributors
 - Julius Schulz
 - Philipp Stärk
 - Damien Toquer
-- Dominik Wille
 - Srihas Velpuri
+- Dominik Wille
 - Amanuel Wolde-Kidan
 
 .. _Simon Gravelle: https://simongravelle.github.io/
