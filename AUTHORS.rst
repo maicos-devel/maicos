@@ -11,26 +11,24 @@ Maintainers
 .. _Philip Loche: https://people.epfl.ch/philip.loche
 .. _Alexander Schlaich:  https://tuhh.de/ipfm/people/schlaich
 
-Developers
-----------
-
-- Maximilian Becker
-- `Simon Gravelle`_
-- Philipp Stärk
-- Srihas Velpuri
-
-.. _Simon Gravelle: https://simongravelle.github.io/
-
 Contributors
 ------------
 
 - Adyant Agrawal
+- Maximilian Becker
 - Shane Carlson
 - Kira Fischer
 - Federico Grasselli
+- `Simon Gravelle`_
+- Francis Jose
 - Julian Kappler
 - Marc Sauter
 - Laura Scalfi
 - Julius Schulz
+- Philipp Stärk
+- Damien Toquer
 - Dominik Wille
+- Srihas Velpuri
 - Amanuel Wolde-Kidan
+
+.. _Simon Gravelle: https://simongravelle.github.io/
