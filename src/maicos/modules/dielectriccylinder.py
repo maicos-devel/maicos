@@ -151,23 +151,28 @@ class DielectricCylinder(CylinderBase):
         # This allows us to avoid numerical errors.
         self._obs.m_r = -np.cumsum(curQ_r) / 2 / np.pi / self._obs.L / self._obs.bin_pos
 
+        # Same as above, but for the whole system.
+        curQ_r_tot = np.bincount(
+            rbins, weights=self._universe.atoms.charges, minlength=self.n_bins
+        )
+
+        # We don't need to to know m_r for the whole system, since we calculate M_r
+        # directly from the atom positions and charges. But maybe someone wants to use
+        # it for something else, so we calculate it here as well.
+        self._obs.m_r_tot = (
+            -np.cumsum(curQ_r_tot) / 2 / np.pi / self._obs.L / self._obs.bin_pos
+        )
+
         # Direct calculation without binning of
         # \int_0^R dr m(r) = -1/(2πL) * sum_i q_i log(R/r_i)
         r_atoms = self.pos_cyl[:, 0]
-
-        # Avoid log(0) for atoms at r=0
-        valid = self.pos_cyl[:, 0] > 0
-        # test if atoms at r=0 are a problem
-        if np.any(~valid):
-            logger.warning(
-                "Some atoms are located at r=0. These atoms are ignored for the "
-                "calculation of M_r to avoid numerical errors."
-            )
-
+        # Set r=0 to the smallest non-zero bin edge to avoid numerical errors. Atoms at
+        # r=0 should be very rare in practice.
+        r_atoms[r_atoms == 0.0] = 0.001
         self._obs.M_r = -np.sum(
-            self._universe.atoms.charges[valid]
-            * np.log(self._obs.bin_edges[-1] / r_atoms[valid])
+            self._universe.atoms.charges * np.log(self._obs.bin_edges[-1] / r_atoms)
         ) / (2 * np.pi * self._obs.L)
+
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
         # Use virtual cutting method (for axial component)
