@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich
+Alexander Schlaich, Henrik Stooß
 
+- Change DielectricCylinder code to avoid numerical errors (#556)
 - Update AUTHORS.rst (#553)
 
 v0.12 (2026/01/23)
