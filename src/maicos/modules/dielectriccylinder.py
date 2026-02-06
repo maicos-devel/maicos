@@ -164,7 +164,10 @@ class DielectricCylinder(CylinderBase):
                 "calculation of M_r to avoid numerical errors."
             )
 
-        self._obs.M_r = -np.sum(self._universe.atoms.charges[valid] * np.log(self._obs.bin_edges[-1] / r_atoms[valid])) / (2 * np.pi * self._obs.L)
+        self._obs.M_r = -np.sum(
+            self._universe.atoms.charges[valid]
+            * np.log(self._obs.bin_edges[-1] / r_atoms[valid])
+        ) / (2 * np.pi * self._obs.L)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
         # Use virtual cutting method (for axial component)
