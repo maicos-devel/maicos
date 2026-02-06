@@ -151,19 +151,20 @@ class DielectricCylinder(CylinderBase):
         # This allows us to avoid numerical errors.
         self._obs.m_r = -np.cumsum(curQ_r) / 2 / np.pi / self._obs.L / self._obs.bin_pos
 
-        # Same as above, but for the whole system.
-        curQ_r_tot = np.bincount(
-            rbins, weights=self._universe.atoms.charges, minlength=self.n_bins
-        )
+        # Direct calculation without binning of
+        # \int_0^R dr m(r) = -1/(2πL) * sum_i q_i log(R/r_i)
+        r_atoms = self.pos_cyl[:, 0]
 
-        self._obs.m_r_tot = (
-            -np.cumsum(curQ_r_tot) / 2 / np.pi / self._obs.L / self._obs.bin_pos
-        )
+        # Avoid log(0) for atoms at r=0
+        valid = self.pos_cyl[:, 0] > 0
+        # test if atoms at r=0 are a problem
+        if np.any(~valid):
+            logger.warning(
+                "Some atoms are located at r=0. These atoms are ignored for the "
+                "calculation of M_r to avoid numerical errors."
+            )
 
-        # Note that M_r is not really the total system dipole moment in radial
-        # direction, but it keeps the nomenclature consistent across all of the
-        # dielectric modules.
-        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
+        self._obs.M_r = -np.sum(self._universe.atoms.charges[valid] * np.log(self._obs.bin_edges[-1] / r_atoms[valid])) / (2 * np.pi * self._obs.L)
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
         # Use virtual cutting method (for axial component)
