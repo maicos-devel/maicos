@@ -13,7 +13,7 @@ Unreleased
 ----------
 Alexander Schlaich
 
-- Add test for logging in subsequent calls of the run method (#558)
+- Add test for logging in multiple subsequent calls of the run method (#558)
 - Update AUTHORS.rst (#553)
 
 v0.12 (2026/01/23)
