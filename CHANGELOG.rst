@@ -14,7 +14,7 @@ Unreleased
 Alexander Schlaich
 
 - Update AUTHORS.rst (#553)
-- Add guidelines for contributing
+- Improve guidelines for contributing (#559)
 
 v0.12 (2026/01/23)
 ------------------
