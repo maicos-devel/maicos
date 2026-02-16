@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich
+Alexander Schlaich, Henrik Stooß
 
+- Don't include the ``.github`` folder in the source distribution (#562)
 - Update AUTHORS.rst (#553)
 
 v0.12 (2026/01/23)
