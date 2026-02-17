@@ -1043,3 +1043,135 @@ class TestPlanarBaseChilds:
                 mod_sig.parameters[param.name]
             except KeyError as err:
                 raise KeyError(f"{param.name} is not a parameter of {Member}!") from err
+
+
+class TestDumpLoad:
+    """Tests for the dump/load checkpoint methods."""
+
+    @pytest.fixture
+    def ag(self):
+        """Import MDA universe."""
+        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
+
+    @pytest.fixture
+    def singular(self, ag):
+        """Run a SingularSeries analysis."""
+        np.random.seed(42)
+        ana = SingularSeries(ag)
+        ana.run()
+        return ana
+
+    @pytest.fixture
+    def multiple(self, ag):
+        """Run a MultipleSeries analysis."""
+        np.random.seed(42)
+        ana = MultipleSeries(ag)
+        ana.run()
+        return ana
+
+    def test_dump_creates_file(self, singular, tmp_path):
+        """Test that dump creates an .npz file."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+        assert fpath.exists()
+
+    def test_roundtrip_means(self, singular, ag, tmp_path):
+        """Test that means survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        for key in singular.means:
+            assert_allclose(restored.means[key], singular.means[key])
+
+    def test_roundtrip_sems(self, singular, ag, tmp_path):
+        """Test that sems survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        for key in singular.sems:
+            assert_allclose(restored.sems[key], singular.sems[key])
+
+    def test_roundtrip_results(self, singular, ag, tmp_path):
+        """Test that results survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        for key in singular.results:
+            assert_allclose(restored.results[key], singular.results[key])
+
+    def test_roundtrip_accumulators(self, singular, ag, tmp_path):
+        """Test that sums, pop, M2 survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        for attr in ("sums", "pop", "M2"):
+            orig = getattr(singular, attr)
+            rest = getattr(restored, attr)
+            for key in orig:
+                assert_allclose(rest[key], orig[key])
+
+    def test_roundtrip_arrays(self, singular, ag, tmp_path):
+        """Test that timeseries, frames, times survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        assert_allclose(restored.timeseries, singular.timeseries)
+        assert_allclose(restored.frames, singular.frames)
+        assert_allclose(restored.times, singular.times)
+
+    def test_roundtrip_metadata(self, singular, ag, tmp_path):
+        """Test that _frame_index, _index, corrtime survive a roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        assert restored._frame_index == singular._frame_index
+        assert restored._index == singular._index
+        assert_allclose(restored.corrtime, singular.corrtime)
+
+    def test_roundtrip_multiple_observables(self, multiple, ag, tmp_path):
+        """Test dump/load with variance and population tracking."""
+        fpath = tmp_path / "checkpoint.npz"
+        multiple.dump(str(fpath))
+
+        np.random.seed(42)
+        restored = MultipleSeries(ag)
+        restored.load(str(fpath))
+
+        for key in multiple.means:
+            assert_allclose(restored.means[key], multiple.means[key])
+        for key in multiple.sems:
+            assert_allclose(restored.sems[key], multiple.sems[key])
+
+    def test_scalar_types_preserved(self, singular, ag, tmp_path):
+        """Test that scalar values remain scalars after roundtrip, not 0-d arrays."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries(ag)
+        restored.load(str(fpath))
+
+        for key in singular.means:
+            orig = singular.means[key]
+            rest = restored.means[key]
+            if np.ndim(orig) == 0:
+                assert not isinstance(rest, np.ndarray), (
+                    f"means[{key!r}] should be scalar, got {type(rest)}"
+                )

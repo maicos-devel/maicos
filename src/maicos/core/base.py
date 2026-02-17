@@ -654,6 +654,83 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         fname = "{}{}".format(fname, (not fname.endswith(".dat")) * ".dat")
         np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
 
+    _CHECKPOINT_CONTAINERS = ("results", "_obs", "means", "sems", "sums", "pop", "M2")
+    _CHECKPOINT_ARRAYS = ("timeseries", "frames", "times")
+    _CHECKPOINT_META = ("_frame_index", "_index", "corrtime")
+
+    _CHECKPOINT_SEP = ":::"
+
+    def dump(self, filename: str) -> None:
+        """Save analysis state to an ``.npz`` file.
+
+        Persists all statistical accumulators (``means``, ``sems``, ``sums``,
+        ``pop``, ``M2``), the ``results`` and ``_obs`` containers, per-frame
+        arrays (``timeseries``, ``frames``, ``times``), and metadata so that
+        the analysis can be restored with :meth:`load`.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the output ``.npz`` file.
+        """
+        sep = self._CHECKPOINT_SEP
+        data = {}
+        for name in self._CHECKPOINT_CONTAINERS:
+            container = getattr(self, name, None)
+            if container is None:
+                continue
+            for key in container:
+                data[f"{name}{sep}{key}"] = np.asarray(container[key])
+
+        for name in self._CHECKPOINT_ARRAYS:
+            arr = getattr(self, name, None)
+            if arr is not None:
+                data[f"_array{sep}{name}"] = np.asarray(arr)
+
+        for name in self._CHECKPOINT_META:
+            val = getattr(self, name, None)
+            if val is not None:
+                data[f"_meta{sep}{name}"] = np.asarray(val)
+
+        np.savez(filename, **data)
+
+    def load(self, filename: str) -> None:
+        """Restore analysis state from an ``.npz`` file created by :meth:`dump`.
+
+        After loading, call :meth:`_conclude` to recompute derived results
+        from the restored accumulators, and :meth:`save` to write output files.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the ``.npz`` file.
+        """
+        sep = self._CHECKPOINT_SEP
+        npz = np.load(filename)
+
+        containers: dict[str, Results] = {}
+        for full_key in npz.files:
+            arr = npz[full_key]
+            prefix, found, key = full_key.partition(sep)
+            if not found:
+                continue
+
+            if prefix in self._CHECKPOINT_CONTAINERS:
+                if prefix not in containers:
+                    containers[prefix] = Results()
+                # Convert 0-d arrays back to Python scalars
+                containers[prefix][key] = arr.item() if arr.ndim == 0 else arr
+
+            elif prefix == "_array":
+                setattr(self, key, arr)
+
+            elif prefix == "_meta":
+                val = arr.item() if arr.ndim == 0 else arr
+                setattr(self, key, val)
+
+        for name, container in containers.items():
+            setattr(self, name, container)
+
 
 class AnalysisCollection(_Runner):
     """Running a collection of analysis classes on the same single trajectory.
