@@ -33,12 +33,13 @@ Conduct may be removed from the project team.
 This code of Conduct applies both within project spaces and in public spaces when an
 individual is representing the project or its community.
 
-.. Instances of abusive, harassing, or otherwise unacceptable behavior can be
-.. reported by emailing contact@maicos.org.
+Instances of abusive, harassing, or otherwise unacceptable behavior should be
+reported to the `project maintainers`_.
 
 This Code of Conduct is adapted from the `Contributor Covenant`_, version 1.1.0,
 available at https://contributor-covenant.org/version/1/1/0/
 
+.. _`project maintainers` : https://github.com/maicos-devel/maicos/blob/main/AUTHORS.rst
 .. _`Contributor Covenant` : https://contributor-covenant.org
 
 Getting involved
