@@ -13,6 +13,7 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß
 
+- Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
 - Don't include the ``.github`` folder in the source distribution (#562)
 - Update AUTHORS.rst (#553)
 
