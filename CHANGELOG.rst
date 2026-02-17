@@ -14,7 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß
 
 - Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
-- analysis states (#?)
+  analysis states (#565)
 - Don't include the ``.github`` folder in the source distribution (#562)
 - Update AUTHORS.rst (#553)
 
