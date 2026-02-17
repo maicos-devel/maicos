@@ -13,8 +13,8 @@ Unreleased
 ----------
 Alexander Schlaich
 
+- Improve guidelines for contributing (#560)
 - Update AUTHORS.rst (#553)
-- Improve guidelines for contributing (#559)
 
 v0.12 (2026/01/23)
 ------------------
