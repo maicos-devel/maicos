@@ -858,8 +858,8 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self) -> None | float:
-        self._obs.profile = np.zeros(self.n_bins)  # type: ignore
-        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore
+        self._obs.profile = np.zeros(self.n_bins)  # type: ignore -> should now be defined
+        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore -> should now be defined
 
         if self.grouping == "atoms":  # type: ignore
             positions = self.atomgroup.positions

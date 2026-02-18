@@ -8,14 +8,33 @@
 """Module for computing planar density profiles."""
 
 import logging
+from dataclasses import dataclass, field # for typechecking
 
 import MDAnalysis as mda
+import numpy as np
 
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
 
 logger = logging.getLogger(__name__)
+
+
+# Helped by AI (Claude). Declares all observables set across the full
+# inheritance chain (src/maicos/core/planar.py + src/maicos/core/base.py) so mypy can type-check them for type
+@dataclass
+class DensityPlanarObs:
+    # From PlanarBase
+    L: float = 0.0 #     _obs.L : float  
+    box_center: np.ndarray = field(default_factory=lambda: np.zeros(3)) #     _obs.box_center : np.ndarray
+    bin_edges: np.ndarray = field(default_factory=lambda: np.zeros(0))#    _obs.bin_edges : np.ndarray 
+    bin_width: float = 0.0 #    _obs.bin_width : float 
+    bin_pos: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_pos : np.ndarray
+    bin_area: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_area : np.ndarray
+    bin_volume: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_volume : np.ndarray
+    # From ProfileBase line 872 and 874
+    profile: np.ndarray = field(default_factory=lambda: np.zeros(0)) 
+    bincount: np.ndarray = field(default_factory=lambda: np.zeros(0))   
 
 
 @render_docs
@@ -88,3 +107,8 @@ class DensityPlanar(ProfilePlanarBase):
     def _prepare(self):
         logger.info(f"Analysis of the {self._locals['dens']} density profile.")
         super()._prepare()
+        # Helped by AI (Claude). Annotate _obs, means and sems so mypy knows
+        # their types instead of relying on the generic Results() container.
+        self._obs: DensityPlanarObs = DensityPlanarObs()
+        self.means: DensityPlanarObs = DensityPlanarObs()
+        self.sems: DensityPlanarObs = DensityPlanarObs()
