@@ -117,6 +117,9 @@ Review all code or documentation changes made by AI tools and make sure you
 understand all changes and can explain them on request, before submitting them
 under your name. Do not submit any AI-generated code that you haven’t personally 
 reviewed, understood and tested, as this wastes maintainers’ time.
+To enhance the review process, please indicate if significant parts of your
+contribution were generated or modified by AI tools (typicically this is the
+case beyond simple code suggestions e.g. inside IDEs). 
 
 Please do not paste AI generated text in the description of issues, PRs or in comments
 as this makes it harder for reviewers to assess your contribution. 
