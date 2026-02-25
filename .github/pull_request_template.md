@@ -17,4 +17,4 @@ Changes made in this Pull Request:
 
 ## LLM / AI generated code disclosure
 <!-- Please update this disclosure to reflect if you did or did not use LLMs / AI to generate code -->
-LLMs or other AI-powered tools (beyond simple code suggestions e.g. inside IDEs) were used in this contribution: yes / no
+[ ] LLMs or other AI-powered tools (beyond simple code suggestions e.g. inside IDEs) were used in this contribution.
