@@ -877,6 +877,51 @@ class TestAnalysisCollection:
 
         assert ana_2.ref_pos == ana_1.ref_pos
 
+    def test_positions_restored_between_analyses(self):
+        """Test that atom positions are restored between analyses in a collection.
+
+            This is important because not only should the timestep be restored after
+            each analysis, but also the positions of the universe should be the same
+            at the start of each analysis.
+        """
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
+
+        class PositionShifter(AnalysisBase):
+            """Shifts positions by a large offset to make wrap produce different results."""
+
+            def __init__(self, atomgroup):
+                super().__init__(
+                    atomgroup=atomgroup,
+                    unwrap=False,
+                    pack=True,
+                    refgroup=None,
+                    jitter=0.0,
+                    wrap_compound="atoms",
+                    concfreq=0,
+                )
+
+            def _prepare(self):
+                pass
+
+            def _single_frame(self):
+                # After wrap in _call_single_frame, shift positions so the
+                # universe is left in a modified state.
+                self._universe.atoms.positions += 5.0
+                self.seen_positions = self._universe.atoms.positions.copy()
+
+            def _conclude(self):
+                pass
+
+        ana_1 = PositionShifter(u.atoms)
+        ana_2 = PositionShifter(u.atoms)
+
+        collection = AnalysisCollection(ana_1, ana_2)
+        collection.run(frames=[0])
+
+        # If positions are properly restored between analyses, both should
+        # see the same positions after their respective wrap + shift.
+        assert_allclose(ana_1.seen_positions, ana_2.seen_positions)
+
     def test_inconsistent_trajectory(self, u):
         """Test error raise if two analysis objects have a different trajectory."""
         v = mda.Universe(TPR, XTC)
