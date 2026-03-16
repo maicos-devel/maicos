@@ -45,6 +45,8 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
         Orthorhombic box dimensions ``[xx, yy, zz, 90, 90, 90]``.
     """
     a, b, c, alpha, beta, gamma = dimensions
+    if np.allclose([alpha, beta, gamma], 90.0):
+        return np.array([a, b, c, 90.0, 90.0, 90.0])
     alpha, beta, gamma = np.radians([alpha, beta, gamma])
 
     xx = a

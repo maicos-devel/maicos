@@ -475,10 +475,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._warned_triclinic = True
             # If universe has a cell we wrap the compound into the primary unit cell to
             # use all compounds for the analysis.
+            is_triclinic = np.any(ts.dimensions[-3:] != np.array([90.0, 90.0, 90.0]))
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
-                ortho_box = triclinic_to_orthorhombic(ts.dimensions)
-                self._universe.atoms.wrap(compound=self.wrap_compound, box=ortho_box)
+                if is_triclinic:
+                    ortho_box = triclinic_to_orthorhombic(ts.dimensions)
+                    self._universe.atoms.wrap(
+                        compound=self.wrap_compound, box=ortho_box
+                    )
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
