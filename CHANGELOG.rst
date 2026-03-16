@@ -13,6 +13,8 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß
 
+- Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
+  non-orthorhombic boxes (#571)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
 - Don't include the ``.github`` folder in the source distribution (#562)

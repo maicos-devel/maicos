@@ -55,6 +55,7 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
 
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
+
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(

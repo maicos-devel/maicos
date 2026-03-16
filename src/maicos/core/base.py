@@ -478,9 +478,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
                 ortho_box = triclinic_to_orthorhombic(ts.dimensions)
-                self._universe.atoms.wrap(
-                    compound=self.wrap_compound, box=ortho_box
-                )
+                self._universe.atoms.wrap(compound=self.wrap_compound, box=ortho_box)
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
