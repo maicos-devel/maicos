@@ -99,12 +99,12 @@ class _Runner:
             )
         ):
             ts_original = ts.copy()
-
+            positions_original = ts.positions.copy()
             with logging_redirect_tqdm():
                 for analysis_object in analysis_instances:
                     analysis_object._call_single_frame(ts=ts, current_frame_index=i)
                     ts = ts_original
-
+                    analysis_object._universe.atoms.positions = positions_original
         logger.debug("Concluding analysis.")
 
         for analysis_object in analysis_instances:
