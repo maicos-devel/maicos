@@ -31,6 +31,7 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
+    triclinic_to_orthorhombic,
 )
 
 logger = logging.getLogger(__name__)
@@ -475,6 +476,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # use all compounds for the analysis.
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
+                ortho_box = triclinic_to_orthorhombic(ts.dimensions)
+                self._universe.atoms.wrap(
+                    compound=self.wrap_compound, box=ortho_box
+                )
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
