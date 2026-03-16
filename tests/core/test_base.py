@@ -880,20 +880,20 @@ class TestAnalysisCollection:
     def test_positions_restored_between_analyses(self):
         """Test that atom positions are restored between analyses in a collection.
 
-            This is important because not only should the timestep be restored after
-            each analysis, but also the positions of the universe should be the same
-            at the start of each analysis.
+        This is important because not only should the timestep be restored after
+        each analysis, but also the positions of the universe should be the same
+        at the start of each analysis.
         """
         u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
 
         class PositionShifter(AnalysisBase):
-            """Shifts positions by a large offset to make wrap produce different results."""
+            """Shifts positions by an offset."""
 
             def __init__(self, atomgroup):
-                super().__init__(
+                super().__init__(  # Don't do anything to the trajectory
                     atomgroup=atomgroup,
                     unwrap=False,
-                    pack=True,
+                    pack=False,
                     refgroup=None,
                     jitter=0.0,
                     wrap_compound="atoms",
@@ -904,8 +904,7 @@ class TestAnalysisCollection:
                 pass
 
             def _single_frame(self):
-                # After wrap in _call_single_frame, shift positions so the
-                # universe is left in a modified state.
+                # After this shift, the universe is left in a modified state.
                 self._universe.atoms.positions += 5.0
                 self.seen_positions = self._universe.atoms.positions.copy()
 
@@ -919,7 +918,7 @@ class TestAnalysisCollection:
         collection.run(frames=[0])
 
         # If positions are properly restored between analyses, both should
-        # see the same positions after their respective wrap + shift.
+        # see the same positions after their respective shift.
         assert_allclose(ana_1.seen_positions, ana_2.seen_positions)
 
     def test_inconsistent_trajectory(self, u):
