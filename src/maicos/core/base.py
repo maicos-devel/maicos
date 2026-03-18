@@ -546,7 +546,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(
                         self._obs[key]
-                    )  # self._obs[key] = value → setattr(self._obs, key, value)
+                    )
                 if (
                     key not in self._pop
                 ):  # key not in self._pop → getattr(self._pop, key, None) is None
