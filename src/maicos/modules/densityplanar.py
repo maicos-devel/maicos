@@ -8,7 +8,7 @@
 """Module for computing planar density profiles."""
 
 import logging
-from dataclasses import dataclass, field # for typechecking
+from dataclasses import dataclass, field  # for typechecking
 
 import MDAnalysis as mda
 import numpy as np
@@ -20,21 +20,31 @@ from ..lib.weights import density_weights
 logger = logging.getLogger(__name__)
 
 
-# Helped by AI (Claude). Declares all observables set across the full
-# inheritance chain (src/maicos/core/planar.py + src/maicos/core/base.py) so mypy can type-check them for type
 @dataclass
 class DensityPlanarObs:
+    """Observables for DensityPlanar, typed for mypy."""
+
     # From PlanarBase
-    L: float = 0.0 #     _obs.L : float  
-    box_center: np.ndarray = field(default_factory=lambda: np.zeros(3)) #     _obs.box_center : np.ndarray
-    bin_edges: np.ndarray = field(default_factory=lambda: np.zeros(0))#    _obs.bin_edges : np.ndarray 
-    bin_width: float = 0.0 #    _obs.bin_width : float 
-    bin_pos: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_pos : np.ndarray
-    bin_area: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_area : np.ndarray
-    bin_volume: np.ndarray = field(default_factory=lambda: np.zeros(0)) #    _obs.bin_volume : np.ndarray
+    L: float = 0.0  #     _obs.L : float
+    box_center: np.ndarray = field(
+        default_factory=lambda: np.zeros(3)
+    )  #     _obs.box_center : np.ndarray
+    bin_edges: np.ndarray = field(
+        default_factory=lambda: np.zeros(0)
+    )  #    _obs.bin_edges : np.ndarray
+    bin_width: float = 0.0  #    _obs.bin_width : float
+    bin_pos: np.ndarray = field(
+        default_factory=lambda: np.zeros(0)
+    )  #    _obs.bin_pos : np.ndarray
+    bin_area: np.ndarray = field(
+        default_factory=lambda: np.zeros(0)
+    )  #    _obs.bin_area : np.ndarray
+    bin_volume: np.ndarray = field(
+        default_factory=lambda: np.zeros(0)
+    )  #    _obs.bin_volume : np.ndarray
     # From ProfileBase line 872 and 874
-    profile: np.ndarray = field(default_factory=lambda: np.zeros(0)) 
-    bincount: np.ndarray = field(default_factory=lambda: np.zeros(0))   
+    profile: np.ndarray = field(default_factory=lambda: np.zeros(0))
+    bincount: np.ndarray = field(default_factory=lambda: np.zeros(0))
 
 
 @render_docs

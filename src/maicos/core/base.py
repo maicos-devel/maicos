@@ -12,7 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
-from typing import Self
+from typing import Self, cast
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -292,6 +292,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
+    # Type annotations for attributes set dynamically in _call_single_frame.
+    # Class-level only (no values) so runtime behaviour is unchanged.
+    means: Results
+    sems: Results
+    sums: Results
+    pop: Results
+    M2: Results
+    _obs: Results
+    _pop: Results
+    _var: Results
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -490,8 +501,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # therefore not a performance issue like a if statement would be.
         try:
             # Fail fast if the means and sems are not defined yet.
-            self.means  # type: ignore  # noqa B018
-            self.sems  # type: ignore  # noqa B018
+            self.means  # noqa B018
+            self.sems  # noqa B018
 
             # Take the data from the current frame and update the means and sems
             for key in self._obs:
@@ -503,19 +514,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                self.pop[key], self.means[key], self.M2[key] = (  # type: ignore
-                    combine_subsample_variance(  # type: ignore
-                        self._pop[key],  # type: ignore
-                        self.pop[key],  # type: ignore
-                        self._obs[key],  # type: ignore
-                        self.means[key],  # type: ignore
-                        self._var[key] * self._pop[key],  # type: ignore
-                        self.M2[key],  # type: ignore
+                self.pop[key], self.means[key], self.M2[key] = (
+                    combine_subsample_variance(
+                        self._pop[key],
+                        self.pop[key],
+                        self._obs[key],
+                        self.means[key],
+                        self._var[key] * self._pop[key],
+                        self.M2[key],
                     )
                 )
 
-                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore
-                self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)
+                self.sums[key] += self._obs[key] * self._pop[key]
 
         except AttributeError as err:
             with logging_redirect_tqdm():
@@ -533,8 +544,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 if isinstance(self._obs[key], list):
-                    self._obs[key] = np.array(self._obs[key])
-                if key not in self._pop:
+                    self._obs[key] = np.array(
+                        self._obs[key]
+                    )  # self._obs[key] = value → setattr(self._obs, key, value)
+                if (
+                    key not in self._pop
+                ):  # key not in self._pop → getattr(self._pop, key, None) is None
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
                     self._var[key].fill(np.nan)
@@ -816,6 +831,7 @@ class ProfileBase:
         # subclass of AnalysisBase (only needed for tests)
         self.results = Results()
         self._obs = Results()
+        self.n_bins: int = 0  # subclasses overwrite this in _prepare()
 
     def _prepare(self):
         normalizations = ["none", "volume", "number"]
@@ -858,10 +874,10 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self) -> None | float:
-        self._obs.profile = np.zeros(self.n_bins)  # type: ignore -> should now be defined
-        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore -> should now be defined
+        self._obs.profile = np.zeros(self.n_bins)
+        self._obs.bincount = np.zeros(self.n_bins)
 
-        if self.grouping == "atoms":  # type: ignore
+        if self.grouping == "atoms":
             positions = self.atomgroup.positions
         else:
             positions = get_center(
@@ -873,7 +889,7 @@ class ProfileBase:
 
         self._obs.bincount = np.bincount(
             bin_indices[bin_indices > -1],
-            minlength=self.n_bins,  # type: ignore
+            minlength=self.n_bins,
         )
 
         if self.normalization == "volume":
@@ -905,7 +921,7 @@ class ProfileBase:
 
         # Required attribute to use method from `AnalysisBase`
         AnalysisBase.savetxt(
-            self,  # type: ignore
+            cast("AnalysisBase", self),  # no-op at runtime; satisfies mypy
             self.output,
             np.vstack(
                 (
