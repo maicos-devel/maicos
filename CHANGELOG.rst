@@ -11,7 +11,7 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß
+Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
 - Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
   enable mypy type checking without ``# type: ignore`` comments (#531)
