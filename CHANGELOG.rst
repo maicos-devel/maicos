@@ -13,6 +13,8 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß
 
+- Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
+  enable mypy type checking without ``# type: ignore`` comments (#531)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
 - Don't include the ``.github`` folder in the source distribution (#562)
