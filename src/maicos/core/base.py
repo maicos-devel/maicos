@@ -831,7 +831,7 @@ class ProfileBase:
         # subclass of AnalysisBase (only needed for tests)
         self.results = Results()
         self._obs = Results()
-        self.n_bins: int = 0  # subclasses overwrite this in _prepare()
+        self.n_bins: int
 
     def _prepare(self):
         normalizations = ["none", "volume", "number"]
