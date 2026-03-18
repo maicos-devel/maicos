@@ -544,12 +544,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if type(self._obs[key]) not in compatible_types:
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 if isinstance(self._obs[key], list):
-                    self._obs[key] = np.array(
-                        self._obs[key]
-                    )
-                if (
-                    key not in self._pop
-                ):
+                    self._obs[key] = np.array(self._obs[key])
+                if key not in self._pop:
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
                     self._var[key].fill(np.nan)
