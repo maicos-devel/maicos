@@ -12,7 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -292,16 +292,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
-    # Type annotations for attributes set dynamically in _call_single_frame.
-    # Class-level only (no values) so runtime behaviour is unchanged.
-    means: Results
-    sems: Results
-    sums: Results
-    pop: Results
-    M2: Results
-    _obs: Results
-    _pop: Results
-    _var: Results
+    if TYPE_CHECKING:
+        # Type annotations for attributes set dynamically in _call_single_frame.
+        means: Results
+        sems: Results
+        sums: Results
+        pop: Results
+        M2: Results
+        _obs: Results
+        _pop: Results
+        _var: Results
 
     def __init__(
         self,
