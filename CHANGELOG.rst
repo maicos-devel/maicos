@@ -15,6 +15,7 @@ Alexander Schlaich, Henrik Stooß
 
 - Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
   analysis states (#565)
+- Change DielectricCylinder code to avoid numerical errors (#556)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
 - Don't include the ``.github`` folder in the source distribution (#562)
