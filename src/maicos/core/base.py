@@ -549,7 +549,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     )
                 if (
                     key not in self._pop
-                ):  # key not in self._pop → getattr(self._pop, key, None) is None
+                ):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
                     self._var[key].fill(np.nan)
