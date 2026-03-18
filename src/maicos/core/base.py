@@ -921,7 +921,7 @@ class ProfileBase:
 
         # Required attribute to use method from `AnalysisBase`
         AnalysisBase.savetxt(
-            cast("AnalysisBase", self),  # no-op at runtime; satisfies mypy
+            self,  # type: ignore
             self.output,
             np.vstack(
                 (
