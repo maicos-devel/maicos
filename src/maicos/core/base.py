@@ -12,7 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
-from typing import Self, cast
+from typing import Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
