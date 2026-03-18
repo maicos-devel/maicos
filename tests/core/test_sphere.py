@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -8,7 +8,6 @@
 """Tests for the spherical base classes."""
 
 import inspect
-import logging
 import sys
 from pathlib import Path
 
@@ -121,11 +120,10 @@ class TestSphereBase:
     def test_n_bins(self, ag, caplog):
         """Test n bins."""
         sphere_class_obj = SphereClass(ag, pos_arg=42)
-        caplog.set_level(logging.INFO)
-        sphere_class_obj.run()
+        sphere_class_obj.run(verbose=True)
 
         assert sphere_class_obj.n_bins == 10
-        assert "Using 10 bins." in [rec.message for rec in caplog.records]
+        assert "Using 10 bins." in caplog.text
 
     def test_rmin_default(self, ag):
         """Test default rmin."""

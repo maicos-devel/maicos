@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -15,6 +15,8 @@ import scipy.constants
 
 from ..core import CylinderBase
 from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -32,8 +34,8 @@ class DielectricCylinder(CylinderBase):
     provided.
 
     For usage please refer to the
-    :ref:`sphx_glr_examples_dielectrics_dielectric-profiles.py` example and for details
-    on the theory see :ref:`dielectric-explanations`.
+    :ref:`sphx_glr_generated_examples_dielectrics_dielectric-profiles.py` example and
+    for details on the theory see :ref:`dielectric-explanations`.
 
     For correlation analysis, the component along the :math:`z`-axis is used.
     ${CORRELATION_INFO}
@@ -100,7 +102,7 @@ class DielectricCylinder(CylinderBase):
         _, self.inverse_ix = np.unique(ix, return_inverse=True)
 
         if zmin is not None or zmax is not None or rmin != 0 or rmax is not None:
-            logging.warning(
+            logger.warning(
                 "Setting `rmin` and `rmax` (as well as `zmin` and `zmax`) might cut "
                 "off molecules. This will lead to severe artifacts in the dielectric "
                 "profiles."
@@ -132,7 +134,7 @@ class DielectricCylinder(CylinderBase):
             "components of the cylindrical dielectric tensor."
         )
         # Print Philip Loche citation
-        logging.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
+        logger.info(citation_reminder("10.1021/acs.jpcb.9b09269"))
 
         super()._prepare()
 
@@ -161,14 +163,23 @@ class DielectricCylinder(CylinderBase):
             rbins, weights=self._universe.atoms.charges, minlength=self.n_bins
         )
 
+        # We don't need to to know m_r for the whole system, since we calculate M_r
+        # directly from the atom positions and charges. But maybe someone wants to use
+        # it for something else, so we calculate it here as well.
         self._obs.m_r_tot = (
             -np.cumsum(curQ_r_tot) / 2 / np.pi / self._obs.L / self._obs.bin_pos
         )
 
-        # Note that M_r is not really the total system dipole moment in radial
-        # direction, but it keeps the nomenclature consistent across all of the
-        # dielectric modules.
-        self._obs.M_r = np.sum(self._obs.m_r_tot * self._obs.bin_width)
+        # Direct calculation without binning of
+        # \int_0^R dr m(r) = -1/(2πL) * sum_i q_i log(R/r_i)
+        r_atoms = self.pos_cyl[:, 0]
+        # Set r=0 to the smallest non-zero bin edge to avoid numerical errors. Atoms at
+        # r=0 should be very rare in practice.
+        r_atoms[r_atoms == 0.0] = 0.001
+        self._obs.M_r = -np.sum(
+            self._universe.atoms.charges * np.log(self._obs.bin_edges[-1] / r_atoms)
+        ) / (2 * np.pi * self._obs.L)
+
         self._obs.mM_r = self._obs.m_r * self._obs.M_r
 
         # Use virtual cutting method (for axial component)

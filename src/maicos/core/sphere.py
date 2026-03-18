@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -17,6 +17,8 @@ from ..lib.math import transform_sphere
 from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -90,7 +92,7 @@ class SphereBase(AnalysisBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logging.warning(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -201,7 +203,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):  # type: ignore
         SphereBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(
+        logger.info(
             """Profile along the radial coordinate in a spherical """
             """coordinate system."""
         )

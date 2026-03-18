@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -22,6 +22,8 @@ import numpy as np
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
+
+logger = logging.getLogger(__name__)
 
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
@@ -375,10 +377,10 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     if hasattr(atomgroup, "molnums"):
         return "molecules"
     if hasattr(atomgroup, "fragments"):
-        logging.info("Cannot use 'molecules'. Falling back to 'fragments'")
+        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
     if hasattr(atomgroup, "residues"):
-        logging.info("Cannot use 'fragments'. Falling back to 'residues'")
+        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
     raise AttributeError("Missing any connection information in `atomgroup`.")
 
@@ -416,50 +418,13 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
 
     """
     if not hasattr(AtomGroup, "types"):
-        logging.warning(
+        logger.warning(
             "AtomGroup does not contain atom types. Not writing AtomGroup information "
             "to output."
         )
         return f"{len(AtomGroup.atoms)} unkown particles"
     unique, unique_counts = np.unique(AtomGroup.types, return_counts=True)
     return " & ".join("{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
-
-
-def bin(a: np.ndarray, bins: np.ndarray) -> np.ndarray:
-    """Average array values in bins for easier plotting.
-
-    Parameters
-    ----------
-    a : numpy.ndarray
-        The input array to be averaged.
-    bins : numpy.ndarray
-        The array containing the indices where each bin begins.
-
-    Returns
-    -------
-    numpy.ndarray
-        The averaged array values.
-
-    Notes
-    -----
-    The "bins" array should contain the INDEX (integer) where each bin begins.
-
-    """
-    if np.iscomplex(a).any():
-        avg = np.zeros(len(bins), dtype=complex)  # average of data
-    else:
-        avg = np.zeros(len(bins))
-
-    count = np.zeros(len(bins), dtype=int)
-    ic = -1
-
-    for i in range(0, len(a)):
-        if i in bins:
-            ic += 1  # index for new average
-        avg[ic] += a[i]
-        count[ic] += 1
-
-    return avg / count
 
 
 def charge_neutral(filter: str) -> Callable:
@@ -797,18 +762,27 @@ def maicos_banner(version: str = "", frame_char: str = "-") -> str:
         formatted banner
 
     """
-    banner = rf"""
+    banner = r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @                  __  __              _____    _____            _____         @
 @    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|        @
 @   /  |     \    | \  / |    /  \      | |   | |        ___   | (___          @
 @  () ||| |  ()   | |\/| |   / /\ \     | |   | |       / _ \   \___ \         @
-@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @
+@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @"""
+    if len(version) < 8:
+        banner += rf"""
 @    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/ {version:^8}@
 @                                                                              @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
-
+    else:
+        banner += rf"""
+@    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/         @
+@                                                                              @
+@{version:^78}@
+@                                                                              @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     return banner.replace("@", frame_char)
 
 

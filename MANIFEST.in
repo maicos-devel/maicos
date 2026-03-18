@@ -9,6 +9,7 @@ prune docs
 prune examples
 prune tests
 prune benchmarks
+prune .github
 
 exclude .gitattributes
 exclude .gitignore

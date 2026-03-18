@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -14,6 +14,8 @@ import MDAnalysis as mda
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -90,5 +92,5 @@ class DiporderPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info("Analysis of the cartesian dipolar order parameters.")
+        logger.info("Analysis of the cartesian dipolar order parameters.")
         super()._prepare()

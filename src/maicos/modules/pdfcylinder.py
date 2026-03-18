@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -16,6 +16,8 @@ from MDAnalysis.lib.distances import capped_distance
 from ..core import CylinderBase
 from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -160,7 +162,7 @@ class PDFCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logging.info("Analysis of the cylindrical pair distribution function.")
+        logger.info("Analysis of the cylindrical pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center
@@ -195,7 +197,7 @@ class PDFCylinder(CylinderBase):
                 "`coc`."
             )
 
-        logging.info(
+        logger.info(
             f"Using {self.nbins_pdf_phi} pdf bins in phi direction and "
             f"{self.nbins_pdf_z} in z direction."
         )

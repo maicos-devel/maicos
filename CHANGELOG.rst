@@ -11,9 +11,27 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
+Alexander Schlaich, Henrik Stooß
 
 - Add azimuthal component to ``DielectricCylinder`` (#543)
+- Change DielectricCylinder code to avoid numerical errors (#556)
+- Improve guidelines for contributing (#560)
+- Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
+- Don't include the ``.github`` folder in the source distribution (#562)
+- Update AUTHORS.rst (#553)
+
+v0.12 (2026/01/23)
+------------------
+Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
+Francis Jose
+
+- Internal restructure API documentation sources into *core* and *lib* sections (#548)
+- Update copyright year to 2026 (#549)
+- Use standard library ``tomllib`` instead of ``tomli`` for docs (#547)
+- Added warnings for PlanarBase (#534)
+- Streamlined logging (#534)
+- Removed unused ``lib.util.bin`` function (#544)
+- Splitting basic and advanced usage in Getting Started (#535)
 - Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
 - Update issue templates (#530)
