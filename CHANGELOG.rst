@@ -11,10 +11,12 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß
+Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)
+- Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
+  enable mypy type checking without ``# type: ignore`` comments (#566)
 - Change DielectricCylinder code to avoid numerical errors (#556)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
