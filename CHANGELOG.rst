@@ -13,12 +13,9 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
-<<<<<<< bug-analysisCollection
 - Fix timestep preservation in ``AnalysisCollection`` (#570)
-=======
 - Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
   enable mypy type checking without ``# type: ignore`` comments (#566)
->>>>>>> main
 - Change DielectricCylinder code to avoid numerical errors (#556)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
