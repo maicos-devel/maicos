@@ -63,7 +63,7 @@ def dipoles(positions, orientations, dimensions=None):
 class TestDielectricPlanar:
     """Tests for the DielectricPlanar class.
 
-    Number of times DielectricPlanar broke: ||||
+    Number of times DielectricPlanar broke: |||||
 
     If you are reading this, most likely you are investigating a bug in the
     DielectricPlanar class. To calculate the local electric permittivity in a system,
@@ -89,6 +89,10 @@ class TestDielectricPlanar:
           are shifted to the center of charge of the molecule they belong to. If
           something goes wrong here and charges are shifted out of the box, they are no
           longer counted in the histogram.
+        - Triclinic boxes need special treatment to make sure the atoms are accounted
+          for correctly. We assume (and if pack=True also make sure) that the atoms are
+          wrapped into a "brick shape". This is the default behavior of GROMACS and
+          makes analysis much easier.
     """
 
     @pytest.fixture
