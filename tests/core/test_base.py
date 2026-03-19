@@ -731,16 +731,20 @@ class Test_AnalysisBase:
         # First run with verbose=True
         ana_obj.run(stop=1, verbose=True)
         assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged
+        assert "Analysing 1 trajectory frames." in caplog.text
+        caplog.clear()
 
         # Second run with verbose=False - level should change to WARNING
         ana_obj.run(stop=1, verbose=False)
         assert parent_logger.level == logging.WARNING
+        # Verify that INFO messages are NOT logged
+        assert "Analysing 1 trajectory frames." not in caplog.text
+        caplog.clear()
 
         # Third run with verbose=True again - level should change back to INFO
-        caplog.clear()
         ana_obj.run(stop=1, verbose=True)
         assert parent_logger.level == logging.INFO
-
         # Verify that INFO messages are logged after switching back to verbose
         assert "Analysing 1 trajectory frames." in caplog.text
 
