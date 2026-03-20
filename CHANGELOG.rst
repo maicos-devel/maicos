@@ -14,6 +14,9 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
 - Fix timestep preservation in ``AnalysisCollection`` (#570)
+- Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
+  non-orthorhombic boxes (#571)
+- Add test for logging in multiple subsequent calls of the run method (#558)
 - Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
   enable mypy type checking without ``# type: ignore`` comments (#566)
 - Change DielectricCylinder code to avoid numerical errors (#556)

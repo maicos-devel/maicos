@@ -30,11 +30,13 @@ from data import (  # noqa: E402
 from util import error_prop  # noqa: E402
 
 
-def dipoles(positions, orientations):
+def dipoles(positions, orientations, dimensions=None):
     """Atomgroup consisting of defined dipoles.
 
-    Create MDA universe with dipole molecules inside a 10 Å x 10 Å x 10 Å box cubic box.
+    Create MDA universe with dipole molecules inside a box (default 10x10x10 cubic).
     """
+    if dimensions is None:
+        dimensions = [10, 10, 10, 90, 90, 90]
     template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
 
     dipoles = []
@@ -54,14 +56,14 @@ def dipoles(positions, orientations):
         dipole.atoms.residues.molnums = [len(dipoles)]
         dipoles.append(dipole.atoms)
     u = mda.Merge(*dipoles)
-    u.dimensions = [10, 10, 10, 90, 90, 90]
+    u.dimensions = dimensions
     return u.atoms
 
 
 class TestDielectricPlanar:
     """Tests for the DielectricPlanar class.
 
-    Number of times DielectricPlanar broke: ||||
+    Number of times DielectricPlanar broke: |||||
 
     If you are reading this, most likely you are investigating a bug in the
     DielectricPlanar class. To calculate the local electric permittivity in a system,
@@ -87,6 +89,10 @@ class TestDielectricPlanar:
           are shifted to the center of charge of the molecule they belong to. If
           something goes wrong here and charges are shifted out of the box, they are no
           longer counted in the histogram.
+        - Triclinic boxes need special treatment to make sure the atoms are accounted
+          for correctly. We assume (and if pack=True also make sure) that the atoms are
+          wrapped into a "brick shape". This is the default behavior of GROMACS and
+          makes analysis much easier.
     """
 
     @pytest.fixture
@@ -352,3 +358,51 @@ class TestDielectricPlanar:
         )
 
         assert_allclose(deps_par, deps_par_sympy)
+
+    def test_triclinic_box(self):
+        """Test that DielectricPlanar gives correct results for a triclinic box.
+
+        An x-oriented dipole is placed at (2, 6, 5) in a triclinic box with gamma=45
+        degrees. Wrapping with the triclinic cell shifts the dipole outside the
+        orthorhombic bounding box. The second wrap into the rectangular representation
+        brings it back inside:
+
+            Original (i.e. GROMACS)  After triclinic         After orthorhombic
+            positions                wrap only (broken)      wrap (fix)
+
+            y     b                  y     b                  y     b
+            |    /       /           |    /       /           |    /       /
+            |  */->     /            |   /      */->          |  */->     /
+            |  /       /             |  /       /             |  /       /
+            | /       /              | /       /              | /       /
+            +---------x = a          +---------x = a          +---------x = a
+
+        Without wrapping into the rectangular representation, the dipole lands outside
+        the analysis domain and the integrated dipole density does not match the total
+        dipole moment. This is also a problem for coordinates already wrapped into the
+        triclinic box and the user deciding to not apply packing (i.e. `pack=False`),
+        but this is discouraged anyway.
+        """
+        dimensions = [10, 10, 10, 90, 90, 45]
+        M_par = [1, 0]
+
+        # With pack=True the rectangular wrapping keeps the dipole inside.
+        dipole = dipoles([[2, 6, 5]], [[1, 0, 0]], dimensions=dimensions)
+        eps = DielectricPlanar(dipole, bin_width=0.01, vcutwidth=0.01)
+        eps.run()
+        assert_allclose(eps._obs.M_par, M_par, rtol=0.1)
+        assert_allclose(eps._obs.M_perp, 0, atol=0.1)
+        bin_volume = eps.means.bin_volume[0]
+        assert_allclose(np.sum(eps._obs.m_par, axis=0) * bin_volume, M_par, rtol=0.1)
+        assert_allclose(np.sum(eps._obs.m_perp, axis=0) * bin_volume, 0, atol=0.1)
+
+        # Without packing the dipole is outside the domain and
+        # the integrated density no longer matches the total moment.
+        dipole_nopack = dipoles([[2, 6, 5]], [[1, 0, 0]], dimensions=dimensions)
+        eps_nopack = DielectricPlanar(
+            dipole_nopack, bin_width=0.01, vcutwidth=0.01, pack=False
+        )
+        eps_nopack.run()
+        bin_volume_nopack = eps_nopack.means.bin_volume[0]
+        m_par_integrated = np.sum(eps_nopack._obs.m_par, axis=0) * bin_volume_nopack
+        assert not np.allclose(m_par_integrated, M_par, rtol=0.1)

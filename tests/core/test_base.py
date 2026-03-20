@@ -27,7 +27,13 @@ from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from data import (  # noqa: E402
+    DIPOLE_GRO,
+    DIPOLE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 
 
 class Output(AnalysisBase):
@@ -281,6 +287,46 @@ class Test_AnalysisBase:
 
         warnings = [rec.message for rec in caplog.records]
         assert len(warnings) == 0
+
+    def test_triclinic_wrapping(self):
+        """Test that atoms are wrapped into the orthorhombic bounding box.
+
+        An atom placed at (2, 6, 5) in a triclinic box with gamma=45 degrees
+        is inside the rectangular domain but outside the triclinic cell.
+        Wrapping with the triclinic cell alone shifts it to x=12, outside
+        the orthorhombic bounding box. Another wrap puts it again into the
+        orthorhombic box so all atoms remain inside the analysis domain:
+
+            Original (i.e. GROMACS)  After triclinic         After orthorhombic
+            positions                wrap only (broken)      wrap
+
+            y     b                  y     b                  y     b
+            |    /       /           |    /       /           |    /       /
+            |  */->     /            |   /      */->          |  */->     /
+            |  /       /             |  /       /             |  /       /
+            | /       /              | /       /              | /       /
+            +---------x = a          +---------x = a          +---------x = a
+        """
+        from maicos.lib.util import triclinic_to_orthorhombic
+
+        dimensions = [10, 10, 10, 90, 90, 45]
+        ortho_box = triclinic_to_orthorhombic(np.array(dimensions, dtype=float))
+
+        template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole = template.copy()
+        dipole.atoms.translate([2, 6, 5])
+        dipole.atoms.residues.molnums = [0]
+        u = mda.Merge(dipole.atoms)
+        u.dimensions = dimensions
+
+        conclude = Conclude(u.atoms, pack=True, wrap_compound="atoms")
+        conclude.run()
+
+        positions = u.atoms.positions
+        assert np.all(positions >= 0)
+        assert np.all(positions[:, 0] < ortho_box[0])
+        assert np.all(positions[:, 1] < ortho_box[1])
+        assert np.all(positions[:, 2] < ortho_box[2])
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
@@ -703,6 +749,50 @@ class Test_AnalysisBase:
 
         # INFO log messages should be in the logger when verbose=True
         assert analysis_msg in caplog.text
+
+    def test_verbose_multiple_runs(self, ag, caplog):
+        """Test that verbosity is set correctly across multiple runs.
+
+        The run method can be executed multiple times with different values for
+        verbose. This test ensures that the logging level is correctly adjusted
+        each time.
+        """
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        parent_logger = logging.getLogger("maicos")
+
+        # First run with verbose=True
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged
+        assert "Analysing 1 trajectory frames." in caplog.text
+        caplog.clear()
+
+        # Second run with verbose=False - level should change to WARNING
+        ana_obj.run(stop=1, verbose=False)
+        assert parent_logger.level == logging.WARNING
+        # Verify that INFO messages are NOT logged
+        assert "Analysing 1 trajectory frames." not in caplog.text
+        caplog.clear()
+
+        # Third run with verbose=True again - level should change back to INFO
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged after switching back to verbose
+        assert "Analysing 1 trajectory frames." in caplog.text
 
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
