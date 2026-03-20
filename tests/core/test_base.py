@@ -704,6 +704,50 @@ class Test_AnalysisBase:
         # INFO log messages should be in the logger when verbose=True
         assert analysis_msg in caplog.text
 
+    def test_verbose_multiple_runs(self, ag, caplog):
+        """Test that verbosity is set correctly across multiple runs.
+
+        The run method can be executed multiple times with different values for
+        verbose. This test ensures that the logging level is correctly adjusted
+        each time.
+        """
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        parent_logger = logging.getLogger("maicos")
+
+        # First run with verbose=True
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged
+        assert "Analysing 1 trajectory frames." in caplog.text
+        caplog.clear()
+
+        # Second run with verbose=False - level should change to WARNING
+        ana_obj.run(stop=1, verbose=False)
+        assert parent_logger.level == logging.WARNING
+        # Verify that INFO messages are NOT logged
+        assert "Analysing 1 trajectory frames." not in caplog.text
+        caplog.clear()
+
+        # Third run with verbose=True again - level should change back to INFO
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged after switching back to verbose
+        assert "Analysing 1 trajectory frames." in caplog.text
+
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
         with caplog.at_level(logging.DEBUG, logger="maicos.core.base"):
