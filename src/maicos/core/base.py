@@ -31,6 +31,7 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
+    triclinic_to_orthorhombic,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,9 +100,10 @@ class _Runner:
             )
         ):
             ts_original = ts.copy()
-
+            positions_original = ts.positions.copy()
             with logging_redirect_tqdm():
                 for analysis_object in analysis_instances:
+                    analysis_object._universe.atoms.positions = positions_original
                     analysis_object._call_single_frame(ts=ts, current_frame_index=i)
                     ts = ts_original
 
@@ -484,8 +486,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._warned_triclinic = True
             # If universe has a cell we wrap the compound into the primary unit cell to
             # use all compounds for the analysis.
+            is_triclinic = np.any(ts.dimensions[-3:] != np.array([90.0, 90.0, 90.0]))
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
+                if is_triclinic:
+                    ortho_box = triclinic_to_orthorhombic(ts.dimensions)
+                    self._universe.atoms.wrap(
+                        compound=self.wrap_compound, box=ortho_box
+                    )
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter

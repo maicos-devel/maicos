@@ -25,6 +25,39 @@ from maicos.lib.math import correlation_time
 
 logger = logging.getLogger(__name__)
 
+
+def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
+    """Convert triclinic box dimensions to an orthorhombic bounding box.
+
+    Computes the orthorhombic box that corresponds to the GROMACS representation
+    of a triclinic cell. For orthorhombic input, the box is returned unchanged
+    (with angles set to 90).
+
+    Parameters
+    ----------
+    dimensions : numpy.ndarray
+        Box dimensions in MDAnalysis format ``[a, b, c, alpha, beta, gamma]``,
+        where lengths are in Angstrom and angles in degrees.
+
+    Returns
+    -------
+    numpy.ndarray
+        Orthorhombic box dimensions ``[xx, yy, zz, 90, 90, 90]``.
+    """
+    a, b, c, alpha, beta, gamma = dimensions
+    if np.allclose([alpha, beta, gamma], 90.0):
+        return np.array([a, b, c, 90.0, 90.0, 90.0])
+    alpha, beta, gamma = np.radians([alpha, beta, gamma])
+
+    xx = a
+    yy = b * np.sin(gamma)
+    xz = c * np.cos(beta)
+    yz = c * (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / np.sin(gamma)
+    zz = np.sqrt(c**2 - xz**2 - yz**2)
+
+    return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
+
+
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(
