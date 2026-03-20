@@ -13,6 +13,8 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
+- Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
+  non-orthorhombic boxes (#571)
 - Add test for logging in multiple subsequent calls of the run method (#558)
 - Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
   enable mypy type checking without ``# type: ignore`` comments (#566)

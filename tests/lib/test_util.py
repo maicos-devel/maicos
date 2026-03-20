@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
+from maicos.lib.util import triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
@@ -496,3 +497,41 @@ class TestUnitVectors:
         transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
 
         assert_allclose(transform, unit_vectors)
+
+
+class TestTriclinicToOrthorhombic:
+    """Tests for triclinic_to_orthorhombic."""
+
+    def test_orthorhombic_unchanged(self):
+        """Orthorhombic box is returned with same lengths."""
+        box = np.array([10.0, 20.0, 30.0, 90.0, 90.0, 90.0])
+        result = triclinic_to_orthorhombic(box)
+        assert_allclose(result, box)
+
+    def test_triclinic_gamma(self):
+        """Triclinic box with non-90 gamma gives correct orthorhombic box."""
+        box = np.array([66.68, 61.11, 59.78, 90.0, 90.0, 70.33])
+        result = triclinic_to_orthorhombic(box)
+        gamma = np.radians(70.33)
+        assert_allclose(result[0], 66.68)
+        assert_allclose(result[1], 61.11 * np.sin(gamma))
+        assert_allclose(result[2], 59.78)
+        assert_allclose(result[3:], [90.0, 90.0, 90.0])
+
+    def test_fully_triclinic(self):
+        """Fully triclinic box gives positive orthorhombic lengths."""
+        box = np.array([30.0, 40.0, 50.0, 80.0, 70.0, 60.0])
+        result = triclinic_to_orthorhombic(box)
+        assert_allclose(result[3:], [90.0, 90.0, 90.0])
+        assert np.all(result[:3] > 0)
+
+    def test_volume_preserved(self):
+        """Volume of orthorhombic box equals the triclinic cell volume."""
+        from MDAnalysis.lib.mdamath import triclinic_vectors
+
+        box = np.array([66.68, 61.11, 59.78, 90.0, 90.0, 70.33])
+        vecs = triclinic_vectors(box)
+        vol_tri = abs(np.dot(vecs[0], np.cross(vecs[1], vecs[2])))
+        result = triclinic_to_orthorhombic(box)
+        vol_ortho = result[0] * result[1] * result[2]
+        assert_allclose(vol_ortho, vol_tri, rtol=1e-5)
