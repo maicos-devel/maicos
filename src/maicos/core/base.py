@@ -103,7 +103,7 @@ class _Runner:
             with logging_redirect_tqdm():
                 for analysis_object in analysis_instances:
                     ts.positions[:] = ts_original.positions
-                    ts.dimensions = ts_original.dimensions
+                    ts.dimensions[:] = ts_original.dimensions
                     if ts.has_velocities:
                         ts.velocities[:] = ts_original.velocities
                     if ts.has_forces:
