@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche
 
+- Increase coverage (#573)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)
 - Add test for logging in multiple subsequent calls of the run method (#558)
