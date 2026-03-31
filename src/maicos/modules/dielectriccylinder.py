@@ -335,7 +335,7 @@ class DielectricCylinder(CylinderBase):
         # wrap all components that cross the border at 0 and 2 pi
         difference = test_center_phi - pos_phi
         # check if there are atoms within the molecule with a
-        # distance greater than 1 radian
+        # distance greater than 1 angstrom (arclength)
         difference_in_atom = np.where(np.abs(difference) * testrpos > 1, 1, 0)
         difference_in_molecule = self.atomgroup.accumulate(
             difference_in_atom, compound=self.comp
