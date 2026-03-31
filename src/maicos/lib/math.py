@@ -328,7 +328,7 @@ def new_variance(
     S_old = old_variance * (length - 1)
     S_new = S_old + (data - old_mean) * (data - new_mean)
 
-    if type(S_new) is np.ndarray:
+    if isinstance(S_new, np.ndarray):
         S_new[S_new < 0] = 0
     else:
         if S_new < 0:
