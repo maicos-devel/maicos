@@ -414,8 +414,6 @@ class DielectricCylinder(CylinderBase):
                 self.results.bin_pos,
                 self.results.eps_z,
                 self.results.deps_z,
-                self.results.m_z,
-                self.results.dm_z,
             ]
         ).T
         outdata_r = np.array(
@@ -423,8 +421,6 @@ class DielectricCylinder(CylinderBase):
                 self.results.bin_pos,
                 self.results.eps_r,
                 self.results.deps_r,
-                self.results.m_r,
-                self.results.dm_r,
             ]
         ).T
 
@@ -433,14 +429,12 @@ class DielectricCylinder(CylinderBase):
                 self.results.bin_pos,
                 self.results.eps_phi,
                 self.results.deps_phi,
-                self.results.m_phi,
-                self.results.dm_phi,
             ]
         ).T
 
         columns = ["positions [Å]"]
 
-        columns += ["ε_z - 1", "Δε_z", "m_z", "Δm_z"]
+        columns += ["ε_z - 1", "Δε_z"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_z.dat"), outdata_z, columns=columns
@@ -448,7 +442,7 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["ε^-1_r - 1", "Δε^-1_r", "m_r", "Δm_r"]
+        columns += ["ε^-1_r - 1", "Δε^-1_r"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_r.dat"), outdata_r, columns=columns
@@ -456,7 +450,7 @@ class DielectricCylinder(CylinderBase):
 
         columns = ["positions [Å]"]
 
-        columns += ["ε_phi - 1", "Δε_phi", "m_phi", "Δm_phi"]
+        columns += ["ε_phi - 1", "Δε_phi"]
 
         self.savetxt(
             "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
