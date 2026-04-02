@@ -939,7 +939,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms)
         ana_2 = Conclude(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run()
 
         assert ana_1.results is not None
@@ -982,7 +983,8 @@ class TestAnalysisCollection:
         ana_1 = PositionShifter(u.atoms)
         ana_2 = PositionShifter(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(frames=[0])
 
         # If positions are properly restored between analyses, both should
@@ -993,8 +995,9 @@ class TestAnalysisCollection:
         """Test error raise if two analysis objects have a different trajectory."""
         v = mda.Universe(TPR, XTC)
 
-        with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
-            AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
+        with pytest.warns(UserWarning, match="still experimental"):
+            with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
+                AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
 
     def test_no_base_child(self, u):
         """Test error raise if an object is not a AnalyisBase child."""
@@ -1004,8 +1007,9 @@ class TestAnalysisCollection:
                 self._trajectory = trajectory
 
         # Create collection for common trajectory loop with inconsistent trajectory
-        with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
-            AnalysisCollection(CustomAnalysis(u.trajectory))
+        with pytest.warns(UserWarning, match="still experimental"):
+            with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
+                AnalysisCollection(CustomAnalysis(u.trajectory))
 
     def test_save(self, u, monkeypatch, tmp_path):
         """Test that all results can be written to disk with one command."""
@@ -1014,7 +1018,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms, output_prefix="ana1")
         ana_2 = Conclude(u.atoms, output_prefix="ana2")
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         collection.save()
 
@@ -1040,7 +1045,8 @@ class TestAnalysisCollection:
         ana_2._single_frame = lambda: None
         ana_2._conclude = lambda: None
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         with pytest.warns(UserWarning, match=r"has no save\(\) method"):
             collection.save()

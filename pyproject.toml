@@ -113,6 +113,24 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+filterwarnings = [
+    "error",
+    # MDAnalysis deprecations
+    "ignore:.*elements attribute has been populated by guessing.*:DeprecationWarning",
+    "ignore:.*DCDReader currently makes independent timesteps.*:DeprecationWarning",
+    # MDAnalysis UserWarnings from test data format limitations
+    "ignore:.*Element information is missing.*:UserWarning",
+    "ignore:.*Reader has no dt information.*:UserWarning",
+    "ignore:.*Can not guess attributes for universe with 0 atoms.*:UserWarning",
+    # AnalysisCollection experimental warning: tested explicitly via pytest.warns()
+    # in test_experimental_warning; ignored elsewhere (including doctests).
+    "ignore:.*AnalysisCollection.*is still experimental.*:UserWarning",
+    # Correlation-time warnings: expected for short test trajectories.
+    # These warnings are tested explicitly in tests/lib/test_util.py via pytest.warns().
+    "ignore:.*trajectory is too short to estimate a correlation time.*:UserWarning",
+    "ignore:.*does not provide sufficient statistics to estimate a correlation time.*:UserWarning",
+    "ignore:.*data seems to be correlated with a correlation time.*:UserWarning",
+]
 addopts = [
     "--cov",
     "--cov-append",

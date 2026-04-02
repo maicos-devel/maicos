@@ -179,9 +179,12 @@ def correlation_time(
 
     if method == "sokal":
         for cutoff in range(mintime, len(timeseries)):
-            tau = np.sum(
-                (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
-            )
+            with np.errstate(divide="ignore", invalid="ignore"):
+                tau = np.sum(
+                    (1 - np.arange(1, cutoff) / len(timeseries))
+                    * corr[1:cutoff]
+                    / corr[0]
+                )
             if cutoff >= sokal_factor * tau:
                 break
 
@@ -190,9 +193,10 @@ def correlation_time(
 
     elif method == "chodera":
         cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
-        tau = np.sum(
-            (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
-        )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            tau = np.sum(
+                (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
+            )
     else:
         raise ValueError(
             f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
@@ -576,7 +580,8 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     # phi component
     np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
     # theta component
-    np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
 
     return trans_positions
 
@@ -614,7 +619,8 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """
     n_AB = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
-    mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-    M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
+        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB
