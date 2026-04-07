@@ -554,7 +554,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.M2 = Results()  # second moment of the samples across frames
 
             for key in self._obs:
-                if type(self._obs[key]) not in compatible_types:
+                if not isinstance(self._obs[key], tuple(compatible_types)):
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
