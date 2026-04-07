@@ -299,7 +299,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
-    if TYPE_CHECKING:
+    if TYPE_CHECKING:  # pragma: no cover
         # Type annotations for attributes set dynamically in _call_single_frame.
         means: Results
         sems: Results
