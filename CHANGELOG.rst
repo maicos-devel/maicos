@@ -13,6 +13,7 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta
 
+- Update CI action dependencies (#574)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)
 - Add test for logging in multiple subsequent calls of the run method (#558)

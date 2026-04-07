@@ -76,13 +76,14 @@ def line_of_water_molecules(
 
     # set the orientation of the molecules
     rotations = []
-    if type(angle_deg) is float:
+    if isinstance(angle_deg, float):
         angle_deg_list = n_molecules * [angle_deg]
-    elif type(angle_deg) is list:
+    elif isinstance(angle_deg, list):
         angle_deg_list = angle_deg
     else:
-        raise ValueError(
-            f"type of angle_deg ({type(angle_deg)}) is neither a list or float!"
+        raise TypeError(
+            f"type of angle_deg ({type(angle_deg).__name__}) is neither a list "
+            "or float!"
         )
 
     if len(angle_deg_list) != n_molecules:
