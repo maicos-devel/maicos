@@ -11,9 +11,10 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche
 
 - Fix timestep preservation in ``AnalysisCollection`` (#570)
+- Avoid duplicated metadata definitions (#572)
 - Update CI action dependencies (#574)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)
