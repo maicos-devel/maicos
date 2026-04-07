@@ -932,41 +932,6 @@ class TestAnalysisCollection:
         assert ana_1.results is not None
         assert ana_2.results is not None
 
-    def test_trajectory_manipulation(self, u):
-        """Test that the timestep is the same for each analysis class."""
-
-        class CustomAnalysis(AnalysisBase):
-            """Custom class that is shifting positions in every step by 10."""
-
-            def __init__(self, atomgroup):
-                super().__init__(
-                    atomgroup=atomgroup,
-                    unwrap=False,
-                    pack=False,
-                    refgroup=None,
-                    jitter=0.0,
-                    wrap_compound="atoms",
-                    concfreq=0,
-                )
-
-            def _prepare(self):
-                pass
-
-            def _single_frame(self):
-                self._ts.positions += 10
-                self.ref_pos = self._ts.positions.copy()[0, 0]
-
-            def _conlude(self):
-                pass
-
-        ana_1 = CustomAnalysis(u.atoms)
-        ana_2 = CustomAnalysis(u.atoms)
-
-        collection = AnalysisCollection(ana_1, ana_2)
-        collection.run(frames=[0])
-
-        assert ana_2.ref_pos == ana_1.ref_pos
-
     def test_positions_restored_between_analyses(self):
         """Test that atom positions are restored between analyses in a collection.
 
