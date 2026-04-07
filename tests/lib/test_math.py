@@ -266,6 +266,32 @@ def test_new_variance():
     assert_allclose(var, np.std(series) ** 2, rtol=1e-6)
 
 
+def test_new_variance_negative_S():
+    """Test that S_new < 0 is clamped to 0 for both scalar and array inputs."""
+    # Scalar case: old_mean=2, new_mean=1, data=1.5
+    # S_new = 0 + (1.5-2)*(1.5-1) = (-0.5)*(0.5) = -0.25 → clamped to 0
+    result = maicos.lib.math.new_variance(
+        old_variance=0.0,
+        old_mean=2.0,
+        new_mean=1.0,
+        data=1.5,
+        length=2,
+    )
+    assert result == 0.0
+
+    # Array case: some elements have negative S_new
+    # Element 0: S_new = (1.5-2.0)*(1.5-1.0) = -0.25 → clamped to 0
+    # Element 1: S_new = (1.0-1.0)*(1.0-1.0) = 0
+    result_arr = maicos.lib.math.new_variance(
+        old_variance=np.array([0.0, 0.0]),
+        old_mean=np.array([2.0, 1.0]),
+        new_mean=np.array([1.0, 1.0]),
+        data=np.array([1.5, 1.0]),
+        length=2,
+    )
+    assert_allclose(result_arr, np.array([0.0, 0.0]))
+
+
 @pytest.mark.parametrize("dim", [0, 1, 2])
 @pytest.mark.parametrize("weight", ["mass", "none"])
 def test_center_cluster(dim, weight):

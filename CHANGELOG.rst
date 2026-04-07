@@ -11,9 +11,12 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Kira Fischer
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
 
 - Add azimuthal component to ``DielectricCylinder`` (#543)
+- Increase coverage (#573)
+- Fix timestep preservation in ``AnalysisCollection`` (#570)
+- Avoid duplicated metadata definitions (#572)
 - Update CI action dependencies (#574)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)

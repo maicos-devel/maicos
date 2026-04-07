@@ -200,6 +200,15 @@ class TestDielectricPlanar:
             rtol=0.1,
         )
 
+    def test_epsilon_is_3d(self, ag_two_frames):
+        """Test epsilon construction with is_3d=True (3D PBC)."""
+        eps = DielectricPlanar(ag_two_frames, is_3d=True).run()
+
+        var_perp = eps.means.M_perp_2 - eps.means.M_perp**2
+        cov_perp = eps.means.mM_perp - eps.means.m_perp * eps.means.M_perp
+        expected = -cov_perp / (eps._pref**-1 + var_perp / eps.results.V)
+        assert_allclose(eps.results.eps_perp, expected)
+
     def test_epsilon(self, ag_two_frames):
         """Test that epsilon is constructed correctly from covariances."""
         eps = DielectricPlanar(ag_two_frames).run()
