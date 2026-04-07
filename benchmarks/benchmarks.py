@@ -15,6 +15,7 @@ These benchmarks cover the core analysis modules across different geometries
 import sys
 from pathlib import Path
 
+import numpy as np
 import MDAnalysis as mda
 
 # Add tests directory to path to access test data
@@ -43,6 +44,26 @@ from maicos import (
     DiporderPlanar,
     VelocityPlanar,
 )
+from maicos.core import AnalysisBase
+
+
+class StubAnalysis(AnalysisBase):
+    """Minimal analysis that writes random observables — measures framework overhead."""
+
+    def __init__(self, atomgroup, n_obs=10):
+        self._n_obs = n_obs
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _single_frame(self):
+        self._obs.data = np.random.rand(self._n_obs)
 
 
 # =============================================================================
