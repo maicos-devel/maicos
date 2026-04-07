@@ -838,7 +838,7 @@ def get_module_input_str(module_obj):
         sig.args.remove("self")
         strings = []
         for param in sig.args:
-            if type(module_obj._locals[param]) is str:
+            if isinstance(module_obj._locals[param], str):
                 string = f"{param}='{module_obj._locals[param]}'"
             elif (
                 param == "atomgroup"
@@ -857,7 +857,7 @@ def get_module_input_str(module_obj):
             [
                 (
                     f"{param}='{module_obj._run_locals[param]}'"
-                    if type(module_obj._run_locals[param]) is str
+                    if isinstance(module_obj._run_locals[param], str)
                     else f"{param}={module_obj._run_locals[param]}"
                 )
                 for param in sig.args
