@@ -932,14 +932,20 @@ class TestAnalysisCollection:
         assert ana_1.results is not None
         assert ana_2.results is not None
 
-    def test_trajectory_manipulation(self, u):
-        """Test that the timestep is the same for each analysis class."""
+    def test_positions_restored_between_analyses(self):
+        """Test that atom positions are restored between analyses in a collection.
 
-        class CustomAnalysis(AnalysisBase):
-            """Custom class that is shifting positions in every step by 10."""
+        This is important because not only should the timestep be restored after
+        each analysis, but also the positions of the universe should be the same
+        at the start of each analysis.
+        """
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
+
+        class PositionShifter(AnalysisBase):
+            """Shifts positions by an offset."""
 
             def __init__(self, atomgroup):
-                super().__init__(
+                super().__init__(  # Don't do anything to the trajectory
                     atomgroup=atomgroup,
                     unwrap=False,
                     pack=False,
@@ -953,19 +959,22 @@ class TestAnalysisCollection:
                 pass
 
             def _single_frame(self):
-                self._ts.positions += 10
-                self.ref_pos = self._ts.positions.copy()[0, 0]
+                # After this shift, the universe is left in a modified state.
+                self._universe.atoms.positions += 5.0
+                self.seen_positions = self._universe.atoms.positions.copy()
 
-            def _conlude(self):
+            def _conclude(self):
                 pass
 
-        ana_1 = CustomAnalysis(u.atoms)
-        ana_2 = CustomAnalysis(u.atoms)
+        ana_1 = PositionShifter(u.atoms)
+        ana_2 = PositionShifter(u.atoms)
 
         collection = AnalysisCollection(ana_1, ana_2)
         collection.run(frames=[0])
 
-        assert ana_2.ref_pos == ana_1.ref_pos
+        # If positions are properly restored between analyses, both should
+        # see the same positions after their respective shift.
+        assert_allclose(ana_1.seen_positions, ana_2.seen_positions)
 
     def test_inconsistent_trajectory(self, u):
         """Test error raise if two analysis objects have a different trajectory."""
