@@ -243,6 +243,22 @@ class TestChargedDecorator:
         ag[0].charge += 1e-5
         single_class(ag, filter="error")._prepare()
 
+    def test_universe_non_neutral_raises(self, ag):
+        """Test that a non-neutral universe raises ValueError."""
+        ag[0].charge += 1
+        with pytest.raises(ValueError, match="non-neutral systems is not supported"):
+            multi_class(ag, filter="default")._prepare()
+
+
+def test_get_compound_no_attributes():
+    """Test that get_compound raises AttributeError for a minimal object."""
+
+    class MinimalAtomGroup:
+        pass
+
+    with pytest.raises(AttributeError, match="Missing any connection information"):
+        maicos.lib.util.get_compound(MinimalAtomGroup())
+
 
 def unwrap_refgroup_class(**kwargs):
     """Simple class setting keyword arguments as attributes."""
@@ -295,6 +311,16 @@ class TestTrajectoryPrecision:
     def test_gro_trajectory(self, trj):
         """Test detect gro traj."""
         assert_equal(maicos.lib.util.trajectory_precision(trj), np.float32(0.01))
+
+    def test_high_precision_trajectory(self):
+        """Test that high-precision trajectory returns 1e-4 for most frames.
+
+        TRR trajectories have high precision positions; the majority of frames
+        should hit the no-peak branch (precision = 1e-4).
+        """
+        trj = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT).trajectory
+        precision = maicos.lib.util.trajectory_precision(trj)
+        assert np.sum(precision == 1e-4) > trj.n_frames // 2
 
 
 class TestCitationReminder:
@@ -381,33 +407,33 @@ class Testget_center:
         return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
 
     @pytest.mark.parametrize("compound", compounds)
-    def cog(self, ag, compound):
+    def test_cog(self, ag, compound):
         """Test same center of geometry."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="cog", compound=compound
+                atomgroup=ag.atoms, bin_method="cog", compound=compound
             ),
-            ag.center_of_geometry(compound=compound),
+            ag.atoms.center_of_geometry(compound=compound),
         )
 
     @pytest.mark.parametrize("compound", compounds)
-    def com(self, ag, compound):
+    def test_com(self, ag, compound):
         """Test same center of mass."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="com", compound=compound
+                atomgroup=ag.atoms, bin_method="com", compound=compound
             ),
-            ag.center_of_mass(compound=compound),
+            ag.atoms.center_of_mass(compound=compound),
         )
 
     @pytest.mark.parametrize("compound", compounds)
-    def coc(self, ag, compound):
+    def test_coc(self, ag, compound):
         """Test same center of charge."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="cog", compound=compound
+                atomgroup=ag.atoms, bin_method="coc", compound=compound
             ),
-            ag.center_of_charge(compound=compound),
+            ag.atoms.center_of_charge(compound=compound),
         )
 
     def test_get_center_unknown(self):
@@ -474,6 +500,24 @@ class TestUnitVectors:
             test_unit_vectors,
             unit_vectors,
         )
+
+    def test_unit_vectors_cylinder_invalid_pdim(self):
+        """Test that an invalid pdim raises ValueError."""
+        ag, _ = circle_of_water_molecules(4, 90, radius=5)
+        with pytest.raises(ValueError, match="unknown direction"):
+            maicos.lib.util.unit_vectors_cylinder(
+                atomgroup=ag, grouping="residues", bin_method="com", dim=2, pdim="x"
+            )
+
+    def test_unit_vector_protocol(self):
+        """Test that Unit_vector Protocol can be subclassed and called."""
+
+        class ConcreteUnitVector(maicos.lib.util.Unit_vector):
+            def __call__(self, atomgroup, grouping):  # noqa: ARG002
+                return np.zeros(3)
+
+        vec = ConcreteUnitVector()
+        assert_equal(vec(None, "atoms"), np.zeros(3))
 
     def test_unit_vectors_sphere(self):
         """Test calculation of spherical unit vectors."""

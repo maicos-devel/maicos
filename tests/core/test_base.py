@@ -345,6 +345,19 @@ class Test_AnalysisBase:
         assert a._universe == ag.universe
         assert isinstance(a.results, Results)
 
+    def test_invalid_wrap_compound(self, ag):
+        """Test that an invalid wrap_compound raises ValueError."""
+        with pytest.raises(ValueError, match="Unrecognized `wrap_compound`"):
+            AnalysisBase(
+                atomgroup=ag,
+                unwrap=False,
+                pack=True,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="invalid_compound",
+                concfreq=0,
+            )
+
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
         with pytest.raises(ValueError, match="not contain any atoms."):
@@ -1077,6 +1090,20 @@ class Test_ProfileBase:
         params.update(grouping="foo")
         with pytest.raises(ValueError, match="'foo' is not a valid option"):
             ProfileBase(**params)._prepare()
+
+    def test_prepare_sets_unwrap_default(self, params):
+        """Test that _prepare sets unwrap=True when not previously set."""
+        profile = ProfileBase(**params)
+        assert not hasattr(profile, "unwrap")
+        profile.n_bins = 10
+        profile._prepare()
+        assert profile.unwrap is True
+
+    def test_compute_histogram_not_implemented(self, params):
+        """Test that _compute_histogram raises NotImplementedError on base class."""
+        profile = ProfileBase(**params)
+        with pytest.raises(NotImplementedError, match="Only implemented in child"):
+            profile._compute_histogram(np.zeros((10, 3)))
 
     def test_weighting_function_kwargs(self, params):
         """Test an extra keyword argument."""
