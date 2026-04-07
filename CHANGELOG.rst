@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Kira Fischer
 
 - Add azimuthal component to ``DielectricCylinder`` (#543)
+- Update CI action dependencies (#574)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
   non-orthorhombic boxes (#571)
 - Add test for logging in multiple subsequent calls of the run method (#558)
