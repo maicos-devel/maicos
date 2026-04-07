@@ -11,7 +11,7 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Kira Fischer
 
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
