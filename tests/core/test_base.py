@@ -995,9 +995,11 @@ class TestAnalysisCollection:
         """Test error raise if two analysis objects have a different trajectory."""
         v = mda.Universe(TPR, XTC)
 
-        with pytest.warns(UserWarning, match="still experimental"):
-            with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
-                AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(ValueError, match="`analysis_instances` do not have the"),
+        ):
+            AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
 
     def test_no_base_child(self, u):
         """Test error raise if an object is not a AnalyisBase child."""
@@ -1007,9 +1009,11 @@ class TestAnalysisCollection:
                 self._trajectory = trajectory
 
         # Create collection for common trajectory loop with inconsistent trajectory
-        with pytest.warns(UserWarning, match="still experimental"):
-            with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
-                AnalysisCollection(CustomAnalysis(u.trajectory))
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(TypeError, match="not a child of `AnalysisBase`"),
+        ):
+            AnalysisCollection(CustomAnalysis(u.trajectory))
 
     def test_save(self, u, monkeypatch, tmp_path):
         """Test that all results can be written to disk with one command."""

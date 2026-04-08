@@ -281,7 +281,8 @@ class PDFPlanar(PlanarBase):
         with np.errstate(divide="ignore", invalid="ignore"):
             pdf = self.means.count / self.means.n_g1
 
-        self.results.pdf = np.nan_to_num(pdf.T, nan=0) / ring_volumes
+        pdf /= ring_volumes
+        self.results.pdf = np.nan_to_num(pdf.T, nan=0)
 
     @render_docs
     def save(self) -> None:

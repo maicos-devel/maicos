@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper functions for mathematical and physical operations."""
 
+import warnings
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -155,7 +157,8 @@ def correlation_time(
     tau : float
         Integrated correlation time :math:`\tau`. If ``-1`` (only for
         ``method="sokal"``) the provided time series does not provide sufficient
-        statistics to estimate a correlation time.
+        statistics to estimate a correlation time. Returns :obj:`numpy.nan` if
+        the time series has zero variance.
 
     Raises
     ------
@@ -169,6 +172,11 @@ def correlation_time(
     .. footbibliography::
 
     """
+    if method not in ["sokal", "chodera"]:
+        raise ValueError(
+            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
+        )
+
     if mintime > len(timeseries):
         raise ValueError(
             f"mintime ({mintime}) has to be smaller then the length of `timeseries` "
@@ -177,30 +185,30 @@ def correlation_time(
 
     corr = correlation(timeseries, subtract_mean=True)
 
+    if corr[0] == 0:
+        warnings.warn(
+            "The timeseries has zero variance. "
+            "The correlation time cannot be estimated.",
+            stacklevel=2,
+        )
+        return np.nan
+
     if method == "sokal":
         for cutoff in range(mintime, len(timeseries)):
-            with np.errstate(divide="ignore", invalid="ignore"):
-                tau = np.sum(
-                    (1 - np.arange(1, cutoff) / len(timeseries))
-                    * corr[1:cutoff]
-                    / corr[0]
-                )
+            tau = np.sum(
+                (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
+            )
             if cutoff >= sokal_factor * tau:
                 break
 
             if cutoff > len(timeseries) / 3:
                 return -1
-
-    elif method == "chodera":
-        cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
-        with np.errstate(divide="ignore", invalid="ignore"):
-            tau = np.sum(
-                (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
-            )
     else:
-        raise ValueError(
-            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
+        cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
+        tau = np.sum(
+            (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
         )
+
     return tau
 
 
@@ -581,7 +589,9 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
     # theta component
     with np.errstate(divide="ignore", invalid="ignore"):
-        np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
+        np.arccos(
+            pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2]
+        )
 
     return trans_positions
 
