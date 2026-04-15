@@ -560,9 +560,15 @@ def transform_cylinder(
 
 
 def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
-    """Transform positions into spherical coordinates.
+    r"""Transform positions into spherical coordinates.
 
     The origin of the new coordinate system is at ``origin``.
+
+    .. note::
+
+        If a ``position`` is exactly at the ``origin`` :math:`\theta=\arccos(z/r)`
+        (third coloumn in the output vector) is undefined. In this case the
+        :math:`\theta` component is set to 0.
 
     Parameters
     ----------
@@ -587,11 +593,15 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
     # phi component
     np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
-    # theta component
-    with np.errstate(divide="ignore", invalid="ignore"):
-        np.arccos(
-            pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2]
-        )
+
+    # theta component — arccos(z/r) is undefined for r=0 (particle at origin)
+    # Set theta=0 in this case
+    at_origin = trans_positions[:, 0] == 0
+    trans_positions[:, 2] = np.where(
+        at_origin,
+        0,
+        np.arccos(pos_xyz_center[:, 2] / np.where(at_origin, 1, trans_positions[:, 0])),
+    )
 
     return trans_positions
 
