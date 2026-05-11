@@ -25,6 +25,8 @@ from .pdfplanar import PDFPlanar
 from .rdfdiporder import RDFDiporder
 from .saxs import Saxs
 from .temperatureplanar import TemperaturePlanar
+from .vdosbulk import VDOSBulk
+from .vdosplanar import VDOSPlanar
 from .velocitycylinder import VelocityCylinder
 from .velocityplanar import VelocityPlanar
 
@@ -47,6 +49,8 @@ __all__ = [
     "RDFDiporder",
     "Saxs",
     "TemperaturePlanar",
+    "VDOSBulk",
+    "VDOSPlanar",
     "VelocityCylinder",
     "VelocityPlanar",
 ]

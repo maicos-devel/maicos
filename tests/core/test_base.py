@@ -1153,7 +1153,13 @@ class Test_ProfileBase:
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["atomgroup", "wrap_compound"]
+    ignored_parameters = [
+        "atomgroup",
+        "wrap_compound",
+        # Correlator settings are opt-in
+        "correlator_num_levels",
+        "correlator_channels_per_level",
+    ]
 
     @pytest.mark.parametrize("Member", find_cls_members(AnalysisBase, ["maicos"]))
     def test_parameters(self, Member):

@@ -222,6 +222,15 @@ jitter : float
 concfreq : int
     When concfreq (for conclude frequency) is larger than ``0``, the conclude function
     is called and the output files are written every ``concfreq`` frames.""",
+    CORRELATOR_PARAMETERS="""correlator_num_levels : int
+    Number of coarsening levels :math:`p` of the multi-tau correlator. The highest
+    resolvable lag is :math:`(m-1) \\cdot 2^{p-1}` frames, where :math:`m` is
+    ``correlator_channels_per_level``. Levels that are never reached by the trajectory
+    contribute no data.
+correlator_channels_per_level : int
+    Number of channels :math:`m` per level of the multi-tau correlator. Must be even.
+    Level 0 holds all :math:`m` lags; higher levels hold the upper half
+    :math:`m/2 \\dots m-1` to avoid redundancy.""",
     PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
     The function calculating the array weights for the histogram analysis. It must take
     an :py:class:`AtomGroup<MDAnalysis.AtomGroup>` as first argument and a grouping

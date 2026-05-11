@@ -70,6 +70,8 @@ class PlanarBase(AnalysisBase):
         zmax: None | float,
         bin_width: float,
         wrap_compound: str,
+        correlator_num_levels: int = 20,
+        correlator_channels_per_level: int = 16,
     ):
         super().__init__(
             atomgroup=atomgroup,
@@ -79,6 +81,8 @@ class PlanarBase(AnalysisBase):
             jitter=jitter,
             concfreq=concfreq,
             wrap_compound=wrap_compound,
+            correlator_num_levels=correlator_num_levels,
+            correlator_channels_per_level=correlator_channels_per_level,
         )
 
         if dim not in [0, 1, 2]:

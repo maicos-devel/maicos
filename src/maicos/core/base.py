@@ -22,6 +22,7 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
+from ..lib.correlator import MultiTauCorrelator
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
@@ -179,6 +180,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     corrtime : float
         The correlation time of the analysed data. For details on how this is
         calculated see :func:`maicos.lib.util.correlation_analysis`.
+    _corr : MDAnalysis.analysis.base.Results
+        Per-frame signals that should be fed into a streaming multi-tau correlator.
+        Modules populate ``self._corr.key = signal`` in :meth:`_single_frame` and the
+        base class handles lazy correlator allocation and ingestion. See
+        :class:`maicos.lib.correlator.MultiTauCorrelator` for the underlying algorithm.
+    lags : numpy.ndarray
+        Lag grid in units of frame intervals, exposed only when at least one signal
+        was correlated. Only lags with non-zero pair count are included.
+    lag_counts : numpy.ndarray
+        Number of pairs accumulated per lag, same shape as :attr:`lags`.
+    correlation : MDAnalysis.analysis.base.Results
+        Autocorrelation function for each key populated in :attr:`_corr`, with
+        leading dimension equal to ``len(lags)``.
 
     Raises
     ------
@@ -319,9 +333,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         jitter: float,
         concfreq: int,
         wrap_compound: str,
+        correlator_num_levels: int = 20,
+        correlator_channels_per_level: int = 16,
     ) -> None:
         logger.debug("Debug logging activated")
         self.atomgroup = atomgroup
+        self.correlator_num_levels = correlator_num_levels
+        self.correlator_channels_per_level = correlator_channels_per_level
+        self._correlators: dict[str, MultiTauCorrelator] = {}
 
         if self.atomgroup.n_atoms == 0:
             raise ValueError("The provided `atomgroup` does not contain any atoms.")
@@ -507,8 +526,23 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
+        self._corr = Results()  # signals to feed into multi-tau correlators
 
         self.timeseries[current_frame_index] = self._single_frame()
+
+        # Stream the declared signals into per-key multi-tau correlators. Lazy-init the
+        # correlator the first time each key appears, sizing it from the signal's shape
+        # and dtype.
+        for key in self._corr:
+            arr = np.asarray(self._corr[key])
+            if key not in self._correlators:
+                self._correlators[key] = MultiTauCorrelator(
+                    shape=arr.shape,
+                    num_levels=self.correlator_num_levels,
+                    channels_per_level=self.correlator_channels_per_level,
+                    dtype=arr.dtype,
+                )
+            self._correlators[key].add(arr)
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
@@ -588,6 +622,18 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
         self.corrtime = correlation_analysis(self.timeseries)
+
+        # Expose multi-tau correlator results before _conclude runs so modules can
+        # process them. Lags are in units of frame intervals; modules convert to
+        # physical time via the trajectory timestep. Empty upper levels are dropped.
+        if self._correlators:
+            any_corr = next(iter(self._correlators.values()))
+            valid = any_corr.counts > 0
+            self.lags = any_corr.lags[valid]
+            self.lag_counts = any_corr.counts[valid]
+            self.correlation = Results()
+            for key, corr in self._correlators.items():
+                self.correlation[key] = corr.correlation[valid]
 
         self._conclude()
         if self.concfreq and self.module_has_save:
