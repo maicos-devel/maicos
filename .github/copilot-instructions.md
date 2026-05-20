@@ -23,7 +23,6 @@ docs/          # Sphinx documentation
 ## Code style and tooling
 
 - **Formatter/linter**: [Ruff](https://docs.astral.sh/ruff/) (`ruff format` + `ruff check`). Line length 88.
-- **Type checking**: mypy (`tox -e mypy`).
 - **Tests**: pytest with coverage (`tox -e tests`).
 - **CI**: Tox-based. Run `tox -e lint` for linting and `tox -e tests` for the test suite.
 - **Python**: 3.11+ syntax; no compatibility shims for older versions.
