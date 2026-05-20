@@ -260,13 +260,13 @@ Effective Medium Theory
 The dielectric profiles described above fully characterize the dielectric properties
 of the system on a microscopic scale. However, it is often desirable to obtain a
 averaged, effective dielectric response of the system. This is especially true as
-most experimentally accessible measurements only give access to the average 
+most experimentally accessible measurements only give access to the average
 response of a nano-porous system.
 A consistent averaging procedure is given by effective medium theory, as described
 in detail e.g. in :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
 The idea of this theory is to average the dielectric profiles over some length scale,
-called the "effective length", essentially corresponding to a fictional medium 
-with the same average, effective response as the original system. I.e. one 
+called the "effective length", essentially corresponding to a fictional medium
+with the same average, effective response as the original system. I.e. one
 constructs a fictional homogeneous (but anisotropic) medium that reproduces the
 potential drop across the system for applied fields in the parallel or
 perpendicular direction. This is analogous to a Gibbs construction, which is
