@@ -5,8 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""
-Airspeed velocity benchmarks for MAICoS.
+"""Airspeed velocity benchmarks for MAICoS.
 
 These benchmarks cover the core analysis modules across different geometries
 (planar, cylindrical, spherical) and various analysis types.
@@ -15,24 +14,11 @@ These benchmarks cover the core analysis modules across different geometries
 import sys
 from pathlib import Path
 
-import numpy as np
 import MDAnalysis as mda
+import numpy as np
 
 # Add tests directory to path to access test data
 sys.path.insert(0, str(Path(__file__).parents[1]))
-
-from tests.data import (
-    AIRWATER_GRO,
-    AIRWATER_TPR,
-    AIRWATER_TRR,
-    DIPOLE_GRO,
-    DIPOLE_ITP,
-    SPCE_GRO,
-    SPCE_ITP,
-    WATER_GRO_NPT,
-    WATER_TPR_NPT,
-    WATER_TRR_NPT,
-)
 
 from maicos import (
     DensityCylinder,
@@ -45,6 +31,18 @@ from maicos import (
     VelocityPlanar,
 )
 from maicos.core import AnalysisBase
+from maicos.lib.math import transform_cylinder, transform_sphere
+from tests.data import (
+    AIRWATER_TPR,
+    AIRWATER_TRR,
+    DIPOLE_GRO,
+    DIPOLE_ITP,
+    SPCE_GRO,
+    SPCE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 
 
 class StubAnalysis(AnalysisBase):
@@ -343,3 +341,29 @@ class GroupingBenchmark:
             self.atomgroup, dens="mass", bin_width=0.5, grouping=grouping
         )
         density.run()
+
+
+# =============================================================================
+# Transformation Benchmarks
+# =============================================================================
+
+
+class CoordinateTransformBenchmark:
+    """Benchmarks for cylindrical and spherical coordinate transformations."""
+
+    params = [1_000, 100_000, 1_000_000]
+    param_names = ["number_of_atoms"]
+
+    def setup(self, number_of_atoms):
+        """Set up random positions for the given number of atoms."""
+        rng = np.random.default_rng(42)
+        self.positions = rng.random((number_of_atoms, 3)) * 50.0
+        self.origin = np.array([25.0, 25.0, 25.0])
+
+    def time_transform_cylinder(self, _number_of_atoms):
+        """Time the cylindrical coordinate transformation."""
+        transform_cylinder(self.positions, self.origin, dim=2)
+
+    def time_transform_sphere(self, _number_of_atoms):
+        """Time the spherical coordinate transformation."""
+        transform_sphere(self.positions, self.origin)
