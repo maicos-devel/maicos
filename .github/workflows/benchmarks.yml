@@ -42,11 +42,21 @@ jobs:
 
       - name: Compare benchmarks against main
         if: github.event_name == 'pull_request'
+        env:
+          REGRESSION_FACTOR: "1.5"
         run: |
           asv run --quick --show-stderr origin/main^!
           asv compare --factor 1.1 --split \
             $(git rev-parse origin/main) $(git rev-parse HEAD) \
             | tee benchmark_comparison.txt
+          asv compare --factor "$REGRESSION_FACTOR" \
+            $(git rev-parse origin/main) $(git rev-parse HEAD) \
+            > benchmark_regressions.txt
+          if grep -qE '^\+\s+[0-9]' benchmark_regressions.txt; then
+            echo "has_regression=true" >> "$GITHUB_ENV"
+          else
+            echo "has_regression=false" >> "$GITHUB_ENV"
+          fi
 
       - name: Post benchmark comparison as PR comment
         if: github.event_name == 'pull_request'
@@ -55,9 +65,42 @@ jobs:
           script: |
             const fs = require('fs');
             const output = fs.readFileSync('benchmark_comparison.txt', 'utf8');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const hasRegression = process.env.has_regression === 'true';
+            const factor = process.env.REGRESSION_FACTOR;
+            const verdict = hasRegression
+              ? `💥 Yikes! Benchmark regression exceeding ${factor}x detected vs \`main\` — performance took a hit. 🐌`
+              : `🚀 All clear! No benchmark regressions exceeding ${factor}x — performance is looking great. ✨`;
+            const marker = '<!-- asv-benchmark-comparison -->';
+            const body = `${marker}\n## Benchmark comparison\n${verdict}\n\`\`\`\n${output}\n\`\`\``;
+
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '## Benchmark comparison\n```\n' + output + '\n```'
+              issue_number: context.issue.number,
             });
+            const existing = comments.find(c => c.body && c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+        env:
+          REGRESSION_FACTOR: "1.5"
+
+      - name: Fail CI on benchmark regression > 1.5x
+        if: always() && github.event_name == 'pull_request' && env.has_regression == 'true'
+        run: |
+          echo "--- Regressions ---"
+          grep -E '^\+\s+[0-9]' benchmark_regressions.txt
+          exit 1
