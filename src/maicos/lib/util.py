@@ -870,9 +870,9 @@ def get_module_input_str(module_obj):
 
     return module_input
 
-def split_time_unit(s : str) -> tuple[float, str] :
-    """
-    Split time and units from string like '12ps'
+
+def split_time_unit(s: str) -> tuple[float, str]:
+    """Split time and units from string like '12ps'.
 
     From mdacli : https://github.com/MDAnalysis/mdacli/blob/99e34787e89a00e243c77cfe3f7826f08f119a38/src/mdacli/utils.py#L47
 
@@ -888,17 +888,17 @@ def split_time_unit(s : str) -> tuple[float, str] :
     IndexError
         Tuple could not be found. This happens when a number is not
         present in the start of the string.
+
     """
     type_regex = re.compile(
         r"^(\-?\d+\.?\d*|\-?\.\d+|\-?\.?\d+[eE]\-?\d+|-?\d+\.?\d*[eE]\d+)($|[a-z]*$)"
-    )  
+    )
     value, unit = type_regex.findall(s)[0]
     return float(value), unit
 
 
-def convert_str_time(time: str, dt: float) -> int :
-    """
-    Convert a string `time` into a frame number based on given `dt`.
+def convert_str_time(time: str, dt: float) -> int:
+    """Convert a string `time` into a frame number based on given `dt`.
 
     From mdacli : https://github.com/MDAnalysis/mdacli/blob/99e34787e89a00e243c77cfe3f7826f08f119a38/src/mdacli/utils.py#L47
 
@@ -935,9 +935,9 @@ def convert_str_time(time: str, dt: float) -> int :
         )
     return int(val)
 
-def convert_str_timedict(start : str, stop : str, step : str, dt : float) -> dict:
-    """
-    Convert 3 strings 'start', 'stop' and 'step' into there frame number equivalent based on given dt
+
+def convert_str_timedict(start: str, stop: str, step: str, dt: float) -> dict:
+    """Convert 'start', 'stop', 'step' into their frame number based on given dt.
 
     Parameters
     ----------
@@ -952,14 +952,13 @@ def convert_str_timedict(start : str, stop : str, step : str, dt : float) -> dic
 
     Returns
     -------
-    dictionnary
-            
-    """
+    dict
+        Dictionnary containing start, stop and step frames
 
+    """
     timedict = {}
-    timedict["start"] = convert_str_time(start,dt)
-    timedict["stop"] = convert_str_time(stop,dt)
-    timedict["step"] = convert_str_time(step,dt)
+    timedict["start"] = convert_str_time(start, dt)
+    timedict["stop"] = convert_str_time(stop, dt)
+    timedict["step"] = convert_str_time(step, dt)
 
     return timedict
-
