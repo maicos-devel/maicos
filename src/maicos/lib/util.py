@@ -19,7 +19,7 @@ from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
-from mdacli.utils import convert_str_time, split_time_unit
+from mdacli.utils import convert_str_time
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
