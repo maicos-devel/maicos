@@ -255,6 +255,60 @@ are performed with other boundary conditions.
 The correction for 3d periodic systems with tin-foil boundary conditions can be
 turned on using the parameter ``is_3d``.
 
+Effective Medium Theory
+-----------------------
+The dielectric profiles described above fully characterize the dielectric properties
+of the system on a microscopic scale. However, it is often desirable to obtain a
+averaged, effective dielectric response of the system. This is especially true as
+most experimentally accessible measurements only give access to the average 
+response of a nano-porous system.
+A consistent averaging procedure is given by effective medium theory, as described
+in detail e.g. in :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
+The idea of this theory is to average the dielectric profiles over some length scale,
+called the "effective length", essentially corresponding to a fictional medium 
+with the same average, effective response as the original system. I.e. one 
+constructs a fictional homogeneous (but anisotropic) medium that reproduces the
+potential drop across the system for applied fields in the parallel or
+perpendicular direction. This is analogous to a Gibbs construction, which is
+commonly used to define the location of an interface for systems with a
+continuous density profile.
+
+It can be formalized via the following equations:
+
+.. math::
+     \varepsilon_\parallel^\mathrm{eff} = 1 +
+     \frac{\int_{-L/2}^{L/2} \varepsilon_\parallel(z)\,\mathrm{d}z - L}
+     {L_\parallel^\mathrm{eff}}.
+
+.. math::
+     \left(\varepsilon_\perp^\mathrm{eff}\right)^{-1} = 1 +
+     \frac{\int_{-L/2}^{L/2} \varepsilon_\perp^{-1}(z)\,\mathrm{d}z - L}
+     {L_\perp^\mathrm{eff}}.
+
+where :math:`L` is the simulation box length,
+:math:`L_\parallel^\mathrm{eff}` is the effective length for the parallel response,
+and :math:`L_\perp^\mathrm{eff}` is the effective length for the perpendicular response.
+
+There are a few subtleties to be aware of: For one thing, this construction is
+under-determined for a single pore size, as there are two unknowns
+:math:`\varepsilon_\alpha^\mathrm{eff}` and :math:`L_\alpha^\mathrm{eff}`
+(with :math:`\alpha = \parallel, \perp`).
+As has been shown in e.g. ref. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
+this can be resolved by using the fact that :math:`\varepsilon^\mathrm{eff}`
+approaches the bulk dielectric constant of the fluid for large pores.
+It has been shown empirically in these references, that this is the case even for
+pores as small as a few nanometers (typically :math:`L\ge 1 \mathrm{nm}`).
+Thus, one can determine :math:`L_\alpha^\mathrm{eff}` by fitting the effective
+medium theory to the expected bulk dielectric constant of the fluid for one
+large pore. Once :math:`L_\alpha^\mathrm{eff}` is determined, one can then assume
+constant offset lengths for all other pores, allowing the determination of the
+effective dielectric constants for all other pore sizes.
+
+As has been detailed in refs. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
+it is recommended to determine the offsets relative to the Gibbs dividing surface.
+See especially ref. :footcite:p:`stark_static_2026` for a detailed discussion of
+the universality of this procedure for various water models.
+
 References
 ----------
 .. footbibliography::
