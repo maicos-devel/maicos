@@ -41,7 +41,6 @@ jobs:
             git fetch origin gh-pages:gh-pages
             if [ -d ".asv" ]; then rm -rf .asv; fi
             git checkout gh-pages -- .asv/results || true
-            git checkout main
           fi
         continue-on-error: true
 
