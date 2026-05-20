@@ -309,6 +309,9 @@ large pore. Once :math:`L_\alpha^\mathrm{eff}` is determined, one can then assum
 constant offset lengths for all other pores, allowing the determination of the
 effective dielectric constants for all other pore sizes.
 
+A detailed example for this procedure is given in the How-to guide for
+:ref:`userdoc-how-to-dielectrics`.
+
 As has been detailed in refs. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
 it is recommended to determine the offsets relative to the Gibbs dividing surface.
 See especially ref. :footcite:p:`stark_static_2026` for a detailed discussion of
