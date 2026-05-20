@@ -13,6 +13,7 @@ Unreleased
 ----------
 Alexander Schlaich
 
+- Add GitHub Copilot instructions (``.github/copilot-instructions.md``)
 - Update AUTHORS.rst (#553)
 
 v0.12 (2026/01/23)
