@@ -4,13 +4,13 @@
 Box models for interfacial and slab systems
 ===========================================
 
-Many quantities computed by MAICoS — density, dielectric permittivity, velocity — vary
-smoothly across an interface. For thermodynamic and continuum-mechanical bookkeeping it
-is often convenient to compress such a profile into a piecewise-constant *box model*:
-a constant bulk value on each side of an idealized, infinitely thin dividing surface.
-The position of that surface is not unique; it depends on which quantity is being
-conserved across the discontinuity. This page collects the conventions MAICoS users
-most commonly encounter and shows how to obtain each of them from the analysis output.
+Many quantities computed by MAICoS — density, dielectric permittivity or velocity profiles — vary
+drastically and in complex way across an interface. For thermodynamic and continuum-mechanical descriptions it
+is often convenient to express such a profile in terms of a piecewise-constant *box model*:
+a constant value is assigned on both sides of an idealized, infinitely thin dividing surface.
+The position of that surface is not unique; it is usually chosen such that the effective response corresonds to the one in bulk on one of the sides, i.e. in general it depends on which quantity is being
+conserved across the system. This page collects the typical use-cases for such effective models which MAICoS users
+encounter and explains how to obtain each of them from the analysis output.
 
 The discussion below is written for planar geometry, where the dividing surface
 :math:`z_\mathrm{d}` is a plane perpendicular to the analysis axis. The same ideas
