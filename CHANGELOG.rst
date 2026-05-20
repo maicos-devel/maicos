@@ -11,7 +11,6 @@ Changelog
 
 Unreleased
 ----------
-
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
 
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
