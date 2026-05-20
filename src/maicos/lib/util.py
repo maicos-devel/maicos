@@ -97,9 +97,8 @@ ${DENSITY_DESCRIPTION_2}""",
     DENSITY_SPHERE_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
 ${SPHERICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
-:math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
-dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
+    DIPORDER_DESCRIPTION=r"""Calculations include the first and second order parameters, which are the 
+    Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3\cos^2(θ[z]) - 1}{2}` with :math:`x = \cos(θ[z])`.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
 refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
 :ref:`general-design` section.""",

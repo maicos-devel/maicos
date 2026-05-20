@@ -160,20 +160,15 @@ def diporder_weights(
             f"(3,) or {(len(dipoles), 3)} is allowed."
         )
 
-    if order_parameter == "P0":
-        weights = np.sum(dipoles * unit_vectors, axis=1)
-    elif order_parameter in ["cos_theta", "cos_2_theta"]:
+    if order_parameter in ["P1", "P2"]:
         weights = np.sum(
             dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis] * unit_vectors,
             axis=1,
         )
-        if order_parameter == "cos_2_theta":
-            weights *= weights
+        if order_parameter == "P2":
+            weights = (3 * weights**2 - 1) / 2
     else:
-        raise ValueError(
-            f"'{order_parameter}' not supported. "
-            "Use 'P0', 'cos_theta' or 'cos_2_theta'."
-        )
+        raise ValueError(f"'{order_parameter}' not supported. Use 'P1' or 'P2'.")
 
     return weights
 
