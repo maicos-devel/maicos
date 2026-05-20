@@ -1,9 +1,6 @@
 name: ASV Benchmarks
 
 on:
-  push:
-    branches: [main]
-    tags: ["*"]
   pull_request:
     # Check all PR
   workflow_dispatch:  # Allow manual trigger
@@ -15,6 +12,8 @@ permissions:
 jobs:
   benchmarks:
     runs-on: ubuntu-latest
+    env:
+      REGRESSION_FACTOR: "1.5"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,16 +35,17 @@ jobs:
           git config --global user.name "Benchmark Bot"
 
       - name: Run ASV benchmarks
+        if: github.event_name == 'workflow_dispatch'
         run: |
           asv machine --yes
           asv run --quick --show-stderr HEAD^!
 
       - name: Compare benchmarks against main
         if: github.event_name == 'pull_request'
-        env:
-          REGRESSION_FACTOR: "1.5"
         run: |
+          asv machine --yes
           asv run --quick --show-stderr origin/main^!
+          asv run --quick --show-stderr HEAD^!
           asv compare --factor 1.1 --split \
             $(git rev-parse origin/main) $(git rev-parse HEAD) \
             | tee benchmark_comparison.txt
@@ -95,12 +95,10 @@ jobs:
                 body,
               });
             }
-        env:
-          REGRESSION_FACTOR: "1.5"
 
-      - name: Fail CI on benchmark regression > 1.5x
+      - name: Fail CI on benchmark regression
         if: always() && github.event_name == 'pull_request' && env.has_regression == 'true'
         run: |
-          echo "--- Regressions ---"
+          echo "--- Regressions exceeding ${REGRESSION_FACTOR}x ---"
           grep -E '^\+\s+[0-9]' benchmark_regressions.txt
           exit 1
