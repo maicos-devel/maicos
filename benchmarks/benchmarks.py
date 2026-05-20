@@ -355,7 +355,6 @@ class CoordinateTransformBenchmark:
     param_names = ["number_of_atoms"]
 
     def setup(self, number_of_atoms):
-        """Set up random positions for the given number of atoms."""
         rng = np.random.default_rng(42)
         self.positions = rng.random((number_of_atoms, 3)) * 50.0
         self.origin = np.array([25.0, 25.0, 25.0])
