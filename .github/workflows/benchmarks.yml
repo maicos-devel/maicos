@@ -9,8 +9,8 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
-  contents: write
-  pages: write
+  contents: read
+  pull-requests: write
 
 jobs:
   benchmarks:
@@ -34,15 +34,6 @@ jobs:
         run: |
           git config --global user.email "benchmark@example.com"
           git config --global user.name "Benchmark Bot"
-
-      - name: Fetch existing results from gh-pages
-        run: |
-          if git ls-remote --exit-code origin gh-pages; then
-            git fetch origin gh-pages:gh-pages
-            if [ -d ".asv" ]; then rm -rf .asv; fi
-            git checkout gh-pages -- .asv/results || true
-          fi
-        continue-on-error: true
 
       - name: Run ASV benchmarks
         run: |
@@ -70,14 +61,3 @@ jobs:
               repo: context.repo.repo,
               body: '## Benchmark comparison\n```\n' + output + '\n```'
             });
-
-      - name: Generate HTML
-        run: asv publish
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .asv/html
-          destination_dir: benchmarks
-          keep_files: true
