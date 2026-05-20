@@ -12,7 +12,6 @@ The parallel profile is expected in ``*_par.dat`` and the perpendicular profile 
 
 """  # noqa: D415
 
-
 # %%
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,25 +36,9 @@ def draw_effective_box(ax, leff, value, color="C1", label=None):
     ax.add_patch(rect)
 
 
-    """Draw a finite effective-medium slab centered in the pore."""
-    xmin, xmax = ax.get_xlim()
-    x_center = 0.5 * (xmin + xmax)
-    rect = Rectangle(
-        (x_center - leff / 2, 0),
-        leff,
-        value,
-        facecolor=color,
-        edgecolor=color,
-        linewidth=2,
-        alpha=0.2,
-        zorder=4,
-        label=label,
-    )
-    ax.add_patch(rect)
-
-
 # %%
 def trapz_err(vals, errs, dx):
+    """Integral of a profile with error estimation using the trapezoidal rule."""
     integral = dx / 2 * np.sum(vals[1:] + vals[:-1])
     integral_err = dx / 2 * np.sum(errs[1:] + errs[:-1])
     return integral, integral_err
@@ -64,8 +47,6 @@ def trapz_err(vals, errs, dx):
 def bulk_eps(z, eps, err, bulk_dist=15):
     """Estimate the bulk dielectric constant from the pore center."""
     bulk_filter = np.logical_and(z > bulk_dist, z < z[-1] - bulk_dist)
-    """Estimate the bulk dielectric constant from the pore center."""
-    bulk_filter = np.logical_and(z > bulk_dist, z < z[-1] - bulk_dist)
 
     if not np.any(bulk_filter):
         return np.nan, np.nan
@@ -79,11 +60,11 @@ def bulk_eps(z, eps, err, bulk_dist=15):
     eps_blk = np.average(eps[bulk_filter], weights=weights)
     eps_blk_err = np.sqrt(1 / np.sum(weights))
 
-    return eps_blk, eps_blk_err
     return eps_blk, eps_blk_err
 
 
 def calc_leff_trapz(z, profile, err, length, bulk_response):
+    """Calculate the effective length from the profile using the trapezoidal rule."""
     dx = z[1] - z[0]
     integral, integral_err = trapz_err(profile, err, dx)
     leff = (integral - length) / (bulk_response - 1)
@@ -92,6 +73,7 @@ def calc_leff_trapz(z, profile, err, length, bulk_response):
 
 
 def effective_response(z, profile, err, leff, length, leff_err):
+    """Effective-medium response from the profile and the effective length."""
     dx = z[1] - z[0]
     integral, integral_err = trapz_err(profile, err, dx)
     response = 1 + ((integral - length) / leff)
@@ -102,6 +84,7 @@ def effective_response(z, profile, err, leff, length, leff_err):
 
 
 def prepare_epsilon(base_path):
+    """Load the parallel and perpendicular dielectric profiles from the given files."""
     par = np.loadtxt(f"{base_path}_par.dat")
     perp = np.loadtxt(f"{base_path}_perp.dat")
 
@@ -116,7 +99,6 @@ def prepare_epsilon(base_path):
     z_perp -= z_perp[0]
 
     return (z_par, eps_par, par[:, 2]), (z_perp, eps_perp_inv, perp[:, 2])
-    return (z_par, eps_par, par[:, 2]), (z_perp, eps_perp_inv, perp[:, 2])
 
 
 # %%
@@ -127,8 +109,6 @@ def prepare_epsilon(base_path):
 # system, for example SPC/E water in a slit pore.
 base_path = "./tip4p_data/eps_l0d3"
 
-(z_par, eps_par, eps_par_err), (z_perp, eps_perp_inv, eps_perp_err) = prepare_epsilon(
-    base_path
 (z_par, eps_par, eps_par_err), (z_perp, eps_perp_inv, eps_perp_err) = prepare_epsilon(
     base_path
 )
@@ -143,10 +123,8 @@ eps_bulk = 75.0
 # %%
 leff_par, leff_par_err = calc_leff_trapz(
     z_par, eps_par, eps_par_err, z_par[-1], eps_bulk
-    z_par, eps_par, eps_par_err, z_par[-1], eps_bulk
 )
 eps_eff_par, eps_eff_par_err = effective_response(
-    z_par, eps_par, eps_par_err, leff_par, z_par[-1], leff_par_err
     z_par, eps_par, eps_par_err, leff_par, z_par[-1], leff_par_err
 )
 
@@ -158,18 +136,16 @@ eps_eff_par, eps_eff_par_err = effective_response(
 # %%
 leff_perp, leff_perp_err = calc_leff_trapz(
     z_perp, eps_perp_inv, eps_perp_err, z_perp[-1], 1 / eps_bulk
-    z_perp, eps_perp_inv, eps_perp_err, z_perp[-1], 1 / eps_bulk
 )
 eps_eff_perp_inv, eps_eff_perp_inv_err = effective_response(
-    z_perp, eps_perp_inv, eps_perp_err, leff_perp, z_perp[-1], leff_perp_err
     z_perp, eps_perp_inv, eps_perp_err, leff_perp, z_perp[-1], leff_perp_err
 )
 print(
     f"Effective-medium estimate (parallel): {eps_eff_par:.2f} ± {eps_eff_par_err:.2f}"
 )
-print(
-    f"Effective-medium estimate (perpendicular): {1 / eps_eff_perp_inv:.2f} ± {eps_eff_perp_inv_err / eps_eff_perp_inv**2:.2f}"
-)
+perp_val = 1 / eps_eff_perp_inv
+perp_err = eps_eff_perp_inv_err / eps_eff_perp_inv**2
+print(f"Effective-medium estimate (perpendicular): {perp_val:.2f} ± {perp_err:.2f}")
 print(f"Effective length (parallel): {leff_par:.2f} ± {leff_par_err:.2f}")
 print(f"Effective length (perpendicular): {leff_perp:.2f} ± {leff_perp_err:.2f}")
 
@@ -198,7 +174,6 @@ ax[1].plot(z_perp, eps_perp_inv, label="profile")
 ax[1].axhline(1 / eps_bulk, color="black", linestyle="dashed", label="bulk")
 ax[1].set_xlabel(r"$z$ [$\AA$]")
 ax[1].set_ylabel(r"$\varepsilon_{\perp}^{-1}$")
-draw_effective_box(ax[1], leff_perp, 1 / eps_eff_perp_inv, label="effective-medium")
 draw_effective_box(ax[1], leff_perp, 1 / eps_eff_perp_inv, label="effective-medium")
 ax[1].legend(frameon=False)
 
