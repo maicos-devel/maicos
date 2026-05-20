@@ -26,7 +26,16 @@ docs/          # Sphinx documentation
 - **Tests**: pytest with coverage (`tox -e tests`).
 - **CI**: Tox-based. Run `tox -e lint` for linting and `tox -e tests` for the test suite.
 - **Python**: 3.11+ syntax; no compatibility shims for older versions.
+- **Prefer MDAnalysis**: use MDA functions and methods wherever possible. Custom
+  implementations are only justified when profiling shows a significant performance
+  regression introduced by the MDA equivalent.
+- The same applies to NumPy and SciPy: their implementations are typically faster than
+  pure-Python custom code and should be preferred for the same reasons.
 - Docstrings follow **NumPy/PEP 257** conventions (enforced by `ruff D`-rules).
+- Class docstrings use a template system: shared parameter/attribute descriptions live
+  in `DOC_DICT` in `src/maicos/lib/util.py` and are injected at import time via the
+  `@render_docs` decorator (`maicos.lib.util.render_docs`). Use `${KEY}` placeholders
+  in docstrings and add new entries to `DOC_DICT` rather than duplicating text.
 
 ## Contributing guidelines
 
@@ -65,10 +74,37 @@ explain. Significant AI-assisted contributions must be disclosed in the PR.
 - Results are stored in `self.results` (an `MDAnalysis.analysis.Results` dict-like
   object). Bin positions go in `self.results.bin_pos`; profiles in
   `self.results.profile`.
+- Per-frame observables are written to `self._obs` (a `Results` object reset each
+  frame in `_prepare`). The base class accumulates `_obs` entries automatically into
+  `self.sums`, `self.means`, and `self.sems` across frames — subclasses must only
+  populate `self._obs` inside `_single_frame`, not implement the averaging themselves.
 - Physical quantities use **MDAnalysis base units**: length in Å, mass in u, time in ps,
   energy in kJ/mol, charge in e, force in kJ/(mol·Å), speed in Å/ps.
 - MDAnalysis `AtomGroup` objects are the primary input; `Universe` is accessed via
   `self._universe` in base classes.
+
+## Testing
+
+- Tests use **pytest** and live in `tests/`. Mirror the `src/maicos/` layout: one test
+  file per module under `tests/modules/`, core tests under `tests/core/`.
+- The goal is to maximise **physical tests**: construct systems with known analytical
+  solutions (e.g. ideal dipole arrangements) and assert that module results match the
+  analytical expectation within numerical tolerance. Prefer this over testing
+  implementation details.
+- See `tests/modules/test_dielectricplanar.py` and its siblings for the reference
+  pattern: synthetic MDAnalysis universes are built from controlled dipole positions and
+  orientations, then the output is compared to closed-form expressions derived with
+  sympy.
+
+## Documentation and examples
+
+- Docs are built with **Sphinx** from `docs/src/`. Each analysis module has exactly one
+  dedicated `.rst` page in `docs/src/analysis-modules/` that uses `.. autoclass::` to
+  pull the docstring. When adding a new module, add a corresponding `.rst` page there.
+- Python usage examples live in `examples/` and are executed and rendered by
+  **sphinx-gallery**. Each example is a plain `.py` file with a reStructuredText
+  docstring at the top (the gallery title and description) followed by runnable code.
+  Add new examples there rather than in the narrative docs.
 
 ## What to avoid
 
