@@ -19,6 +19,7 @@ from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
+from mdacli.utils import convert_str_time, split_time_unit
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
@@ -869,71 +870,6 @@ def get_module_input_str(module_obj):
         module_input = f"{module_name}(*args).run(*args)"
 
     return module_input
-
-
-def split_time_unit(s: str) -> tuple[float, str]:
-    """Split time and units from string like '12ps'.
-
-    From mdacli : https://github.com/MDAnalysis/mdacli/blob/99e34787e89a00e243c77cfe3f7826f08f119a38/src/mdacli/utils.py#L47
-
-    Follows the regex:: https://regex101.com/r/LZAbil/2
-
-    Returns
-    -------
-    tuple (float, str)
-        Value as float, units as str.
-
-    Raises
-    ------
-    IndexError
-        Tuple could not be found. This happens when a number is not
-        present in the start of the string.
-
-    """
-    type_regex = re.compile(
-        r"^(\-?\d+\.?\d*|\-?\.\d+|\-?\.?\d+[eE]\-?\d+|-?\d+\.?\d*[eE]\d+)($|[a-z]*$)"
-    )
-    value, unit = type_regex.findall(s)[0]
-    return float(value), unit
-
-
-def convert_str_time(time: str, dt: float) -> int:
-    """Convert a string `time` into a frame number based on given `dt`.
-
-    From mdacli : https://github.com/MDAnalysis/mdacli/blob/99e34787e89a00e243c77cfe3f7826f08f119a38/src/mdacli/utils.py#L47
-
-    If `x` does not contain any units its assumed to be a frame number
-    already.
-
-    See :func:`split_time_unit`.
-
-    Parameters
-    ----------
-    x : str
-        the input string
-    dt : float
-        the time step in ps
-
-    Returns
-    -------
-    int
-        frame number
-
-    Raises
-    ------
-    ValueError
-        The input does not contain any units but is not an integer.
-    """
-    val, unit = split_time_unit(time)
-    if unit != "":
-        val = mda.units.convert(val, unit, "ps")
-        return int(val // dt)
-    if val % 1 != 0:  # the number is not int'able
-        raise ValueError(
-            "Only integers or time step combinations (´12ps´) "
-            "are valid for frame selection"
-        )
-    return int(val)
 
 
 def convert_str_timedict(start: str, stop: str, step: str, dt: float) -> dict:
