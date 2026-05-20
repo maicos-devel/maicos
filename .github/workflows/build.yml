@@ -36,7 +36,7 @@ jobs:
       - name: Test build integrity and build sdist
         run: tox -e build
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: files
           path: |
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -66,7 +66,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Publish to GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             dist/*.tar.gz

@@ -12,7 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -31,6 +31,7 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
+    triclinic_to_orthorhombic,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,12 +100,18 @@ class _Runner:
             )
         ):
             ts_original = ts.copy()
-
             with logging_redirect_tqdm():
                 for analysis_object in analysis_instances:
+                    ts.positions[:] = ts_original.positions
+                    if ts_original.dimensions is not None:
+                        ts.dimensions[:] = ts_original.dimensions
+                    else:
+                        ts.dimensions = None
+                    if ts.has_velocities:
+                        ts.velocities[:] = ts_original.velocities
+                    if ts.has_forces:
+                        ts.forces[:] = ts_original.forces
                     analysis_object._call_single_frame(ts=ts, current_frame_index=i)
-                    ts = ts_original
-
         logger.debug("Concluding analysis.")
 
         for analysis_object in analysis_instances:
@@ -292,6 +299,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
+    if TYPE_CHECKING:  # pragma: no cover
+        # Type annotations for attributes set dynamically in _call_single_frame.
+        means: Results
+        sems: Results
+        sums: Results
+        pop: Results
+        M2: Results
+        _obs: Results
+        _pop: Results
+        _var: Results
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -473,8 +491,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._warned_triclinic = True
             # If universe has a cell we wrap the compound into the primary unit cell to
             # use all compounds for the analysis.
+            is_triclinic = np.any(ts.dimensions[-3:] != np.array([90.0, 90.0, 90.0]))
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
+                if is_triclinic:
+                    ortho_box = triclinic_to_orthorhombic(ts.dimensions)
+                    self._universe.atoms.wrap(
+                        compound=self.wrap_compound, box=ortho_box
+                    )
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
@@ -490,8 +514,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # therefore not a performance issue like a if statement would be.
         try:
             # Fail fast if the means and sems are not defined yet.
-            self.means  # type: ignore  # noqa B018
-            self.sems  # type: ignore  # noqa B018
+            self.means  # noqa B018
+            self.sems  # noqa B018
 
             # Take the data from the current frame and update the means and sems
             for key in self._obs:
@@ -503,19 +527,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                self.pop[key], self.means[key], self.M2[key] = (  # type: ignore
-                    combine_subsample_variance(  # type: ignore
-                        self._pop[key],  # type: ignore
-                        self.pop[key],  # type: ignore
-                        self._obs[key],  # type: ignore
-                        self.means[key],  # type: ignore
-                        self._var[key] * self._pop[key],  # type: ignore
-                        self.M2[key],  # type: ignore
+                self.pop[key], self.means[key], self.M2[key] = (
+                    combine_subsample_variance(
+                        self._pop[key],
+                        self.pop[key],
+                        self._obs[key],
+                        self.means[key],
+                        self._var[key] * self._pop[key],
+                        self.M2[key],
                     )
                 )
 
-                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore
-                self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)
+                self.sums[key] += self._obs[key] * self._pop[key]
 
         except AttributeError as err:
             with logging_redirect_tqdm():
@@ -530,7 +554,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.M2 = Results()  # second moment of the samples across frames
 
             for key in self._obs:
-                if type(self._obs[key]) not in compatible_types:
+                if not isinstance(self._obs[key], tuple(compatible_types)):
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
@@ -816,6 +840,7 @@ class ProfileBase:
         # subclass of AnalysisBase (only needed for tests)
         self.results = Results()
         self._obs = Results()
+        self.n_bins: int
 
     def _prepare(self):
         normalizations = ["none", "volume", "number"]
@@ -858,10 +883,10 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self) -> None | float:
-        self._obs.profile = np.zeros(self.n_bins)  # type: ignore
-        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore
+        self._obs.profile = np.zeros(self.n_bins)
+        self._obs.bincount = np.zeros(self.n_bins)
 
-        if self.grouping == "atoms":  # type: ignore
+        if self.grouping == "atoms":
             positions = self.atomgroup.positions
         else:
             positions = get_center(
@@ -873,7 +898,7 @@ class ProfileBase:
 
         self._obs.bincount = np.bincount(
             bin_indices[bin_indices > -1],
-            minlength=self.n_bins,  # type: ignore
+            minlength=self.n_bins,
         )
 
         if self.normalization == "volume":

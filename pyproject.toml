@@ -71,10 +71,32 @@ ignore = ["src/maicos/_version.py"]
 [tool.coverage.paths]
 source = ["src/maicos", "*/site-packages"]
 
+[tool.coverage.run]
+omit = [
+    "examples/*",
+    "src/maicos/_version.py",
+    "tests/*",
+    "tests/**/*",
+    "*/tests/*",
+    "*/tests/**/*",
+]
+
 [tool.coverage.report]
 skip_covered = true
 show_missing = true
-exclude_lines = ["if __name__ == .__main__.:"]
+exclude_lines = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "\\.\\.\\.",
+]
+omit = [
+    "examples/*",
+    "src/maicos/_version.py",
+    "tests/*",
+    "tests/**/*",
+    "*/tests/*",
+    "*/tests/**/*",
+]
 
 [tool.mypy]
 exclude = [

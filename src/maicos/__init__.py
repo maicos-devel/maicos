@@ -8,12 +8,14 @@
 """MAICoS: Molecular Analysis of Interfacial and COnfined Systems."""
 
 import warnings
+from importlib.metadata import metadata
 
 from ._version import __version__  # noqa: F401
 from .modules import *  # noqa: F403
 from .modules import __all__ as __all__
 
-__authors__ = "MAICoS Developer Team"
+_meta = metadata("maicos")
+__authors__ = _meta["Author"]
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action="once", category=DeprecationWarning, module="maicos")

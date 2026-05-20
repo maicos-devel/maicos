@@ -94,6 +94,12 @@ class TestSphereBase:
         with pytest.raises(ValueError, match="can not be smaller"):
             sphere_class_obj._prepare()
 
+    def test_negative_rmin(self, ag):
+        """Test that a negative rmin raises ValueError."""
+        sphere_class_obj = SphereClass(ag, pos_arg=42, rmin=-1)
+        with pytest.raises(ValueError, match="larger or equal 0"):
+            sphere_class_obj._prepare()
+
     @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
     def test_bin_width(self, ag, bin_width):
         """Test bin_width."""
