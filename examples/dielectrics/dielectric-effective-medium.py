@@ -88,7 +88,7 @@ def effective_response(z, profile, err, leff, length, leff_err):
 
 
 # %%
-# .. rubric:: Load the relative permitivitty profiles for the parallel and perpendicular components.
+# .. rubric:: Load the relative permitivitty profiles
 #
 # These files contain the precomputed relative permitivitty profile from a
 # simulation of confined water, here we use for example the TIP4P/:math:`\varepsilon`
@@ -120,8 +120,8 @@ print(f"Estimated bulk dielectric constant: {eps_bulk:.2f} ± {eps_bulk_err:.2f}
 # %%
 # .. rubric:: Parallel component
 #
-# We can now use the estimated bulk dielectric constant to calculate the effective length
-# and effective dielectric constant for the parallel component.
+# We can now use the estimated bulk dielectric constant to calculate the
+# effective length and effective dielectric constant for the parallel component.
 
 leff_par, leff_par_err = calc_leff_trapz(
     z_par, eps_par, eps_par_err, z_par[-1] - z_par[0], eps_bulk
