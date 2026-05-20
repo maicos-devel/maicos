@@ -13,3 +13,4 @@ understanding of what MAICoS is all about.
     general-design
     dielectric
     pdfs
+    box-models
