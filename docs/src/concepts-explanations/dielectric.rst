@@ -1,7 +1,7 @@
 .. _dielectric-explanations:
 
 ===============================
-Dielectric constant measurement
+Relative permitivitty profiles
 ===============================
 
 Dielectric Response of Homogeneous, Isotropic Fluids
@@ -106,7 +106,8 @@ Thus, we can simplify the anisotropic, non-linear equation above in the parallel
      \epsilon_\parallel(z, z') =: \epsilon_0 \epsilon_\parallel(z) E_\parallel
 
 where the marginal integration of :math:`\varepsilon_\parallel (\mathbf{r},
-\mathbf{r}')` defines the dielectric profile :math:`\varepsilon_\parallel(z)`. It is
+\mathbf{r}')` defines the relative permitivitty profile
+:math:`\varepsilon_\parallel(z)`. It is
 important to note that this derivation starts with non-local assumptions and is exact in
 the case of planar geometries discussed here (similar derivations apply also for
 cylindrical and spherical symmertries). Thus, :math:`\varepsilon_\parallel(z)` fully
@@ -118,12 +119,14 @@ In the absence of "free charges" we can use the macroscopic Maxwell equation
 .. math::
      \nabla \cdot \mathbf{D} = 0
 
-to derive the perpendicular dielectric profile.
+to derive the perpendicular relative permitivitty profile.
 
 .. warning::
     This requires that no free charges are used in simulations, which
-    means that no ions can be included in simulations. This is a common pitfall
-    and leads to a wrong analysis.
+    means that no ions can be included in simulations.
+    This is a common pitfall and can lead to a wrong analysis, although a
+    generalized dielectric response can be defined.
+    :footcite:p:`stark_static_2026`
 
 The above equation gives us the important relation of :math:`\partial_z \mathbf{D}_z =
 0`, which implies that the perpendicular components of the displacement field do not
@@ -132,7 +135,8 @@ vary with :math:`z`. Thus, if we start with the inverse dielectric response, def
 .. math::
      E(z) = \varepsilon_0^{-1} \int \mathrm{d} z' \varepsilon^{-1}(z, z') D(z')
 
-where :math:`\varepsilon^{-1}(z, z')` is the matrix inverse of the dielectric tensor.
+where :math:`\varepsilon^{-1}(z, z')` is the matrix inverse of the dielectric
+permittivity tensor.
 Similar to above, we use the fact that :math:`D` does not vary with :math:`z` and
 simplify
 
@@ -142,7 +146,7 @@ simplify
                \epsilon_\perp^{-1}(z)  D_\perp
 
 where the marginal integration of :math:`\varepsilon_\perp^{-1} (\mathbf{r},
-\mathbf{r}')` defines the inverse dielectric profile :math:`\varepsilon_\perp^{-1}(z)`.
+\mathbf{r}')` defines the inverse relative permitivitty profile :math:`\varepsilon_\perp^{-1}(z)`.
 
 **In summary**, if one has no magnetic fields and no free charges, the dielectric
 profiles :math:`\varepsilon^{-1}_\bot (z)` and :math:`\varepsilon_\parallel(z)` fully
@@ -166,14 +170,14 @@ is given by
                             - \langle m_\parallel (z) \rangle \langle M_\parallel
                             \rangle}{\epsilon_0 k_\mathrm{B}T}
 
-for the **parallel** dielectric profile, and
+for the **parallel** relative permitivitty profile, and
 
 .. math::
      \epsilon_\perp^{-1}(z) = 1 - \frac{\langle m_\perp(z) M_\perp \rangle
                              - \langle m_\perp (z) \rangle \langle M_\perp \rangle}
                              {\epsilon_0 k_\mathrm{B}T},
 
-for the **inverse** perpendicular dielectric profile.
+for the **inverse** perpendicular relative permitivitty profile.
 
 Note that we still need to define how to calculate :math:`m_\parallel(z)` and
 :math:`m_\perp(z)`. For the perpendicular polarization density, we have
@@ -232,8 +236,8 @@ Note, that a very close formula :footcite:p:`sternCalculationDielectricPermittiv
 can also be derived for arbitrary boundary conditions at infinity, which some
 simulation codes can also utilize. As most simulations nowadays are performed using
 tin-foil boundary conditions, MAICoS does not provide these special cases and we
-do not recommend that simulations for the calculation of dielectric profiles
-are performed with other boundary conditions.
+do not recommend that simulations for the calculation of relative permitivitty
+profiles are performed with other boundary conditions.
 
 .. note::
     The above equation reduces to the correct 2d periodic system if one
@@ -242,7 +246,7 @@ are performed with other boundary conditions.
     over the :math:`z` direction can be approximated as a dipole interaction.
     This approach is analogous to the Yeh and Berkovitz correction
     :footcite:p:`yehEwaldSummationSystems1999` and
-    may be used to calculate the dielectric profiles for physical systems with
+    may be used to calculate the relative permitivitty profiles for physical systems with
     2d-symmetry when corrections are not available. In these situations, we
     recommend to use a padding vacuum layer such that the system is 3x the
     physical system size in :math:`z` direction.
@@ -257,14 +261,14 @@ turned on using the parameter ``is_3d``.
 
 Effective Medium Theory
 -----------------------
-The dielectric profiles described above fully characterize the dielectric properties
+The relative permitivitty profiles described above fully characterize the dielectric properties
 of the system on a microscopic scale. However, it is often desirable to obtain a
-averaged, effective dielectric response of the system. This is especially true as
+averaged, effective relative permitivitty response of the system. This is especially true as
 most experimentally accessible measurements only give access to the average
 response of a nano-porous system.
 A consistent averaging procedure is given by effective medium theory, as described
 in detail e.g. in :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
-The idea of this theory is to average the dielectric profiles over some length scale,
+The idea of this theory is to average the relative permitivitty profiles over some length scale,
 called the "effective length", essentially corresponding to a fictional medium
 with the same average, effective response as the original system. I.e. one
 constructs a fictional homogeneous (but anisotropic) medium that reproduces the
