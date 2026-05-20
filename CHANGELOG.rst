@@ -11,7 +11,8 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
+Philipp Stärk
 
 - Add example for effective-medium dielectric analysis (#584)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
