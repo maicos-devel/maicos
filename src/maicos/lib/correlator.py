@@ -171,9 +171,7 @@ class MultiTauCorrelator:
         """
         arr = np.asarray(value, dtype=self.dtype)
         if arr.shape != self.shape:
-            raise ValueError(
-                f"Expected signal of shape {self.shape}, got {arr.shape}."
-            )
+            raise ValueError(f"Expected signal of shape {self.shape}, got {arr.shape}.")
         self._ingest(0, arr)
 
     def _ingest(self, k: int, value: np.ndarray) -> None:

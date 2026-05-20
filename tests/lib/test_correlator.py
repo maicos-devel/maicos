@@ -17,26 +17,46 @@ class TestLagSchedule:
     """Tests for the construction of the lag grid."""
 
     def test_default_schedule(self):
+        """Lag values follow the canonical multi-tau schedule."""
         c = MultiTauCorrelator(num_levels=4, channels_per_level=8)
         expected = [
-            0, 1, 2, 3, 4, 5, 6, 7,            # level 0
-            4 * 2, 5 * 2, 6 * 2, 7 * 2,         # level 1
-            4 * 4, 5 * 4, 6 * 4, 7 * 4,         # level 2
-            4 * 8, 5 * 8, 6 * 8, 7 * 8,         # level 3
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,  # level 0
+            4 * 2,
+            5 * 2,
+            6 * 2,
+            7 * 2,  # level 1
+            4 * 4,
+            5 * 4,
+            6 * 4,
+            7 * 4,  # level 2
+            4 * 8,
+            5 * 8,
+            6 * 8,
+            7 * 8,  # level 3
         ]
         np.testing.assert_array_equal(c.lags, expected)
 
     def test_lag_count(self):
+        """``n_lags`` matches the closed-form ``m + (p - 1) * m / 2`` count."""
         # Total = m + (p-1) * m / 2
         c = MultiTauCorrelator(num_levels=5, channels_per_level=16)
         assert c.n_lags == 16 + 4 * 8
         assert c.lags.size == c.n_lags
 
     def test_monotonic(self):
+        """The lag schedule is strictly increasing."""
         c = MultiTauCorrelator(num_levels=10, channels_per_level=16)
         assert np.all(np.diff(c.lags) > 0)
 
     def test_single_level(self):
+        """With a single level the schedule reduces to ``arange(m)``."""
         c = MultiTauCorrelator(num_levels=1, channels_per_level=8)
         np.testing.assert_array_equal(c.lags, np.arange(8))
 
@@ -45,18 +65,22 @@ class TestValidation:
     """Tests for constructor argument validation."""
 
     def test_odd_channels(self):
+        """An odd ``channels_per_level`` is rejected."""
         with pytest.raises(ValueError, match="even"):
             MultiTauCorrelator(channels_per_level=7)
 
     def test_too_few_channels(self):
+        """``channels_per_level`` must be at least 2."""
         with pytest.raises(ValueError, match="at least 2"):
             MultiTauCorrelator(channels_per_level=0)
 
     def test_zero_levels(self):
+        """``num_levels`` must be at least 1."""
         with pytest.raises(ValueError, match="at least 1"):
             MultiTauCorrelator(num_levels=0)
 
     def test_wrong_shape(self):
+        """A sample with the wrong shape raises a clear error."""
         c = MultiTauCorrelator(shape=(3,))
         with pytest.raises(ValueError, match="shape"):
             c.add(np.zeros(4))
@@ -149,6 +173,7 @@ class TestArrayObservables:
     """Tests for array-valued signals."""
 
     def test_vector_shape(self):
+        """A 1D-vector signal correlates element-wise."""
         rng = np.random.default_rng(2)
         n = 200
         N = 3
@@ -190,9 +215,7 @@ class TestComplex:
         n = 100
         m = 4
         x = rng.normal(size=n) + 1j * rng.normal(size=n)
-        c = MultiTauCorrelator(
-            num_levels=1, channels_per_level=m, dtype=np.complex128
-        )
+        c = MultiTauCorrelator(num_levels=1, channels_per_level=m, dtype=np.complex128)
         for v in x:
             c.add(v)
         for j in range(m):
@@ -216,6 +239,7 @@ class TestEmpty:
     """Tests for short-stream behaviour."""
 
     def test_no_frames(self):
+        """Before any sample is added, counts are zero and correlations NaN."""
         c = MultiTauCorrelator(num_levels=3, channels_per_level=4)
         counts = c.counts
         assert np.all(counts == 0)
@@ -235,6 +259,7 @@ class TestEmpty:
         assert np.all(counts[8:] == 0)
 
     def test_n_frames_property(self):
+        """``n_frames`` tracks the number of ``add`` calls."""
         c = MultiTauCorrelator(num_levels=2, channels_per_level=4)
         assert c.n_frames == 0
         for _ in range(7):

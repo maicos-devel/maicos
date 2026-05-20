@@ -24,6 +24,7 @@ from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
 
 @pytest.fixture
 def universe():
+    """Return a water-NPT universe with both positions and velocities."""
     return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
 
 
@@ -37,11 +38,13 @@ class TestSmokeRun:
     """Basic shape and finalisation checks."""
 
     def test_results_populated(self, universe):
+        """``results`` carries the six expected per-slab arrays after a run."""
         ana = VDOSPlanar(universe.atoms, bin_width=5.0).run()
         for attr in ("times", "vacf", "frequencies", "vdos", "bin_pos", "bin_counts"):
             assert hasattr(ana.results, attr), f"missing results.{attr}"
 
     def test_shapes_consistent(self, universe):
+        """Per-bin output shapes match the expected ``(n_lags/freqs, n_bins)``."""
         ana = VDOSPlanar(universe.atoms, bin_width=5.0, n_frequencies=64).run()
         n_lags = ana.results.times.size
         n_bins = ana.results.bin_pos.size
@@ -50,6 +53,7 @@ class TestSmokeRun:
         assert ana.results.bin_counts.shape == (n_bins,)
 
     def test_vacf_normalized_per_bin(self, universe):
+        """Each populated slab has its own normalised VACF starting at 1."""
         ana = VDOSPlanar(universe.atoms, bin_width=5.0).run()
         populated = ana.results.bin_counts > 0
         np.testing.assert_allclose(ana.results.vacf[0, populated], 1.0, atol=1e-12)
@@ -59,16 +63,15 @@ class TestStaticBinAssignment:
     """The first-frame z-positions determine each atom's slab for the whole run."""
 
     def test_assignment_is_static(self, universe):
+        """Bin assignment is fixed at the first frame and not re-evaluated."""
         ana = VDOSPlanar(universe.atoms, bin_width=4.0).run()
-        # The recorded bin counts must match what we get from the first frame.
-        universe.trajectory[0]
-        z = universe.atoms.positions[:, 2]
         # We can't reconstruct the lab-frame edges exactly without reproducing
         # _compute_lab_frame_planar; instead just check totals match.
         assert ana.results.bin_counts.sum() <= universe.atoms.n_atoms
         assert ana.results.bin_counts.sum() > 0
 
     def test_atoms_outside_range_excluded(self, universe):
+        """Atoms outside ``[zmin, zmax]`` at the first frame are dropped."""
         # Restrict to a thin slab at the center; atoms outside are dropped.
         box = universe.dimensions[2]
         ana = VDOSPlanar(
@@ -81,6 +84,7 @@ class TestStaticBinAssignment:
         assert 0 < n_assigned < universe.atoms.n_atoms
 
     def test_bin_count_sum_equals_atoms_when_full_box(self, universe):
+        """When the slab range covers the whole box, every atom is assigned."""
         ana = VDOSPlanar(universe.atoms, bin_width=2.0).run()
         assert ana.results.bin_counts.sum() == universe.atoms.n_atoms
 
@@ -89,6 +93,7 @@ class TestCorrectness:
     """Compare against brute-force VACF on the same velocity stream."""
 
     def test_level0_matches_brute_force_per_bin(self, universe, velocity_signal):
+        """Level-0 VACF entries match a direct per-bin sum over time origins."""
         ana = VDOSPlanar(
             universe.atoms,
             bin_width=5.0,
@@ -108,9 +113,7 @@ class TestCorrectness:
                 [np.sum(vk[: n - j] * vk[j:]) / (n - j) for j in range(m)]
             )
             ref = ref_raw / ref_raw[0]
-            np.testing.assert_allclose(
-                ana.results.vacf[:m, k], ref, atol=1e-8
-            )
+            np.testing.assert_allclose(ana.results.vacf[:m, k], ref, atol=1e-8)
 
     def test_single_bin_matches_vdosbulk(self, universe):
         """One slab covering the whole box reproduces the bulk result."""
@@ -144,12 +147,14 @@ class TestValidation:
     """Constructor validation and missing-velocity guard."""
 
     def test_no_velocities_raises(self):
+        """Running on a trajectory without velocities raises ``NoDataError``."""
         u = mda.Universe(TPR, XTC)
         ana = VDOSPlanar(u.atoms, bin_width=5.0)
         with pytest.raises(NoDataError, match="velocities"):
             ana.run(stop=1)
 
     def test_bad_n_frequencies(self, universe):
+        """An ``n_frequencies`` below 2 is rejected."""
         with pytest.raises(ValueError, match="n_frequencies"):
             VDOSPlanar(universe.atoms, n_frequencies=1)
 
@@ -158,6 +163,7 @@ class TestSave:
     """The save() method writes both VACF and VDOS files with bin columns."""
 
     def test_save_writes_both_files(self, universe, tmp_path, monkeypatch):
+        """``save()`` emits the VACF and VDOS files using the configured prefix."""
         monkeypatch.chdir(tmp_path)
         VDOSPlanar(
             universe.atoms,
@@ -169,6 +175,7 @@ class TestSave:
         assert (tmp_path / "slab_vdos.dat").exists()
 
     def test_save_files_parseable(self, universe, tmp_path, monkeypatch):
+        """Saved files round-trip through ``np.loadtxt`` with per-bin columns."""
         monkeypatch.chdir(tmp_path)
         ana = VDOSPlanar(
             universe.atoms,
