@@ -262,16 +262,17 @@ turned on using the parameter ``is_3d``.
 Effective Medium Theory
 -----------------------
 The relative permitivitty profiles described above fully characterize the dielectric properties
-of the system on a microscopic scale. However, it is often desirable to obtain a
-averaged, effective relative permitivitty response of the system. This is especially true as
+of the system on a microscopic scale. However, it is often desirable to obtain the
+averaged, effective dielectric response of the system. This is especially true as
 most experimentally accessible measurements only give access to the average
-response of a nano-porous system.
-A consistent averaging procedure is given by effective medium theory, as described
-in detail e.g. in :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
-The idea of this theory is to average the relative permitivitty profiles over some length scale,
+response of the confined system, such as e.g. the capacitance.
+
+A consistent averaging procedure follows from effective medium theory, as described
+in detail e.g. in refs. :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
+The idea of this approach is to average the relative permitivitty profiles over some length scale,
 called the "effective length", essentially corresponding to a fictional medium
-with the same average, effective response as the original system. I.e. one
-constructs a fictional homogeneous (but anisotropic) medium that reproduces the
+with the same response as the original system.
+I.e. one constructs a fictional homogeneous (but anisotropic) medium that reproduces the
 potential drop across the system for applied fields in the parallel or
 perpendicular direction. This is analogous to a Gibbs construction, which is
 commonly used to define the location of an interface for systems with a
@@ -297,7 +298,7 @@ There are a few subtleties to be aware of: For one thing, this construction is
 under-determined for a single pore size, as there are two unknowns
 :math:`\varepsilon_\alpha^\mathrm{eff}` and :math:`L_\alpha^\mathrm{eff}`
 (with :math:`\alpha = \parallel, \perp`).
-As has been shown in e.g. ref. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
+As has been shown in e.g. refs. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
 this can be resolved by using the fact that :math:`\varepsilon^\mathrm{eff}`
 approaches the bulk dielectric constant of the fluid for large pores.
 It has been shown empirically in these references, that this is the case even for
