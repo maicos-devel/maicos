@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Leo Legrand
 
+- Add function and example how to use times instead of frame slices (#555)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Increase coverage (#573)
 - Fix timestep preservation in ``AnalysisCollection`` (#570)

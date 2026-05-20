@@ -219,3 +219,15 @@ logger.setLevel(logging.NOTSET)
 # 4, 6, 8, and 10, use the ``start``, ``stop``, and ``step`` keywords as follow:
 
 dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
+
+
+# %%
+# If you prefer to use times instead of frame slice, this function is available : 
+from maicos.lib.util import convert_str_timedict
+
+time_step = u.trajectory.dt
+
+time_dict = convert_str_timedict(start = '100ps', stop = '200ps', step = '20ps', dt = time_step)
+
+dplan = maicos.DensityPlanar(group_H2O).run(**time_dict)
+# %%
