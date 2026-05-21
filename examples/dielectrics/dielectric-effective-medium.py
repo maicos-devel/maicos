@@ -94,7 +94,7 @@ perp = np.loadtxt(f"{base_path}_perp.dat")
 
 # %%
 # The profiles store the dielectric susceptibility, i.e. :math:`\varepsilon - 1`,
-# so we need to add 1 to get the relative permitivitty.
+# so we need to add 1 to get the relative permittivity.
 z_par, eps_par, eps_par_err = par[:, 0], par[:, 1] + 1, par[:, 2]
 z_perp, eps_perp_inv, eps_perp_err = perp[:, 0], perp[:, 1] + 1, perp[:, 2]
 
