@@ -122,10 +122,9 @@ In the absence of "free charges" we can use the macroscopic Maxwell equation
 to derive the perpendicular relative permitivitty profile.
 
 .. warning::
-    This requires that no free charges are used in simulations, which
-    means that no ions can be included in simulations.
+    This requires that no free charges like ions are present in the system.
     This is a common pitfall and can lead to a wrong analysis, although a
-    generalized dielectric response can be defined.
+    generalized dielectric response can be defined for the perpendicular component.
     :footcite:p:`stark_static_2026`
 
 The above equation gives us the important relation of :math:`\partial_z \mathbf{D}_z =
