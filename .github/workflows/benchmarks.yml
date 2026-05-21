@@ -29,11 +29,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install asv tox virtualenv
 
-      - name: Configure git for ASV
-        run: |
-          git config --global user.email "benchmark@example.com"
-          git config --global user.name "Benchmark Bot"
-
       - name: Run ASV benchmarks
         if: github.event_name == 'workflow_dispatch'
         run: |
