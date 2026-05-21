@@ -11,9 +11,11 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
+Philipp Stärk
 
 - Add ``MultiTauCorrelator`` for calculating correlation functions on the fly (#581)
+- Add example for effective-medium dielectric analysis (#584)
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Increase coverage (#573)
