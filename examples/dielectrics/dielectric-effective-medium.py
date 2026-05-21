@@ -2,7 +2,7 @@
 Dielectric Dividing Surface & Box model
 =======================================
 
-This example shows how to construct the Dielecric Dividing Surface and the
+This example shows how to construct the Dielectric Dividing Surface and the
 corresponding box model for a confined water system.
 It starts from precomputed relative permittivity profiles, extracts a bulk
 dielectric constant from the center of the pore, and then estimates the

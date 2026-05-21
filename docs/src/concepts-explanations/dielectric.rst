@@ -54,7 +54,7 @@ Electrostatic Theory
 The relationship between the electric field and the dielectric response shown above is
 only valid for isotropic homogeneous systems, where the properties of the material are
 the same throughout. However, there is also a need for calculating the dielectric
-response of anistropic inhomogeneous systems. For instance, fluids confined in a porous
+response of anisotropic inhomogeneous systems. For instance, fluids confined in a porous
 material are of great importance for many technological processes, such as energy
 storage devices like batteries and capacitors. In these devices, a nano-porous electrode
 is used to increase the surface area and improve the capacity of the device. Another
@@ -110,7 +110,7 @@ where the marginal integration of :math:`\varepsilon_\parallel (\mathbf{r},
 :math:`\varepsilon_\parallel(z)`. It is
 important to note that this derivation starts with non-local assumptions and is exact in
 the case of planar geometries discussed here (similar derivations apply also for
-cylindrical and spherical symmertries). Thus, :math:`\varepsilon_\parallel(z)` fully
+cylindrical and spherical symmetries). Thus, :math:`\varepsilon_\parallel(z)` fully
 captures the non-locality of the confined fluid's response and does not require
 additional assumptions.
 
