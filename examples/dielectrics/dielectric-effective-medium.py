@@ -4,7 +4,7 @@ Effective-medium approach / box model
 
 This example shows how to construct the effective-medium model for a confined
 water system.
-It starts from precomputed relative permitivitty profiles, extracts a bulk
+It starts from precomputed relative permittivity profiles, extracts a bulk
 dielectric constant from the center of the pore, and then estimates the
 effective-medium response as explained in the explanations on
 :ref:`dielectric-explanations`.
