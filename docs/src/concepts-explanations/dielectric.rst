@@ -177,7 +177,7 @@ for the **parallel** relative permittivity profile, and
                              - \langle m_\perp (z) \rangle \langle M_\perp \rangle}
                              {\epsilon_0 k_\mathrm{B}T},
 
-for the **inverse** perpendicular relative permitivitty profile.
+for the **inverse** perpendicular relative permittivity profile.
 
 Note that we still need to define how to calculate :math:`m_\parallel(z)` and
 :math:`m_\perp(z)`. For the perpendicular polarization density, we have
