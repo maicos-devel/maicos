@@ -50,7 +50,7 @@ def trapz_err(vals, errs, dx):
 
 def bulk_eps(z, eps, err, bulk_dist=15):
     """Estimate the bulk dielectric constant from the pore center."""
-    bulk_filter = np.logical_and(z + z[-1] > bulk_dist, z < bulk_dist)
+    bulk_filter = np.abs(z - 0.5 * (z[0] + z[-1])) < bulk_dist
 
     if not np.any(bulk_filter):
         return np.nan, np.nan
