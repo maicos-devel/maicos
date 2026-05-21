@@ -246,7 +246,7 @@ profiles are performed with other boundary conditions.
     over the :math:`z` direction can be approximated as a dipole interaction.
     This approach is analogous to the Yeh and Berkovitz correction
     :footcite:p:`yehEwaldSummationSystems1999` and
-    may be used to calculate the relative permitivitty profiles for physical systems with
+    may be used to calculate the relative permittivity profiles for physical systems with
     2d-symmetry when corrections are not available. In these situations, we
     recommend to use a padding vacuum layer such that the system is 3x the
     physical system size in :math:`z` direction.
