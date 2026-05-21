@@ -54,8 +54,6 @@ def bulk_eps(z, eps, err, bulk_dist=15):
 
     if not np.any(bulk_filter):
         return np.nan, np.nan
-    if not np.any(bulk_filter):
-        return np.nan, np.nan
 
     weights = 1 / err[bulk_filter] ** 2
     eps_blk = np.average(eps[bulk_filter], weights=weights)
