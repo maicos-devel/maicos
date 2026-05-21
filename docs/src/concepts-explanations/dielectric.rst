@@ -259,16 +259,17 @@ profiles are performed with other boundary conditions.
 The correction for 3d periodic systems with tin-foil boundary conditions can be
 turned on using the parameter ``is_3d``.
 
-Effective Medium Theory
------------------------
+Dielectric Dividing Surface and Box Model
+-----------------------------------------
 The relative permittivity profiles described above fully characterize the dielectric properties
 of the system on a microscopic scale. However, it is often desirable to obtain the
 averaged, effective dielectric response of the system. This is especially true as
 most experimentally accessible measurements only give access to the average
 response of the confined system, such as e.g. the capacitance.
 
-A consistent averaging procedure follows from effective medium theory, as described
-in detail e.g. in refs. :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
+A consistent averaging procedure follows from concepts of effective medium
+theory, as described in detail e.g. in refs.
+:footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
 The idea of this approach is to average the relative permittivity profiles over some length scale,
 called the "effective length", essentially corresponding to a fictional medium
 with the same response as the original system.
@@ -276,9 +277,9 @@ I.e. one constructs a fictional homogeneous (but anisotropic) medium that reprod
 potential drop across the system for applied fields in the parallel or
 perpendicular direction. This is analogous to a Gibbs construction, which is
 commonly used to define the location of an interface for systems with a
-continuous density profile.
+continuous density profile and thus define the Dielectric Dividing Surface.
 
-It can be formalized via the following equations:
+The corresponding box model can be formalized via the following equations:
 
 .. math::
      \varepsilon_\parallel^\mathrm{eff} = 1 +

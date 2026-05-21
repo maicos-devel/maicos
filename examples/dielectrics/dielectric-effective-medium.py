@@ -1,9 +1,9 @@
 """
-Effective-medium approach / box model
-=====================================
+Dielectric Dividing Surface & Box model
+=======================================
 
-This example shows how to construct the effective-medium model for a confined
-water system.
+This example shows how to construct the Dielecric Dividing Surface and the
+corresponding box model for a confined water system.
 It starts from precomputed relative permittivity profiles, extracts a bulk
 dielectric constant from the center of the pore, and then estimates the
 effective-medium response as outlined in the explanations on
@@ -93,8 +93,9 @@ par = np.loadtxt(f"{base_path}_par.dat")
 perp = np.loadtxt(f"{base_path}_perp.dat")
 
 # %%
-# The profiles store the dielectric susceptibility, i.e. :math:`\varepsilon - 1`,
-# so we need to add 1 to get the relative permittivity.
+# The profiles store the dielectric susceptibility, i.e.
+# :math:`\varepsilon_\parallel - 1` and :math:`\varepsilon_\perp^{-1} - 1`,
+# respectively, so we need to add 1 to get the relative permittivity.
 z_par, eps_par, eps_par_err = par[:, 0], par[:, 1] + 1, par[:, 2]
 z_perp, eps_perp_inv, eps_perp_err = perp[:, 0], perp[:, 1] + 1, perp[:, 2]
 
