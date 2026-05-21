@@ -141,7 +141,7 @@ print(f"Effective length (parallel): {leff_par:.2f} ± {leff_par_err:.2f}")
 print(f"Effective length (perpendicular): {leff_perp:.2f} ± {leff_perp_err:.2f}")
 
 # %%
-# We see that the effective length  differs for the parallel and perpendicular
+# We see that the effective length differs for the parallel and perpendicular
 # components.
 # For the graphene interface studied here, the confined system screens
 # electrostatic interactions more efficiently
