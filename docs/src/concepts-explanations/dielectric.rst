@@ -2,7 +2,7 @@
 
 ==============================
 Relative permitivitty profiles
-===============================
+==============================
 
 Dielectric Response of Homogeneous, Isotropic Fluids
 ====================================================
