@@ -119,7 +119,7 @@ In the absence of "free charges" we can use the macroscopic Maxwell equation
 .. math::
      \nabla \cdot \mathbf{D} = 0
 
-to derive the perpendicular relative permitivitty profile.
+to derive the perpendicular relative permittivity profile.
 
 .. warning::
     This requires that no free charges like ions are present in the system.
