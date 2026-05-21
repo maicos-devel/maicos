@@ -146,7 +146,7 @@ simplify
                \epsilon_\perp^{-1}(z)  D_\perp
 
 where the marginal integration of :math:`\varepsilon_\perp^{-1} (\mathbf{r},
-\mathbf{r}')` defines the inverse relative permitivitty profile :math:`\varepsilon_\perp^{-1}(z)`.
+\mathbf{r}')` defines the inverse relative permittivity profile :math:`\varepsilon_\perp^{-1}(z)`.
 
 **In summary**, if one has no magnetic fields and no free charges, the dielectric
 profiles :math:`\varepsilon^{-1}_\bot (z)` and :math:`\varepsilon_\parallel(z)` fully
