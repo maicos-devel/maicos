@@ -236,7 +236,7 @@ Note, that a very close formula :footcite:p:`sternCalculationDielectricPermittiv
 can also be derived for arbitrary boundary conditions at infinity, which some
 simulation codes can also utilize. As most simulations nowadays are performed using
 tin-foil boundary conditions, MAICoS does not provide these special cases and we
-do not recommend that simulations for the calculation of relative permitivitty
+do not recommend that simulations for the calculation of relative permittivity
 profiles are performed with other boundary conditions.
 
 .. note::
