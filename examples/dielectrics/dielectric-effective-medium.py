@@ -58,9 +58,6 @@ def bulk_eps(z, eps, err, bulk_dist=15):
     weights = 1 / err[bulk_filter] ** 2
     eps_blk = np.average(eps[bulk_filter], weights=weights)
     eps_blk_err = np.sqrt(1 / np.sum(weights))
-    weights = 1 / err[bulk_filter] ** 2
-    eps_blk = np.average(eps[bulk_filter], weights=weights)
-    eps_blk_err = np.sqrt(1 / np.sum(weights))
 
     return eps_blk, eps_blk_err
 
