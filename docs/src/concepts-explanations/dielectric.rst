@@ -170,7 +170,7 @@ is given by
                             - \langle m_\parallel (z) \rangle \langle M_\parallel
                             \rangle}{\epsilon_0 k_\mathrm{B}T}
 
-for the **parallel** relative permitivitty profile, and
+for the **parallel** relative permittivity profile, and
 
 .. math::
      \epsilon_\perp^{-1}(z) = 1 - \frac{\langle m_\perp(z) M_\perp \rangle
