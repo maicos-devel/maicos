@@ -269,7 +269,7 @@ response of the confined system, such as e.g. the capacitance.
 
 A consistent averaging procedure follows from effective medium theory, as described
 in detail e.g. in refs. :footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
-The idea of this approach is to average the relative permitivitty profiles over some length scale,
+The idea of this approach is to average the relative permittivity profiles over some length scale,
 called the "effective length", essentially corresponding to a fictional medium
 with the same response as the original system.
 I.e. one constructs a fictional homogeneous (but anisotropic) medium that reproduces the
