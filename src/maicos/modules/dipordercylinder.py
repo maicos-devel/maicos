@@ -43,7 +43,7 @@ class DiporderCylinder(ProfileCylinderBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        order_parameter: str = "P0",
+        order_parameter: str = "P1",
         pdim: str = "r",
         dim: int = 2,
         zmin: float | None = None,
@@ -60,7 +60,6 @@ class DiporderCylinder(ProfileCylinderBase):
         concfreq: int = 0,
         output: str = "diporder_cylinder.dat",
     ) -> None:
-        normalization = "volume" if order_parameter == "P0" else "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_cylinder(
@@ -92,7 +91,7 @@ class DiporderCylinder(ProfileCylinderBase):
                 "order_parameter": order_parameter,
                 "get_unit_vectors": get_unit_vectors,
             },
-            normalization=normalization,
+            normalization="number",
         )
 
     def _prepare(self):

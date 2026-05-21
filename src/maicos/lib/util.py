@@ -177,11 +177,10 @@ self : object
 
     The possible options are center of mass (``"com"``), center of geometry (``"cog"``),
     and center of charge (``"coc"``).""",
-    ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P0"``, ``"cos_theta"``, ``"cos_2_theta"``}
+    ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P1"``, ``"P2"``}
     Order parameter to be calculated:
-        - ``"P0"``: total dipole moment projected on an axis
-        - ``"cos_theta"``: cosine of the dipole moment with an axis
-        - ``"cos_2_theta"``: squred cosine with an axis.""",  # noqa: E501
+        - ``"P1"``: Legendre polynomial :math:`P_1(cos[θ]) = cos[θ]`
+        - ``"P2"``: Legendre polynomial :math:`P_2(cos[θ]) = \frac{3cos^2[θ] - 1}{2}`""",  # noqa: E501
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################
