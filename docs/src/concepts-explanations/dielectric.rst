@@ -1,7 +1,7 @@
 .. _dielectric-explanations:
 
 ==============================
-Relative permitivitty profiles
+Relative permittivity profiles
 ==============================
 
 Dielectric Response of Homogeneous, Isotropic Fluids
