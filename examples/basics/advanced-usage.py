@@ -223,12 +223,12 @@ dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
 
 
 # %%
-# If you prefer to use times instead of frame slice, the function convert_str_timedict
+# If you prefer to use times instead of frame slice, the function convert_str_framedict
 # is available :
 
 time_step = u.trajectory.dt
 
-time_dict = util.convert_str_timedict(
+time_dict = util.convert_str_framedict(
     start="100ps", stop="200ps", step="20ps", dt=time_step
 )
 
