@@ -1,6 +1,6 @@
 .. _dielectric-explanations:
 
-===============================
+==============================
 Relative permitivitty profiles
 ===============================
 
