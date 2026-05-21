@@ -876,7 +876,7 @@ def get_module_input_str(module_obj):
 def corrected_str_frame(x: str, dt: float) -> int:
     """Convert a string `x` into a frame number based on given `dt`.
 
-    MDAnalysis version could't manage some edge cases.
+    Mdacli version could't manage some edge cases.
     See :func:`split_time_unit`.
 
     Parameters
