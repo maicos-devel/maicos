@@ -86,7 +86,7 @@ def effective_response(z, profile, err, leff, length, leff_err):
 
 
 # %%
-# .. rubric:: Load the relative permitivitty profiles
+# .. rubric:: Load the relative permittivity profiles
 #
 # These files contain the precomputed relative permitivitty profile from a
 # simulation of confined water, here we use for example the TIP4P/:math:`\varepsilon`
