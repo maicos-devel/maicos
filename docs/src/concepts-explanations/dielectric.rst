@@ -106,7 +106,7 @@ Thus, we can simplify the anisotropic, non-linear equation above in the parallel
      \epsilon_\parallel(z, z') =: \epsilon_0 \epsilon_\parallel(z) E_\parallel
 
 where the marginal integration of :math:`\varepsilon_\parallel (\mathbf{r},
-\mathbf{r}')` defines the relative permitivitty profile
+\mathbf{r}')` defines the relative permittivity profile
 :math:`\varepsilon_\parallel(z)`. It is
 important to note that this derivation starts with non-local assumptions and is exact in
 the case of planar geometries discussed here (similar derivations apply also for
