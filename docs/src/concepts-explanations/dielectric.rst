@@ -261,7 +261,7 @@ turned on using the parameter ``is_3d``.
 
 Effective Medium Theory
 -----------------------
-The relative permitivitty profiles described above fully characterize the dielectric properties
+The relative permittivity profiles described above fully characterize the dielectric properties
 of the system on a microscopic scale. However, it is often desirable to obtain the
 averaged, effective dielectric response of the system. This is especially true as
 most experimentally accessible measurements only give access to the average
