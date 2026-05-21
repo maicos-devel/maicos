@@ -86,8 +86,8 @@ def effective_response(z, profile, err, leff, length, leff_err):
 # .. rubric:: Load the relative permittivity profiles
 #
 # These files contain the precomputed relative permittivity profile from a
-# simulation of confined water, here we use for example the TIP4P/:math:`\varepsilon`
-# model in a slit pore.
+# simulation of confined water. Here, we use the TIP4P/:math:`\varepsilon`
+# model in a graphene slit pore as an example.
 base_path = "./tip4p_data/eps_l0d3"
 par = np.loadtxt(f"{base_path}_par.dat")
 perp = np.loadtxt(f"{base_path}_perp.dat")
