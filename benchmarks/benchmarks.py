@@ -45,7 +45,7 @@ from tests.data import (
 )
 
 
-class StubAnalysis(AnalysisBase):
+class AnalysisBaseBenchmark(AnalysisBase):
     """Minimal analysis that writes random observables — measures framework overhead."""
 
     def __init__(self, atomgroup, n_obs=10):

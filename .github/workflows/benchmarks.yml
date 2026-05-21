@@ -20,14 +20,14 @@ jobs:
           fetch-depth: 0  # Full history needed for ASV
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install asv virtualenv
+          pip install asv tox virtualenv
 
       - name: Configure git for ASV
         run: |
@@ -44,14 +44,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           asv machine --yes
-          asv run --quick --show-stderr origin/main^!
-          asv run --quick --show-stderr HEAD^!
-          asv compare --factor 1.1 --split \
-            $(git rev-parse origin/main) $(git rev-parse HEAD) \
-            | tee benchmark_comparison.txt
-          asv compare --factor "$REGRESSION_FACTOR" \
-            $(git rev-parse origin/main) $(git rev-parse HEAD) \
-            > benchmark_regressions.txt
+          tox -e benchmarks-compare
           if grep -qE '^\+\s+[0-9]' benchmark_regressions.txt; then
             echo "has_regression=true" >> "$GITHUB_ENV"
           else
