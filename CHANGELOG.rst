@@ -11,10 +11,21 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
 
 - Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
   analysis states (#565)
+- Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
+- Add azimuthal component to ``DielectricCylinder`` (#543)
+- Increase coverage (#573)
+- Fix timestep preservation in ``AnalysisCollection`` (#570)
+- Avoid duplicated metadata definitions (#572)
+- Update CI action dependencies (#574)
+- Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
+  non-orthorhombic boxes (#571)
+- Add test for logging in multiple subsequent calls of the run method (#558)
+- Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
+  enable mypy type checking without ``# type: ignore`` comments (#566)
 - Change DielectricCylinder code to avoid numerical errors (#556)
 - Improve guidelines for contributing (#560)
 - Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
