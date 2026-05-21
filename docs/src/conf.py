@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -13,23 +13,19 @@ the documentation: http://www.sphinx-doc.org/en/master/config
 """
 
 from datetime import datetime
+from importlib.metadata import metadata
 from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
-import tomli
-
-import maicos
 
 ROOT = Path("../../")
 
 # -- Project information -----------------------------------------------------
 
-with Path(ROOT / "pyproject.toml").open(mode="rb") as fp:
-    project_dict = tomli.load(fp)["project"]
-
-project = project_dict["name"]
-author = maicos.__authors__
-version = maicos.__version__
+project = "maicos"
+project_dict = metadata(project)
+author = project_dict["Author"]
+version = project_dict["Version"]
 copyright = f"{datetime.now().date().year}, {author}"
 
 # -- General configuration ---------------------------------------------------
@@ -46,6 +42,7 @@ extensions = [
     "sphinxcontrib.bibtex",  # Cite references using a bibtex file
     "sphinxcontrib.details.directive",  # details directive for collapsible content
     "sphinx_toggleprompt",  # button to examples to toggle prompts
+    "sphinx_tabs.tabs",
 ]
 
 # The path to the bibtex file
@@ -57,9 +54,9 @@ sphinx_gallery_conf = {
     "copyfile_regex": r".*\.(tpr|trr|xtc)",
     "default_thumb_file": (ROOT / "docs/static/logo.svg").absolute(),
     "example_extensions": {".py", ".sh"},
-    "examples_dirs": "../../examples",
+    "examples_dirs": ["../../examples", "get-started/tabs"],
     "filename_pattern": r"\.py",
-    "gallery_dirs": "examples",
+    "gallery_dirs": ["generated_examples", "get-started/generated_tabs"],
     "min_reported_time": 60,
     "prefer_full_module": ["maicos"],
     "reference_url": {"maicos": None},
@@ -87,7 +84,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: list[str] = []
+exclude_patterns: list[str] = ["get-started/tabs/GALLERY_HEADER.rst"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "tango"
@@ -98,13 +95,22 @@ html_theme = "furo"
 html_title = "MAICoS"
 html_favicon = "../static/logo.ico"
 html_static_path = ["../static"]
+repository_url = next(
+    (
+        url
+        for label, url in (
+            i.split(", ") for i in project_dict.get_all("Project-URL") or []
+        )
+        if label == "repository"
+    )
+)
 
 html_theme_options = {
     "navigation_with_keys": True,
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": project_dict["urls"]["repository"],
+            "url": repository_url,
             "html": "",
             "class": "fa-brands fa-github fa-2x",
         },

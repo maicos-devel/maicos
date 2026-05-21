@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -113,7 +113,7 @@ def temperature_weights(atomgroup: mda.AtomGroup, grouping: str) -> np.ndarray:
     Raises
     ------
     NotImplementedError
-        Currently only works for `grouping='atoms'`
+        Currently only works for ``grouping='atoms'``
 
     """
     if grouping != "atoms":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -18,6 +18,15 @@ from maicos import VelocityCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
 from util import circle_of_water_molecules  # noqa: E402
+
+
+def test_invalid_vdim():
+    """Test that an invalid vdim raises ValueError."""
+    ag_v, _ = circle_of_water_molecules(
+        myvel=np.array([0, 0, 1]), bin_width=2, radius=5
+    )
+    with pytest.raises(ValueError, match="Velocity dimension can only be"):
+        VelocityCylinder(ag_v, vdim=3)
 
 
 class TestVelocityCylinder:

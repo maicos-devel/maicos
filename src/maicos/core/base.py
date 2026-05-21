@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -13,13 +13,11 @@ import warnings
 from collections.abc import Callable
 from datetime import datetime
 from functools import partial
-from tempfile import NamedTemporaryFile
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
 import numpy as np
-from mdacli.logger import setup_logging
 from MDAnalysis.analysis.backends import BackendBase, BackendSerial
 from MDAnalysis.analysis.base import Results
 from MDAnalysis.lib.log import ProgressBar
@@ -36,7 +34,10 @@ from ..lib.util import (
     get_module_input_str,
     maicos_banner,
     render_docs,
+    triclinic_to_orthorhombic,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class _Runner(MDAnalysis.analysis.base.AnalysisBase):
@@ -61,22 +62,26 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
         progressbar_kwargs: dict | None = None,
     ) -> Self:
         self._run_locals = locals()
-        # Create a tempory file to surpress warning when calling `setup_logging`.
-        tempfile = NamedTemporaryFile()  # noqa SIM115
-
-        level = logging.INFO if verbose else logging.WARNING
-
-        with setup_logging(
-            logobj=logging.getLogger(__name__),
-            logfile=tempfile.name + ".log",
-            level=level,
-        ):
-            logging.debug("Choosing frames to analyze")
 
         if frames is not None and not all(opt is None for opt in [start, stop, step]):
             raise ValueError("start/stop/step cannot be combined with frames")
 
-        logging.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
+        # Configure the root logger if not already configured
+        logging.basicConfig()
+        # Redirect warnings (from the warnings library) to the logging system
+        logging.captureWarnings(True)
+
+        level = logging.INFO if verbose else logging.WARNING
+
+        parent_logger = logging.getLogger("maicos")
+        if parent_logger.level >= logging.INFO or parent_logger.level == 0:
+            # User set log level manually to WARNING or INFO or not set at all
+            # Overwrite based on the verbose option
+            parent_logger.setLevel(level)
+
+        logger.info(maicos_banner(frame_char="#", version=f"v{__version__}"))
+
+        logger.debug("Choosing frames to analyze")
 
         # -------------------- New code --------------------
         # default to serial execution
@@ -135,6 +140,8 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
                 step=step,
                 frames=frames,
             )
+            # Reset the trajectory reader to ensure _prepare uses the first frame
+            analysis_object._sliced_trajectory[0]
 
             analysis_object._call_prepare()
 
@@ -172,12 +179,11 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
 
             analysis_object.sums = results_aggregator.merge_sums(remote_sums)
 
-        logging.debug("Concluding analysis.")
+        logger.debug("Concluding analysis.")
 
         for analysis_object in analysis_instances:
             analysis_object._call_conclude()
 
-        tempfile.close()
         return self
 
     def _get_maicos_aggregator(self) -> ResultsAggregator:
@@ -191,7 +197,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     The class is designed as a template for creating multi-frame analyses. This class
     will automatically take care of setting up the trajectory reader for iterating, and
     it offers to show a progress meter. Computed results are stored inside the
-    :attr:`results` attribute. To define a new analysis, `AnalysisBase` needs to be
+    :attr:`results` attribute. To define a new analysis, ``AnalysisBase`` needs to be
     subclassed and :meth:`_single_frame` must be defined. It is also possible to define
     :meth:`_prepare` and :meth:`_conclude` for pre- and post-processing. All results
     should be stored as attributes of the :class:`MDAnalysis.analysis.base.Results`
@@ -234,7 +240,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     _obs.box_center : numpy.ndarray
         Center of the simulation cell of the current frame
     sums : MDAnalysis.analysis.base.Results
-         Sum of the observables across frames. Keys are the same as :attr:`_obs`.
+        Sum of the observables across frames. Keys are the same as :attr:`_obs`.
     means : MDAnalysis.analysis.base.Results
         Means of the observables. Keys are the same as :attr:`_obs`.
     sems : MDAnalysis.analysis.base.Results
@@ -247,7 +253,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     Raises
     ------
     ValueError
-        If any of the provided AtomGroups (`atomgroup` or `refgroup`) does
+        If any of the provided AtomGroups (``atomgroup`` or ``refgroup``) does
         not contain any atoms.
 
     Example
@@ -267,6 +273,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     >>> from maicos.core import AnalysisBase
     >>> from maicos.lib.util import render_docs
+
+    >>> logger = logging.getLogger(__name__)
 
     Adding logging messages to your code makes debugging easier.
 
@@ -326,7 +334,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         Called at the end of the run() method to finish everything up.
     ...         '''
     ...         self.results.volume = self.volume / self.n_frames
-    ...         logging.info(
+    ...         logger.info(
     ...             f"Average volume of the simulation box {self.results.volume:.2f} Å³"
     ...         )
     ...
@@ -336,7 +344,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         Called at the end of the run() method after _conclude.
     ...         '''
     ...         self.savetxt(
-    ...             self.output, np.array([self.results.volume]), columns="volume / Å³"
+    ...             self.output,
+    ...             np.array([self.results.volume]),
+    ...             columns="volume / Å³",
     ...         )
 
 
@@ -358,6 +368,17 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     362631.65
 
     """
+
+    if TYPE_CHECKING:  # pragma: no cover
+        # Type annotations for attributes set dynamically in _call_single_frame.
+        means: Results
+        sems: Results
+        sums: Results
+        pop: Results
+        M2: Results
+        _obs: Results
+        _pop: Results
+        _var: Results
 
     @classmethod
     def get_supported_backends(cls):
@@ -393,6 +414,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         concfreq: int,
         wrap_compound: str,
     ) -> None:
+        logger.debug("Debug logging activated")
         self.atomgroup = atomgroup
 
         if self.atomgroup.n_atoms == 0:
@@ -431,7 +453,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             raise ValueError("Universe does not have `dimensions` and can't be packed!")
 
         if self.unwrap and self.wrap_compound == "atoms":
-            logging.warning(
+            logger.debug(
                 "Unwrapping in combination with the "
                 "`wrap_compound='atoms` is superfluous. "
                 "`unwrap` will be set to `False`."
@@ -524,7 +546,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 not hasattr(self.refgroup, "masses")
                 or np.sum(self.refgroup.masses) == 0
             ):
-                logging.warning(
+                logger.warning(
                     "No masses available in refgroup, falling back "
                     "to center of geometry"
                 )
@@ -543,31 +565,31 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 raise ValueError(
                     f"Binwidth must be a positive number but is {self._bin_width}."
                 )
-
+        self._warned_triclinic = False
         self._prepare()
 
         if self.refgroup is not None:
-            logging.info(
+            logger.info(
                 """Coordinates are relative to the center of mass of reference"""
                 f""" atomgroup {atomgroup_header(self.refgroup)}."""
             )
         else:
-            logging.info(
+            logger.info(
                 """Coordinates are relative to the center """
                 """of the simulation box."""
             )
 
-        logging.info(f"Considered atomgroup {atomgroup_header(self.atomgroup)}.")
+        logger.info(f"Considered atomgroup {atomgroup_header(self.atomgroup)}.")
 
         # Log bin information if a spatial analysis is run.
         if hasattr(self, "n_bins"):
-            logging.info(f"Using {self.n_bins} bins.")
+            logger.info(f"Using {self.n_bins} bins.")
 
         self.timeseries = np.zeros(self.n_frames)
 
-        logging.info(f"Analysing {self.n_frames} trajectory frames.")
+        logger.info(f"Analysing {self.n_frames} trajectory frames.")
 
-        logging.debug(f"Module input: {get_module_input_str(self)}")
+        logger.debug(f"Module input: {get_module_input_str(self)}")
 
     def _single_frame(self) -> None | float:
         """Calculate data from a single frame of trajectory.
@@ -605,17 +627,24 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._universe.atoms.translate(t)
 
         if self._universe.dimensions is not None:
-            if ts.dimensions[-3:] is not np.array([90.0, 90.0, 90.0]):
-                warnings.warn(
+            if not self._warned_triclinic and np.any(
+                ts.dimensions[-3:] != np.array([90.0, 90.0, 90.0])
+            ):
+                logger.warning(
                     "The trajectory contains box-dimensions that are not "
                     "orthorhombic! Continue with caution.",
-                    UserWarning,
-                    stacklevel=2,
                 )
+            self._warned_triclinic = True
             # If universe has a cell we wrap the compound into the primary unit cell to
             # use all compounds for the analysis.
+            is_triclinic = np.any(ts.dimensions[-3:] != np.array([90.0, 90.0, 90.0]))
             if self.pack:
                 self._universe.atoms.wrap(compound=self.wrap_compound)
+                if is_triclinic:
+                    ortho_box = triclinic_to_orthorhombic(ts.dimensions)
+                    self._universe.atoms.wrap(
+                        compound=self.wrap_compound, box=ortho_box
+                    )
 
         if self.jitter != 0.0:
             ts.positions += np.random.random(size=(len(ts.positions), 3)) * self.jitter
@@ -631,8 +660,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # therefore not a performance issue like a if statement would be.
         try:
             # Fail fast if the means and sems are not defined yet.
-            self.means  # type: ignore  # noqa B018
-            self.sems  # type: ignore  # noqa B018
+            self.means  # noqa B018
+            self.sems  # noqa B018
 
             # Take the data from the current frame and update the means and sems
             for key in self._obs:
@@ -644,23 +673,23 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
-                self.pop[key], self.means[key], self.M2[key] = (  # type: ignore
-                    combine_subsample_variance(  # type: ignore
-                        self._pop[key],  # type: ignore
-                        self.pop[key],  # type: ignore
-                        self._obs[key],  # type: ignore
-                        self.means[key],  # type: ignore
-                        self._var[key] * self._pop[key],  # type: ignore
-                        self.M2[key],  # type: ignore
+                self.pop[key], self.means[key], self.M2[key] = (
+                    combine_subsample_variance(
+                        self._pop[key],
+                        self.pop[key],
+                        self._obs[key],
+                        self.means[key],
+                        self._var[key] * self._pop[key],
+                        self.M2[key],
                     )
                 )
 
-                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)  # type: ignore
-                self.sums[key] += self._obs[key] * self._pop[key]  # type: ignore
+                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)
+                self.sums[key] += self._obs[key] * self._pop[key]
 
         except AttributeError as err:
             with logging_redirect_tqdm():
-                logging.debug("Initializing error estimation.")
+                logger.debug("Initializing error estimation.")
             # the means and sems are not yet defined. We initialize the means with
             # the data from the first frame and set the sems to zero (with the
             # correct shape).
@@ -671,7 +700,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.M2 = Results()  # second moment of the samples across frames
 
             for key in self._obs:
-                if type(self._obs[key]) not in compatible_types:
+                if not isinstance(self._obs[key], tuple(compatible_types)):
                     raise TypeError(f"Obervable {key} has uncompatible type.") from err
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
@@ -791,7 +820,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             f"{module_name} is part of MAICoS v{__version__}\n\n"
             f"Command line:    {get_cli_input()}\n"
             f"Module input:    {module_input}\n\n"
-            #f"Statistics over {self._index} frames\n\n"
+            # f"Statistics over {self._index} frames\n\n"
             f"Considered atomgroups:\n"
             f"{atomgroups}\n"
             f"{messages}\n\n"
@@ -1009,6 +1038,7 @@ class ProfileBase:
         # subclass of AnalysisBase (only needed for tests)
         self.results = Results()
         self._obs = Results()
+        self.n_bins: int
 
     def _prepare(self):
         normalizations = ["none", "volume", "number"]
@@ -1024,7 +1054,7 @@ class ProfileBase:
                 f"'{self.grouping}' is not a valid option for "
                 f"grouping. Use {', '.join(groupings)}."
             )
-        logging.info(f"Atoms grouped by {self.grouping}.")
+        logger.info(f"Atoms grouped by {self.grouping}.")
 
         # If unwrap has not been set we define it here
         if not hasattr(self, "unwrap"):
@@ -1051,10 +1081,10 @@ class ProfileBase:
         raise NotImplementedError("Only implemented in child classes.")
 
     def _single_frame(self) -> None | float:
-        self._obs.profile = np.zeros(self.n_bins)  # type: ignore
-        self._obs.bincount = np.zeros(self.n_bins)  # type: ignore
+        self._obs.profile = np.zeros(self.n_bins)
+        self._obs.bincount = np.zeros(self.n_bins)
 
-        if self.grouping == "atoms":  # type: ignore
+        if self.grouping == "atoms":
             positions = self.atomgroup.positions
         else:
             positions = get_center(
@@ -1066,7 +1096,7 @@ class ProfileBase:
 
         self._obs.bincount = np.bincount(
             bin_indices[bin_indices > -1],
-            minlength=self.n_bins,  # type: ignore
+            minlength=self.n_bins,
         )
 
         if self.normalization == "volume":

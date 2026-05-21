@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -198,3 +198,29 @@ class TestPDFPlanar:
 
         with pytest.raises(ValueError, match="exceeds half of the box"):
             pdfplanar.run()
+
+    def test_negative_pdf_bin_width(self, get_universe):
+        """Test that a non-positive pdf_bin_width raises ValueError."""
+        grp_water = get_universe.select_atoms("resname SOL")
+        with pytest.raises(ValueError, match="PDF bin_width must be a positive number"):
+            PDFPlanar(
+                grp_water, grp_water, pdf_bin_width=-1, dmin=7, dmax=10, bin_width=20
+            ).run()
+
+    def test_non_numeric_pdf_bin_width(self, get_universe):
+        """Test that a non-numeric pdf_bin_width raises ValueError."""
+        grp_water = get_universe.select_atoms("resname SOL")
+        with pytest.raises(ValueError, match="PDF bin_width must be a number"):
+            PDFPlanar(
+                grp_water, grp_water, pdf_bin_width="foo", dmin=7, dmax=10, bin_width=20
+            ).run()
+
+    def test_save(self, get_universe, monkeypatch, tmp_path):
+        """Test that save() writes the output file correctly."""
+        monkeypatch.chdir(tmp_path)
+        pdfplanar = self.run_pdf(get_universe)
+        pdfplanar.save()
+        output_path = tmp_path / pdfplanar.output
+        assert output_path.exists()
+        data = np.loadtxt(output_path)
+        assert data.shape[0] == len(pdfplanar.results.bins)

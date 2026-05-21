@@ -1,6 +1,6 @@
 # -*-
 #
-# Copyright (c) 2025 Authors and contributors (see the AUTHORS.rst file for the full
+# Copyright (c) 2026 Authors and contributors (see the AUTHORS.rst file for the full
 # list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -328,7 +328,7 @@ def new_variance(
     S_old = old_variance * (length - 1)
     S_new = S_old + (data - old_mean) * (data - new_mean)
 
-    if type(S_new) is np.ndarray:
+    if isinstance(S_new, np.ndarray):
         S_new[S_new < 0] = 0
     else:
         if S_new < 0:
@@ -503,8 +503,8 @@ def transform_cylinder(
 ) -> np.ndarray:
     """Transform positions into cylinder coordinates.
 
-    The origin of th coordinate system is at `origin`, the direction of the cylinder is
-    defined by `dim`.
+    The origin of th coordinate system is at ``origin``, the direction of the cylinder
+    is defined by ``dim``.
 
     Parameters
     ----------
@@ -532,7 +532,14 @@ def transform_cylinder(
     trans_positions[:, 0] = np.linalg.norm(pos_xyz_center[:, odims], axis=1)
 
     # phi component
-    np.arctan2(*pos_xyz_center[:, odims].T, out=trans_positions[:, 1])
+    trans_positions[:, 1] = np.angle(
+        pos_xyz_center[:, odims][:, 0] + pos_xyz_center[:, odims][:, 1] * 1j
+    )
+    trans_positions[:, 1] = np.where(
+        trans_positions[:, 1] < 0,
+        trans_positions[:, 1] + 2 * np.pi,
+        trans_positions[:, 1],
+    )
 
     # z component
     trans_positions[:, 2] = np.copy(positions[:, dim])
@@ -543,14 +550,14 @@ def transform_cylinder(
 def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     """Transform positions into spherical coordinates.
 
-    The origin of the new coordinate system is at `origin`.
+    The origin of the new coordinate system is at ``origin``.
 
     Parameters
     ----------
     positions : numpy.ndarray
-        Cartesian coordinates (x,y,z)
+        Cartesian coordinates ``(x,y,z)``
     origin : numpy.ndarray
-        Origin of the new spherical coordinate system (x,y,z).
+        Origin of the new spherical coordinate system ``(x,y,z)``.
 
     Returns
     -------

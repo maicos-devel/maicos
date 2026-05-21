@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -119,7 +119,15 @@ def test_density_weights_electron_title():
 
 @pytest.mark.parametrize(
     ("element", "n_electrons"),
-    [("CH1", 7), ("CH2", 8), ("CH3", 9), ("NH1", 8), ("NH2", 9), ("NH3", 10)],
+    [
+        ("CH1", 7),
+        ("CH2", 8),
+        ("CH3", 9),
+        ("CH4", 10),
+        ("NH1", 8),
+        ("NH2", 9),
+        ("NH3", 10),
+    ],
 )
 def test_density_weights_electron_united_atoms(element, n_electrons):
     """Test electron weights also for work for united atom force fields."""
@@ -150,6 +158,12 @@ def test_density_weights_error(ag_water_npt):
     """Test error raise for non existing weight."""
     with pytest.raises(ValueError, match="not supported"):
         maicos.lib.weights.density_weights(ag_water_npt, "atoms", "foo")
+
+
+def test_density_weights_invalid_grouping(ag_water_npt):
+    """Test error raise for invalid grouping."""
+    with pytest.raises(ValueError, match="grouping is not supported"):
+        maicos.lib.weights.density_weights(ag_water_npt, "invalid_grouping", "number")
 
 
 @pytest.mark.parametrize("grouping", ["residues", "segments", "molecules", "fragments"])

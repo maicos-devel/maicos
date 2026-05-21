@@ -1,8 +1,12 @@
 furo
-setuptools  # required for sphinxcontrib-bibtex together with Python 3.12
-sphinx>=7.2.2
+#setuptools  # required for sphinxcontrib-bibtex together with Python 3.12
+setuptools<=81  # Temporary fix. Remove once https://github.com/sphinx-contrib/sphinxcontrib-details-directive/pull/9 is merged
+sphinx
 sphinx-gallery
 sphinxcontrib-bibtex
 sphinxcontrib-details-directive
 sphinx-toggleprompt
-tomli
+sphinx-tabs
+#docutils
+docutils<0.22  # Temporary fix. Remove once https://github.com/executablebooks/sphinx-tabs/pull/207 is released
+setuptools<81  # required for sphinxcontrib-details-directive until pkg_resources dependency is removed, see https://github.com/sphinx-contrib/sphinxcontrib-details-directive/pull/9

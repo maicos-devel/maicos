@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -103,6 +103,12 @@ class TestCylinderBase:
         with pytest.raises(ValueError, match="can not be smaller"):
             cylinder_class_obj._prepare()
 
+    def test_negative_rmin(self, ag):
+        """Test that a negative rmin raises ValueError."""
+        cylinder_class_obj = CylinderClass(ag, pos_arg=42, rmin=-1)
+        with pytest.raises(ValueError, match="larger or equal 0"):
+            cylinder_class_obj._prepare()
+
     @pytest.mark.parametrize("bin_width", [1, 7.75, 125])
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_bin_width(self, ag, dim, bin_width):
@@ -133,10 +139,10 @@ class TestCylinderBase:
         """Test n bins."""
         cylinder_class_obj = CylinderClass(ag, pos_arg=42)
         caplog.set_level(logging.INFO)
-        cylinder_class_obj.run()
+        cylinder_class_obj.run(verbose=True)
 
         assert cylinder_class_obj.n_bins == 10
-        assert "Using 10 bins." in [rec.message for rec in caplog.records]
+        assert "Using 10 bins." in caplog.text
 
     def test_rmin_default(self, ag):
         """Test default rmin."""

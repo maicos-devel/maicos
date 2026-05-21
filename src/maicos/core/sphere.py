@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -18,12 +18,14 @@ from ..lib.util import render_docs
 from .base import ProfileBase
 from .planar import AnalysisBase
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class SphereBase(AnalysisBase):
     r"""Analysis class providing options and attributes for a spherical system.
 
-    Provide the results attribute `r`.
+    Provide the results attribute ``r``.
 
     Parameters
     ----------
@@ -35,7 +37,7 @@ class SphereBase(AnalysisBase):
     ----------
     ${SPHERE_CLASS_ATTRIBUTES}
     pos_sph : numpy.ndarray
-        positions in spherical coordinats (r, phi, theta)
+        positions in spherical coordinats ``(r, phi, theta)``
     _obs.R : float
         Average length (in Å) along the radial dimension in the current frame.
     _obs.bin_pos : numpy.ndarray, (n_bins)
@@ -45,13 +47,13 @@ class SphereBase(AnalysisBase):
     _obs.bin_edges : numpy.ndarray, (n_bins + 1)
         Edges of the bins (in Å) in the current frame.
     _obs.bin_area : numpy.ndarray, (n_bins)
-        Surface area (in Å^2) of the sphere of each bin with radius `bin_pos` in the
+        Surface area (in Å^2) of the sphere of each bin with radius ``bin_pos`` in the
         current frame. Calculated via :math:`4 \pi r_i^2` where :math:`i` is the index
         of the bin.
     results.bin_volume : numpy.ndarray, (n_bins)
         volume of a spherical shell of each bins (in Å^3) of the current frame.
-        Calculated via :math:`4\pi/3 \left(r_{i+1}^3 - r_i^3 \right)` where `i` is the
-        index of the bin.
+        Calculated via :math:`4\pi/3 \left(r_{i+1}^3 - r_i^3 \right)` where :math:`i` is
+        the index of the bin.
 
     """
 
@@ -90,7 +92,7 @@ class SphereBase(AnalysisBase):
         elif self._rmax <= box_half:
             self.rmax = self._rmax
         else:
-            logging.warning(
+            logger.warning(
                 f"`rmax` is bigger than half the smallest box vector ({box_half:.2f}) "
                 "in the radial direction. This will lead to artifacts at the edges."
             )
@@ -201,7 +203,7 @@ class ProfileSphereBase(SphereBase, ProfileBase):  # type: ignore
         SphereBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(
+        logger.info(
             """Profile along the radial coordinate in a spherical """
             """coordinate system."""
         )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
+from maicos.lib.util import triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
@@ -242,6 +243,22 @@ class TestChargedDecorator:
         ag[0].charge += 1e-5
         single_class(ag, filter="error")._prepare()
 
+    def test_universe_non_neutral_raises(self, ag):
+        """Test that a non-neutral universe raises ValueError."""
+        ag[0].charge += 1
+        with pytest.raises(ValueError, match="non-neutral systems is not supported"):
+            multi_class(ag, filter="default")._prepare()
+
+
+def test_get_compound_no_attributes():
+    """Test that get_compound raises AttributeError for a minimal object."""
+
+    class MinimalAtomGroup:
+        pass
+
+    with pytest.raises(AttributeError, match="Missing any connection information"):
+        maicos.lib.util.get_compound(MinimalAtomGroup())
+
 
 def unwrap_refgroup_class(**kwargs):
     """Simple class setting keyword arguments as attributes."""
@@ -262,7 +279,7 @@ def unwrap_refgroup_class(**kwargs):
 
 
 class TestWrapRefgroup:
-    """Test the `unwrap_refgroup` decorator."""
+    """Test the ``unwrap_refgroup`` decorator."""
 
     def test_unwrap_refgroup(self):
         """Test to raise an error if unwrap and refgroup."""
@@ -294,6 +311,16 @@ class TestTrajectoryPrecision:
     def test_gro_trajectory(self, trj):
         """Test detect gro traj."""
         assert_equal(maicos.lib.util.trajectory_precision(trj), np.float32(0.01))
+
+    def test_high_precision_trajectory(self):
+        """Test that high-precision trajectory returns 1e-4 for most frames.
+
+        TRR trajectories have high precision positions; the majority of frames
+        should hit the no-peak branch (precision = 1e-4).
+        """
+        trj = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT).trajectory
+        precision = maicos.lib.util.trajectory_precision(trj)
+        assert np.sum(precision == 1e-4) > trj.n_frames // 2
 
 
 class TestCitationReminder:
@@ -370,7 +397,7 @@ class TestCorrelationAnalysis:
 
 
 class Testget_center:
-    """Test the `get_center` function."""
+    """Test the ``get_center`` function."""
 
     compounds = ["group", "segments", "residues", "molecules", "fragments"]
 
@@ -380,33 +407,33 @@ class Testget_center:
         return mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
 
     @pytest.mark.parametrize("compound", compounds)
-    def cog(self, ag, compound):
+    def test_cog(self, ag, compound):
         """Test same center of geometry."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="cog", compound=compound
+                atomgroup=ag.atoms, bin_method="cog", compound=compound
             ),
-            ag.center_of_geometry(compound=compound),
+            ag.atoms.center_of_geometry(compound=compound),
         )
 
     @pytest.mark.parametrize("compound", compounds)
-    def com(self, ag, compound):
+    def test_com(self, ag, compound):
         """Test same center of mass."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="com", compound=compound
+                atomgroup=ag.atoms, bin_method="com", compound=compound
             ),
-            ag.center_of_mass(compound=compound),
+            ag.atoms.center_of_mass(compound=compound),
         )
 
     @pytest.mark.parametrize("compound", compounds)
-    def coc(self, ag, compound):
+    def test_coc(self, ag, compound):
         """Test same center of charge."""
         assert_equal(
             maicos.lib.util.get_center(
-                atomgroup=ag, bin_method="cog", compound=compound
+                atomgroup=ag.atoms, bin_method="coc", compound=compound
             ),
-            ag.center_of_charge(compound=compound),
+            ag.atoms.center_of_charge(compound=compound),
         )
 
     def test_get_center_unknown(self):
@@ -416,7 +443,7 @@ class Testget_center:
 
 
 class TestUnitVectors:
-    """Test the `unit_vectors` functions."""
+    """Test the ``unit_vectors`` functions."""
 
     @pytest.mark.parametrize("pdim", [0, 1, 2])
     def test_unit_vectors_planar(self, pdim):
@@ -474,6 +501,24 @@ class TestUnitVectors:
             unit_vectors,
         )
 
+    def test_unit_vectors_cylinder_invalid_pdim(self):
+        """Test that an invalid pdim raises ValueError."""
+        ag, _ = circle_of_water_molecules(4, 90, radius=5)
+        with pytest.raises(ValueError, match="unknown direction"):
+            maicos.lib.util.unit_vectors_cylinder(
+                atomgroup=ag, grouping="residues", bin_method="com", dim=2, pdim="x"
+            )
+
+    def test_unit_vector_protocol(self):
+        """Test that Unit_vector Protocol can be subclassed and called."""
+
+        class ConcreteUnitVector(maicos.lib.util.Unit_vector):
+            def __call__(self, atomgroup, grouping):  # noqa: ARG002
+                return np.zeros(3)
+
+        vec = ConcreteUnitVector()
+        assert_equal(vec(None, "atoms"), np.zeros(3))
+
     def test_unit_vectors_sphere(self):
         """Test calculation of spherical unit vectors."""
         ag, _ = circle_of_water_molecules(4, 90, radius=5)
@@ -497,21 +542,24 @@ class TestUnitVectors:
 
         assert_allclose(transform, unit_vectors)
 
+
 class TestResultsAggregator:
     """Test the ResultsAggregator for the parallel analysis implementation."""
 
     @pytest.fixture(params=[(64, 1), (64, 5)])
     def data(self, request):
+        """Random sample data of varying shape for aggregation tests."""
         return np.random.rand(*request.param)
 
     def test_means(self, data):
+        """Weighted mean over batches matches the mean of the full data."""
         n_batches = 4
         batch_size = 16
         bs = batch_size
-            
+
         means = []
-        for i in range(n_batches): 
-            start = i*bs
+        for i in range(n_batches):
+            start = i * bs
             end = start + bs
             means.append(np.mean(data[start:end], axis=0))
 
@@ -522,18 +570,19 @@ class TestResultsAggregator:
         weighted_mean = agg.weighted_mean(means, batch_sizes)
 
         assert_allclose(weighted_mean, np.mean(data, axis=0))
-         
+
     def test_sems(self, data):
+        """Weighted SEM over batches matches the SEM of the full data."""
         n_batches = 4
         batch_size = 16
         bs = batch_size
-            
+
         sems = []
         means = []
-        for i in range(n_batches): 
-            start = i*bs
+        for i in range(n_batches):
+            start = i * bs
             end = start + bs
-            sems.append(np.std(data[start:end], axis=0)/np.sqrt(bs))
+            sems.append(np.std(data[start:end], axis=0) / np.sqrt(bs))
             means.append(np.mean(data[start:end], axis=0))
 
         batch_sizes = [batch_size] * n_batches
@@ -542,7 +591,42 @@ class TestResultsAggregator:
 
         weighted_sem = agg.weighted_sem(sems, means, batch_sizes)
 
-        assert_allclose(weighted_sem, np.std(data, axis=0)/np.sqrt(64))
+        assert_allclose(weighted_sem, np.std(data, axis=0) / np.sqrt(64))
 
-        
 
+class TestTriclinicToOrthorhombic:
+    """Tests for triclinic_to_orthorhombic."""
+
+    def test_orthorhombic_unchanged(self):
+        """Orthorhombic box is returned with same lengths."""
+        box = np.array([10.0, 20.0, 30.0, 90.0, 90.0, 90.0])
+        result = triclinic_to_orthorhombic(box)
+        assert_allclose(result, box)
+
+    def test_triclinic_gamma(self):
+        """Triclinic box with non-90 gamma gives correct orthorhombic box."""
+        box = np.array([66.68, 61.11, 59.78, 90.0, 90.0, 70.33])
+        result = triclinic_to_orthorhombic(box)
+        gamma = np.radians(70.33)
+        assert_allclose(result[0], 66.68)
+        assert_allclose(result[1], 61.11 * np.sin(gamma))
+        assert_allclose(result[2], 59.78)
+        assert_allclose(result[3:], [90.0, 90.0, 90.0])
+
+    def test_fully_triclinic(self):
+        """Fully triclinic box gives positive orthorhombic lengths."""
+        box = np.array([30.0, 40.0, 50.0, 80.0, 70.0, 60.0])
+        result = triclinic_to_orthorhombic(box)
+        assert_allclose(result[3:], [90.0, 90.0, 90.0])
+        assert np.all(result[:3] > 0)
+
+    def test_volume_preserved(self):
+        """Volume of orthorhombic box equals the triclinic cell volume."""
+        from MDAnalysis.lib.mdamath import triclinic_vectors
+
+        box = np.array([66.68, 61.11, 59.78, 90.0, 90.0, 70.33])
+        vecs = triclinic_vectors(box)
+        vol_tri = abs(np.dot(vecs[0], np.cross(vecs[1], vecs[2])))
+        result = triclinic_to_orthorhombic(box)
+        vol_ortho = result[0] * result[1] * result[2]
+        assert_allclose(vol_ortho, vol_tri, rtol=1e-5)

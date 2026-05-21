@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -14,6 +14,8 @@ import MDAnalysis as mda
 from ..core import ProfilePlanarBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -39,7 +41,7 @@ class DensityPlanar(ProfilePlanarBase):
     -----
     Partial mass density profiles can be used to calculate the ideal component of the
     chemical potential. For details, take a look at the corresponding :ref:`How-to
-    guide<sphx_glr_examples_basics_chemical-potential.py>`.
+    guide<sphx_glr_generated_examples_basics_chemical-potential.py>`.
 
     """
 
@@ -84,5 +86,5 @@ class DensityPlanar(ProfilePlanarBase):
         )
 
     def _prepare(self):
-        logging.info(f"Analysis of the {self._locals['dens']} density profile.")
+        logger.info(f"Analysis of the {self._locals['dens']} density profile.")
         super()._prepare()

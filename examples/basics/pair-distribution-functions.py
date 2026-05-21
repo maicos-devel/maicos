@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -17,9 +17,9 @@ pair distribution functions.
 
 In the following, we will give an example of a trajectory of water confined by graphene
 sheets simulated via GROMACS. We assume that the GROMACS topology is given by
-`graphene_water.tpr` and the trajectory is given by `graphene_water.xtc`. Both can be
-downloaded under :download:`topology <graphene_water.tpr>` and
-:download:`trajectory <graphene_water.xtc>`, respectively.
+``graphene_water.tpr`` and the trajectory is given by ``graphene_water.xtc``. Both can
+be downloaded under :download:`topology <graphene_water.tpr>` and :download:`trajectory
+<graphene_water.xtc>`, respectively.
 
 From these files you can create a MDAnalysis universe object.
 

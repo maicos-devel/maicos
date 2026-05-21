@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -27,7 +27,13 @@ from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from data import (  # noqa: E402
+    DIPOLE_GRO,
+    DIPOLE_ITP,
+    WATER_GRO_NPT,
+    WATER_TPR_NPT,
+    WATER_TRR_NPT,
+)
 
 
 class Output(AnalysisBase):
@@ -90,21 +96,24 @@ class SingularSeries(AnalysisBase):
         )
 
         n_frames = 101
-        #rng = np.random.default_rng(seed=100)
+        # rng = np.random.default_rng(seed=100)
         x = np.linspace(0, 1, n_frames)
-        #self.series = rng.random(n_frames)
+        # self.series = rng.random(n_frames)
         self.series = np.sin(x)
 
     def _prepare(self):
         pass
 
     def _single_frame(self):
-        print(self.frames[self._frame_index])
         self._obs.observable = self.series[self.frames[self._frame_index]]
 
     @classmethod
     def get_supported_backends(cls):
-        return ("serial", "dask",)
+        """Backends supported by this test analysis class."""
+        return (
+            "serial",
+            "dask",
+        )
 
 
 class MultipleSeries(AnalysisBase):
@@ -164,7 +173,7 @@ class Conclude(AnalysisBase):
     """Class to test the _conclude method.
 
     A new file with a file name of the current analysis frame number is created every
-    time the `_conclude` method is called.
+    time the ``_conclude`` method is called.
     """
 
     def __init__(
@@ -228,6 +237,40 @@ class Test_AnalysisBase:
         """An MDAnalysis universe without where the `dimensions` attribute is `None`."""
         return mda.Universe(PSF, DCD)
 
+    def test_trajectory_starting_frame(self, ag):
+        """Test that the trajectory is rewound to the first frame.
+
+        The AnalysisBase should rewind the trajectory so that the _prepare method
+        consistently sees the first frame.
+        """
+        # We select a frame from the middle, since we want to rewind to the first frame
+        # of a sliced trajectory.
+        params = dict(
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+        positions = ag.universe.trajectory[5].positions.copy()
+
+        ana_obj = AnalysisBase(ag, **params)
+
+        def _prepare(self):
+            self.check_frame_data = self.atomgroup.positions
+
+        # TODO(@hejamu): Create a Subclass of AnalysisBase
+        # with stub methods to reuse in other tests
+        ana_obj._prepare = lambda: _prepare(ana_obj)
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        ana_obj.run(start=5)
+
+        # check_frame_data should contain the positions of the first frame _prepare saw
+        assert np.all(ana_obj.check_frame_data == positions)
+
     def test_triclinic_warning(self, ag, caplog):
         """Test that the triclinic warning is displayed.
 
@@ -237,7 +280,8 @@ class Test_AnalysisBase:
         for ts in ag.universe.trajectory:
             ts.dimensions = np.array([30, 30, 30, 70, 80, 100])
         conclude = Conclude(ag)
-        conclude.run()
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
 
         warnings = [rec.message for rec in caplog.records]
         assert len(warnings) == 1
@@ -247,6 +291,58 @@ class Test_AnalysisBase:
             "Continue with caution."
         )
         assert match in warnings[0]
+
+        caplog.clear()
+
+        # Do the crosscheck that no warning is emitted for orthorhombic boxes
+        for ts in ag.universe.trajectory:
+            ts.dimensions = np.array([30, 30, 30, 90, 90, 90])
+        conclude = Conclude(ag)
+        with caplog.at_level(logging.WARNING):
+            conclude.run()
+
+        warnings = [rec.message for rec in caplog.records]
+        assert len(warnings) == 0
+
+    def test_triclinic_wrapping(self):
+        """Test that atoms are wrapped into the orthorhombic bounding box.
+
+        An atom placed at (2, 6, 5) in a triclinic box with gamma=45 degrees
+        is inside the rectangular domain but outside the triclinic cell.
+        Wrapping with the triclinic cell alone shifts it to x=12, outside
+        the orthorhombic bounding box. Another wrap puts it again into the
+        orthorhombic box so all atoms remain inside the analysis domain:
+
+            Original (i.e. GROMACS)  After triclinic         After orthorhombic
+            positions                wrap only (broken)      wrap
+
+            y     b                  y     b                  y     b
+            |    /       /           |    /       /           |    /       /
+            |  */->     /            |   /      */->          |  */->     /
+            |  /       /             |  /       /             |  /       /
+            | /       /              | /       /              | /       /
+            +---------x = a          +---------x = a          +---------x = a
+        """
+        from maicos.lib.util import triclinic_to_orthorhombic
+
+        dimensions = [10, 10, 10, 90, 90, 45]
+        ortho_box = triclinic_to_orthorhombic(np.array(dimensions, dtype=float))
+
+        template = mda.Universe(DIPOLE_ITP, DIPOLE_GRO, topology_format="itp")
+        dipole = template.copy()
+        dipole.atoms.translate([2, 6, 5])
+        dipole.atoms.residues.molnums = [0]
+        u = mda.Merge(dipole.atoms)
+        u.dimensions = dimensions
+
+        conclude = Conclude(u.atoms, pack=True, wrap_compound="atoms")
+        conclude.run()
+
+        positions = u.atoms.positions
+        assert np.all(positions >= 0)
+        assert np.all(positions[:, 0] < ortho_box[0])
+        assert np.all(positions[:, 1] < ortho_box[1])
+        assert np.all(positions[:, 2] < ortho_box[2])
 
     def test_AnalysisBase(self, ag):
         """Test AnalysisBase."""
@@ -264,6 +360,19 @@ class Test_AnalysisBase:
         assert a._trajectory == ag.universe.trajectory
         assert a._universe == ag.universe
         assert isinstance(a.results, Results)
+
+    def test_invalid_wrap_compound(self, ag):
+        """Test that an invalid wrap_compound raises ValueError."""
+        with pytest.raises(ValueError, match="Unrecognized `wrap_compound`"):
+            AnalysisBase(
+                atomgroup=ag,
+                unwrap=False,
+                pack=True,
+                refgroup=None,
+                jitter=0.0,
+                wrap_compound="invalid_compound",
+                concfreq=0,
+            )
 
     def test_empty_atomgroup(self, ag):
         """Test behaviour for empty atomgroup."""
@@ -303,8 +412,12 @@ class Test_AnalysisBase:
         """Test the parallel runner."""
         ana = SingularSeries(atomgroup=ag)
         ana.run(backend="dask", n_workers=4)
-        assert_allclose(ana.means.observable, np.mean(ana.series[:ana.n_frames]), rtol=1e-5)
-        assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames), rtol=1e-5)
+        assert_allclose(
+            ana.means.observable, np.mean(ana.series[: ana.n_frames]), rtol=1e-5
+        )
+        assert_allclose(
+            ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames), rtol=1e-5
+        )
 
     def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""
@@ -552,14 +665,13 @@ class Test_AnalysisBase:
         ana_obj._single_frame = lambda: None
         ana_obj._conclude = lambda: None
 
-        caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
         assert (
-            r"#   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____)"
-            in "".join([rec.message for rec in caplog.records])
+            r"#    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|"
+            in caplog.text
         )
-        assert __version__ in "".join([rec.message for rec in caplog.records])
+        assert __version__ in caplog.text
 
     @pytest.mark.parametrize(
         "typefunc",
@@ -649,10 +761,9 @@ class Test_AnalysisBase:
 
         ana_obj.n_bins = 10
 
-        caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
-        assert "Using 10 bins." in [rec.message for rec in caplog.records]
+        assert "Using 10 bins." in caplog.text
 
     def test_info_log_verbose(self, ag, caplog):
         """Test that logger infos are printed."""
@@ -672,30 +783,71 @@ class Test_AnalysisBase:
         ana_obj._conclude = lambda: None
 
         caplog.set_level(logging.INFO)
-        ana_obj.run(stop=1)
+        ana_obj.run(stop=1, verbose=True)
 
         analysis_msg = "Analysing 1 trajectory frames."
 
-        # INFO log messages should always be in the logger
-        messages = [rec.message for rec in caplog.records]
-        assert analysis_msg in messages
+        # INFO log messages should be in the logger when verbose=True
+        assert analysis_msg in caplog.text
 
-    def test_unwrap_atoms(self, ag, caplog):
-        """Test that unwrap is always False for `wrap_compound="atoms"`."""
-        caplog.set_level(logging.WARNING)
-        profile = AnalysisBase(
+    def test_verbose_multiple_runs(self, ag, caplog):
+        """Test that verbosity is set correctly across multiple runs.
+
+        The run method can be executed multiple times with different values for
+        verbose. This test ensures that the logging level is correctly adjusted
+        each time.
+        """
+        ana_obj = AnalysisBase(
             atomgroup=ag,
-            unwrap=True,
+            unwrap=False,
             pack=True,
-            wrap_compound="atoms",
             refgroup=None,
             jitter=0.0,
+            wrap_compound="atoms",
             concfreq=0,
         )
 
-        msgs = [rec.message for rec in caplog.records]
-        # Assume wrap warning is first warning recorded
-        assert "'atoms` is superfluous." in msgs[0]
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        parent_logger = logging.getLogger("maicos")
+
+        # First run with verbose=True
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged
+        assert "Analysing 1 trajectory frames." in caplog.text
+        caplog.clear()
+
+        # Second run with verbose=False - level should change to WARNING
+        ana_obj.run(stop=1, verbose=False)
+        assert parent_logger.level == logging.WARNING
+        # Verify that INFO messages are NOT logged
+        assert "Analysing 1 trajectory frames." not in caplog.text
+        caplog.clear()
+
+        # Third run with verbose=True again - level should change back to INFO
+        ana_obj.run(stop=1, verbose=True)
+        assert parent_logger.level == logging.INFO
+        # Verify that INFO messages are logged after switching back to verbose
+        assert "Analysing 1 trajectory frames." in caplog.text
+
+    def test_unwrap_atoms(self, ag, caplog):
+        """Test that unwrap is always False for `wrap_compound="atoms"`."""
+        with caplog.at_level(logging.DEBUG, logger="maicos.core.base"):
+            profile = AnalysisBase(
+                atomgroup=ag,
+                unwrap=True,
+                pack=True,
+                wrap_compound="atoms",
+                refgroup=None,
+                jitter=0.0,
+                concfreq=0,
+            )
+
+        assert "'atoms` is superfluous." in caplog.text
 
         assert profile.unwrap is False
 
@@ -820,14 +972,20 @@ class TestAnalysisCollection:
         assert ana_1.results is not None
         assert ana_2.results is not None
 
-    def test_trajectory_manipulation(self, u):
-        """Test that the timestep is the same for each analysis class."""
+    def test_positions_restored_between_analyses(self):
+        """Test that atom positions are restored between analyses in a collection.
 
-        class CustomAnalysis(AnalysisBase):
-            """Custom class that is shifting positions in every step by 10."""
+        This is important because not only should the timestep be restored after
+        each analysis, but also the positions of the universe should be the same
+        at the start of each analysis.
+        """
+        u = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT)
+
+        class PositionShifter(AnalysisBase):
+            """Shifts positions by an offset."""
 
             def __init__(self, atomgroup):
-                super().__init__(
+                super().__init__(  # Don't do anything to the trajectory
                     atomgroup=atomgroup,
                     unwrap=False,
                     pack=False,
@@ -841,19 +999,22 @@ class TestAnalysisCollection:
                 pass
 
             def _single_frame(self):
-                self._ts.positions += 10
-                self.ref_pos = self._ts.positions.copy()[0, 0]
+                # After this shift, the universe is left in a modified state.
+                self._universe.atoms.positions += 5.0
+                self.seen_positions = self._universe.atoms.positions.copy()
 
-            def _conlude(self):
+            def _conclude(self):
                 pass
 
-        ana_1 = CustomAnalysis(u.atoms)
-        ana_2 = CustomAnalysis(u.atoms)
+        ana_1 = PositionShifter(u.atoms)
+        ana_2 = PositionShifter(u.atoms)
 
         collection = AnalysisCollection(ana_1, ana_2)
         collection.run(frames=[0])
 
-        assert ana_2.ref_pos == ana_1.ref_pos
+        # If positions are properly restored between analyses, both should
+        # see the same positions after their respective shift.
+        assert_allclose(ana_1.seen_positions, ana_2.seen_positions)
 
     def test_inconsistent_trajectory(self, u):
         """Test error raise if two analysis objects have a different trajectory."""
@@ -917,8 +1078,8 @@ class TestAnalysisCollection:
 class Test_ProfileBase:
     """Test class for the ProfileBase Class.
 
-    The single_frame is for now extensivley tested in the child `ProfilePlanarBase`,
-    `ProfileCylinderBase` and `ProfileSphereBase` for simple physical system.
+    The single_frame is for now extensivley tested in the child ``ProfilePlanarBase``,
+    ``ProfileCylinderBase`` and ``ProfileSphereBase`` for simple physical system.
     """
 
     @pytest.fixture
@@ -956,6 +1117,20 @@ class Test_ProfileBase:
         params.update(grouping="foo")
         with pytest.raises(ValueError, match="'foo' is not a valid option"):
             ProfileBase(**params)._prepare()
+
+    def test_prepare_sets_unwrap_default(self, params):
+        """Test that _prepare sets unwrap=True when not previously set."""
+        profile = ProfileBase(**params)
+        assert not hasattr(profile, "unwrap")
+        profile.n_bins = 10
+        profile._prepare()
+        assert profile.unwrap is True
+
+    def test_compute_histogram_not_implemented(self, params):
+        """Test that _compute_histogram raises NotImplementedError on base class."""
+        profile = ProfileBase(**params)
+        with pytest.raises(NotImplementedError, match="Only implemented in child"):
+            profile._compute_histogram(np.zeros((10, 3)))
 
     def test_weighting_function_kwargs(self, params):
         """Test an extra keyword argument."""

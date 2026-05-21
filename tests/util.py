@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -45,9 +45,9 @@ def line_of_water_molecules(
 ):
     """Create an MDAnalysis universe with regularly spaced molecules.
 
-    The molecules are placed along a line `distance` apart, have an orientation
-    controlled by `angle_deg` and `axis_rotation`. All the molecules have the same
-    velocities `myvel`.
+    The molecules are placed along a line ``distance`` apart, have an orientation
+    controlled by ``angle_deg`` and ``axis_rotation``. All the molecules have the same
+    velocities ``myvel``.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ def line_of_water_molecules(
     distance : float
         distance between the molecules.
     angle_deg : float, List[float]
-        angle by which the molecules will be rotated. If `angle_deg` is float all
+        angle by which the molecules will be rotated. If ``angle_deg`` is float all
         molecules will be rotated by the same angle. If List[float] each molecule will
         be rotated by a different angle.
     axis_rotation : tuple[float, float, float]
@@ -76,13 +76,14 @@ def line_of_water_molecules(
 
     # set the orientation of the molecules
     rotations = []
-    if type(angle_deg) is float:
+    if isinstance(angle_deg, float):
         angle_deg_list = n_molecules * [angle_deg]
-    elif type(angle_deg) is list:
+    elif isinstance(angle_deg, list):
         angle_deg_list = angle_deg
     else:
-        raise ValueError(
-            f"type of angle_deg ({type(angle_deg)}) is neither a list or float!"
+        raise TypeError(
+            f"type of angle_deg ({type(angle_deg).__name__}) is neither a list "
+            "or float!"
         )
 
     if len(angle_deg_list) != n_molecules:
@@ -126,8 +127,8 @@ def circle_of_water_molecules(
 ):
     """Create a ``MDAnalysis.Universe`` with regularly spaced molecules.
 
-    Molecules are placed on a circle of radius `radius` around the box center. The box
-    dimensions are set to 20x20x20. The radius must be smaller than 10!
+    Molecules are placed on a circle of radius ``radius`` around the box center. The box
+    dimensions are set to ``20x20x20``. The radius must be smaller than 10!
     """
     if radius > 10:
         raise ValueError("radius has to be smaller than 10")

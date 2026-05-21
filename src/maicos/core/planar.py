@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -16,6 +16,8 @@ import numpy as np
 from ..lib.math import symmetrize
 from ..lib.util import render_docs
 from .base import AnalysisBase, ProfileBase
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -48,7 +50,7 @@ class PlanarBase(AnalysisBase):
     _obs.bin_area : numpy.ndarray, (n_bins)
         Area of the rectangle of each bin in the current frame. Calculated via
         :math:`L_x \cdot L_y / N_\mathrm{bins}` where :math:`L_x` and :math:`L_y` are
-        the box lengths perpendicular to the dimension of evaluations given by `dim`.
+        the box lengths perpendicular to the dimension of evaluations given by ``dim``.
         :math:`N_\mathrm{bins}` is the number of bins.
     _obs.bin_volume : numpy.ndarray, (n_bins)
         Volume of an cuboid of each bin (in Å^3) in the current frame.
@@ -89,6 +91,13 @@ class PlanarBase(AnalysisBase):
         self._zmin = zmin
         self._bin_width = bin_width
 
+        # Guard flags so each warning is emitted at most once per analysis object.
+        # _prepare runs twice under the parallel runner (once on the controller and
+        # once inside the worker's _compute), so these must not be reset per _prepare.
+        self._warned_zmin = False
+        self._warned_zmax = False
+        self._warned_box_length = False
+
     @property
     def odims(self) -> np.ndarray:
         """Other dimensions perpendicular to dim i.e. (0,2) if dim = 1."""
@@ -96,13 +105,47 @@ class PlanarBase(AnalysisBase):
 
     def _compute_lab_frame_planar(self):
         """Compute lab limits `zmin` and `zmax`."""
+        current_box_length = self.box_lengths[self.dim]
+        if (
+            np.abs(current_box_length - self.initial_box_length)
+            / self.initial_box_length
+            > 0.05
+            and not self._warned_box_length
+        ):
+            logger.warning(
+                f"Box length along dimension {self.dim} has changed more than 5 % "
+                "since the start of the analysis. This may lead to unexpected "
+                "behavior due to a fixed number of bins."
+            )
+            self._warned_box_length = True
+
         if self._zmin is None:
             self.zmin = 0
+        elif abs(self._zmin) > current_box_length / 2 and not self._warned_zmin:
+            logger.warning(
+                f"User-defined zmin ({self._zmin:.2f} Å) exceeds half the current "
+                f"box length ({current_box_length / 2:.2f} Å) along dimension "
+                f"{self.dim}. Consider letting MAICoS calculate bounds automatically "
+                "by setting zmin to `None` or manually determine safe bounds from the "
+                "smallest box vector across frames."
+            )
+            self._warned_zmin = True
+            self.zmin = self.box_center[self.dim] + self._zmin
         else:
             self.zmin = self.box_center[self.dim] + self._zmin
 
         if self._zmax is None:
             self.zmax = self.box_lengths[self.dim]
+        elif abs(self._zmax) > current_box_length / 2 and not self._warned_zmax:
+            logger.warning(
+                f"User-defined zmax ({self._zmax:.2f} Å) exceeds half the current box "
+                f"length ({current_box_length / 2:.2f} Å) along dimension {self.dim}. "
+                "Consider letting MAICoS calculate bounds automatically (zmax=None) "
+                "or manually determine safe bounds from the smallest box vector "
+                "across frames."
+            )
+            self._warned_zmax = True
+            self.zmax = self.box_center[self.dim] + self._zmax
         else:
             self.zmax = self.box_center[self.dim] + self._zmax
         # enforce calculations in double precision
@@ -111,8 +154,8 @@ class PlanarBase(AnalysisBase):
 
     def _prepare(self):
         """Prepare the planar analysis."""
+        self.initial_box_length = self.box_lengths[self.dim]
         self._compute_lab_frame_planar()
-
         # TODO(@hejamu): There are much more wrong combinations of zmin and zmax...
         if (
             self._zmax is not None
@@ -224,7 +267,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         PlanarBase._prepare(self)
         ProfileBase._prepare(self)
 
-        logging.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
+        logger.info(f"""Profile along {"xyz"[self.dim]}-axis normal to the plane.""")
 
     def _compute_histogram(
         self, positions: np.ndarray, weights: np.ndarray | None = None

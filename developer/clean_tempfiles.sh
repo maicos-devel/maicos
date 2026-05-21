@@ -3,7 +3,7 @@
 # This script removes all temporary files created by Python during
 # installation and tests running.
 
-set -eux
+set -ux
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$ROOT_DIR"
@@ -11,7 +11,8 @@ cd "$ROOT_DIR"
 rm coverage.xml report.xml
 rm -rf dist
 rm -rf build
-rm -rf docs/src/examples
+rm -rf docs/src/generated_examples
+rm -rf docs/src/get-started/generated_tabs
 rm -rf docs/src/sg_execution_times.rst
 
 find . -name "*.egg-info" -exec rm -rf "{}" +

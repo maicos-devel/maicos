@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -23,6 +23,41 @@ from MDAnalysis.analysis.results import Results
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
+
+logger = logging.getLogger(__name__)
+
+
+def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
+    """Convert triclinic box dimensions to an orthorhombic bounding box.
+
+    Computes the orthorhombic box that corresponds to the GROMACS representation
+    of a triclinic cell. For orthorhombic input, the box is returned unchanged
+    (with angles set to 90).
+
+    Parameters
+    ----------
+    dimensions : numpy.ndarray
+        Box dimensions in MDAnalysis format ``[a, b, c, alpha, beta, gamma]``,
+        where lengths are in Angstrom and angles in degrees.
+
+    Returns
+    -------
+    numpy.ndarray
+        Orthorhombic box dimensions ``[xx, yy, zz, 90, 90, 90]``.
+    """
+    a, b, c, alpha, beta, gamma = dimensions
+    if np.allclose([alpha, beta, gamma], 90.0):
+        return np.array([a, b, c, 90.0, 90.0, 90.0])
+    alpha, beta, gamma = np.radians([alpha, beta, gamma])
+
+    xx = a
+    yy = b * np.sin(gamma)
+    xz = c * np.cos(beta)
+    yz = c * (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / np.sin(gamma)
+    zz = np.sqrt(c**2 - xz**2 - yz**2)
+
+    return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
+
 
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
@@ -316,7 +351,7 @@ def correlation_analysis(timeseries: np.ndarray) -> float:
     Returns
     -------
     corrtime: float
-        Estimated correlation time of `timeseries`.
+        Estimated correlation time of ``timeseries``.
 
     """
     if np.any(np.isnan(timeseries)):
@@ -370,16 +405,16 @@ def get_compound(atomgroup: mda.AtomGroup) -> str:
     Raises
     ------
     AttributeError
-        `atomgroup` is missing any connection information"
+        ``atomgroup`` is missing any connection information"
 
     """
     if hasattr(atomgroup, "molnums"):
         return "molecules"
     if hasattr(atomgroup, "fragments"):
-        logging.info("Cannot use 'molecules'. Falling back to 'fragments'")
+        logger.info("Cannot use 'molecules'. Falling back to 'fragments'")
         return "fragments"
     if hasattr(atomgroup, "residues"):
-        logging.info("Cannot use 'fragments'. Falling back to 'residues'")
+        logger.info("Cannot use 'fragments'. Falling back to 'residues'")
         return "residues"
     raise AttributeError("Missing any connection information in `atomgroup`.")
 
@@ -417,50 +452,13 @@ def atomgroup_header(AtomGroup: mda.AtomGroup) -> str:
 
     """
     if not hasattr(AtomGroup, "types"):
-        logging.warning(
+        logger.warning(
             "AtomGroup does not contain atom types. Not writing AtomGroup information "
             "to output."
         )
         return f"{len(AtomGroup.atoms)} unkown particles"
     unique, unique_counts = np.unique(AtomGroup.types, return_counts=True)
     return " & ".join("{} {}".format(*i) for i in np.vstack([unique, unique_counts]).T)
-
-
-def bin(a: np.ndarray, bins: np.ndarray) -> np.ndarray:
-    """Average array values in bins for easier plotting.
-
-    Parameters
-    ----------
-    a : numpy.ndarray
-        The input array to be averaged.
-    bins : numpy.ndarray
-        The array containing the indices where each bin begins.
-
-    Returns
-    -------
-    numpy.ndarray
-        The averaged array values.
-
-    Notes
-    -----
-    The "bins" array should contain the INDEX (integer) where each bin begins.
-
-    """
-    if np.iscomplex(a).any():
-        avg = np.zeros(len(bins), dtype=complex)  # average of data
-    else:
-        avg = np.zeros(len(bins))
-
-    count = np.zeros(len(bins), dtype=int)
-    ic = -1
-
-    for i in range(0, len(a)):
-        if i in bins:
-            ic += 1  # index for new average
-        avg[ic] += a[i]
-        count[ic] += 1
-
-    return avg / count
 
 
 def charge_neutral(filter: str) -> Callable:
@@ -475,7 +473,7 @@ def charge_neutral(filter: str) -> Callable:
     ----------
     filter : str
         Filter type to control warning filter. Common values are: "error" or "default"
-        See `warnings.simplefilter` for more options.
+        See :func:`warnings.simplefilter` for more options.
 
     """
 
@@ -515,7 +513,7 @@ def charge_neutral(filter: str) -> Callable:
 
 
 def unwrap_refgroup(original_class):
-    """Class decorator error if `unwrap = False` and `refgroup != None`."""
+    """Class decorator error if ``unwrap = False`` and ``refgroup != None``."""
 
     def unwrap_check(function):
         @functools.wraps(function)
@@ -723,8 +721,8 @@ def unit_vectors_cylinder(
     Returns
     -------
     numpy.ndarray
-        Array of the calculated unit vectors with shape (3,) for `pdim='z'` and shape
-        (3,n) for `pdim='r'`. The length of `n` depends on the grouping.
+        Array of the calculated unit vectors with shape (3,) for ``pdim='z'`` and shape
+        (3,n) for ``pdim='r'``. The length of ``n`` depends on the grouping.
 
     """
     # We do NOT transform ``unit_vectors`` into cylindrical coordinates, because all
@@ -765,7 +763,7 @@ def unit_vectors_sphere(
     Returns
     -------
     numpy.ndarray
-        Array of the calculated unit vectors with shape (3,n). The length of `n`
+        Array of the calculated unit vectors with shape (3,n). The length of ``n``
         depends on the grouping.
 
     """
@@ -798,18 +796,27 @@ def maicos_banner(version: str = "", frame_char: str = "-") -> str:
         formatted banner
 
     """
-    banner = rf"""
+    banner = r"""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @                  __  __              _____    _____            _____         @
 @    ()----()     |  \/  |     /\     |_   _|  / ____|          / ____|        @
 @   /  |     \    | \  / |    /  \      | |   | |        ___   | (___          @
 @  () ||| |  ()   | |\/| |   / /\ \     | |   | |       / _ \   \___ \         @
-@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @
+@   \ |||||_ /    | |  | |  / ____ \   _| |_  | |____  | (_) |  ____) |        @"""
+    if len(version) < 8:
+        banner += rf"""
 @    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/ {version:^8}@
 @                                                                              @
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
-
+    else:
+        banner += rf"""
+@    ()----()     |_|  |_| /_/    \_\ |_____|  \_____|  \___/  |_____/         @
+@                                                                              @
+@{version:^78}@
+@                                                                              @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+"""
     return banner.replace("@", frame_char)
 
 
@@ -832,7 +839,7 @@ def get_module_input_str(module_obj):
         sig.args.remove("self")
         strings = []
         for param in sig.args:
-            if type(module_obj._locals[param]) is str:
+            if isinstance(module_obj._locals[param], str):
                 string = f"{param}='{module_obj._locals[param]}'"
             elif (
                 param == "atomgroup"
@@ -851,7 +858,7 @@ def get_module_input_str(module_obj):
             [
                 (
                     f"{param}='{module_obj._run_locals[param]}'"
-                    if type(module_obj._run_locals[param]) is str
+                    if isinstance(module_obj._run_locals[param], str)
                     else f"{param}={module_obj._run_locals[param]}"
                 )
                 for param in sig.args
@@ -893,6 +900,9 @@ class ResultsAggregator:
         Results, Results
             total mean, total standard error of the mean
         """
+        if len(means) == 1:
+            return means[0], sems[0]
+
         merged_means = Results()
         merged_sems = Results()
 
@@ -919,6 +929,9 @@ class ResultsAggregator:
         Results
             Total sum of the Results
         """
+        if len(sums) == 1:
+            return sums[0]
+
         merged_sums = Results()
 
         for key in sums[0]:
@@ -980,7 +993,7 @@ class ResultsAggregator:
         M_tot = np.sum(Ms, axis=0) + np.sum(
             (means_a - mean_total) ** 2 * batch_sizes_a, axis=0
         )
-        N_tot = np.sum(batch_sizes_a)
+        N_tot = int(np.sum(batch_sizes_a))
         return np.sqrt(M_tot / N_tot**2)
 
     @staticmethod

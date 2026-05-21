@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -17,6 +17,8 @@ from ..core import CylinderBase
 from ..lib.math import transform_cylinder
 from ..lib.util import get_center, get_compound, render_docs
 
+logger = logging.getLogger(__name__)
+
 
 @render_docs
 class PDFCylinder(CylinderBase):
@@ -27,8 +29,8 @@ class PDFCylinder(CylinderBase):
     which lie on the same cylinder along the angular and axial directions
     respectively. These functions can be used in cylindrical systems that are
     inhomogeneous along radial coordinate, and homogeneous in the angular and
-    axial directions. It gives the average number density of :math:`g2` as a
-    function of angular and axial distances respectively from a :math:`g1` atom.
+    axial directions. It gives the average number density of ``g2`` as a
+    function of angular and axial distances respectively from a ``g1`` atom.
     Then the angular pair distribution function is
 
     .. math::
@@ -49,7 +51,7 @@ class PDFCylinder(CylinderBase):
     Even though due to consistency reasons the results are called pair distribution
     functions the output is not unitless. The default output is is in dimension of
     number/volume in :math:`Å^{-3}`. If ``density`` is set to :py:obj:`True`, the
-    output is normalised by the density of :math:`g2`.
+    output is normalised by the density of ``g2``.
 
     Parameters
     ----------
@@ -62,11 +64,11 @@ class PDFCylinder(CylinderBase):
     drwidth : float
         radial width of a PDF cylindrical shell (Å), and axial or angular (arc) slices.
     dmin: float
-        the minimum pairwise distance between 'g1' and 'g2' (Å).
+        the minimum pairwise distance between ``'g1'`` and ``'g2'`` (Å).
     dmax : float
-        the maximum pairwise distance between 'g1' and 'g2' (Å).
+        the maximum pairwise distance between ``'g1'`` and ``'g2'`` (Å).
     density : bool
-        normalise the PDF by the density of 'g2' (:math:`Å^{-3}`).
+        normalise the PDF by the density of ``'g2'`` (:math:`Å^{-3}`).
     origin : numpy.ndarray
         Set origin of the cylindrical coordinate system (x,y,z). If :obj:`None` the
         origin will be set according to the ``refgroup`` parameter.
@@ -79,13 +81,13 @@ class PDFCylinder(CylinderBase):
     ----------
     ${CYLINDER_CLASS_ATTRIBUTES}
     results.phi_bins: numpy.ndarray
-        Angular distances to which the PDF is calculated with shape (`pdf_nbins`) (Å)
+        Angular distances to which the PDF is calculated with shape (``pdf_nbins``) (Å)
     results.z_bins: numpy.ndarray
-        axial distances to which the PDF is calculated with shape (`pdf_nbins`) (Å)
+        axial distances to which the PDF is calculated with shape (``pdf_nbins``) (Å)
     results.phi_pdf: numpy.ndarray
-        Angular PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
+        Angular PDF with shape (``pdf_nbins``, ``n_bins``) (:math:`\text{Å}^{-3}`)
     results.z_pdf: numpy.ndarray
-        Axial PDF with shape (`pdf_nbins`, `n_bins`) (:math:`\text{Å}^{-3}`)
+        Axial PDF with shape (``pdf_nbins``, ``n_bins``) (:math:`\text{Å}^{-3}`)
 
     """
 
@@ -160,7 +162,7 @@ class PDFCylinder(CylinderBase):
 
     def _prepare(self) -> None:
         super()._prepare()
-        logging.info("Analysis of the cylindrical pair distribution function.")
+        logger.info("Analysis of the cylindrical pair distribution function.")
 
         if self.origin is None:
             self.origin = self.box_center
@@ -195,7 +197,7 @@ class PDFCylinder(CylinderBase):
                 "`coc`."
             )
 
-        logging.info(
+        logger.info(
             f"Using {self.nbins_pdf_phi} pdf bins in phi direction and "
             f"{self.nbins_pdf_z} in z direction."
         )

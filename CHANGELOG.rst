@@ -11,8 +11,41 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
+Philipp Stärk
 
+- Add support for parallel analysis via new PMDA Dask Framework (#517)
+- Add example for effective-medium dielectric analysis (#584)
+- Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
+- Add azimuthal component to ``DielectricCylinder`` (#543)
+- Increase coverage (#573)
+- Fix timestep preservation in ``AnalysisCollection`` (#570)
+- Avoid duplicated metadata definitions (#572)
+- Update CI action dependencies (#574)
+- Wrap universe in orthorhombic box when ``pack=True`` to avoid issues with
+  non-orthorhombic boxes (#571)
+- Add test for logging in multiple subsequent calls of the run method (#558)
+- Added type annotations for observables in ``AnalysisBase`` and ``ProfileBase`` to
+  enable mypy type checking without ``# type: ignore`` comments (#566)
+- Change DielectricCylinder code to avoid numerical errors (#556)
+- Improve guidelines for contributing (#560)
+- Removed platforms from ``tox.ini``, this is handled by the build workflow (#564)
+- Don't include the ``.github`` folder in the source distribution (#562)
+- Update AUTHORS.rst (#553)
+
+v0.12 (2026/01/23)
+------------------
+Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
+Francis Jose
+
+- Internal restructure API documentation sources into *core* and *lib* sections (#548)
+- Update copyright year to 2026 (#549)
+- Use standard library ``tomllib`` instead of ``tomli`` for docs (#547)
+- Added warnings for PlanarBase (#534)
+- Streamlined logging (#534)
+- Removed unused ``lib.util.bin`` function (#544)
+- Splitting basic and advanced usage in Getting Started (#535)
+- Improve markups in function and class docstrings (#537)
 - Remove ``diporder_pair_weights`` function (#531)
 - Update issue templates (#530)
 - Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.

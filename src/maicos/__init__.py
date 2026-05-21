@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -8,12 +8,14 @@
 """MAICoS: Molecular Analysis of Interfacial and COnfined Systems."""
 
 import warnings
+from importlib.metadata import metadata
 
 from ._version import __version__  # noqa: F401
 from .modules import *  # noqa: F403
 from .modules import __all__ as __all__
 
-__authors__ = "MAICoS Developer Team"
+_meta = metadata("maicos")
+__authors__ = _meta["Author"]
 
 # Print maicos DeprecationWarnings
 warnings.filterwarnings(action="once", category=DeprecationWarning, module="maicos")

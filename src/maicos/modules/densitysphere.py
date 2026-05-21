@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2025 Authors and contributors
+# Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
@@ -14,6 +14,8 @@ import MDAnalysis as mda
 from ..core import ProfileSphereBase
 from ..lib.util import render_docs
 from ..lib.weights import density_weights
+
+logger = logging.getLogger(__name__)
 
 
 @render_docs
@@ -73,5 +75,5 @@ class DensitySphere(ProfileSphereBase):
         )
 
     def _prepare(self):
-        logging.info(f"Analysis of the {self._locals['dens']} density profile.")
+        logger.info(f"Analysis of the {self._locals['dens']} density profile.")
         super()._prepare()
