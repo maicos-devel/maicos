@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
 
 - Treat all warnings as error in tests (#575)
+- Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Increase coverage (#573)
 - Fix timestep preservation in ``AnalysisCollection`` (#570)
