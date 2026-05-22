@@ -61,9 +61,9 @@ class _Runner:
         for analysis_object in analysis_instances:
             if getattr(analysis_object, "_trajectory", None) is None:
                 raise RuntimeError(
-                    f"{type(analysis_object).__name__} was restored from "
-                    "`load` and has no trajectory attached. Loaded analyses "
-                    "are read-only snapshots and cannot be re-run; build a "
+                    f"{type(analysis_object).__name__} has no trajectory "
+                    "attached and cannot be run. This could mean it was "
+                    "restored via `load` as a read-only snapshot; build a "
                     "fresh instance from a Universe with a trajectory if you "
                     "need to run the analysis again."
                 )

@@ -1332,7 +1332,7 @@ class TestDumpLoad:
 
         restored = SingularSeries.load(str(fpath))
 
-        with pytest.raises(RuntimeError, match="restored from `load`"):
+        with pytest.raises(RuntimeError, match="restored via `load`"):
             restored.run()
 
     @pytest.mark.parametrize(
