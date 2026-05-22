@@ -1,8 +1,8 @@
 .. _dielectric-explanations:
 
-===============================
-Dielectric constant measurement
-===============================
+==============================
+Relative permittivity profiles
+==============================
 
 Dielectric Response of Homogeneous, Isotropic Fluids
 ====================================================
@@ -54,7 +54,7 @@ Electrostatic Theory
 The relationship between the electric field and the dielectric response shown above is
 only valid for isotropic homogeneous systems, where the properties of the material are
 the same throughout. However, there is also a need for calculating the dielectric
-response of anistropic inhomogeneous systems. For instance, fluids confined in a porous
+response of anisotropic inhomogeneous systems. For instance, fluids confined in a porous
 material are of great importance for many technological processes, such as energy
 storage devices like batteries and capacitors. In these devices, a nano-porous electrode
 is used to increase the surface area and improve the capacity of the device. Another
@@ -106,10 +106,11 @@ Thus, we can simplify the anisotropic, non-linear equation above in the parallel
      \epsilon_\parallel(z, z') =: \epsilon_0 \epsilon_\parallel(z) E_\parallel
 
 where the marginal integration of :math:`\varepsilon_\parallel (\mathbf{r},
-\mathbf{r}')` defines the dielectric profile :math:`\varepsilon_\parallel(z)`. It is
+\mathbf{r}')` defines the relative permittivity profile
+:math:`\varepsilon_\parallel(z)`. It is
 important to note that this derivation starts with non-local assumptions and is exact in
 the case of planar geometries discussed here (similar derivations apply also for
-cylindrical and spherical symmertries). Thus, :math:`\varepsilon_\parallel(z)` fully
+cylindrical and spherical symmetries). Thus, :math:`\varepsilon_\parallel(z)` fully
 captures the non-locality of the confined fluid's response and does not require
 additional assumptions.
 
@@ -118,12 +119,13 @@ In the absence of "free charges" we can use the macroscopic Maxwell equation
 .. math::
      \nabla \cdot \mathbf{D} = 0
 
-to derive the perpendicular dielectric profile.
+to derive the perpendicular relative permittivity profile.
 
 .. warning::
-    This requires that no free charges are used in simulations, which
-    means that no ions can be included in simulations. This is a common pitfall
-    and leads to a wrong analysis.
+    This requires that no free charges like ions are present in the system.
+    This is a common pitfall and can lead to a wrong analysis, although a
+    generalized dielectric response can be defined for the perpendicular component.
+    :footcite:p:`stark_static_2026`
 
 The above equation gives us the important relation of :math:`\partial_z \mathbf{D}_z =
 0`, which implies that the perpendicular components of the displacement field do not
@@ -132,7 +134,8 @@ vary with :math:`z`. Thus, if we start with the inverse dielectric response, def
 .. math::
      E(z) = \varepsilon_0^{-1} \int \mathrm{d} z' \varepsilon^{-1}(z, z') D(z')
 
-where :math:`\varepsilon^{-1}(z, z')` is the matrix inverse of the dielectric tensor.
+where :math:`\varepsilon^{-1}(z, z')` is the matrix inverse of the dielectric
+permittivity tensor.
 Similar to above, we use the fact that :math:`D` does not vary with :math:`z` and
 simplify
 
@@ -142,7 +145,7 @@ simplify
                \epsilon_\perp^{-1}(z)  D_\perp
 
 where the marginal integration of :math:`\varepsilon_\perp^{-1} (\mathbf{r},
-\mathbf{r}')` defines the inverse dielectric profile :math:`\varepsilon_\perp^{-1}(z)`.
+\mathbf{r}')` defines the inverse relative permittivity profile :math:`\varepsilon_\perp^{-1}(z)`.
 
 **In summary**, if one has no magnetic fields and no free charges, the dielectric
 profiles :math:`\varepsilon^{-1}_\bot (z)` and :math:`\varepsilon_\parallel(z)` fully
@@ -166,14 +169,14 @@ is given by
                             - \langle m_\parallel (z) \rangle \langle M_\parallel
                             \rangle}{\epsilon_0 k_\mathrm{B}T}
 
-for the **parallel** dielectric profile, and
+for the **parallel** relative permittivity profile, and
 
 .. math::
      \epsilon_\perp^{-1}(z) = 1 - \frac{\langle m_\perp(z) M_\perp \rangle
                              - \langle m_\perp (z) \rangle \langle M_\perp \rangle}
                              {\epsilon_0 k_\mathrm{B}T},
 
-for the **inverse** perpendicular dielectric profile.
+for the **inverse** perpendicular relative permittivity profile.
 
 Note that we still need to define how to calculate :math:`m_\parallel(z)` and
 :math:`m_\perp(z)`. For the perpendicular polarization density, we have
@@ -232,8 +235,8 @@ Note, that a very close formula :footcite:p:`sternCalculationDielectricPermittiv
 can also be derived for arbitrary boundary conditions at infinity, which some
 simulation codes can also utilize. As most simulations nowadays are performed using
 tin-foil boundary conditions, MAICoS does not provide these special cases and we
-do not recommend that simulations for the calculation of dielectric profiles
-are performed with other boundary conditions.
+do not recommend that simulations for the calculation of relative permittivity
+profiles are performed with other boundary conditions.
 
 .. note::
     The above equation reduces to the correct 2d periodic system if one
@@ -242,7 +245,7 @@ are performed with other boundary conditions.
     over the :math:`z` direction can be approximated as a dipole interaction.
     This approach is analogous to the Yeh and Berkovitz correction
     :footcite:p:`yehEwaldSummationSystems1999` and
-    may be used to calculate the dielectric profiles for physical systems with
+    may be used to calculate the relative permittivity profiles for physical systems with
     2d-symmetry when corrections are not available. In these situations, we
     recommend to use a padding vacuum layer such that the system is 3x the
     physical system size in :math:`z` direction.
@@ -254,6 +257,65 @@ are performed with other boundary conditions.
 
 The correction for 3d periodic systems with tin-foil boundary conditions can be
 turned on using the parameter ``is_3d``.
+
+Dielectric Dividing Surface and Box Model
+-----------------------------------------
+The relative permittivity profiles described above fully characterize the dielectric properties
+of the system on a microscopic scale. However, it is often desirable to obtain the
+averaged, effective dielectric response of the system. This is especially true as
+most experimentally accessible measurements only give access to the average
+response of the confined system, such as e.g. the capacitance.
+
+A consistent averaging procedure follows from concepts of effective medium
+theory, as described in detail e.g. in refs.
+:footcite:p:`stark_static_2026,schlaichWaterDielectricEffects2016`.
+The idea of this approach is to average the relative permittivity profiles over some length scale,
+called the "effective length", essentially corresponding to a fictional medium
+with the same response as the original system.
+I.e. one constructs a fictional homogeneous (but anisotropic) medium that reproduces the
+potential drop across the system for applied fields in the parallel or
+perpendicular direction. This is analogous to a Gibbs construction, which is
+commonly used to define the location of an interface for systems with a
+continuous density profile and thus define the Dielectric Dividing Surface.
+
+The corresponding box model can be formalized via the following equations:
+
+.. math::
+     \varepsilon_\parallel^\mathrm{eff} = 1 +
+     \frac{\int_{-L/2}^{L/2} \varepsilon_\parallel(z)\,\mathrm{d}z - L}
+     {L_\parallel^\mathrm{eff}}.
+
+.. math::
+     \left(\varepsilon_\perp^\mathrm{eff}\right)^{-1} = 1 +
+     \frac{\int_{-L/2}^{L/2} \varepsilon_\perp^{-1}(z)\,\mathrm{d}z - L}
+     {L_\perp^\mathrm{eff}}.
+
+where :math:`L` is the simulation box length,
+:math:`L_\parallel^\mathrm{eff}` is the effective length for the parallel response,
+and :math:`L_\perp^\mathrm{eff}` is the effective length for the perpendicular response.
+
+There are a few subtleties to be aware of: For one thing, this construction is
+under-determined for a single pore size, as there are two unknowns
+:math:`\varepsilon_\alpha^\mathrm{eff}` and :math:`L_\alpha^\mathrm{eff}`
+(with :math:`\alpha = \parallel, \perp`).
+As has been shown in e.g. refs. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
+this can be resolved by using the fact that :math:`\varepsilon^\mathrm{eff}`
+approaches the bulk dielectric constant of the fluid for large pores.
+It has been shown empirically in these references, that this is the case even for
+pores as small as a few nanometers (typically :math:`L\ge 1 \mathrm{nm}`).
+Thus, one can determine :math:`L_\alpha^\mathrm{eff}` by fitting the effective
+medium theory to the expected bulk dielectric constant of the fluid for one
+large pore. Once :math:`L_\alpha^\mathrm{eff}` is determined, one can then assume
+constant offset lengths for all other pores, allowing the determination of the
+effective dielectric constants for all other pore sizes.
+
+A detailed example for this procedure is given in the How-to guide for
+:ref:`userdoc-how-to-dielectrics`.
+
+As has been detailed in refs. :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`,
+it is recommended to determine the offsets relative to the Gibbs dividing surface.
+See especially ref. :footcite:p:`stark_static_2026` for a detailed discussion of
+the universality of this procedure for various water models.
 
 References
 ----------
