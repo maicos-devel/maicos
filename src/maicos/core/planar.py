@@ -93,7 +93,7 @@ class PlanarBase(AnalysisBase):
 
         # _prepare runs twice under the parallel runner (once on the controller and
         # once inside the worker's _compute), so these must not be reset per _prepare.
-        # TODO(@hejamu): Check this. 
+        # TODO(@hejamu): Check this.
         self._warned_zmin = False
         self._warned_zmax = False
         self._warned_box_length = False
