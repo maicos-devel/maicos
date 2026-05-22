@@ -13,12 +13,13 @@ import logging
 import re
 import sys
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
+from MDAnalysis.analysis.results import Results
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
@@ -124,6 +125,22 @@ frames : array_like
     non-default value will raise a :exc:`ValueError`.
 verbose : bool
     Turn on verbosity
+n_workers : int
+    number of workers for parallel execution. If ``None`` (default) it is taken
+    from the ``backend`` instance when available, otherwise set to ``1``.
+n_parts : int
+    number of parts to split the trajectory into; each part is processed as one
+    batch and the results are merged afterwards. Defaults to ``n_workers``.
+backend : str or MDAnalysis.analysis.backends.BackendBase
+    parallelization backend. Either a name returned by
+    :meth:`get_supported_backends` (e.g. ``"serial"``, ``"multiprocessing"`` or
+    ``"dask"``) or a custom
+    :class:`~MDAnalysis.analysis.backends.BackendBase` instance. Defaults to
+    ``"serial"``. A progress bar (via ``verbose`` or ``progressbar_kwargs``) is
+    only available with the serial backend.
+unsupported_backend : bool
+    if ``True``, allow passing a ``backend`` that is not listed in
+    :meth:`get_supported_backends`. Keyword-only.
 progressbar_kwargs : dict
     ProgressBar keywords with custom parameters regarding progress bar position,
     etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
@@ -869,3 +886,139 @@ def get_module_input_str(module_obj):
         module_input = f"{module_name}(*args).run(*args)"
 
     return module_input
+
+
+class ResultsAggregator:
+    """Aggregate per-batch results from parallelized workers.
+
+    Combines the ``means``, ``sems`` and ``sums`` computed independently on each
+    batch of frames back into the totals a serial run would have produced. Based
+    on :class:`MDAnalysis.analysis.results.ResultsGroup`.
+    """
+
+    def __init__(self):
+        pass
+
+    def merge(
+        self, means: Sequence[Results], sems: Sequence[Results], batch_sizes: list[int]
+    ) -> tuple[Results, Results]:
+        """Merge the results from each batch.
+
+        Parameters
+        ----------
+        means: Sequence[Results]
+            Mean Results from each batch
+        sems: Sequence[Results]
+            Standard error of the mean Results from each batch
+        batch_sizes: list[int]
+            the number of frames in each batch
+
+        Returns
+        -------
+        Results, Results
+            total mean, total standard error of the mean
+        """
+        if len(means) == 1:
+            return means[0], sems[0]
+
+        merged_means = Results()
+        merged_sems = Results()
+
+        for key in means[0]:
+            means_of_t = [obj[key] for obj in means]
+            merged_means[key] = ResultsAggregator.weighted_mean(means_of_t, batch_sizes)
+            sems_of_t = [obj[key] for obj in sems]
+            merged_sems[key] = ResultsAggregator.weighted_sem(
+                sems_of_t, means_of_t, batch_sizes
+            )
+
+        return merged_means, merged_sems
+
+    def merge_sums(self, sums: Sequence[Results]) -> Results:
+        """Merge sums from batches by summing.
+
+        Parameters
+        ----------
+        sums: Sequence[Results]
+            Results sums from each batch
+
+        Returns
+        -------
+        Results
+            Total sum of the Results
+        """
+        if len(sums) == 1:
+            return sums[0]
+
+        merged_sums = Results()
+
+        for key in sums[0]:
+            sums_of_t = [obj[key] for obj in sums]
+            merged_sums[key] = np.sum(np.array(sums_of_t), axis=0)
+
+        return merged_sums
+
+    @staticmethod
+    def weighted_mean(means: list[np.ndarray], batch_sizes: list[int]) -> np.ndarray:
+        """Calculate the weighted mean of the batches.
+
+        Parameters
+        ----------
+        means: list[np.ndarray]
+            means of each batch
+        batch_sizes: list[int]
+            the number of frames in each batch (valid weight only when each frame
+            contributes one sample per element; see class warning)
+
+        Returns
+        -------
+        np.ndarray
+            total mean
+        """
+        means_arr = np.array(means)
+        batch_sizes_arr = np.array(batch_sizes)
+        batch_sizes_arr = ResultsAggregator._match_dims(means_arr, batch_sizes_arr)
+        return np.sum(means_arr * batch_sizes_arr, axis=0) / np.sum(batch_sizes_arr)
+
+    @staticmethod
+    def weighted_sem(
+        sems: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]
+    ) -> np.ndarray:
+        """Calculate the weighted standard error of the mean.
+
+        Parameters
+        ----------
+        sems: list[np.ndarray]
+            standard error of the mean of each batch
+        means: list[np.ndarray]
+            mean of each batch
+        batch_sizes: list[int]
+            the number of frames in each batch (valid weight only when each frame
+            contributes one sample per element; see class warning)
+
+        Returns
+        -------
+        np.ndarray
+            total standard error of the mean
+        """
+        mean_total = ResultsAggregator.weighted_mean(means, batch_sizes)
+        means_a = np.array(means)
+
+        batch_sizes_a = np.array(batch_sizes)
+
+        sems_a = np.array(sems)
+        batch_sizes_a = ResultsAggregator._match_dims(sems_a, batch_sizes_a)
+        Ms = sems_a**2 * (batch_sizes_a) ** 2
+
+        M_tot = np.sum(Ms, axis=0) + np.sum(
+            (means_a - mean_total) ** 2 * batch_sizes_a, axis=0
+        )
+        N_tot = int(np.sum(batch_sizes_a))
+        return np.sqrt(M_tot / N_tot**2)
+
+    @staticmethod
+    def _match_dims(big_arr, small_arr) -> np.ndarray:
+        """Expand dimensions of the small array to match the big array."""
+        dims = len(big_arr.shape)
+        n_batches = small_arr.shape[0]
+        return np.reshape(small_arr, [n_batches] + [1] * (dims - 1))

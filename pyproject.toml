@@ -52,6 +52,7 @@ dependencies = [
 
 [project.optional-dependencies]
 examples = ["matplotlib", "pint"]
+parallel = ["MDAnalysis[parallel]>=2.10.0"]
 
 [project.urls]
 homepage = "https://www.maicos-analysis.org"

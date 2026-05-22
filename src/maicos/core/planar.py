@@ -91,6 +91,13 @@ class PlanarBase(AnalysisBase):
         self._zmin = zmin
         self._bin_width = bin_width
 
+        # _prepare runs twice under the parallel runner (once on the controller and
+        # once inside the worker's _compute), so these must not be reset per _prepare.
+        # TODO(@hejamu): Check this.
+        self._warned_zmin = False
+        self._warned_zmax = False
+        self._warned_box_length = False
+
     @property
     def odims(self) -> np.ndarray:
         """Other dimensions perpendicular to dim i.e. (0,2) if dim = 1."""
@@ -147,9 +154,6 @@ class PlanarBase(AnalysisBase):
 
     def _prepare(self):
         """Prepare the planar analysis."""
-        self._warned_zmin = False
-        self._warned_zmax = False
-        self._warned_box_length = False
         self.initial_box_length = self.box_lengths[self.dim]
         self._compute_lab_frame_planar()
         # TODO(@hejamu): There are much more wrong combinations of zmin and zmax...

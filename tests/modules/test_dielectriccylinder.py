@@ -389,6 +389,6 @@ class TestDielectricCylinder:
         )(eps.means.mM_r, eps.means.m_r, eps.means.M_r)
 
         deps_r_sympy = (
-            2 * np.pi * eps._obs.L * eps._pref * eps.results.bin_pos * dcov_r_sympy
+            2 * np.pi * eps.means.L * eps._pref * eps.results.bin_pos * dcov_r_sympy
         )
         assert_allclose(deps_r_sympy, eps.results.deps_r)

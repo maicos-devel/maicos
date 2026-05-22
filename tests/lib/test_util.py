@@ -195,7 +195,7 @@ def test_get_module_input_str(ag):
 
     assert (
         ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
-        "progressbar_kwargs=None)" in module_input
+        "n_workers=None, n_parts=None, backend=None)" in module_input
     )
 
     # Test if the set test_input parameter is written correctly
@@ -209,7 +209,7 @@ def test_get_module_input_str(ag):
     module_input = maicos.lib.util.get_module_input_str(ana)
     assert (
         ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
-        "progressbar_kwargs=None)" in module_input
+        "n_workers=None, n_parts=None, backend=None)" in module_input
     )
 
 
@@ -541,6 +541,58 @@ class TestUnitVectors:
         transform /= np.linalg.norm(transform, axis=1)[:, np.newaxis]
 
         assert_allclose(transform, unit_vectors)
+
+
+class TestResultsAggregator:
+    """Test the ResultsAggregator for the parallel analysis implementation."""
+
+    @pytest.fixture(params=[(64, 1), (64, 5)])
+    def data(self, request):
+        """Random sample data of varying shape for aggregation tests."""
+        rng = np.random.default_rng(seed=42)
+        return rng.random(request.param)
+
+    def test_means(self, data):
+        """Weighted mean over batches matches the mean of the full data."""
+        n_batches = 4
+        batch_size = 16
+        bs = batch_size
+
+        means = []
+        for i in range(n_batches):
+            start = i * bs
+            end = start + bs
+            means.append(np.mean(data[start:end], axis=0))
+
+        batch_sizes = [batch_size] * n_batches
+
+        agg = maicos.lib.util.ResultsAggregator()
+
+        weighted_mean = agg.weighted_mean(means, batch_sizes)
+
+        assert_allclose(weighted_mean, np.mean(data, axis=0))
+
+    def test_sems(self, data):
+        """Weighted SEM over batches matches the SEM of the full data."""
+        n_batches = 4
+        batch_size = 16
+        bs = batch_size
+
+        sems = []
+        means = []
+        for i in range(n_batches):
+            start = i * bs
+            end = start + bs
+            sems.append(np.std(data[start:end], axis=0) / np.sqrt(bs))
+            means.append(np.mean(data[start:end], axis=0))
+
+        batch_sizes = [batch_size] * n_batches
+
+        agg = maicos.lib.util.ResultsAggregator()
+
+        weighted_sem = agg.weighted_sem(sems, means, batch_sizes)
+
+        assert_allclose(weighted_sem, np.std(data, axis=0) / np.sqrt(64))
 
 
 class TestTriclinicToOrthorhombic:

@@ -87,6 +87,17 @@ class DielectricPlanar(PlanarBase):
 
     """
 
+    _analysis_algorithm_is_parallelizable = True
+
+    @classmethod
+    def get_supported_backends(cls):
+        """Tuple with backends supported by DielectricPlanar."""
+        return (
+            "serial",
+            "multiprocessing",
+            "dask",
+        )
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,

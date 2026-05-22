@@ -14,6 +14,8 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Philipp Stärk
 
+- Add support for parallel analysis via MDAnalysis split-apply-combine backends
+  (``serial``/``multiprocessing``/``dask``) (#517)
 - Add example for effective-medium dielectric analysis (#584)
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
