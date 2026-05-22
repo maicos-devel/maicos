@@ -894,16 +894,6 @@ class ResultsAggregator:
     Combines the ``means``, ``sems`` and ``sums`` computed independently on each
     batch of frames back into the totals a serial run would have produced. Based
     on :class:`MDAnalysis.analysis.results.ResultsGroup`.
-
-    .. warning::
-
-        The weighted mean and SEM assume that every frame contributes exactly one
-        sample per observable element (i.e. ``_pop == 1`` everywhere), so batches
-        are weighted by their frame count. Modules that accumulate sub-frame
-        statistics via ``_pop``/``_var`` (per-frame populations greater than one)
-        would need to be weighted by their total sample count instead. Enabling
-        parallelism for such a module without that change yields incorrect error
-        estimates.
     """
 
     def __init__(self):
@@ -921,8 +911,7 @@ class ResultsAggregator:
         sems: Sequence[Results]
             Standard error of the mean Results from each batch
         batch_sizes: list[int]
-            the number of frames in each batch (valid weight only when each frame
-            contributes one sample per element; see class warning)
+            the number of frames in each batch
 
         Returns
         -------

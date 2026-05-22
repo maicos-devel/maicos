@@ -91,9 +91,9 @@ class PlanarBase(AnalysisBase):
         self._zmin = zmin
         self._bin_width = bin_width
 
-        # Guard flags so each warning is emitted at most once per analysis object.
         # _prepare runs twice under the parallel runner (once on the controller and
         # once inside the worker's _compute), so these must not be reset per _prepare.
+        # TODO(@hejamu): Check this. 
         self._warned_zmin = False
         self._warned_zmax = False
         self._warned_box_length = False
