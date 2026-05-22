@@ -81,7 +81,7 @@ class DielectricCylinder(CylinderBase):
 
     @classmethod
     def get_supported_backends(cls):
-        """Tuple with backends supported by DielectricPlanar."""
+        """Tuple with backends supported by DielectricCylinder."""
         return (
             "serial",
             "multiprocessing",

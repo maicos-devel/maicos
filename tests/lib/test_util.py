@@ -549,7 +549,8 @@ class TestResultsAggregator:
     @pytest.fixture(params=[(64, 1), (64, 5)])
     def data(self, request):
         """Random sample data of varying shape for aggregation tests."""
-        return np.random.rand(*request.param)
+        rng = np.random.default_rng(seed=42)
+        return rng.random(request.param)
 
     def test_means(self, data):
         """Weighted mean over batches matches the mean of the full data."""

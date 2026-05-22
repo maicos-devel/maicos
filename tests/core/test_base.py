@@ -96,9 +96,7 @@ class SingularSeries(AnalysisBase):
         )
 
         n_frames = 101
-        # rng = np.random.default_rng(seed=100)
         x = np.linspace(0, 1, n_frames)
-        # self.series = rng.random(n_frames)
         self.series = np.sin(x)
 
     def _prepare(self):
@@ -416,7 +414,9 @@ class Test_AnalysisBase:
             ana.means.observable, np.mean(ana.series[: ana.n_frames]), rtol=1e-5
         )
         assert_allclose(
-            ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames), rtol=1e-5
+            ana.sems.observable,
+            np.std(ana.series[: ana.n_frames]) / np.sqrt(ana.n_frames),
+            rtol=1e-5,
         )
 
     def test_output_message(self, ag, monkeypatch, tmp_path):
@@ -426,8 +426,10 @@ class Test_AnalysisBase:
         data = np.random.rand(100, 2)
         ana = Output(ag)
         ana._index = 1
+        ana.n_frames = 1
         sub_ana = SubOutput(ag)
         sub_ana._index = 1
+        sub_ana.n_frames = 1
 
         # Simple check if a single message gets written to the output file
         ana.savetxt("foo", data, columns=["First", "Second"])
@@ -1151,6 +1153,7 @@ class Test_ProfileBase:
         profile.results.dprofile = np.zeros(10)
         profile.run = lambda x: x
         profile._index = 0
+        profile.n_frames = 0
 
         profile.save()
         assert Path(params["output"]).exists()
@@ -1166,6 +1169,7 @@ class Test_ProfileBase:
         profile.results.dprofile = np.random.random(10)
         profile.run = lambda x: x
         profile._index = 0
+        profile.n_frames = 0
 
         profile.save()
         res_dens = np.loadtxt(profile.output)

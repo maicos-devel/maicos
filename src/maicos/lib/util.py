@@ -125,6 +125,22 @@ frames : array_like
     non-default value will raise a :exc:`ValueError`.
 verbose : bool
     Turn on verbosity
+n_workers : int
+    number of workers for parallel execution. If ``None`` (default) it is taken
+    from the ``backend`` instance when available, otherwise set to ``1``.
+n_parts : int
+    number of parts to split the trajectory into; each part is processed as one
+    batch and the results are merged afterwards. Defaults to ``n_workers``.
+backend : str or MDAnalysis.analysis.backends.BackendBase
+    parallelization backend. Either a name returned by
+    :meth:`get_supported_backends` (e.g. ``"serial"``, ``"multiprocessing"`` or
+    ``"dask"``) or a custom
+    :class:`~MDAnalysis.analysis.backends.BackendBase` instance. Defaults to
+    ``"serial"``. A progress bar (via ``verbose`` or ``progressbar_kwargs``) is
+    only available with the serial backend.
+unsupported_backend : bool
+    if ``True``, allow passing a ``backend`` that is not listed in
+    :meth:`get_supported_backends`. Keyword-only.
 progressbar_kwargs : dict
     ProgressBar keywords with custom parameters regarding progress bar position,
     etc; see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
@@ -873,9 +889,21 @@ def get_module_input_str(module_obj):
 
 
 class ResultsAggregator:
-    """Aggregate results from parallelized workers.
+    """Aggregate per-batch results from parallelized workers.
 
-    Based on mda.analysis.results.ResultsGroup.
+    Combines the ``means``, ``sems`` and ``sums`` computed independently on each
+    batch of frames back into the totals a serial run would have produced. Based
+    on :class:`MDAnalysis.analysis.results.ResultsGroup`.
+
+    .. warning::
+
+        The weighted mean and SEM assume that every frame contributes exactly one
+        sample per observable element (i.e. ``_pop == 1`` everywhere), so batches
+        are weighted by their frame count. Modules that accumulate sub-frame
+        statistics via ``_pop``/``_var`` (per-frame populations greater than one)
+        would need to be weighted by their total sample count instead. Enabling
+        parallelism for such a module without that change yields incorrect error
+        estimates.
     """
 
     def __init__(self):
@@ -893,7 +921,8 @@ class ResultsAggregator:
         sems: Sequence[Results]
             Standard error of the mean Results from each batch
         batch_sizes: list[int]
-            the number of samples in each batch
+            the number of frames in each batch (valid weight only when each frame
+            contributes one sample per element; see class warning)
 
         Returns
         -------
@@ -949,7 +978,8 @@ class ResultsAggregator:
         means: list[np.ndarray]
             means of each batch
         batch_sizes: list[int]
-            the number of samples in each batch
+            the number of frames in each batch (valid weight only when each frame
+            contributes one sample per element; see class warning)
 
         Returns
         -------
@@ -974,7 +1004,8 @@ class ResultsAggregator:
         means: list[np.ndarray]
             mean of each batch
         batch_sizes: list[int]
-            the number of samples in each batch
+            the number of frames in each batch (valid weight only when each frame
+            contributes one sample per element; see class warning)
 
         Returns
         -------

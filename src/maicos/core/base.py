@@ -56,7 +56,7 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
         verbose: bool | None = None,
         n_workers: int | None = None,
         n_parts: int | None = None,
-        backend: str | BackendBase = None,
+        backend: str | BackendBase | None = None,
         *,
         unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,
@@ -83,7 +83,6 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
 
         logger.debug("Choosing frames to analyze")
 
-        # -------------------- New code --------------------
         # default to serial execution
         backend = "serial" if backend is None else backend
 
@@ -391,7 +390,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
          - 'serial': no parallelization
          - 'multiprocessing': parallelization using `multiprocessing.Pool`
          - 'dask': parallelization using `dask.delayed.compute()`. Requires
-           installation of `mdanalysis[dask]`
+           installation of `MDAnalysis[parallel]`
 
         If you want to add your own backend to an existing class, pass a
         :class:`backends.BackendBase` subclass (see its documentation to learn
@@ -820,7 +819,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             f"{module_name} is part of MAICoS v{__version__}\n\n"
             f"Command line:    {get_cli_input()}\n"
             f"Module input:    {module_input}\n\n"
-            # f"Statistics over {self._index} frames\n\n"
+            f"Statistics over {self.n_frames} frames\n\n"
             f"Considered atomgroups:\n"
             f"{atomgroups}\n"
             f"{messages}\n\n"
@@ -922,7 +921,7 @@ class AnalysisCollection(_Runner):
         verbose: bool | None = None,
         n_workers: int | None = None,
         n_parts: int | None = None,
-        backend: str | BackendBase = None,
+        backend: str | BackendBase | None = None,
         *,
         unsupported_backend: bool = False,
         progressbar_kwargs: dict | None = None,

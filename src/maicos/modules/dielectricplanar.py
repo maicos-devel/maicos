@@ -138,7 +138,6 @@ class DielectricPlanar(PlanarBase):
             wrap_compound=wrap_compound,
             concfreq=concfreq,
         )
-
         self.is_3d = is_3d
         self.sym = sym
 
