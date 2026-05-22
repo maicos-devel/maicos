@@ -741,6 +741,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             data["_refgroup_indices"] = np.asarray(self.refgroup.indices)
         data["_maicos_version"] = np.asarray(__version__)
 
+        filename = "{}{}".format(filename, (not filename.endswith(".npz")) * ".npz")
         np.savez(filename, **data)
 
     @classmethod
@@ -765,6 +766,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             A new instance of ``cls`` with state restored from ``filename``.
         """
         sep = cls._CHECKPOINT_SEP
+        filename = "{}{}".format(filename, (not filename.endswith(".npz")) * ".npz")
         npz = np.load(filename, allow_pickle=False)
 
         if "_maicos_version" not in npz.files:
