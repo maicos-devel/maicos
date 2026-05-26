@@ -478,6 +478,15 @@ class Test_AnalysisBase:
                 "progressbar_kwargs=None)" in f.read()
             )
 
+    def test_savetxt_warns_on_missing_extension(self, ag, monkeypatch, tmp_path):
+        """savetxt warns when fname lacks the .dat extension and appends it."""
+        monkeypatch.chdir(tmp_path)
+        ana = Output(ag)
+        ana._index = 1
+        with pytest.warns(UserWarning, match=r"\.dat"):
+            ana.savetxt("missing_ext", np.random.rand(10, 2))
+        assert Path("missing_ext.dat").exists()
+
     @pytest.mark.parametrize(
         ("concfreq", "files"),
         [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
@@ -1200,6 +1209,13 @@ class TestDumpLoad:
         fpath = tmp_path / "checkpoint.npz"
         singular.dump(str(fpath))
         assert fpath.exists()
+
+    def test_dump_warns_on_missing_extension(self, singular, tmp_path):
+        """dump warns when filename lacks the .npz extension and appends it."""
+        fpath = tmp_path / "missing_ext"
+        with pytest.warns(UserWarning, match=r"\.npz"):
+            singular.dump(str(fpath))
+        assert fpath.with_suffix(".npz").exists()
 
     def test_dump_does_not_mutate_universe(self, singular, tmp_path):
         """Test that dump leaves the user's universe untouched."""
