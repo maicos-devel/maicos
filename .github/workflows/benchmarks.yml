@@ -54,12 +54,53 @@ jobs:
             const fs = require('fs');
             const output = fs.readFileSync('benchmark_comparison.txt', 'utf8');
             const hasRegression = process.env.has_regression === 'true';
-            const factor = process.env.REGRESSION_FACTOR;
+            const factor = parseFloat(process.env.REGRESSION_FACTOR);
+
+            // Extract the "got worse" section from the --split output.
+            const lines = output.split('\n');
+            const headerLines = [];
+            const worseRows = [];
+            let inWorseSection = false;
+            for (const line of lines) {
+              if (/^Benchmarks that have got worse:/i.test(line)) {
+                inWorseSection = true;
+                continue;
+              }
+              if (inWorseSection && /^Benchmarks that have/.test(line)) {
+                inWorseSection = false;
+                continue;
+              }
+              if (!inWorseSection || !line.startsWith('|')) continue;
+              if (headerLines.length < 2) {
+                headerLines.push(line);
+              } else {
+                const cols = line.split('|').map(s => s.trim());
+                const ratio = parseFloat(cols[4]);
+                worseRows.push({ line, ratio });
+              }
+            }
+
+            const regressions = worseRows.filter(r => r.ratio >= factor);
+            const minor = worseRows.filter(r => r.ratio < factor);
+
             const verdict = hasRegression
               ? `💥 Yikes! Benchmark regression exceeding ${factor}x detected vs \`main\` — performance took a hit. 🐌`
               : `🚀 All clear! No benchmark regressions exceeding ${factor}x — performance is looking great. ✨`;
+
+            const renderTable = (rows) =>
+              [...headerLines, ...rows.map(r => r.line)].join('\n');
+
             const marker = '<!-- asv-benchmark-comparison -->';
-            const body = `${marker}\n## Benchmark comparison\n${verdict}\n\`\`\`\n${output}\n\`\`\``;
+            let body = `${marker}\n## Benchmark comparison\n${verdict}\n`;
+            if (regressions.length > 0) {
+              body += `\n### Regressions exceeding ${factor}x vs \`main\`\n\n${renderTable(regressions)}\n`;
+            }
+            if (minor.length > 0) {
+              body += `\n<details>\n<summary>Other benchmarks that got slower (≥1.1x, &lt;${factor}x) — ${minor.length} total</summary>\n\n${renderTable(minor)}\n\n</details>\n`;
+            }
+            if (worseRows.length === 0) {
+              body += `\nNo benchmarks got slower compared to \`main\`. 🎉\n`;
+            }
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,

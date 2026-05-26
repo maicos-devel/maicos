@@ -65,3 +65,18 @@ To compare the current branch's benchmarks against ``main``:
 .. code-block:: bash
 
     tox -e benchmarks-compare
+
+This produces two files: ``benchmark_comparison.txt`` (informational, factor 1.1) and
+``benchmark_regressions.txt`` (regression test, factor ``REGRESSION_FACTOR``,
+default 1.5).
+
+On every pull request, the ``ASV Benchmarks`` workflow runs ``tox -e benchmarks-compare``
+and posts a single sticky comment summarising the results.
+
+- Benchmarks whose ratio meets or exceeds ``REGRESSION_FACTOR`` (1.5x by default) are
+  listed under a *Regressions* heading and also fail the CI job.
+- Benchmarks that got slower by less than ``REGRESSION_FACTOR`` (but at least 1.1x) are
+  tucked into a collapsed ``<details>`` block, since they are usually noise but
+  occasionally worth a look.
+- Benchmarks that stayed the same or improved are not included.
+- 
