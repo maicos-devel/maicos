@@ -479,7 +479,7 @@ class Test_AnalysisBase:
             )
 
     def test_savetxt_warns_on_missing_extension(self, ag, monkeypatch, tmp_path):
-        """savetxt warns when fname lacks the .dat extension and appends it."""
+        """Savetxt warns when fname lacks the .dat extension and appends it."""
         monkeypatch.chdir(tmp_path)
         ana = Output(ag)
         ana._index = 1
@@ -1211,7 +1211,7 @@ class TestDumpLoad:
         assert fpath.exists()
 
     def test_dump_warns_on_missing_extension(self, singular, tmp_path):
-        """dump warns when filename lacks the .npz extension and appends it."""
+        """Dump warns when filename lacks the .npz extension and appends it."""
         fpath = tmp_path / "missing_ext"
         with pytest.warns(UserWarning, match=r"\.npz"):
             singular.dump(str(fpath))
