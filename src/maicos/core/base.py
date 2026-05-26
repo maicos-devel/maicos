@@ -25,6 +25,7 @@ from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
+    check_file_extension,
     correlation_analysis,
     get_center,
     get_cli_input,
@@ -685,7 +686,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         if columns is not None:
             header += "|".join([f"{i:^23}" for i in columns])[3:]
 
-        fname = "{}{}".format(fname, (not fname.endswith(".dat")) * ".dat")
+        fname = check_file_extension(fname, ".dat")
         np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
 
     _CHECKPOINT_CONTAINERS = ("results", "_obs", "means", "sems", "sums", "pop", "M2")
@@ -741,7 +742,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             data["_refgroup_indices"] = np.asarray(self.refgroup.indices)
         data["_maicos_version"] = np.asarray(__version__)
 
-        filename = "{}{}".format(filename, (not filename.endswith(".npz")) * ".npz")
+        filename = check_file_extension(filename, ".npz")
         np.savez(filename, **data)
 
     @classmethod
@@ -766,7 +767,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             A new instance of ``cls`` with state restored from ``filename``.
         """
         sep = cls._CHECKPOINT_SEP
-        filename = "{}{}".format(filename, (not filename.endswith(".npz")) * ".npz")
+        filename = check_file_extension(filename, ".npz")
         npz = np.load(filename, allow_pickle=False)
 
         if "_maicos_version" not in npz.files:
