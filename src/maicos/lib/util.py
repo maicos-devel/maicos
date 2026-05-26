@@ -98,8 +98,8 @@ ${DENSITY_DESCRIPTION_2}""",
 ${SPHERICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
     DIPORDER_DESCRIPTION=r"""Calculations include the first and second order parameters,
-     which are the Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3
-     \cos^2(θ[z]) - 1}{2}` with :math:`x = \cos(θ[z])`.""",
+which are the Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3
+\cos^2(θ[z]) - 1}{2}` with :math:`x = \cos(θ[z])`.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
 refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
 :ref:`general-design` section.""",
@@ -177,7 +177,7 @@ self : object
 
     The possible options are center of mass (``"com"``), center of geometry (``"cog"``),
     and center of charge (``"coc"``).""",
-    ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P1"``, ``"P2"``}
+    ORDER_PARAMETER_PARAMETER=r"""order_parameter : {``"P1"``, ``"P2"``}
     Order parameter to be calculated:
         - ``"P1"``: Legendre polynomial :math:`P_1(cos[θ]) = cos[θ]`
         - ``"P2"``: Legendre polynomial :math:`P_2(cos[θ]) = \frac{3cos^2[θ] - 1}{2}`""",  # noqa: E501
