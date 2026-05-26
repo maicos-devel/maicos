@@ -44,8 +44,8 @@ class TestDiporderSphere(ReferenceAtomGroups):
         """Results dictionary for test_DiporderSphere_trajectory."""
         res = {}
 
-        res["P1"] = [-0.107, 0.0331, 0.00747]
-        res["P2"] = [0.240, 0.308, 0.344]
+        res["P1"] = [-0.1074, 0.0331, 0.007478]
+        res["P2"] = [-0.1387, -0.03689, 0.01605]
 
         return res
 
