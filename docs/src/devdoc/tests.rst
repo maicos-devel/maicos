@@ -79,4 +79,3 @@ and posts a single sticky comment summarising the results.
   tucked into a collapsed ``<details>`` block, since they are usually noise but
   occasionally worth a look.
 - Benchmarks that stayed the same or improved are not included.
-- 
