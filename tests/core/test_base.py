@@ -403,14 +403,14 @@ class Test_AnalysisBase:
         sub_ana._index = 1
 
         # Simple check if a single message gets written to the output file
-        ana.savetxt("foo", data, columns=["First", "Second"])
+        ana.savetxt("foo.dat", data, columns=["First", "Second"])
 
         with Path("foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
-        sub_ana.savetxt("foo2", data, columns=["First", "Second"])
+        sub_ana.savetxt("foo2.dat", data, columns=["First", "Second"])
 
         with Path("foo2.dat").open() as f:
             foo = f.readlines()

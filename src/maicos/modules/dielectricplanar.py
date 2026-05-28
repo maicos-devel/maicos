@@ -351,7 +351,7 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_perp"), outdata_perp, columns=columns
+            "{}{}".format(self.output_prefix, "_perp.dat"), outdata_perp, columns=columns
         )
 
         columns = ["position [Å]"]
@@ -371,5 +371,5 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_par"), outdata_par, columns=columns
+            "{}{}".format(self.output_prefix, "_par.dat"), outdata_par, columns=columns
         )
