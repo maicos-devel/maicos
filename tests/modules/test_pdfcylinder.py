@@ -214,9 +214,7 @@ class TestPDFCylinder:
         ana_obj = PDFCylinder(spce_water.atoms, output=name)
         ana_obj.run()
         if expect_warning:
-            with pytest.warns(
-                UserWarning, match="should have a '.dat' file extension"
-            ):
+            with pytest.warns(UserWarning, match="should have a '.dat' file extension"):
                 ana_obj.save()
         else:
             ana_obj.save()
