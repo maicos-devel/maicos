@@ -403,14 +403,14 @@ class Test_AnalysisBase:
         sub_ana._index = 1
 
         # Simple check if a single message gets written to the output file
-        ana.savetxt("foo", data, columns=["First", "Second"])
+        ana.savetxt("foo.dat", data, columns=["First", "Second"])
 
         with Path("foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
-        sub_ana.savetxt("foo2", data, columns=["First", "Second"])
+        sub_ana.savetxt("foo2.dat", data, columns=["First", "Second"])
 
         with Path("foo2.dat").open() as f:
             foo = f.readlines()
@@ -948,7 +948,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms)
         ana_2 = Conclude(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run()
 
         assert ana_1.results is not None
@@ -991,7 +992,8 @@ class TestAnalysisCollection:
         ana_1 = PositionShifter(u.atoms)
         ana_2 = PositionShifter(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(frames=[0])
 
         # If positions are properly restored between analyses, both should
@@ -1002,7 +1004,10 @@ class TestAnalysisCollection:
         """Test error raise if two analysis objects have a different trajectory."""
         v = mda.Universe(TPR, XTC)
 
-        with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(ValueError, match="`analysis_instances` do not have the"),
+        ):
             AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
 
     def test_no_base_child(self, u):
@@ -1013,7 +1018,10 @@ class TestAnalysisCollection:
                 self._trajectory = trajectory
 
         # Create collection for common trajectory loop with inconsistent trajectory
-        with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(TypeError, match="not a child of `AnalysisBase`"),
+        ):
             AnalysisCollection(CustomAnalysis(u.trajectory))
 
     def test_save(self, u, monkeypatch, tmp_path):
@@ -1023,7 +1031,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms, output_prefix="ana1")
         ana_2 = Conclude(u.atoms, output_prefix="ana2")
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         collection.save()
 
@@ -1049,7 +1058,8 @@ class TestAnalysisCollection:
         ana_2._single_frame = lambda: None
         ana_2._conclude = lambda: None
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         with pytest.warns(UserWarning, match=r"has no save\(\) method"):
             collection.save()

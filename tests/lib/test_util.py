@@ -246,7 +246,10 @@ class TestChargedDecorator:
     def test_universe_non_neutral_raises(self, ag):
         """Test that a non-neutral universe raises ValueError."""
         ag[0].charge += 1
-        with pytest.raises(ValueError, match="non-neutral systems is not supported"):
+        with (
+            pytest.warns(UserWarning, match="At least one AtomGroup has free"),
+            pytest.raises(ValueError, match="non-neutral systems is not supported"),
+        ):
             multi_class(ag, filter="default")._prepare()
 
 

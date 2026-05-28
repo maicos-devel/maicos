@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Philipp Stärk
 
+- Treat all warnings as error in tests (#575)
 - Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
   analysis states (#565)
 - Add benchmarks to the CI workflow (#557)
