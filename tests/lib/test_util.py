@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
-from maicos.lib.util import triclinic_to_orthorhombic
+from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
@@ -582,3 +582,25 @@ class TestTriclinicToOrthorhombic:
         result = triclinic_to_orthorhombic(box)
         vol_ortho = result[0] * result[1] * result[2]
         assert_allclose(vol_ortho, vol_tri, rtol=1e-5)
+
+
+class TestCheckFileExtension:
+    """Tests for check_file_extension."""
+
+    def test_extension_present_returns_unchanged(self):
+        """Matching extension leaves the filename untouched and warns nothing."""
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert check_file_extension("foo.dat", ".dat") == "foo.dat"
+
+    def test_missing_extension_is_appended_with_warning(self):
+        """Missing extension is appended and a UserWarning is issued."""
+        with pytest.warns(UserWarning, match=r"\.dat"):
+            result = check_file_extension("foo", ".dat")
+        assert result == "foo.dat"
+
+    def test_different_extension_is_appended_with_warning(self):
+        """Wrong extension still leads to appending the expected one."""
+        with pytest.warns(UserWarning, match=r"\.npz"):
+            result = check_file_extension("foo.txt", ".npz")
+        assert result == "foo.txt.npz"

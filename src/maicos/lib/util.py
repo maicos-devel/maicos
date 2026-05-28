@@ -58,6 +58,36 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
 
+def check_file_extension(filename: str, extension: str) -> str:
+    """Ensure ``filename`` ends with ``extension``, appending it with a warning.
+
+    If ``filename`` does not end with ``extension``, the extension is appended
+    and a :class:`UserWarning` is issued.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the file to be checked.
+    extension : str
+        Expected file extension, including the leading dot (e.g. ``".dat"``).
+
+    Returns
+    -------
+    str
+        ``filename`` unchanged if it already ends with ``extension``, otherwise
+        ``filename`` with ``extension`` appended.
+    """
+    if not filename.endswith(extension):
+        warnings.warn(
+            f"The file name should have a {extension!r} file extension. The user "
+            f"requested the file with name {filename!r}, but it will be saved as "
+            f"{filename + extension!r}.",
+            stacklevel=2,
+        )
+        filename = filename + extension
+    return filename
+
+
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(
