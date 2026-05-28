@@ -578,7 +578,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self.means[key] = np.astype(self._obs[key], float)
                 else:
                     self.means[key] = float(self._obs[key])
-                self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
 
                 self.M2[key] = self._var[key] * self._pop[key]
                 self.pop[key] = self._pop[key]
@@ -1120,7 +1121,8 @@ class ProfileBase:
                     weights - self._obs.profile[bin_indices],  # type: ignore
                 )
             )  # type: ignore
-            self._var.profile /= self._obs.bincount  # type: ignore
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self._var.profile /= self._obs.bincount  # type: ignore
         return None
 
     def _conclude(self) -> None:
