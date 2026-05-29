@@ -13,8 +13,8 @@ Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Lucas Kleindienst
 
-- Add dipole-moment (polarization) density as ``dens="dipole"`` option to the
-  ``Density*`` modules, replacing the removed ``P0`` order parameter (#586)
+- Add dipole-moment density as ``dens="dipole"`` option to the
+  ``Density*`` modules, replacing the removed ``P0`` order parameter (#589)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
 - Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
