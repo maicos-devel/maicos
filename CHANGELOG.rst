@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Lucas Kleindienst
 
+- Refactor diporder modules to use Legendre polynomials (#586)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Increase coverage (#573)
 - Fix timestep preservation in ``AnalysisCollection`` (#570)

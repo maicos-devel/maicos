@@ -97,7 +97,8 @@ ${DENSITY_DESCRIPTION_2}""",
     DENSITY_SPHERE_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
 ${SPHERICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DIPORDER_DESCRIPTION=r"""Calculations include the first and second order parameters,
+    DIPORDER_DESCRIPTION=r"""Calculations include the first- and second-rank
+orientational order parameters,
 which are the Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3
 x^2 - 1}{2}` with :math:`x = \cos(θ[z])`.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
