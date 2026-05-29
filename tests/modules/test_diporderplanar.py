@@ -104,7 +104,7 @@ class TestDiporderPlanar(ReferenceAtomGroups):
         assert_allclose(dip.results.profile.mean(), output, atol=1e-6)
 
     @pytest.mark.parametrize(
-        ("order_parameter", "output"), [("P1", (2 + np.sqrt(2)) / 6), ("P2", 0.25)]
+        ("order_parameter", "output"), [("P1", (1 + np.sqrt(2) / 2) / 3), ("P2", 0.25)]
     )
     def test_DiporderPlanar_3_water_mixed_angles(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angles (0, 45, 90)."""
