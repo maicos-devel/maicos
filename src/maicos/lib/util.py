@@ -174,8 +174,13 @@ self : object
     The group which will be kept together through the wrap processes. Allowed values
     are: ``"atoms"``, ``"group"``, ``"residues"``, ``"segments"``, ``"molecules"``, or
     ``"fragments"``.""",
-    DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``, ``"electron"``}
-    density type to be calculated.""",
+    DENS_PARAMETER="""dens : str
+    Density type to be calculated. Allowed values are ``"mass"``, ``"number"``,
+    ``"charge"``, ``"electron"`` or ``"dipole"``.
+
+    For ``"dipole"`` the dipole-moment density (polarization) projected along the
+    chosen direction is computed; this requires a molecular ``grouping`` (e.g.
+    ``"residues"`` or ``"molecules"``).""",
     TEMPERATURE_PARAMETER="""temperature : float
     Reference temperature (K)""",
     BIN_WIDTH_PARAMETER="""bin_width : float

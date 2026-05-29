@@ -12,8 +12,8 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
-from ..lib.util import render_docs
-from ..lib.weights import density_weights
+from ..lib.util import render_docs, unit_vectors_cylinder
+from ..lib.weights import density_weights, diporder_weights
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ class DensityCylinder(ProfileCylinderBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PDIM_RADIAL_PARAMETER}
     ${PROFILE_CYLINDER_CLASS_PARAMETERS}
     ${OUTPUT_PARAMETER}
 
@@ -43,6 +44,7 @@ class DensityCylinder(ProfileCylinderBase):
         self,
         atomgroup: mda.AtomGroup,
         dens: str = "mass",
+        pdim: str = "r",
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
@@ -59,6 +61,27 @@ class DensityCylinder(ProfileCylinderBase):
         output: str = "density.dat",
     ) -> None:
         self._locals = locals()
+
+        if dens == "dipole":
+
+            def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
+                return unit_vectors_cylinder(
+                    atomgroup=atomgroup,
+                    grouping=grouping,
+                    bin_method=bin_method,
+                    dim=dim,
+                    pdim=pdim,
+                )
+
+            weighting_function = diporder_weights
+            weighting_function_kwargs = {
+                "order_parameter": "P0",
+                "get_unit_vectors": get_unit_vectors,
+            }
+        else:
+            weighting_function = density_weights
+            weighting_function_kwargs = {"dens": dens}
+
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
@@ -75,8 +98,8 @@ class DensityCylinder(ProfileCylinderBase):
             grouping=grouping,
             bin_method=bin_method,
             output=output,
-            weighting_function=density_weights,
-            weighting_function_kwargs={"dens": dens},
+            weighting_function=weighting_function,
+            weighting_function_kwargs=weighting_function_kwargs,
             normalization="volume",
         )
 

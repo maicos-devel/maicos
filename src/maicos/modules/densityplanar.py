@@ -12,8 +12,8 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
-from ..lib.util import render_docs
-from ..lib.weights import density_weights
+from ..lib.util import render_docs, unit_vectors_planar
+from ..lib.weights import density_weights, diporder_weights
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ class DensityPlanar(ProfilePlanarBase):
     ----------
     ${ATOMGROUP_PARAMETER}
     ${DENS_PARAMETER}
+    ${PDIM_PLANAR_PARAMETER}
     ${PROFILE_PLANAR_CLASS_PARAMETERS}
     ${OUTPUT_PARAMETER}
 
@@ -49,6 +50,7 @@ class DensityPlanar(ProfilePlanarBase):
         self,
         atomgroup: mda.AtomGroup,
         dens: str = "mass",
+        pdim: int = 2,
         dim: int = 2,
         zmin: float | None = None,
         zmax: float | None = None,
@@ -64,6 +66,23 @@ class DensityPlanar(ProfilePlanarBase):
         output: str = "density.dat",
     ) -> None:
         self._locals = locals()
+
+        if dens == "dipole":
+
+            def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
+                return unit_vectors_planar(
+                    atomgroup=atomgroup, grouping=grouping, pdim=pdim
+                )
+
+            weighting_function = diporder_weights
+            weighting_function_kwargs = {
+                "order_parameter": "P0",
+                "get_unit_vectors": get_unit_vectors,
+            }
+        else:
+            weighting_function = density_weights
+            weighting_function_kwargs = {"dens": dens}
+
         super().__init__(
             atomgroup=atomgroup,
             unwrap=unwrap,
@@ -76,12 +95,12 @@ class DensityPlanar(ProfilePlanarBase):
             bin_width=bin_width,
             refgroup=refgroup,
             sym=sym,
-            sym_odd=False,
+            sym_odd=dens == "dipole",
             grouping=grouping,
             bin_method=bin_method,
             output=output,
-            weighting_function=density_weights,
-            weighting_function_kwargs={"dens": dens},
+            weighting_function=weighting_function,
+            weighting_function_kwargs=weighting_function_kwargs,
             normalization="volume",
         )
 

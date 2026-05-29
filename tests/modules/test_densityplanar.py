@@ -105,6 +105,48 @@ class TestDensityPlanar(ReferenceAtomGroups):
         dens = DensityPlanar(ag, dens=dens_type, dim=dim).run()
         assert_allclose(dens.results.profile.mean(), mean, rtol=1e-1, atol=1e-8)
 
+    def test_dipole_density(self, ag):
+        """Test the dipole-moment (P0) density option."""
+        dens = DensityPlanar(ag, dens="dipole", grouping="residues").run()
+        assert np.isfinite(dens.results.profile).all()
+        assert np.any(dens.results.profile != 0)
+
+    def test_dipole_density_matches_projection(self, ag):
+        """Dipole density reproduces the explicit P0 projection with volume norm."""
+        from maicos.core import ProfilePlanarBase
+        from maicos.lib.util import unit_vectors_planar
+        from maicos.lib.weights import diporder_weights
+
+        def get_unit_vectors(atomgroup, grouping):
+            return unit_vectors_planar(atomgroup=atomgroup, grouping=grouping, pdim=2)
+
+        ref = ProfilePlanarBase(
+            atomgroup=ag,
+            unwrap=True,
+            pack=True,
+            jitter=0.0,
+            concfreq=0,
+            dim=2,
+            zmin=None,
+            zmax=None,
+            bin_width=1,
+            refgroup=None,
+            sym=False,
+            sym_odd=True,
+            grouping="residues",
+            bin_method="com",
+            output="density.dat",
+            weighting_function=diporder_weights,
+            weighting_function_kwargs={
+                "order_parameter": "P0",
+                "get_unit_vectors": get_unit_vectors,
+            },
+            normalization="volume",
+        ).run()
+
+        dens = DensityPlanar(ag, dens="dipole", grouping="residues").run()
+        assert_allclose(dens.results.profile, ref.results.profile)
+
     def test_one_frame(self, ag):
         """Test analysis running for one frame.
 
