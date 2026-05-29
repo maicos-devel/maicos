@@ -176,13 +176,13 @@ def test_tempetaure_weights_grouping(ag_water_npt, grouping):
 class Testdiporder_weights:
     """Test the dipolar weights "base" function.
 
-    In details tests are designed to check if the scalar product in performed
+    In details tests are designed to check if the scalar product is performed
     correctly.
     """
 
-    @pytest.mark.parametrize(("pdim", "P0"), [(0, 0), (1, 0), (2, 0.491608)])
-    def test_P0(self, ag_spce, pdim, P0):
-        """Test calculation of the projection of the dipole moment."""
+    @pytest.mark.parametrize(("pdim", "P1"), [(0, 0), (1, 0), (2, 1)])
+    def test_P1(self, ag_spce, pdim, P1):
+        """Test calculation of the Legendre polynomial P1 = cos(θ) and a unit vector."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
@@ -190,30 +190,14 @@ class Testdiporder_weights:
         diporder_weights = maicos.lib.weights.diporder_weights(
             atomgroup=ag_spce,
             grouping="fragments",
-            order_parameter="P0",
+            order_parameter="P1",
             get_unit_vectors=get_unit_vectors,
         )
 
-        assert_allclose(diporder_weights, np.array([P0]))
+        assert_allclose(diporder_weights, np.array([P1]))
 
-    @pytest.mark.parametrize(("pdim", "cos_theta"), [(0, 0), (1, 0), (2, 1)])
-    def test_cos_theta(self, ag_spce, pdim, cos_theta):
-        """Test calculation of the cos of the dipole moment and a unit vector."""
-
-        def get_unit_vectors(atomgroup, grouping):
-            return unit_vectors_planar(atomgroup, grouping, pdim=pdim)
-
-        diporder_weights = maicos.lib.weights.diporder_weights(
-            atomgroup=ag_spce,
-            grouping="fragments",
-            order_parameter="cos_theta",
-            get_unit_vectors=get_unit_vectors,
-        )
-
-        assert_allclose(diporder_weights, np.array([cos_theta]))
-
-    def test_cos_2_theta(self, ag_spce):
-        """Test that cos_2_theta is the squared of cos_theta."""
+    def test_P2(self, ag_spce):
+        """Test that P2 is (3*P1^2 - 1)/2."""
 
         def get_unit_vectors(atomgroup, grouping):
             return unit_vectors_planar(atomgroup, grouping, pdim=0)
@@ -225,13 +209,16 @@ class Testdiporder_weights:
         }
 
         assert_equal(
-            maicos.lib.weights.diporder_weights(
-                order_parameter="cos_theta", **kwargs_weights
+            (
+                3
+                * maicos.lib.weights.diporder_weights(
+                    order_parameter="P1", **kwargs_weights
+                )
+                ** 2
+                - 1
             )
-            ** 2,
-            maicos.lib.weights.diporder_weights(
-                order_parameter="cos_2_theta", **kwargs_weights
-            ),
+            / 2,
+            maicos.lib.weights.diporder_weights(order_parameter="P2", **kwargs_weights),
         )
 
     def test_wrong_unit_vector_shape(self, ag_spce):
@@ -249,7 +236,7 @@ class Testdiporder_weights:
             maicos.lib.weights.diporder_weights(
                 atomgroup=ag_spce,
                 grouping="fragments",
-                order_parameter="cos_theta",
+                order_parameter="P1",
                 get_unit_vectors=get_unit_vectors,
             )
 
@@ -284,6 +271,6 @@ class Testdiporder_weights:
             maicos.lib.weights.diporder_weights(
                 atomgroup=ag_spce,
                 grouping="atoms",
-                order_parameter="cos_thete",
+                order_parameter="P1",
                 get_unit_vectors=get_unit_vectors,
             )
