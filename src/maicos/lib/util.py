@@ -190,13 +190,14 @@ self : object
     direction of the projection""",
     FLUX_PARAMETER=r"""flux : bool
     Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
-    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
+    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, \
+``"segments"``, ``"molecules"``, ``"fragments"``}
     Atom grouping for the calculations.
 
     The possible grouping options are the atom positions (in the case where
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
-    ``"fragments"``).""",  # noqa: E501
+    ``"fragments"``).""",
     OUTPUT_PARAMETER="""output : str
     Output filename.""",
     OUTPUT_PREFIX_PARAMETER="""output_prefix : str
@@ -211,7 +212,8 @@ self : object
     ORDER_PARAMETER_PARAMETER=r"""order_parameter : {``"P1"``, ``"P2"``}
     Order parameter to be calculated:
         - ``"P1"``: Legendre polynomial :math:`P_1(cos[θ]) = cos[θ]`
-        - ``"P2"``: Legendre polynomial :math:`P_2(cos[θ]) = \frac{3cos^2[θ] - 1}{2}`""",  # noqa: E501
+        - ``"P2"``: Legendre polynomial
+          :math:`P_2(cos[θ]) = \frac{3cos^2[θ] - 1}{2}`""",
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################
