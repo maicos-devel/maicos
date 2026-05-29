@@ -46,17 +46,15 @@ class TestDiporderCylinder(ReferenceAtomGroups):
 
         # r-direction
         res["r"] = {}
-        res["r"]["P0"] = [4.746e-04, -2.40e-04, 7.852e-05]
-        res["r"]["cos_theta"] = [2.706e-2, -1.4574e-2, 4.581e-3]
+        res["r"]["P1"] = [2.706e-2, -1.4574e-2, 4.581e-3]
 
         # z-direction
         res["z"] = {}
-        res["z"]["P0"] = [-8.37e-4, -3.84e-4, -2.145e-3]
-        res["z"]["cos_theta"] = [-4.922e-2, -2.336e-2, -1.333e-1]
+        res["z"]["P1"] = [-4.922e-2, -2.336e-2, -1.333e-1]
 
         return res
 
-    @pytest.mark.parametrize("order_parameter", ["P0", "cos_theta"])
+    @pytest.mark.parametrize("order_parameter", ["P1"])
     @pytest.mark.parametrize("pdim", ["r", "z"])
     def test_DiporderPlanar_trajectory(
         self, ag_single_frame, pdim, order_parameter, result_dict
