@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "setuptools >= 77",
-    "setuptools_scm >= 8",
+    "setuptools>=77.0.1",
+    "setuptools_scm>=8",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -113,6 +113,29 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+filterwarnings = [
+    "error",
+    # MDAnalysis deprecations
+    "ignore:.*elements attribute has been populated by guessing.*:DeprecationWarning",
+    "ignore:.*DCDReader currently makes independent timesteps.*:DeprecationWarning",
+    # MDAnalysis UserWarnings from test data format limitations
+    "ignore:.*Element information is missing.*:UserWarning",
+    "ignore:.*Reader has no dt information.*:UserWarning",
+    "ignore:.*Can not guess attributes for universe with 0 atoms.*:UserWarning",
+    # AnalysisCollection experimental warning: tested explicitly via pytest.warns()
+    # in test_experimental_warning; ignored elsewhere (including doctests).
+    "ignore:.*AnalysisCollection.*is still experimental.*:UserWarning",
+    # Correlation-time and zero-variance warnings fire inside run() after
+    # logging.captureWarnings(True) is called, which reroutes warnings to the
+    # logging system. pytest.warns() cannot capture them there, so they are
+    # filtered here. The zero-variance case and all correlation-time cases are
+    # tested explicitly via pytest.warns() in tests that call the functions
+    # directly (without going through run()).
+    "ignore:.*trajectory is too short to estimate a correlation time.*:UserWarning",
+    "ignore:.*does not provide sufficient statistics to estimate a correlation time.*:UserWarning",
+    "ignore:.*data seems to be correlated with a correlation time.*:UserWarning",
+    "ignore:.*timeseries has zero variance.*:UserWarning",
+]
 addopts = [
     "--cov",
     "--cov-append",

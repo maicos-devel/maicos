@@ -1,0 +1,133 @@
+name: ASV Benchmarks
+
+on:
+  pull_request:
+    # Check all PR
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    env:
+      REGRESSION_FACTOR: "1.5"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for ASV
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install asv tox virtualenv
+
+      - name: Run ASV benchmarks
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          asv machine --yes
+          asv run --quick --show-stderr HEAD^!
+
+      - name: Compare benchmarks against main
+        if: github.event_name == 'pull_request'
+        run: |
+          asv machine --yes
+          tox -e benchmarks-compare
+          if grep -qE '^\+\s+[0-9]' benchmark_regressions.txt; then
+            echo "has_regression=true" >> "$GITHUB_ENV"
+          else
+            echo "has_regression=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Post benchmark comparison as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('benchmark_comparison.txt', 'utf8');
+            const hasRegression = process.env.has_regression === 'true';
+            const factor = parseFloat(process.env.REGRESSION_FACTOR);
+
+            // Extract the "got worse" section from the --split output.
+            const lines = output.split('\n');
+            const headerLines = [];
+            const worseRows = [];
+            let inWorseSection = false;
+            for (const line of lines) {
+              if (/^Benchmarks that have got worse:/i.test(line)) {
+                inWorseSection = true;
+                continue;
+              }
+              if (inWorseSection && /^Benchmarks that have/.test(line)) {
+                inWorseSection = false;
+                continue;
+              }
+              if (!inWorseSection || !line.startsWith('|')) continue;
+              if (headerLines.length < 2) {
+                headerLines.push(line);
+              } else {
+                const cols = line.split('|').map(s => s.trim());
+                const ratio = parseFloat(cols[4]);
+                worseRows.push({ line, ratio });
+              }
+            }
+
+            const regressions = worseRows.filter(r => r.ratio >= factor);
+            const minor = worseRows.filter(r => r.ratio < factor);
+
+            const verdict = hasRegression
+              ? `💥 Yikes! Benchmark regression exceeding ${factor}x detected vs \`main\` — performance took a hit. 🐌`
+              : `🚀 All clear! No benchmark regressions exceeding ${factor}x — performance is looking great. ✨`;
+
+            const renderTable = (rows) =>
+              [...headerLines, ...rows.map(r => r.line)].join('\n');
+
+            const marker = '<!-- asv-benchmark-comparison -->';
+            let body = `${marker}\n## Benchmark comparison\n${verdict}\n`;
+            if (regressions.length > 0) {
+              body += `\n### Regressions exceeding ${factor}x vs \`main\`\n\n${renderTable(regressions)}\n`;
+            }
+            if (minor.length > 0) {
+              body += `\n<details>\n<summary>Other benchmarks that got slower (≥1.1x, &lt;${factor}x) — ${minor.length} total</summary>\n\n${renderTable(minor)}\n\n</details>\n`;
+            }
+            if (worseRows.length === 0) {
+              body += `\nNo benchmarks got slower compared to \`main\`. 🎉\n`;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body && c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail CI on benchmark regression
+        if: always() && github.event_name == 'pull_request' && env.has_regression == 'true'
+        run: |
+          echo "--- Regressions exceeding ${REGRESSION_FACTOR}x ---"
+          grep -E '^\+\s+[0-9]' benchmark_regressions.txt
+          exit 1

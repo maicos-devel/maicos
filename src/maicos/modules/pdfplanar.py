@@ -278,8 +278,11 @@ class PDFPlanar(PlanarBase):
         )
         ring_volumes = np.expand_dims(ring_volumes, axis=0)
         self.results.bins = self.results.bins
-        self.results.pdf = self.means.count / self.means.n_g1 / ring_volumes
-        self.results.pdf = np.nan_to_num(self.results.pdf.T, nan=0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            pdf = self.means.count / self.means.n_g1
+
+        pdf /= ring_volumes
+        self.results.pdf = np.nan_to_num(pdf.T, nan=0)
 
     @render_docs
     def save(self) -> None:

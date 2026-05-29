@@ -15,6 +15,10 @@ Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Philipp Stärk
 
 - Add ``MultiTauCorrelator`` for calculating correlation functions on the fly (#581)
+- Treat all warnings as error in tests (#575)
+- Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
+  analysis states (#565)
+- Add benchmarks to the CI workflow (#557)
 - Add example for effective-medium dielectric analysis (#584)
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
