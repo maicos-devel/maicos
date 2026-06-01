@@ -582,36 +582,23 @@ class TestTriclinicToOrthorhombic:
 
 
 @pytest.mark.parametrize(
-    ("x", "dt", "new_x"),
-    [
-        ("10ps", 0.1, 100),
-    ],
-)
-def test_corrected_str_frame(x, dt, new_x):
-    """Tests into util.corrected_str_frame."""
-    assert maicos.lib.util.corrected_str_frame(x, dt) == new_x
-
-
-@pytest.mark.parametrize(
     ("start", "stop", "step", "dt", "new_dict"),
     [
         ("12ps", "14ps", "1ps", 0.1, {"start": 120, "stop": 140, "step": 10}),
     ],
 )
-def test_convert_str_framedict(start, stop, step, dt, new_dict):
-    """Tests into util.convert_str_framedict."""
-    assert maicos.lib.util.convert_str_framedict(start, stop, step, dt) == new_dict
+def test_times_to_frames(start, stop, step, dt, new_dict):
+    """Tests into util.times_to_frames."""
+    assert maicos.lib.util.times_to_frames(start, stop, step, dt) == new_dict
 
 
 @pytest.mark.parametrize(
     ("start", "stop", "step", "dt", "mesg_error"),
     [
-        ("12ps", "14ps", "1ps", 0.6, "Timestep should be a multiple of dt."),
-        ("10ps", "9ps", "1ps", 1, "'start' should be < to 'stop - step'."),
-        ("10ps", "10.5ps", "1ps", 1, "'start' should be < to 'stop - step'."),
+        ("12ps", "14ps", "1ps", 0.6, "step should be a multiple of dt."),
     ],
 )
-def test_error_of_convert_str_framedict(start, stop, step, dt, mesg_error):
-    """Errors test into util.convert_str_framedict."""
+def test_error_of_times_to_frames(start, stop, step, dt, mesg_error):
+    """Errors test into util.times_to_frames."""
     with pytest.raises(ValueError, match=mesg_error):
-        maicos.lib.util.convert_str_framedict(start, stop, step, dt)
+        maicos.lib.util.times_to_frames(start, stop, step, dt)

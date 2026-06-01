@@ -10,7 +10,6 @@
 import functools
 import inspect
 import logging
-import math
 import re
 import sys
 import warnings
@@ -20,7 +19,7 @@ from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
-from mdacli.utils import split_time_unit
+from mdacli.utils import convert_str_time, split_time_unit
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
@@ -873,31 +872,7 @@ def get_module_input_str(module_obj):
     return module_input
 
 
-def corrected_str_frame(x: str, dt: float) -> int:
-    """Convert a string `x` into a frame number based on given `dt`.
-
-    Mdacli version could't manage some edge cases.
-    See :func:`split_time_unit`.
-
-    Parameters
-    ----------
-    x : str
-        the input string
-    dt : float
-        the time step in ps
-
-    Returns
-    -------
-    int
-        frame number
-
-    """
-    val, unit = split_time_unit(x)
-    val_in_ps = mda.units.convert(val, unit, "ps")
-    return round(val_in_ps / dt)
-
-
-def convert_str_framedict(start: str, stop: str, step: str, dt: float) -> dict:
+def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
     """Convert 'start', 'stop', 'step' into their frame number based on given dt.
 
     Parameters
@@ -916,23 +891,32 @@ def convert_str_framedict(start: str, stop: str, step: str, dt: float) -> dict:
     dict
         Dictionnary containing start, stop and step frames
 
+    Example
+    -------
+        >>> times_to_frames("2ps", "12ps", "2ps", 1)
+        [2,12,2]
+
+        >>> times_to_frames("0ns", "2ns", "10ps", 0.01)
+        [0,200000,1000]
+
     """
     val, unit = split_time_unit(step)
     val_in_ps = mda.units.convert(val, unit, "ps")
     temp_step = round(val_in_ps / dt)
 
-    if not (math.isclose(temp_step * dt, val_in_ps)):
-        raise ValueError("Timestep should be a multiple of dt.")
+    if not (np.isclose(temp_step * dt, val_in_ps)):
+        raise ValueError("step should be a multiple of dt.")
 
-    temp_start = corrected_str_frame(start, dt)
-    temp_stop = corrected_str_frame(stop, dt)
-
-    if not (temp_start < temp_stop):
-        raise ValueError("'start' should be < to 'stop - step'.")
+    temp_start = convert_str_time(start, dt)
+    temp_stop = convert_str_time(stop, dt)
 
     timedict = {}
     timedict["start"] = temp_start
     timedict["stop"] = temp_stop
-    timedict["step"] = corrected_str_frame(step, dt)
+    timedict["step"] = convert_str_time(step, dt)
+
+    if not (temp_start < temp_stop):
+        warnings.warn("'start' should be < to 'stop - step'.", stacklevel=1)
+        return timedict
 
     return timedict

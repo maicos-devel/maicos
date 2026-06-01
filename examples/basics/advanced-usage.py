@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 import MDAnalysis as mda
 
 import maicos
-import maicos.lib.util as util
 
 u = mda.Universe("slit_flow.tpr", "slit_flow.trr")
 
@@ -223,14 +222,14 @@ dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
 
 
 # %%
-# If you prefer to use times instead of frame slice, the function convert_str_framedict
+# If you prefer to use times instead of frame slice, the function times_to_frames
 # is available :
+
+import maicos.lib.util as util  # noqa: E402
 
 time_step = u.trajectory.dt
 
-time_dict = util.convert_str_framedict(
-    start="100ps", stop="200ps", step="20ps", dt=time_step
-)
+time_dict = util.times_to_frames(start="100ps", stop="200ps", step="20ps", dt=time_step)
 
 dplan = maicos.DensityPlanar(group_H2O).run(**time_dict)
 # %%
