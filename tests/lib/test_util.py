@@ -605,7 +605,7 @@ def test_error_of_times_to_frames(start, stop, step, dt, mesg_error):
     """Errors test into util.times_to_frames."""
     with pytest.raises(ValueError, match=mesg_error):
         maicos.lib.util.times_to_frames(start, stop, step, dt)
-        
+
 
 class TestCheckFileExtension:
     """Tests for check_file_extension."""
