@@ -147,8 +147,10 @@ def diporder_weights(
         shape of (3,) the same unit vector is used for all calculations.
 
     """
-    dipoles = atomgroup.dipole_vector(compound=grouping)
+    if order_parameter not in ["P1", "P2"]:
+        raise ValueError(f"'{order_parameter}' not supported. Use 'P1' or 'P2'.")
 
+    dipoles = atomgroup.dipole_vector(compound=grouping)
     unit_vectors = get_unit_vectors(atomgroup=atomgroup, grouping=grouping)
 
     # Extend unit_vectors to be of the same length as of dipoles
@@ -160,20 +162,13 @@ def diporder_weights(
             f"(3,) or {(len(dipoles), 3)} is allowed."
         )
 
-    if order_parameter == "P0":
-        weights = np.sum(dipoles * unit_vectors, axis=1)
-    elif order_parameter in ["cos_theta", "cos_2_theta"]:
-        weights = np.sum(
-            dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis] * unit_vectors,
-            axis=1,
-        )
-        if order_parameter == "cos_2_theta":
-            weights *= weights
-    else:
-        raise ValueError(
-            f"'{order_parameter}' not supported. "
-            "Use 'P0', 'cos_theta' or 'cos_2_theta'."
-        )
+    weights = np.sum(
+        dipoles / np.linalg.norm(dipoles, axis=1)[:, np.newaxis] * unit_vectors,
+        axis=1,
+    )
+
+    if order_parameter == "P2":
+        weights = (3 * weights**2 - 1) / 2
 
     return weights
 

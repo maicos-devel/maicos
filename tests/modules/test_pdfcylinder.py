@@ -199,19 +199,25 @@ class TestPDFCylinder:
         assert_allclose(ana_obj._obs.count_phi[0], [2, 2, 2])
 
     @pytest.mark.parametrize(
-        ("name", "output"),
+        ("name", "output", "expect_warning"),
         [
-            ("foo", ["z_foo.dat", "phi_foo.dat"]),
-            ("bar.dat", ["z_bar.dat", "phi_bar.dat"]),
+            ("foo", ["z_foo.dat", "phi_foo.dat"], True),
+            ("bar.dat", ["z_bar.dat", "phi_bar.dat"], False),
         ],
     )
-    def test_output_name(self, spce_water, name, output, monkeypatch, tmp_path):
+    def test_output_name(
+        self, spce_water, name, output, expect_warning, monkeypatch, tmp_path
+    ):
         """Test output name."""
         monkeypatch.chdir(tmp_path)
 
         ana_obj = PDFCylinder(spce_water.atoms, output=name)
         ana_obj.run()
-        ana_obj.save()
+        if expect_warning:
+            with pytest.warns(UserWarning, match="should have a '.dat' file extension"):
+                ana_obj.save()
+        else:
+            ana_obj.save()
         for file in output:
             assert Path(file).exists()
 

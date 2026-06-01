@@ -222,6 +222,13 @@ def test_correlation_time(vector, method, result):
     assert_allclose(np.mean(utils_run), result, rtol=1e-1)
 
 
+def test_correlation_time_zero_variance():
+    """Tests that a UserWarning is issued and nan returned for constant timeseries."""
+    with pytest.warns(UserWarning, match="zero variance"):
+        result = maicos.lib.math.correlation_time(np.ones(100))
+    assert np.isnan(result)
+
+
 def test_correlation_time_wrong_method():
     """Tests for correlation_time with wrong method."""
     match = "Unknown method: wrong. Chose either 'sokal' or 'chodera'."

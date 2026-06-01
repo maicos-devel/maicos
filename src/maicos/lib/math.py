@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper functions for mathematical and physical operations."""
 
+import warnings
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -155,7 +157,8 @@ def correlation_time(
     tau : float
         Integrated correlation time :math:`\tau`. If ``-1`` (only for
         ``method="sokal"``) the provided time series does not provide sufficient
-        statistics to estimate a correlation time.
+        statistics to estimate a correlation time. Returns :obj:`numpy.nan` if
+        the time series has zero variance.
 
     Raises
     ------
@@ -169,6 +172,11 @@ def correlation_time(
     .. footbibliography::
 
     """
+    if method not in ["sokal", "chodera"]:
+        raise ValueError(
+            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
+        )
+
     if mintime > len(timeseries):
         raise ValueError(
             f"mintime ({mintime}) has to be smaller then the length of `timeseries` "
@@ -176,6 +184,14 @@ def correlation_time(
         )
 
     corr = correlation(timeseries, subtract_mean=True)
+
+    if corr[0] == 0:
+        warnings.warn(
+            "The timeseries has zero variance. "
+            "The correlation time cannot be estimated.",
+            stacklevel=2,
+        )
+        return np.nan
 
     if method == "sokal":
         for cutoff in range(mintime, len(timeseries)):
@@ -187,16 +203,12 @@ def correlation_time(
 
             if cutoff > len(timeseries) / 3:
                 return -1
-
-    elif method == "chodera":
+    else:
         cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
         tau = np.sum(
             (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
         )
-    else:
-        raise ValueError(
-            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
-        )
+
     return tau
 
 
@@ -548,9 +560,15 @@ def transform_cylinder(
 
 
 def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
-    """Transform positions into spherical coordinates.
+    r"""Transform positions into spherical coordinates.
 
     The origin of the new coordinate system is at ``origin``.
+
+    .. note::
+
+        If a ``position`` is exactly at the ``origin`` :math:`\theta=\arccos(z/r)`
+        (third coloumn in the output vector) is undefined. In this case the
+        :math:`\theta` component is set to 0.
 
     Parameters
     ----------
@@ -575,8 +593,15 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
     # phi component
     np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
-    # theta component
-    np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
+
+    # theta component — arccos(z/r) is undefined for r=0 (particle at origin)
+    # Set theta=0 in this case
+    at_origin = trans_positions[:, 0] == 0
+    trans_positions[:, 2] = np.where(
+        at_origin,
+        0,
+        np.arccos(pos_xyz_center[:, 2] / np.where(at_origin, 1, trans_positions[:, 0])),
+    )
 
     return trans_positions
 
@@ -614,7 +639,8 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """
     n_AB = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
-    mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-    M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
+        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB

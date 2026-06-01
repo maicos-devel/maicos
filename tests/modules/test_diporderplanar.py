@@ -48,24 +48,21 @@ class TestDiporderPlanar(ReferenceAtomGroups):
 
         # x-direction
         res[0] = {}
-        res[0]["P0"] = [6.33e-05, -9.26e-04, -8.31e-04, -4.92e-04, -9.56e-04]
-        res[0]["cos_theta"] = [4.25e-3, -5.49e-2, -4.83e-2, -3.1188e-2, -5.8e-2]
-        res[0]["cos_2_theta"] = [3.90e-1, 3.41e-1, 4.10e-1, 3.16e-1, 2.94e-1]
+        res[0]["P1"] = [4.253e-03, -5.495e-02, -4.834e-02, -3.119e-02, -5.812e-02]
+        res[0]["P2"] = [8.465e-02, 1.079e-02, 1.147e-01, -2.607e-02, -5.956e-02]
 
         # y-direction
         res[1] = {}
-        res[1]["P0"] = [0.000344, 0.000734, 0.00092, 0.000335, 0.000667]
-        res[1]["cos_theta"] = [0.022442, 0.043359, 0.056447, 0.021081, 0.040248]
-        res[1]["cos_2_theta"] = [4.05e-1, 3.56e-1, 2.71e-1, 3.57e-1, 3.31e-1]
+        res[1]["P1"] = [2.244e-02, 4.336e-02, 5.645e-02, 2.108e-02, 4.025e-02]
+        res[1]["P2"] = [1.08e-01, 3.377e-02, -9.410e-02, 3.568e-02, -4.201e-03]
 
         # z-direction
         res[2] = {}
-        res[2]["P0"] = [-1.12e-3, -1.61e-3, -1.22e-3, -1.44e-3, -1.29e-3]
-        res[2]["cos_theta"] = [-6.96e-2, -9.65e-2, -7.41e-2, -8.76e-2, -8.26e-2]
-        res[2]["cos_2_theta"] = [2.72e-1, 3.45e-1, 3.41e-1, 3.12e-1, 2.62e-1]
+        res[2]["P1"] = [-6.956e-02, -9.645e-02, -7.411e-02, -8.756e-02, -8.259e-02]
+        res[2]["P2"] = [-9.168e-02, 1.733e-02, 1.182e-02, -3.268e-02, -1.067e-01]
         return res
 
-    @pytest.mark.parametrize("order_parameter", ["P0", "cos_theta", "cos_2_theta"])
+    @pytest.mark.parametrize("order_parameter", ["P1", "P2"])
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_DiporderPlanar_trajectory(
         self, ag_single_frame, dim, order_parameter, result_dict
@@ -83,20 +80,34 @@ class TestDiporderPlanar(ReferenceAtomGroups):
             dip.results.profile.flatten(), result_dict[dim][order_parameter], rtol=1e-2
         )
 
-    @pytest.mark.parametrize(
-        ("order_parameter", "output"), [("P0", 0), ("cos_theta", 1), ("cos_2_theta", 1)]
-    )
+    @pytest.mark.parametrize(("order_parameter", "output"), [("P1", 1), ("P2", 1)])
     def test_DiporderPlanar_3_water_0(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 0."""
         ag = line_of_water_molecules(n_molecules=3, angle_deg=0.0)
         dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
         assert_allclose(np.mean(dip.results.profile.flatten()), output, atol=1e-3)
 
-    @pytest.mark.parametrize(
-        ("order_parameter", "output"), [("P0", 0), ("cos_theta", 0), ("cos_2_theta", 0)]
-    )
+    @pytest.mark.parametrize(("order_parameter", "output"), [("P1", 0), ("P2", -0.5)])
     def test_DiporderPlanar_3_water_90(self, order_parameter, output):
         """Test DiporderPlanar for 3 water molecules with angle 90."""
         ag = line_of_water_molecules(n_molecules=3, angle_deg=90.0)
+        dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
+        assert_allclose(dip.results.profile.mean(), output, atol=1e-6)
+
+    @pytest.mark.parametrize(
+        ("order_parameter", "output"), [("P1", 1 / np.sqrt(2)), ("P2", 0.25)]
+    )
+    def test_DiporderPlanar_3_water_45(self, order_parameter, output):
+        """Test DiporderPlanar for 3 water molecules with angle 45."""
+        ag = line_of_water_molecules(n_molecules=3, angle_deg=45.0)
+        dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
+        assert_allclose(dip.results.profile.mean(), output, atol=1e-6)
+
+    @pytest.mark.parametrize(
+        ("order_parameter", "output"), [("P1", (1 + np.sqrt(2) / 2) / 3), ("P2", 0.25)]
+    )
+    def test_DiporderPlanar_3_water_mixed_angles(self, order_parameter, output):
+        """Test DiporderPlanar for 3 water molecules with angles (0, 45, 90)."""
+        ag = line_of_water_molecules(n_molecules=3, angle_deg=[0.0, 45.0, 90.0])
         dip = DiporderPlanar(ag, bin_width=10, order_parameter=order_parameter).run()
         assert_allclose(dip.results.profile.mean(), output, atol=1e-6)

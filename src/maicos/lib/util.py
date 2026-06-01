@@ -59,6 +59,36 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
 
+def check_file_extension(filename: str, extension: str) -> str:
+    """Ensure ``filename`` ends with ``extension``, appending it with a warning.
+
+    If ``filename`` does not end with ``extension``, the extension is appended
+    and a :class:`UserWarning` is issued.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the file to be checked.
+    extension : str
+        Expected file extension, including the leading dot (e.g. ``".dat"``).
+
+    Returns
+    -------
+    str
+        ``filename`` unchanged if it already ends with ``extension``, otherwise
+        ``filename`` with ``extension`` appended.
+    """
+    if not filename.endswith(extension):
+        warnings.warn(
+            f"The file name should have a {extension!r} file extension. The user "
+            f"requested the file with name {filename!r}, but it will be saved as "
+            f"{filename + extension!r}.",
+            stacklevel=2,
+        )
+        filename = filename + extension
+    return filename
+
+
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
 DOC_DICT = dict(
@@ -98,9 +128,10 @@ ${DENSITY_DESCRIPTION_2}""",
     DENSITY_SPHERE_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
 ${SPHERICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DIPORDER_DESCRIPTION=r"""Calculations include the projected dipole density
-:math:`P_0⋅ρ(z)⋅\cos(θ[z])`, the dipole orientation :math:`\cos(θ[z])`, the squared
-dipole orientation :math:`\cos²(Θ[z])` and the number density :math:`ρ(z)`.""",
+    DIPORDER_DESCRIPTION=r"""Calculations include the first- and second-rank
+orientational order parameters,
+which are the Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3
+x^2 - 1}{2}` with :math:`x = \cos(θ[z])`.""",
     CORRELATION_INFO=r"""For further information on the correlation analysis please
 refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
 :ref:`general-design` section.""",
@@ -160,13 +191,14 @@ self : object
     direction of the projection""",
     FLUX_PARAMETER=r"""flux : bool
     Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
-    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``}
+    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, \
+``"segments"``, ``"molecules"``, ``"fragments"``}
     Atom grouping for the calculations.
 
     The possible grouping options are the atom positions (in the case where
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
-    ``"fragments"``).""",  # noqa: E501
+    ``"fragments"``).""",
     OUTPUT_PARAMETER="""output : str
     Output filename.""",
     OUTPUT_PREFIX_PARAMETER="""output_prefix : str
@@ -178,11 +210,11 @@ self : object
 
     The possible options are center of mass (``"com"``), center of geometry (``"cog"``),
     and center of charge (``"coc"``).""",
-    ORDER_PARAMETER_PARAMETER="""order_parameter : {``"P0"``, ``"cos_theta"``, ``"cos_2_theta"``}
+    ORDER_PARAMETER_PARAMETER=r"""order_parameter : {``"P1"``, ``"P2"``}
     Order parameter to be calculated:
-        - ``"P0"``: total dipole moment projected on an axis
-        - ``"cos_theta"``: cosine of the dipole moment with an axis
-        - ``"cos_2_theta"``: squred cosine with an axis.""",  # noqa: E501
+        - ``"P1"``: Legendre polynomial :math:`P_1(cos[θ]) = cos[θ]`
+        - ``"P2"``: Legendre polynomial
+          :math:`P_2(cos[θ]) = \frac{3cos^2[θ] - 1}{2}`""",
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################

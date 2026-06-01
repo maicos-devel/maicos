@@ -25,6 +25,7 @@ from .. import __version__
 from ..lib.math import center_cluster, combine_subsample_variance
 from ..lib.util import (
     atomgroup_header,
+    check_file_extension,
     correlation_analysis,
     get_center,
     get_cli_input,
@@ -57,6 +58,16 @@ class _Runner:
 
         if frames is not None and not all(opt is None for opt in [start, stop, step]):
             raise ValueError("start/stop/step cannot be combined with frames")
+
+        for analysis_object in analysis_instances:
+            if getattr(analysis_object, "_trajectory", None) is None:
+                raise RuntimeError(
+                    f"{type(analysis_object).__name__} has no trajectory "
+                    "attached and cannot be run. This could mean it was "
+                    "restored via `load` as a read-only snapshot; build a "
+                    "fresh instance from a Universe with a trajectory if you "
+                    "need to run the analysis again."
+                )
 
         # Configure the root logger if not already configured
         logging.basicConfig()
@@ -567,7 +578,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self.means[key] = np.astype(self._obs[key], float)
                 else:
                     self.means[key] = float(self._obs[key])
-                self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
 
                 self.M2[key] = self._var[key] * self._pop[key]
                 self.pop[key] = self._pop[key]
@@ -675,8 +687,204 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         if columns is not None:
             header += "|".join([f"{i:^23}" for i in columns])[3:]
 
-        fname = "{}{}".format(fname, (not fname.endswith(".dat")) * ".dat")
+        fname = check_file_extension(fname, ".dat")
         np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
+
+    _CHECKPOINT_CONTAINERS = ("results", "_obs", "means", "sems", "sums", "pop", "M2")
+    _CHECKPOINT_ARRAYS = ("timeseries", "frames", "times")
+    _CHECKPOINT_META = ("_frame_index", "_index", "corrtime")
+
+    _CHECKPOINT_SEP = ":::"
+
+    def dump(self, filename: str) -> None:
+        """Save analysis state to an ``.npz`` file.
+
+        .. warning::
+
+            :meth:`dump` is **not** an archival format. The on-disk layout
+            tracks the installed MAICoS and MDAnalysis versions and may stop
+            loading after an upgrade. Use it to checkpoint or hand off an
+            in-progress analysis, not to preserve results long-term. For
+            archival output write summary tables with :meth:`save` or export
+            :attr:`results` to a stable format.
+
+        Persists all statistical accumulators (``means``, ``sems``, ``sums``,
+        ``pop``, ``M2``), the ``results`` and ``_obs`` containers, per-frame
+        arrays (``timeseries``, ``frames``, ``times``), metadata, the associated
+        Universe and the analysed atomgroup. Restore the analysis with :meth:`load`.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the output ``.npz`` file.
+        """
+        sep = self._CHECKPOINT_SEP
+        data = {}
+        for name in self._CHECKPOINT_CONTAINERS:
+            container = getattr(self, name, None)
+            if container is None:
+                continue
+            for key in container:
+                data[f"{name}{sep}{key}"] = np.asarray(container[key])
+
+        for name in self._CHECKPOINT_ARRAYS:
+            arr = getattr(self, name, None)
+            if arr is not None:
+                data[f"_array{sep}{name}"] = np.asarray(arr)
+
+        for name in self._CHECKPOINT_META:
+            val = getattr(self, name, None)
+            if val is not None:
+                data[f"_meta{sep}{name}"] = np.asarray(val)
+
+        data.update(self._serialize_topology())
+        data["_atomgroup_indices"] = np.asarray(self.atomgroup.indices)
+        if self.refgroup is not None:
+            data["_refgroup_indices"] = np.asarray(self.refgroup.indices)
+        data["_maicos_version"] = np.asarray(__version__)
+
+        filename = check_file_extension(filename, ".npz")
+        np.savez(filename, **data)
+
+    @classmethod
+    def load(cls, filename: str) -> Self:
+        """Restore an analysis instance from a file created by :meth:`dump`.
+
+        Returns a new instance of ``cls`` with all statistical accumulators,
+        per-frame arrays, metadata, and the analysed atomgroup populated from
+        the file. The rebuilt :class:`MDAnalysis.Universe` carries only the
+        topology — no trajectory — so calling :meth:`run` on the returned
+        instance raises :class:`RuntimeError`. Use the loaded instance to
+        inspect :attr:`results` or to call :meth:`save`.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the ``.npz`` file written by :meth:`dump`.
+
+        Returns
+        -------
+        Self
+            A new instance of ``cls`` with state restored from ``filename``.
+        """
+        sep = cls._CHECKPOINT_SEP
+        npz = np.load(filename, allow_pickle=False)
+
+        if "_maicos_version" not in npz.files:
+            raise ValueError(
+                f"{filename!r} is missing a MAICoS version tag. It was either "
+                "not produced by `dump` or written by an incompatible "
+                "version."
+            )
+        dump_version = str(npz["_maicos_version"])
+        if dump_version != __version__:
+            raise ValueError(
+                f"{filename!r} was written by MAICoS v{dump_version} but the "
+                f"installed version is v{__version__}. `dump`/`load` is "
+                f"version-locked; re-run the analysis with the current "
+                f"version or install v{dump_version} to load this file."
+            )
+
+        universe = cls._deserialize_topology(npz)
+        atomgroup = universe.atoms[npz["_atomgroup_indices"]]
+        refgroup = None
+        if "_refgroup_indices" in npz.files:
+            refgroup = universe.atoms[npz["_refgroup_indices"]]
+
+        # Bypass __init__: subclasses have varying signatures and we don't
+        # know the original constructor arguments. The loaded instance is a
+        # read-only snapshot, so we only restore the attributes consumers
+        # (``save``, results inspection, ``AnalysisCollection``) rely on.
+        instance = cls.__new__(cls)
+        instance.atomgroup = atomgroup
+        instance.refgroup = refgroup
+        instance._universe = universe
+        instance._trajectory = None
+        instance.results = Results()
+        instance.module_has_save = callable(getattr(cls, "save", None))
+
+        containers: dict[str, Results] = {}
+        for full_key in npz.files:
+            arr = npz[full_key]
+            prefix, found, key = full_key.partition(sep)
+            if not found:
+                continue
+            if prefix == "_topology":
+                continue
+
+            if prefix in cls._CHECKPOINT_CONTAINERS:
+                if prefix not in containers:
+                    containers[prefix] = Results()
+                # Convert 0-d arrays back to Python scalars
+                containers[prefix][key] = arr.item() if arr.ndim == 0 else arr
+
+            elif prefix == "_array":
+                setattr(instance, key, arr)
+
+            elif prefix == "_meta":
+                val = arr.item() if arr.ndim == 0 else arr
+                setattr(instance, key, val)
+
+        for name, container in containers.items():
+            setattr(instance, name, container)
+
+        return instance
+
+    _TOPOLOGY_LEVELS = ("atom", "residue", "segment")
+
+    def _serialize_topology(self) -> dict[str, np.ndarray]:
+        """Encode the universe's topology as numpy arrays (no pickle).
+
+        Captures the atom/residue/segment counts, the atom→residue and
+        residue→segment maps, and every per-atom/residue/segment
+        :class:`MDAnalysis.core.topologyattrs.TopologyAttr`. String-valued
+        attributes are coerced from ``object`` dtype to fixed-width unicode so
+        the resulting ``.npz`` can be reopened with ``allow_pickle=False``.
+        """
+        sep = self._CHECKPOINT_SEP
+        prefix = f"_topology{sep}"
+        u = self._universe
+        out: dict[str, np.ndarray] = {
+            f"{prefix}atom_resindex": np.asarray(u.atoms.resindices),
+            f"{prefix}residue_segindex": np.asarray(u.residues.segindices),
+        }
+        for attr in u._topology.attrs:
+            level = getattr(attr, "per_object", None)
+            if level not in self._TOPOLOGY_LEVELS:
+                # Skips derived indices and connectivity (bonds, angles, ...)
+                # — not needed for inspecting a loaded snapshot.
+                continue
+            values = np.asarray(attr.values)
+            if values.dtype == object:
+                values = values.astype(str)
+            out[f"{prefix}attr{sep}{level}{sep}{attr.attrname}"] = values
+        return out
+
+    @classmethod
+    def _deserialize_topology(cls, npz: np.lib.npyio.NpzFile) -> mda.Universe:
+        """Rebuild a trajectory-free :class:`MDAnalysis.Universe` from ``npz``."""
+        sep = cls._CHECKPOINT_SEP
+        prefix = f"_topology{sep}"
+        atom_resindex = npz[f"{prefix}atom_resindex"]
+        residue_segindex = npz[f"{prefix}residue_segindex"]
+        universe = mda.Universe.empty(
+            n_atoms=int(atom_resindex.shape[0]),
+            n_residues=int(residue_segindex.shape[0]),
+            n_segments=int(residue_segindex.max() + 1) if residue_segindex.size else 1,
+            atom_resindex=atom_resindex,
+            residue_segindex=residue_segindex,
+            trajectory=False,
+        )
+        attr_prefix = f"{prefix}attr{sep}"
+        for full_key in npz.files:
+            if not full_key.startswith(attr_prefix):
+                continue
+            _, _, level_and_name = full_key.partition(attr_prefix)
+            level, _, attr_name = level_and_name.partition(sep)
+            if level not in cls._TOPOLOGY_LEVELS:
+                continue
+            universe.add_TopologyAttr(attr_name, npz[full_key])
+        return universe
 
 
 class AnalysisCollection(_Runner):
@@ -913,7 +1121,8 @@ class ProfileBase:
                     weights - self._obs.profile[bin_indices],  # type: ignore
                 )
             )  # type: ignore
-            self._var.profile /= self._obs.bincount  # type: ignore
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self._var.profile /= self._obs.bincount  # type: ignore
         return None
 
     def _conclude(self) -> None:
