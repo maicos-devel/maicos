@@ -563,6 +563,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.sems = Results()  # standard error of the mean across frames
             self.pop = Results()  # count of samples across frames
             self.M2 = Results()  # second moment of the samples across frames
+            self.covar = Results()
 
             for key in self._obs:
                 if not isinstance(self._obs[key], tuple(compatible_types)):
@@ -584,6 +585,25 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 self.M2[key] = self._var[key] * self._pop[key]
                 self.pop[key] = self._pop[key]
                 self.sums[key] = self._obs[key] * self._pop[key]
+
+            for key in self._obs:
+                for key2 in self._obs:
+                    covar_str = f"{key}_cov_{key2}"
+                    try: 
+                        shape1 = np.shape(self._obs[key])
+                        shape2 = np.shape(self._obs[key2])
+                        small_shape = min(shape1, shape2)
+                        big_shape = max(shape1, shape2)
+
+                        # check that two observables have either the same length, or one is a scalar
+                        if (small_shape != big_shape and small_shape != 1):
+                            raise Exception("shape mismatch between observables")
+
+                        self.covar[covar_str] = np.empty(big_shape, dtype=float)
+                        self.covar[covar_str].fill(np.nan)
+                    except Exception as err:
+                        with logging_redirect_tqdm():
+                            logger.debug("covariances could not be initialized.")
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()

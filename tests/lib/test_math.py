@@ -481,3 +481,43 @@ def test_combine_subsample_variance_empty():
     assert n_AB == 0
     assert np.isnan(mu_AB)
     assert np.isnan(M_AB)
+
+@pytest.mark.parametrize(
+    ("n_A", "n_B"),
+    [
+        (2, 2),  # trivial case
+        (2, 10),  # series B is larger than the other
+        (10, 2),  # series A is larger than the other
+    ],
+)
+def test_combine_subsample_covariance(n_A, n_B):
+    """Test parallel Welford algorithm for covariance."""
+    # Ensure series_B is different from series_A
+    series_A_X = np.random.rand(n_A) * 100 - 50
+    series_B_X = np.random.rand(n_B) * 10
+    series_AB_X = np.concatenate([series_A_X, series_B_X])
+
+    series_A_Y = np.random.rand(n_A) * 100 - 50
+    series_B_Y = np.random.rand(n_B) * 10
+    series_AB_Y = np.concatenate([series_A_Y, series_B_Y])
+
+
+    n_A = len(series_A_X)
+    n_B = len(series_B_X)
+
+    mu_AX = series_A_X.mean()
+    mu_BX = series_B_X.mean()
+
+    mu_AY = series_A_Y.mean()
+    mu_BY = series_B_Y.mean()
+
+
+    M_A = n_A * np.cov(np.vstack([series_A_X, series_A_Y]), bias=True)[0, 1]
+    M_B = n_B * np.cov(np.vstack([series_B_X, series_B_Y]), bias=True)[0, 1]
+
+    n_AB, M_AB = maicos.lib.math.combine_subsample_covariance(
+        n_A, n_B, mu_AX, mu_BX, mu_AY, mu_BY, M_A, M_B
+    )
+
+    assert_allclose(M_AB, np.cov(np.vstack([series_AB_X, series_AB_Y]), bias=True)[0, 1] * n_AB, rtol=1e-9)
+

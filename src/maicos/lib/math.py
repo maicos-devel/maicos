@@ -644,3 +644,46 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
         M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB
+
+def combine_subsample_covariance(n_A, n_B, mu_AX, mu_BX, mu_AY, mu_BY, M_A, M_B):
+    """Calculate the covariance of two datasets of arbitrary size.
+
+    Given two datasets of arbitrary size, this function calculates the
+    covariance of the combined dataset using Welford's method. This is useful for
+    parallel processing where the datasets are processed in chunks.
+
+    Parameters
+    ----------
+    n_A : int
+        Number of elements in dataset A.
+    n_B : int
+        Number of elements in dataset B.
+    mu_AX : float
+        Mean of dataset A and observable X.
+    mu_BX : float 
+        Mean of dataset B and observable X.
+    mu_AY: float
+        Mean of dataset A and observable Y.
+    mu_BY: float
+        Mean of dataset B and observable Y.
+    M_A : float
+        Sum of product of deviations from the mean for dataset A.
+    M_B : float
+        Sum of product of deviations from the mean for dataset B.
+
+    Returns
+    -------
+    M_AB : float
+        Sum of product of deviations from the mean for the combined dataset.
+    """
+    n_AB = n_A + n_B
+    delta_X = np.nan_to_num(mu_AX) - np.nan_to_num(mu_BX)
+    delta_Y = np.nan_to_num(mu_AY) - np.nan_to_num(mu_BY)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta_X*delta_Y * n_A * n_B / n_AB
+
+    return n_AB, M_AB
+
+
+
+
