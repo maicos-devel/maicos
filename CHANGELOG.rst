@@ -11,10 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Philipp Stärk,
-Leo Legrand
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Philipp Stärk, Leo Legrand
 
-- Add function and example how to use times instead of frame slices (#555)
+- Add function and example how to use times instead of frame slices (#585)
 - Add example for effective-medium dielectric analysis (#584)
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
