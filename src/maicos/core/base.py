@@ -12,6 +12,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
+from itertools import combinations
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
@@ -22,7 +23,11 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
-from ..lib.math import center_cluster, combine_subsample_variance
+from ..lib.math import (
+    center_cluster,
+    combine_subsample_covariance,
+    combine_subsample_variance,
+)
 from ..lib.util import (
     atomgroup_header,
     check_file_extension,
@@ -317,9 +322,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         sums: Results
         pop: Results
         M2: Results
+        C: Results
         _obs: Results
         _pop: Results
         _var: Results
+        _C: Results
 
     def __init__(
         self,
@@ -518,6 +525,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
+        self._C = Results()  # within-frame covariance of the samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
@@ -528,9 +536,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.means  # noqa B018
             self.sems  # noqa B018
 
-            # Take the data from the current frame and update the means and sems
+            # Sanitize observables and fill in single-sample defaults so that both
+            # the per-key and the pairwise updates below can rely on them.
             for key in self._obs:
-                # Sanitize the data type of the observable
                 if isinstance(self._obs[key], list):
                     self._obs[key] = np.array(self._obs[key])
                 if key not in self._pop:
@@ -538,6 +546,32 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
                     self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
 
+            # Update the off-diagonal covariances first, using the running means
+            # from *before* the per-key loop below overwrites them. The diagonal
+            # (variance) is kept in M2 / sems and updated in that loop.
+            old_means = {key: self.means[key] for key in self._obs}
+            for i, j in combinations(self._obs, 2):
+                pkey = (i, j) if i < j else (j, i)
+                if pkey not in self.C:
+                    continue  # shapes did not broadcast at initialization
+                if not np.array_equal(*np.broadcast_arrays(self._pop[i], self._pop[j])):
+                    raise ValueError(
+                        f"cannot track covariance of differently-sampled "
+                        f"{i!r} and {j!r}"
+                    )
+                _, self.C[pkey] = combine_subsample_covariance(
+                    self._pop[i],
+                    self.pop[i],
+                    self._obs[i],
+                    old_means[i],
+                    self._obs[j],
+                    old_means[j],
+                    self._C.get(pkey, 0.0) * self._pop[i],
+                    self.C[pkey],
+                )
+
+            # Take the data from the current frame and update the means and sems
+            for key in self._obs:
                 self.pop[key], self.means[key], self.M2[key] = (
                     combine_subsample_variance(
                         self._pop[key],
@@ -563,6 +597,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.sems = Results()  # standard error of the mean across frames
             self.pop = Results()  # count of samples across frames
             self.M2 = Results()  # second moment of the samples across frames
+            self.C = Results()  # off-diagonal co-moments across frames, keyed (i, j)
 
             for key in self._obs:
                 if not isinstance(self._obs[key], tuple(compatible_types)):
@@ -585,10 +620,123 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 self.pop[key] = self._pop[key]
                 self.sums[key] = self._obs[key] * self._pop[key]
 
+            # Initialize the off-diagonal co-moments. A pair is tracked only if
+            # the two observables (a) broadcast against each other (element-wise
+            # covariance) and (b) share the same per-frame population, i.e. are
+            # co-sampled. Pairs failing either test are simply left out.
+            for i, j in combinations(self._obs, 2):
+                pkey = (i, j) if i < j else (j, i)
+                try:
+                    pshape = np.broadcast_shapes(
+                        np.shape(self.means[i]), np.shape(self.means[j])
+                    )
+                except ValueError:
+                    continue  # shapes do not broadcast -> covariance not tracked
+                if not np.array_equal(*np.broadcast_arrays(self._pop[i], self._pop[j])):
+                    continue  # not co-sampled -> covariance is undefined
+                self.C[pkey] = np.broadcast_to(
+                    self._C.get(pkey, 0.0) * self._pop[i], pshape
+                ).astype(float)
+
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
             if self.module_has_save:
                 self.save()
+
+    def pop_pair(self, i: str, j: str) -> np.ndarray:
+        """Shared sample count of two co-sampled observables.
+
+        Parameters
+        ----------
+        i, j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (broadcast) number of samples shared by both observables.
+        """
+        return np.broadcast_arrays(self.pop[i], self.pop[j])[0]
+
+    def cov(self, i: str, j: str) -> np.ndarray:
+        r"""Covariance of the means of two observables.
+
+        The element-wise covariance :math:`\mathrm{Cov}(\bar x_i, \bar x_j)` of the
+        observable means accumulated across frames. The diagonal (``i == j``)
+        equals the squared standard error of the mean, :attr:`sems`.
+
+        Parameters
+        ----------
+        i, j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            Covariance of the means of ``i`` and ``j``.
+
+        Raises
+        ------
+        KeyError
+            If the off-diagonal pair was not tracked, either because the two
+            observables do not broadcast against each other or because they are
+            not co-sampled (different populations).
+        """
+        if i == j:
+            return self.sems[i] ** 2
+        pkey = (i, j) if i < j else (j, i)
+        if pkey not in self.C:
+            raise KeyError(
+                f"covariance of {i!r} and {j!r} not tracked: their shapes do "
+                f"not broadcast or they are not co-sampled (different "
+                f"populations), so they cannot enter the same estimator"
+            )
+        return self.C[pkey] / self.pop_pair(i, j) ** 2
+
+    def propagate(self, grads: dict) -> np.ndarray:
+        r"""Propagate observable errors through an estimator.
+
+        Computes the standard error of an estimator :math:`f` from the full
+        covariance of the observable means,
+
+        .. math::
+
+            \sigma_f^2 = \sum_{ij}
+                \frac{\partial f}{\partial x_i}
+                \frac{\partial f}{\partial x_j}
+                \mathrm{Cov}(\bar x_i, \bar x_j),
+
+        where ``grads[key]`` provides :math:`\partial f / \partial x_{key}`. The
+        diagonal terms reproduce the independent-variable (uncorrelated) estimate;
+        the off-diagonal terms add the cross-covariance contributions.
+
+        Parameters
+        ----------
+        grads : dict
+            Mapping of observable key to the gradient of the estimator with
+            respect to that observable's mean.
+
+        Returns
+        -------
+        numpy.ndarray
+            Standard error of the estimator.
+
+        Raises
+        ------
+        KeyError
+            If two of the supplied observables have no tracked covariance (see
+            :meth:`cov`).
+        """
+        keys = list(grads)
+        # Cross terms first: an untracked pair raises before the diagonal sum,
+        # which would otherwise fail to broadcast incompatible observables.
+        var = 0.0
+        for i, j in combinations(keys, 2):
+            cov_ij = self.cov(i, j)  # raises KeyError for an untracked pair
+            var = var + 2 * grads[i] * grads[j] * cov_ij
+        for key in keys:
+            var = var + grads[key] ** 2 * self.sems[key] ** 2
+        return np.sqrt(var)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.
@@ -690,11 +838,21 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         fname = check_file_extension(fname, ".dat")
         np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
 
-    _CHECKPOINT_CONTAINERS = ("results", "_obs", "means", "sems", "sums", "pop", "M2")
+    _CHECKPOINT_CONTAINERS = (
+        "results",
+        "_obs",
+        "means",
+        "sems",
+        "sums",
+        "pop",
+        "M2",
+        "C",
+    )
     _CHECKPOINT_ARRAYS = ("timeseries", "frames", "times")
     _CHECKPOINT_META = ("_frame_index", "_index", "corrtime")
 
     _CHECKPOINT_SEP = ":::"
+    _CHECKPOINT_PAIR_SEP = "|||"
 
     def dump(self, filename: str) -> None:
         """Save analysis state to an ``.npz`` file.
@@ -725,7 +883,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if container is None:
                 continue
             for key in container:
-                data[f"{name}{sep}{key}"] = np.asarray(container[key])
+                if isinstance(key, tuple):
+                    # Pair keys (e.g. the covariance container) are flattened to
+                    # a string and reconstructed in `load`.
+                    key_str = self._CHECKPOINT_PAIR_SEP.join(key)
+                else:
+                    key_str = key
+                data[f"{name}{sep}{key_str}"] = np.asarray(container[key])
 
         for name in self._CHECKPOINT_ARRAYS:
             arr = getattr(self, name, None)
@@ -815,8 +979,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if prefix in cls._CHECKPOINT_CONTAINERS:
                 if prefix not in containers:
                     containers[prefix] = Results()
+                # Reconstruct pair (tuple) keys flattened by `dump`.
+                pair_sep = cls._CHECKPOINT_PAIR_SEP
+                out_key = tuple(key.split(pair_sep)) if pair_sep in key else key
                 # Convert 0-d arrays back to Python scalars
-                containers[prefix][key] = arr.item() if arr.ndim == 0 else arr
+                containers[prefix][out_key] = arr.item() if arr.ndim == 0 else arr
 
             elif prefix == "_array":
                 setattr(instance, key, arr)

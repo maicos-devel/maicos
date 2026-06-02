@@ -153,6 +153,71 @@ class Frame_types(AnalysisBase):
         self._obs.observable = self.data[self._frame_index]
 
 
+class CorrelatedSeries(AnalysisBase):
+    """Class emitting several correlated observables per frame.
+
+    Observables (one sample per frame):
+    - ``x``     : scalar, drawn at random
+    - ``y``     : scalar, linearly correlated with ``x``
+    - ``prof``  : shape (3,) array, correlated with ``x``
+    - ``other`` : shape (2,) array (does not broadcast against ``prof``)
+    """
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        n = self.n_frames
+        self.x = np.random.rand(n) * 10 - 5
+        self.y = 2.5 * self.x + np.random.rand(n)
+        self.prof = self.x[:, None] * np.array([1.0, -2.0, 0.5]) + np.random.rand(n, 3)
+        self.other = np.random.rand(n, 2)
+
+    def _single_frame(self):
+        i = self._frame_index
+        self._obs.x = self.x[i]
+        self._obs.y = self.y[i]
+        self._obs.prof = self.prof[i]
+        self._obs.other = self.other[i]
+
+
+class WeightedSeries(AnalysisBase):
+    """Class with a single-sample and a weighted-population observable.
+
+    ``single`` (shape (3,), one sample per frame) and ``weighted`` (shape (3,)
+    with a per-bin sample count) broadcast in shape but are *not* co-sampled, so
+    their covariance must not be tracked.
+    """
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.rng = np.random.default_rng(0)
+
+    def _single_frame(self):
+        self._obs.single = self.rng.random(3)
+        self._obs.weighted = self.rng.random(3)
+        self._var.weighted = self.rng.random(3)
+        self._pop.weighted = self.rng.integers(2, 10, 3)
+
+
 class Conclude(AnalysisBase):
     """Class to test the _conclude method.
 
@@ -1516,3 +1581,107 @@ class TestDumpLoad:
             f"{sorted(missing)}. MDAnalysis may have renamed or removed "
             f"them; update `known` and roundtrip coverage."
         )
+
+
+class Test_Covariance:
+    """Tests for the iterative off-diagonal covariance accumulation."""
+
+    @pytest.fixture
+    def ag(self):
+        """Import MDA universe."""
+        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
+
+    @pytest.fixture
+    def ana(self, ag):
+        """Run a CorrelatedSeries analysis with a fixed seed."""
+        np.random.seed(42)
+        ana = CorrelatedSeries(ag)
+        ana.run()
+        return ana
+
+    @staticmethod
+    def _comoment(a, b):
+        """Batch co-moment sum((a - a.mean())(b - b.mean())) along axis 0."""
+        return ((a - a.mean(axis=0)) * (b - b.mean(axis=0))).sum(axis=0)
+
+    def test_comoment_matches_batch(self, ana):
+        """Streamed co-moment equals the batch reference for scalar pairs."""
+        assert_allclose(ana.C[("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9)
+
+    def test_comoment_array_observable(self, ana):
+        """Element-wise co-moment of a scalar with an array observable."""
+        ref = self._comoment(ana.x[:, None], ana.prof)
+        assert ana.C[("prof", "x")].shape == (3,)
+        assert_allclose(ana.C[("prof", "x")], ref, rtol=1e-9)
+
+    def test_diagonal_equals_variance(self, ana):
+        """cov(key, key) reproduces the squared standard error of the mean."""
+        assert_allclose(ana.cov("x", "x"), ana.sems.x**2, rtol=1e-12)
+
+    def test_cov_is_covariance_of_means(self, ana):
+        """cov() divides the co-moment by the squared shared population."""
+        n = ana.n_frames
+        assert_allclose(ana.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
+
+    def test_cov_symmetric(self, ana):
+        """cov() is symmetric in its arguments."""
+        assert_allclose(ana.cov("x", "y"), ana.cov("y", "x"))
+
+    def test_incompatible_pair_not_tracked(self, ana):
+        """Pairs whose shapes do not broadcast are never tracked."""
+        assert ("other", "prof") not in ana.C
+        assert ("prof", "other") not in ana.C
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.cov("prof", "other")
+
+    def test_propagate_matches_manual(self, ana):
+        """propagate() of f = x*y matches the explicit bilinear form."""
+        grads = {"x": ana.means.y, "y": ana.means.x}
+        expected = np.sqrt(
+            grads["x"] ** 2 * ana.sems.x**2
+            + grads["y"] ** 2 * ana.sems.y**2
+            + 2 * grads["x"] * grads["y"] * ana.cov("x", "y")
+        )
+        assert_allclose(ana.propagate(grads), expected, rtol=1e-12)
+
+    def test_propagate_differs_from_diagonal(self, ana):
+        """Correlated variables: full propagation differs from the diagonal-only one."""
+        grads = {"x": ana.means.y, "y": ana.means.x}
+        diagonal_only = np.sqrt(
+            grads["x"] ** 2 * ana.sems.x**2 + grads["y"] ** 2 * ana.sems.y**2
+        )
+        assert not np.isclose(ana.propagate(grads), diagonal_only)
+
+    def test_propagate_raises_on_untracked(self, ana):
+        """propagate() raises when a requested pair has no tracked covariance."""
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.propagate({"prof": np.ones(3), "other": np.ones(2)})
+
+    def test_uncorrelated_covariance_is_small(self, ag):
+        """Independent observables have near-zero off-diagonal covariance of means."""
+        np.random.seed(7)
+        ana = CorrelatedSeries(ag)
+        ana.run()
+        # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
+        cov_xother = ana.C[("other", "x")] / ana.pop_pair("other", "x") ** 2
+        assert np.all(np.abs(cov_xother) < np.abs(ana.cov("x", "y")))
+
+    def test_not_cosampled_pair_not_tracked(self, ag):
+        """Shape-compatible but differently-populated observables are not tracked."""
+        np.random.seed(1)
+        ana = WeightedSeries(ag)
+        ana.run()
+        assert ("single", "weighted") not in ana.C
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.cov("single", "weighted")
+
+    def test_roundtrip_covariance(self, ana, tmp_path):
+        """The covariance container survives a dump/load roundtrip with tuple keys."""
+        fpath = tmp_path / "checkpoint.npz"
+        ana.dump(str(fpath))
+        restored = CorrelatedSeries.load(str(fpath))
+
+        assert set(restored.C) == set(ana.C)
+        for key in ana.C:
+            assert isinstance(key, tuple)
+            assert_allclose(restored.C[key], ana.C[key])
