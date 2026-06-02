@@ -658,7 +658,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         """
         return np.broadcast_arrays(self.pop[i], self.pop[j])[0]
 
-     def _pop_pair(self, i: str, j: str) -> np.ndarray:
+    def _pop_pair(self, i: str, j: str) -> np.ndarray:
         """Shared sample count of two co-sampled observables.
 
         Parameters

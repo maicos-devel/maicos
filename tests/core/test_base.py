@@ -154,6 +154,7 @@ class Frame_types(AnalysisBase):
 
 
 class CorrelatedSeries(AnalysisBase):
+    #TODO: The name can be misleading (could be time correlation)
     """Class emitting several correlated observables per frame.
 
     Observables (one sample per frame):
@@ -1622,6 +1623,7 @@ class Test_Covariance:
         """cov() divides the co-moment by the squared shared population."""
         n = ana.n_frames
         assert_allclose(ana.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
+        assert_allclose(ana.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n)
 
     def test_cov_symmetric(self, ana):
         """cov() is symmetric in its arguments."""
