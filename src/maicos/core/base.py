@@ -525,7 +525,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
-        self._C = Results()  # within-frame covariance of the samples
+        self._cov = Results()  # within-frame covariance of the samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
@@ -566,7 +566,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     old_means[i],
                     self._obs[j],
                     old_means[j],
-                    self._C.get(pkey, 0.0) * self._pop[i],
+                    self._cov.get(pkey, 0.0) * self._pop_pair(i, j),
                     self.C[pkey],
                 )
 
@@ -635,7 +635,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 if not np.array_equal(*np.broadcast_arrays(self._pop[i], self._pop[j])):
                     continue  # not co-sampled -> covariance is undefined
                 self.C[pkey] = np.broadcast_to(
-                    self._C.get(pkey, 0.0) * self._pop[i], pshape
+                    self._cov.get(pkey, 0.0) * self._pop_pair(i, j), pshape
                 ).astype(float)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
@@ -657,6 +657,22 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             The (broadcast) number of samples shared by both observables.
         """
         return np.broadcast_arrays(self.pop[i], self.pop[j])[0]
+
+     def _pop_pair(self, i: str, j: str) -> np.ndarray:
+        """Shared sample count of two co-sampled observables.
+
+        Parameters
+        ----------
+        i, j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (broadcast) number of samples shared by both observables.
+        """
+        return np.broadcast_arrays(self._pop[i], self._pop[j])[0]
+
 
     def cov(self, i: str, j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
