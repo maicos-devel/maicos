@@ -1644,7 +1644,7 @@ class Test_Covariance:
             + grads["y"] ** 2 * ana.sems.y**2
             + 2 * grads["x"] * grads["y"] * ana.cov("x", "y")
         )
-        assert_allclose(ana.propagate(grads), expected, rtol=1e-12)
+        assert_allclose(ana.propagate_error(grads), expected, rtol=1e-12)
 
     def test_propagate_differs_from_diagonal(self, ana):
         """Correlated variables: full propagation differs from the diagonal-only one."""
@@ -1652,12 +1652,12 @@ class Test_Covariance:
         diagonal_only = np.sqrt(
             grads["x"] ** 2 * ana.sems.x**2 + grads["y"] ** 2 * ana.sems.y**2
         )
-        assert not np.isclose(ana.propagate(grads), diagonal_only)
+        assert not np.isclose(ana.propagate_error(grads), diagonal_only)
 
     def test_propagate_raises_on_untracked(self, ana):
         """propagate() raises when a requested pair has no tracked covariance."""
         with pytest.raises(KeyError, match="do not broadcast"):
-            ana.propagate({"prof": np.ones(3), "other": np.ones(2)})
+            ana.propagate_error({"prof": np.ones(3), "other": np.ones(2)})
 
     def test_uncorrelated_covariance_is_small(self, ag):
         """Independent observables have near-zero off-diagonal covariance of means."""

@@ -709,7 +709,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             )
         return self.C[pkey] / self.pop_pair(i, j) ** 2
 
-    def propagate(self, grads: dict) -> np.ndarray:
+    def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.
 
         Computes the standard error of an estimator :math:`f` from the full
