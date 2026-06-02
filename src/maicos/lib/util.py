@@ -926,10 +926,10 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
     Example
     -------
         >>> times_to_frames("2ps", "12ps", "2ps", 1)
-        [2,12,2]
+        {'start': 2, 'stop': 12, 'step': 2}
 
         >>> times_to_frames("0ns", "2ns", "10ps", 0.01)
-        [0,200000,1000]
+        {'start': 0, 'stop': 200000, 'step': 1000}
 
     """
     val, unit = split_time_unit(step)
