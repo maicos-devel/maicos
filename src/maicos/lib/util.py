@@ -19,6 +19,7 @@ from typing import Protocol
 
 import MDAnalysis as mda
 import numpy as np
+from mdacli.utils import convert_str_time, split_time_unit
 from scipy.signal import find_peaks
 
 from maicos.lib.math import correlation_time
@@ -901,3 +902,53 @@ def get_module_input_str(module_obj):
         module_input = f"{module_name}(*args).run(*args)"
 
     return module_input
+
+
+def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
+    """Convert 'start', 'stop', 'step' into their frame number based on given dt.
+
+    Parameters
+    ----------
+    start : str
+        start in a '12ps' format
+    stop : str
+        stop in a '12ps' format
+    step : str
+        step in a '12ps' format
+    dt : float
+        the time step in ps
+
+    Returns
+    -------
+    dict
+        Dictionnary containing start, stop and step frames
+
+    Example
+    -------
+        >>> times_to_frames("2ps", "12ps", "2ps", 1)
+        {'start': 2, 'stop': 12, 'step': 2}
+
+        >>> times_to_frames("0ns", "2ns", "10ps", 0.01)
+        {'start': 0, 'stop': 200000, 'step': 1000}
+
+    """
+    val, unit = split_time_unit(step)
+    val_in_ps = mda.units.convert(val, unit, "ps")
+    temp_step = round(val_in_ps / dt)
+
+    if not (np.isclose(temp_step * dt, val_in_ps)):
+        raise ValueError("step should be a multiple of dt.")
+
+    temp_start = convert_str_time(start, dt)
+    temp_stop = convert_str_time(stop, dt)
+
+    timedict = {}
+    timedict["start"] = temp_start
+    timedict["stop"] = temp_stop
+    timedict["step"] = convert_str_time(step, dt)
+
+    if not (temp_start < temp_stop):
+        warnings.warn("'start' should be < to 'stop - step'.", stacklevel=1)
+        return timedict
+
+    return timedict
