@@ -750,9 +750,18 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         for i, j in combinations(keys, 2):
             cov_ij = self.cov(i, j)  # raises KeyError for an untracked pair
             var = var + 2 * grads[i] * grads[j] * cov_ij
+
         for key in keys:
             var = var + grads[key] ** 2 * self.sems[key] ** 2
-        return np.sqrt(var)
+
+        try: 
+            return np.sqrt(var)
+        except RuntimeWarning:
+            # when the variance is negative (usually bc there is an issue with the covariance)
+            var = 0.0
+            for key in keys:
+                var = var + grads[key] ** 2 * self.sems[key] ** 2
+            return np.sqrt(var)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.

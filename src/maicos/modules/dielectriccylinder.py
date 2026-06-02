@@ -366,11 +366,21 @@ class DielectricCylinder(CylinderBase):
                 + self.sems.m_z**2 * self.means.M_z**2
                 + self.means.m_z**2 * self.sems.M_z**2
             )
-            dcov_r = np.sqrt(
+
+            grads_r = {
+                "mM_r": 1, 
+                "m_r": - self.means.M_r,
+                "M_r": - self.means.m_r
+            }
+
+            dcov_r = self.propagate_error(grads_r)
+
+            dcov_r_old = np.sqrt(
                 self.sems.mM_r**2
                 + self.sems.m_r**2 * self.means.M_r**2
                 + self.means.m_r**2 * self.sems.M_r**2
             )
+
 
             dcov_phi = np.sqrt(
                 self.sems.mM_phi**2
@@ -385,6 +395,7 @@ class DielectricCylinder(CylinderBase):
             dcov_z = self.sems.mM_z
             dcov_r = self.sems.mM_r
             dcov_phi = self.sems.mM_phi
+            dcov_r_old = self.sems.mM_r
 
         self.results.m_z = self.means.m_z
         self.results.dm_z = self.sems.m_z
@@ -399,6 +410,12 @@ class DielectricCylinder(CylinderBase):
         self.results.deps_r = (
             2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * dcov_r
         )
+
+        self.results.deps_r_old = (
+            2 * np.pi * self._obs.L * self._pref * self.results.bin_pos * dcov_r_old
+        )
+
+
 
         self.results.m_phi = self.means.m_phi
         self.results.dm_phi = self.sems.m_phi
