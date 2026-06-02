@@ -11,7 +11,8 @@ Changelog
 
 Unreleased
 ----------
-Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer, Lucas Kleindienst, Philipp Stärk, Leo Legrand
+Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
+Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
