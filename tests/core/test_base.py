@@ -1588,10 +1588,16 @@ class TestDumpLoad:
 class Test_Covariance:
     """Tests for the iterative off-diagonal covariance accumulation."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def ag(self):
-        """Import MDA universe."""
-        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
+        """Minimal 2-atom, 100-frame universe — no file I/O."""
+        n_frames, n_atoms = 100, 2
+        positions = np.zeros((n_frames, n_atoms, 3))
+        u = mda.Universe.empty(n_atoms)
+        u.trajectory = get_reader_for(positions)(positions, order="fac", n_atoms=n_atoms)
+        for ts in u.trajectory:
+            ts.dimensions = np.array([10.0, 10.0, 10.0, 90.0, 90.0, 90.0])
+        return u.atoms
 
     @pytest.fixture
     def ana(self, ag):
