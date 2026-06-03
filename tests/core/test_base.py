@@ -908,8 +908,9 @@ class Test_AnalysisBase:
         without jitter).
         """
         dims = ag_single_frame.universe.dimensions.copy()
-        dims[2] = 3
+        dims[2] = 2
         ag_single_frame.universe.dimensions = dims
+        ag_single_frame = ag_single_frame[ag_single_frame.positions[:, 2] <= 2]
 
         dens = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.0).run()
         dens_jitter = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.01).run()
