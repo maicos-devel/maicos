@@ -942,6 +942,8 @@ def all_pair_keys(keys: list[str]) -> list[tuple[str, str]]:
         All unique canonical pair keys.
     """
     return [make_pair_key(key_i, key_j) for key_i, key_j in combinations(keys, 2)]
+
+
 def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
     """Convert 'start', 'stop', 'step' into their frame number based on given dt.
 
