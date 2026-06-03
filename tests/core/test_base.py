@@ -155,7 +155,7 @@ class Frame_types(AnalysisBase):
 
 
 class CorrelatedSeries(AnalysisBase):
-    #TODO: The name can be misleading (could be time correlation)
+    # TODO @quewakira: The name can be misleading (could be time correlation)
     """Class emitting several correlated observables per frame.
 
     Observables (one sample per frame):
@@ -1608,7 +1608,9 @@ class Test_Covariance:
 
     def test_comoment_matches_batch(self, ana):
         """Streamed co-moment equals the batch reference for scalar pairs."""
-        assert_allclose(ana.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9)
+        assert_allclose(
+            ana.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9
+        )
 
     def test_comoment_array_observable(self, ana):
         """Element-wise co-moment of a scalar with an array observable."""
@@ -1624,7 +1626,9 @@ class Test_Covariance:
         """cov() divides the co-moment by the squared shared population."""
         n = ana.n_frames
         assert_allclose(ana.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
-        assert_allclose(ana.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n)
+        assert_allclose(
+            ana.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n
+        )
 
     def test_cov_symmetric(self, ana):
         """cov() is symmetric in its arguments."""
@@ -1665,7 +1669,9 @@ class Test_Covariance:
         ana = CorrelatedSeries(ag)
         ana.run()
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
-        cov_xother = ana.C[make_pair_key("other", "x")] / ana.joint_pop("other", "x") ** 2
+        cov_xother = (
+            ana.C[make_pair_key("other", "x")] / ana.joint_pop("other", "x") ** 2
+        )
         assert np.all(np.abs(cov_xother) < np.abs(ana.cov("x", "y")))
 
     def test_not_cosampled_pair_not_tracked(self, ag):

@@ -29,7 +29,6 @@ from ..lib.math import (
     combine_subsample_variance,
 )
 from ..lib.util import (
-    all_pair_keys,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -558,9 +557,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     continue  # shapes did not broadcast at initialization
 
                 # Fill in single-sample defaults
-                if np.all(self._joint_pop(key_i, key_j) == 1): 
+                if np.all(self._joint_pop(key_i, key_j) == 1):
                     # Observable is a single sample, so _cov is 0
-                    self._cov[pair_key] = np.zeros(np.shape(self.C[pair_key]), dtype=float)
+                    self._cov[pair_key] = np.zeros(
+                        np.shape(self.C[pair_key]), dtype=float
+                    )
 
                 _, self.C[pair_key] = combine_subsample_covariance(
                     self._pop[key_i],
@@ -635,7 +636,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     )
                 except ValueError:
                     continue  # shapes do not broadcast -> covariance not tracked
-                if not np.array_equal(*np.broadcast_arrays(self._pop[key_i], self._pop[key_j])):
+                if not np.array_equal(
+                    *np.broadcast_arrays(self._pop[key_i], self._pop[key_j])
+                ):
                     continue  # not co-sampled -> covariance is undefined
                 # check if it's a single sample
                 if np.all(self._joint_pop(key_i, key_j) == 1):
@@ -668,9 +671,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # find the array with the higher dimension
         if np.ndim(self.pop[key_i]) > np.ndim(self.pop[key_j]):
             return broadcasted[0]
-        else:
-            return broadcasted[1]
-
+        return broadcasted[1]
 
     def _joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
         """Shared sample count of two co-sampled observables.
@@ -689,8 +690,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # find the array with the higher dimension
         if np.ndim(self._pop[key_i]) > np.ndim(self._pop[key_j]):
             return broadcasted[0]
-        else:
-            return broadcasted[1]
+        return broadcasted[1]
 
     def cov(self, key_i: str, key_j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
@@ -772,10 +772,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         for key in keys:
             var = var + grads[key] ** 2 * self.sems[key] ** 2
 
-        try: 
+        try:
             return np.sqrt(var)
         except RuntimeWarning:
-            # when the variance is negative (usually bc there is an issue with the covariance)
+            # variance is negative (usually due to an issue with the covariance)
             var = 0.0
             for key in keys:
                 var = var + grads[key] ** 2 * self.sems[key] ** 2

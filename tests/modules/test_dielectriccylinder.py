@@ -344,7 +344,6 @@ class TestDielectricCylinder:
 
     def test_error_propagation(self, ag_two_frames):
         """Test the analytic error propagation."""
-
         eps = DielectricCylinder(ag_two_frames).run()
 
         # set values and error for testing error propagation
@@ -398,15 +397,19 @@ class TestDielectricCylinder:
         assert_allclose(deps_r_sympy, eps.results.deps_r)
 
     def test_covariance_error_propagation(self, ag):
+        """Test error propagation via covariance."""
         eps = DielectricCylinder(ag).run()
 
-        dcov_r_analytic = np.sqrt(eps.sems.mM_r**2 + eps.means.m_r**2 * eps.sems.M_r**2 - 2 * eps.means.m_r * eps.cov("mM_r", "M_r")
-                                  - 2 * eps.means.M_r * eps.cov("mM_r", "m_r")
-                                  + 2 * eps.means.m_r * eps.means.M_r * eps.cov("M_r", "m_r")
-                                  + eps.means.M_r**2 * eps.sems.m_r**2)
+        dcov_r_analytic = np.sqrt(
+            eps.sems.mM_r**2
+            + eps.means.m_r**2 * eps.sems.M_r**2
+            - 2 * eps.means.m_r * eps.cov("mM_r", "M_r")
+            - 2 * eps.means.M_r * eps.cov("mM_r", "m_r")
+            + 2 * eps.means.m_r * eps.means.M_r * eps.cov("M_r", "m_r")
+            + eps.means.M_r**2 * eps.sems.m_r**2
+        )
         deps_r_analytic = (
             2 * np.pi * eps._obs.L * eps._pref * eps.results.bin_pos * dcov_r_analytic
-            )
+        )
 
         assert_allclose(deps_r_analytic, eps.results.deps_r)
-
