@@ -1594,7 +1594,9 @@ class Test_Covariance:
         n_frames, n_atoms = 100, 2
         positions = np.zeros((n_frames, n_atoms, 3))
         u = mda.Universe.empty(n_atoms)
-        u.trajectory = get_reader_for(positions)(positions, order="fac", n_atoms=n_atoms)
+        u.trajectory = get_reader_for(positions)(
+            positions, order="fac", n_atoms=n_atoms
+        )
         for ts in u.trajectory:
             ts.dimensions = np.array([10.0, 10.0, 10.0, 90.0, 90.0, 90.0])
         return u.atoms

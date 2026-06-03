@@ -550,12 +550,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # Update the off-diagonal covariances first, using the running means
             # from *before* the per-key loop below overwrites them. The diagonal
             # (variance) is kept in M2 / sems and updated in that loop.
-            old_means = {key: self.means[key] for key in self._obs}
             for key_i, key_j in combinations(self._obs, 2):
                 pair_key = make_pair_key(key_i, key_j)
                 if pair_key not in self.C:
                     continue  # shapes did not broadcast at initialization
-
                 # Fill in single-sample defaults
                 if np.all(self._joint_pop(key_i, key_j) == 1):
                     # Observable is a single sample, so _cov is 0
@@ -567,9 +565,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                     self._pop[key_i],
                     self.pop[key_i],
                     self._obs[key_i],
-                    old_means[key_i],
+                    self.means[key_i],
                     self._obs[key_j],
-                    old_means[key_j],
+                    self.means[key_j],
                     self._cov[pair_key] * self._joint_pop(key_i, key_j),
                     self.C[pair_key],
                 )
