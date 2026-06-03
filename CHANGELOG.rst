@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Add error propagation with covariances for DielectricCylinder eps_r (#593)
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
