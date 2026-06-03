@@ -29,6 +29,7 @@ from ..lib.math import (
     combine_subsample_variance,
 )
 from ..lib.util import (
+    all_pair_keys,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -36,6 +37,7 @@ from ..lib.util import (
     get_cli_input,
     get_module_input_str,
     maicos_banner,
+    make_pair_key,
     render_docs,
     triclinic_to_orthorhombic,
 )
@@ -550,24 +552,25 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # from *before* the per-key loop below overwrites them. The diagonal
             # (variance) is kept in M2 / sems and updated in that loop.
             old_means = {key: self.means[key] for key in self._obs}
-            for i, j in combinations(self._obs, 2):
-                pkey = (i, j) if i < j else (j, i)
-                if pkey not in self.C:
+            for key_i, key_j in combinations(self._obs, 2):
+                pair_key = make_pair_key(key_i, key_j)
+                if pair_key not in self.C:
                     continue  # shapes did not broadcast at initialization
-                if not np.array_equal(*np.broadcast_arrays(self._pop[i], self._pop[j])):
-                    raise ValueError(
-                        f"cannot track covariance of differently-sampled "
-                        f"{i!r} and {j!r}"
-                    )
-                _, self.C[pkey] = combine_subsample_covariance(
-                    self._pop[i],
-                    self.pop[i],
-                    self._obs[i],
-                    old_means[i],
-                    self._obs[j],
-                    old_means[j],
-                    self._cov.get(pkey, 0.0) * self._pop_pair(i, j),
-                    self.C[pkey],
+
+                # Fill in single-sample defaults
+                if np.all(self._joint_pop(key_i, key_j) == 1): 
+                    # Observable is a single sample, so _cov is 0
+                    self._cov[pair_key] = np.zeros(np.shape(self.C[pair_key]), dtype=float)
+
+                _, self.C[pair_key] = combine_subsample_covariance(
+                    self._pop[key_i],
+                    self.pop[key_i],
+                    self._obs[key_i],
+                    old_means[key_i],
+                    self._obs[key_j],
+                    old_means[key_j],
+                    self._cov[pair_key] * self._joint_pop(key_i, key_j),
+                    self.C[pair_key],
                 )
 
             # Take the data from the current frame and update the means and sems
@@ -624,18 +627,23 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # the two observables (a) broadcast against each other (element-wise
             # covariance) and (b) share the same per-frame population, i.e. are
             # co-sampled. Pairs failing either test are simply left out.
-            for i, j in combinations(self._obs, 2):
-                pkey = (i, j) if i < j else (j, i)
+            for key_i, key_j in combinations(self._obs, 2):
+                pair_key = make_pair_key(key_i, key_j)
                 try:
                     pshape = np.broadcast_shapes(
-                        np.shape(self.means[i]), np.shape(self.means[j])
+                        np.shape(self.means[key_i]), np.shape(self.means[key_j])
                     )
                 except ValueError:
                     continue  # shapes do not broadcast -> covariance not tracked
-                if not np.array_equal(*np.broadcast_arrays(self._pop[i], self._pop[j])):
+                if not np.array_equal(*np.broadcast_arrays(self._pop[key_i], self._pop[key_j])):
                     continue  # not co-sampled -> covariance is undefined
-                self.C[pkey] = np.broadcast_to(
-                    self._cov.get(pkey, 0.0) * self._pop_pair(i, j), pshape
+                # check if it's a single sample
+                if np.all(self._joint_pop(key_i, key_j) == 1):
+                    # Observable is a single sample, so _cov is 0
+                    self._cov[pair_key] = np.zeros(pshape, dtype=float)
+
+                self.C[pair_key] = np.broadcast_to(
+                    self._cov[pair_key] * self._joint_pop(key_i, key_j), pshape
                 ).astype(float)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
@@ -643,12 +651,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if self.module_has_save:
                 self.save()
 
-    def pop_pair(self, i: str, j: str) -> np.ndarray:
+    def joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
         """Shared sample count of two co-sampled observables.
 
         Parameters
         ----------
-        i, j : str
+        key_i, key_j : str
             Keys of the two observables.
 
         Returns
@@ -656,14 +664,20 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         numpy.ndarray
             The (broadcast) number of samples shared by both observables.
         """
-        return np.broadcast_arrays(self.pop[i], self.pop[j])[0]
+        broadcasted = np.broadcast_arrays(self.pop[key_i], self.pop[key_j])
+        # find the array with the higher dimension
+        if np.ndim(self.pop[key_i]) > np.ndim(self.pop[key_j]):
+            return broadcasted[0]
+        else:
+            return broadcasted[1]
 
-    def _pop_pair(self, i: str, j: str) -> np.ndarray:
+
+    def _joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
         """Shared sample count of two co-sampled observables.
 
         Parameters
         ----------
-        i, j : str
+        key_i, key_j : str
             Keys of the two observables.
 
         Returns
@@ -671,25 +685,29 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         numpy.ndarray
             The (broadcast) number of samples shared by both observables.
         """
-        return np.broadcast_arrays(self._pop[i], self._pop[j])[0]
+        broadcasted = np.broadcast_arrays(self._pop[key_i], self._pop[key_j])
+        # find the array with the higher dimension
+        if np.ndim(self._pop[key_i]) > np.ndim(self._pop[key_j]):
+            return broadcasted[0]
+        else:
+            return broadcasted[1]
 
-
-    def cov(self, i: str, j: str) -> np.ndarray:
+    def cov(self, key_i: str, key_j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
 
         The element-wise covariance :math:`\mathrm{Cov}(\bar x_i, \bar x_j)` of the
-        observable means accumulated across frames. The diagonal (``i == j``)
+        observable means accumulated across frames. The diagonal (``key_i == key_j``)
         equals the squared standard error of the mean, :attr:`sems`.
 
         Parameters
         ----------
-        i, j : str
+        key_i, key_j : str
             Keys of the two observables.
 
         Returns
         -------
         numpy.ndarray
-            Covariance of the means of ``i`` and ``j``.
+            Covariance of the means of ``key_i`` and ``key_j``.
 
         Raises
         ------
@@ -698,16 +716,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             observables do not broadcast against each other or because they are
             not co-sampled (different populations).
         """
-        if i == j:
-            return self.sems[i] ** 2
-        pkey = (i, j) if i < j else (j, i)
-        if pkey not in self.C:
+        if key_i == key_j:
+            return self.sems[key_i] ** 2
+        pair_key = make_pair_key(key_i, key_j)
+        if pair_key not in self.C:
             raise KeyError(
-                f"covariance of {i!r} and {j!r} not tracked: their shapes do "
+                f"covariance of {key_i!r} and {key_j!r} not tracked: their shapes do "
                 f"not broadcast or they are not co-sampled (different "
                 f"populations), so they cannot enter the same estimator"
             )
-        return self.C[pkey] / self.pop_pair(i, j) ** 2
+        return self.C[pair_key] / self.joint_pop(key_i, key_j) ** 2
 
     def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.
@@ -747,9 +765,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # Cross terms first: an untracked pair raises before the diagonal sum,
         # which would otherwise fail to broadcast incompatible observables.
         var = 0.0
-        for i, j in combinations(keys, 2):
-            cov_ij = self.cov(i, j)  # raises KeyError for an untracked pair
-            var = var + 2 * grads[i] * grads[j] * cov_ij
+        for key_i, key_j in combinations(keys, 2):
+            cov_ij = self.cov(key_i, key_j)  # raises KeyError for an untracked pair
+            var = var + 2 * grads[key_i] * grads[key_j] * cov_ij
 
         for key in keys:
             var = var + grads[key] ** 2 * self.sems[key] ** 2

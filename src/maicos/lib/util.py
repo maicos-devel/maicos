@@ -14,6 +14,7 @@ import re
 import sys
 import warnings
 from collections.abc import Callable
+from itertools import combinations
 from pathlib import Path
 from typing import Protocol
 
@@ -901,3 +902,42 @@ def get_module_input_str(module_obj):
         module_input = f"{module_name}(*args).run(*args)"
 
     return module_input
+
+
+def make_pair_key(key_i: str, key_j: str) -> tuple[str, str]:
+    """Return a canonical pair key for two observable keys.
+
+    The key is ordered so that ``make_pair_key(a, b) == make_pair_key(b, a)``,
+    guaranteeing deterministic lookups regardless of argument order.
+
+    Parameters
+    ----------
+    key_i, key_j : str
+        Keys of the two observables.
+
+    Returns
+    -------
+    tuple[str, str]
+        Canonical ``(smaller, larger)`` pair key.
+    """
+    return (key_i, key_j) if key_i <= key_j else (key_j, key_i)
+
+
+def all_pair_keys(keys: list[str]) -> list[tuple[str, str]]:
+    """Return all canonical pair keys for a list of observable keys.
+
+    Equivalent to iterating over ``itertools.combinations(sorted(keys), 2)``
+    but expressed in terms of :func:`make_pair_key` so the ordering rule is
+    applied consistently.
+
+    Parameters
+    ----------
+    keys : list[str]
+        Observable keys.
+
+    Returns
+    -------
+    list[tuple[str, str]]
+        All unique canonical pair keys.
+    """
+    return [make_pair_key(key_i, key_j) for key_i, key_j in combinations(keys, 2)]

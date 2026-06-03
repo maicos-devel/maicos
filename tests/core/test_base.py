@@ -24,6 +24,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
+from maicos.lib.util import make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -1607,13 +1608,13 @@ class Test_Covariance:
 
     def test_comoment_matches_batch(self, ana):
         """Streamed co-moment equals the batch reference for scalar pairs."""
-        assert_allclose(ana.C[("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9)
+        assert_allclose(ana.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9)
 
     def test_comoment_array_observable(self, ana):
         """Element-wise co-moment of a scalar with an array observable."""
         ref = self._comoment(ana.x[:, None], ana.prof)
-        assert ana.C[("prof", "x")].shape == (3,)
-        assert_allclose(ana.C[("prof", "x")], ref, rtol=1e-9)
+        assert ana.C[make_pair_key("prof", "x")].shape == (3,)
+        assert_allclose(ana.C[make_pair_key("prof", "x")], ref, rtol=1e-9)
 
     def test_diagonal_equals_variance(self, ana):
         """cov(key, key) reproduces the squared standard error of the mean."""
@@ -1631,8 +1632,7 @@ class Test_Covariance:
 
     def test_incompatible_pair_not_tracked(self, ana):
         """Pairs whose shapes do not broadcast are never tracked."""
-        assert ("other", "prof") not in ana.C
-        assert ("prof", "other") not in ana.C
+        assert make_pair_key("other", "prof") not in ana.C
         with pytest.raises(KeyError, match="do not broadcast"):
             ana.cov("prof", "other")
 
@@ -1665,7 +1665,7 @@ class Test_Covariance:
         ana = CorrelatedSeries(ag)
         ana.run()
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
-        cov_xother = ana.C[("other", "x")] / ana.pop_pair("other", "x") ** 2
+        cov_xother = ana.C[make_pair_key("other", "x")] / ana.joint_pop("other", "x") ** 2
         assert np.all(np.abs(cov_xother) < np.abs(ana.cov("x", "y")))
 
     def test_not_cosampled_pair_not_tracked(self, ag):
@@ -1673,7 +1673,7 @@ class Test_Covariance:
         np.random.seed(1)
         ana = WeightedSeries(ag)
         ana.run()
-        assert ("single", "weighted") not in ana.C
+        assert make_pair_key("single", "weighted") not in ana.C
         with pytest.raises(KeyError, match="do not broadcast"):
             ana.cov("single", "weighted")
 
