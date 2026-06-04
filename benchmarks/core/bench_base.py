@@ -73,9 +73,7 @@ class CovarianceBenchmark:
 
     def setup(self, _n_obs):
         """Load a multi-frame universe shared across the parametrized runs."""
-        self.atoms = mda.Universe(
-            WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True
-        ).atoms
+        self.atoms = mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
 
     def time_covariance_run(self, n_obs):
         """Run an analysis emitting ``n_obs`` co-sampled array observables."""

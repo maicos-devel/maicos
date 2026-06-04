@@ -519,9 +519,10 @@ class MomentAccumulator:
         # One co-moment merge for the whole block: diagonal == variance M2,
         # off-diagonal == covariance. Populations are shared across the block.
         weight = n_new[0] * n_old[0] / n_tot[0]
-        merged = np.nan_to_num(block.C_mat) + np.einsum(
-            "i...,j...->ij...", delta, delta
-        ) * weight
+        merged = (
+            np.nan_to_num(block.C_mat)
+            + np.einsum("i...,j...->ij...", delta, delta) * weight
+        )
         # Within-frame term: diagonal var * n_frame, off-diagonal _cov * n_frame.
         n_frame = n_new[0]
         diag_within = np.nan_to_num(var * n_new)  # (N, *shape)
