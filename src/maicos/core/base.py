@@ -334,6 +334,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         _pop: Results
         _var: Results
         _cov: Results
+        _moments: MomentAccumulator
 
     def __init__(
         self,
