@@ -30,10 +30,13 @@ The merge mirrors :func:`combine_subsample_variance` /
 results are identical to the per-key / per-pair loops.
 """
 
+from itertools import combinations
+
 import numpy as np
 from MDAnalysis.analysis.base import Results
 
 from .math import combine_subsample_covariance, combine_subsample_variance
+from .util import make_pair_key
 
 __all__ = ["MomentAccumulator"]
 
@@ -89,7 +92,16 @@ class _CovBlock:
 
 
 class MomentAccumulator:
-    """One backend producing the same means/sems/M2/pop/sums and ``C`` containers."""
+    """One backend producing the same means/sems/M2/pop/sums and ``C`` containers.
+
+    Parameters
+    ----------
+    requested_pairs : collections.abc.Iterable of tuple of str
+        Canonical observable pairs (see :func:`maicos.lib.util.make_pair_key`) whose
+        off-diagonal covariance should be accumulated. Only the listed pairs are
+        tracked. Empty (the default) disables covariance entirely.
+
+    """
 
     def __init__(self, requested_pairs=()):
         # Running containers, owned by the accumulator and exposed by the
@@ -115,6 +127,20 @@ class MomentAccumulator:
         Single-sample observables get a unit population and an undefined (NaN)
         within-frame variance; the requested covariance pairs are seeded once
         their observables are shown to broadcast and be co-sampled.
+
+        Parameters
+        ----------
+        obs : MDAnalysis.analysis.base.Results
+            The current frame's observables, keyed by observable name.
+        _pop : MDAnalysis.analysis.base.Results
+            The current frame's sample count for each observable. Missing entries
+            default to a unit population (the observable is a single sample).
+        _var : MDAnalysis.analysis.base.Results
+            The current frame's within-frame variance for each observable.
+        _cov : MDAnalysis.analysis.base.Results
+            The current frame's within-frame covariance, keyed by canonical
+            observable pair (see :func:`maicos.lib.util.make_pair_key`).
+
         """
         for key in obs:
             if not isinstance(obs[key], _COMPATIBLE_TYPES):
@@ -308,6 +334,20 @@ class MomentAccumulator:
         Covariance that broadcasts across shapes is updated first, while the
         running means still hold their pre-frame values; the variance blocks
         (which also drive embedded covariance) update the means afterwards.
+
+        Parameters
+        ----------
+        obs : MDAnalysis.analysis.base.Results
+            The current frame's observables, keyed by observable name.
+        _pop : MDAnalysis.analysis.base.Results
+            The current frame's sample count for each observable. Missing entries
+            default to a unit population (the observable is a single sample).
+        _var : MDAnalysis.analysis.base.Results
+            The current frame's within-frame variance for each observable.
+        _cov : MDAnalysis.analysis.base.Results
+            The current frame's within-frame covariance, keyed by canonical
+            observable pair (see :func:`maicos.lib.util.make_pair_key`).
+
         """
         # Sanitize: arrays for list observables, unit population / zero
         # within-frame variance for single-sample observables.
@@ -330,6 +370,121 @@ class MomentAccumulator:
             self._update_block(block, obs, _pop, _var, _cov)
         for key in self._var_fallback:
             self._update_var_key(key, obs, _pop, _var)
+
+    # -- queries / error propagation ----------------------------------------
+
+    def joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
+        """Shared sample count of two co-sampled observables.
+
+        Parameters
+        ----------
+        key_i, key_j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            The (broadcast) number of samples shared by both observables.
+
+        """
+        return self._joint_pop(self.pop, key_i, key_j)
+
+    def cov(self, key_i: str, key_j: str) -> np.ndarray:
+        r"""Covariance of the means of two observables.
+
+        The element-wise covariance :math:`\mathrm{Cov}(\bar x_i, \bar x_j)` of the
+        observable means accumulated across frames. The diagonal (``key_i == key_j``)
+        equals the squared standard error of the mean, :attr:`sems`.
+
+        Parameters
+        ----------
+        key_i, key_j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            Covariance of the means of ``key_i`` and ``key_j``.
+
+        Raises
+        ------
+        KeyError
+            If the off-diagonal pair was not tracked, either because the two
+            observables do not broadcast against each other or because they are
+            not co-sampled (different populations).
+
+        """
+        if key_i == key_j:
+            return self.sems[key_i] ** 2
+        if not self._requested:
+            raise RuntimeError(
+                "Covariance tracking is disabled. List the observable pairs in the "
+                "`_compute_covariance` class attribute to use `cov`/`propagate_error`."
+            )
+        pair_key = make_pair_key(key_i, key_j)
+        if pair_key not in self.C:
+            raise KeyError(
+                f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
+                f"requested in `_compute_covariance`, or the observables do not "
+                f"broadcast or are not co-sampled (different populations), so they "
+                f"cannot enter the same estimator"
+            )
+        return self.C[pair_key] / self.joint_pop(key_i, key_j) ** 2
+
+    def propagate_error(self, grads: dict) -> np.ndarray:
+        r"""Propagate observable errors through an estimator.
+
+        Computes the standard error of an estimator :math:`f` from the full
+        covariance of the observable means,
+
+        .. math::
+
+            \sigma_f^2 = \sum_{ij}
+                \frac{\partial f}{\partial x_i}
+                \frac{\partial f}{\partial x_j}
+                \mathrm{Cov}(\bar x_i, \bar x_j),
+
+        where ``grads[key]`` provides :math:`\partial f / \partial x_{key}`. The
+        diagonal terms reproduce the independent-variable (uncorrelated) estimate;
+        the off-diagonal terms add the cross-covariance contributions.
+
+        Parameters
+        ----------
+        grads : dict
+            Mapping of observable key to the gradient of the estimator with
+            respect to that observable's mean.
+
+        Returns
+        -------
+        numpy.ndarray
+            Standard error of the estimator.
+
+        Raises
+        ------
+        KeyError
+            If two of the supplied observables have no tracked covariance (see
+            :meth:`cov`).
+
+        """
+        keys = list(grads)
+        # Cross terms first: an untracked pair raises before the diagonal sum,
+        # which would otherwise fail to broadcast incompatible observables.
+        var = 0.0
+        for key_i, key_j in combinations(keys, 2):
+            cov_ij = self.cov(key_i, key_j)  # raises KeyError for an untracked pair
+            var = var + 2 * grads[key_i] * grads[key_j] * cov_ij
+
+        for key in keys:
+            var = var + grads[key] ** 2 * self.sems[key] ** 2
+
+        try:
+            return np.sqrt(var)
+        except RuntimeWarning:
+            # variance is negative (usually due to an issue with the covariance)
+            var = 0.0
+            for key in keys:
+                var = var + grads[key] ** 2 * self.sems[key] ** 2
+            return np.sqrt(var)
 
     def _update_block(self, block, obs, _pop, _var, _cov):
         shape = block.shape

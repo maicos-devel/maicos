@@ -12,7 +12,6 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import datetime
-from itertools import combinations
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
@@ -565,6 +564,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     def joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
         """Shared sample count of two co-sampled observables.
 
+        Thin wrapper around :meth:`maicos.lib._moments.MomentAccumulator.joint_pop`.
+
         Parameters
         ----------
         key_i, key_j : str
@@ -575,18 +576,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         numpy.ndarray
             The (broadcast) number of samples shared by both observables.
         """
-        broadcasted = np.broadcast_arrays(self.pop[key_i], self.pop[key_j])
-        # find the array with the higher dimension
-        if np.ndim(self.pop[key_i]) > np.ndim(self.pop[key_j]):
-            return broadcasted[0]
-        return broadcasted[1]
+        return self._moments.joint_pop(key_i, key_j)
 
     def cov(self, key_i: str, key_j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
 
-        The element-wise covariance :math:`\mathrm{Cov}(\bar x_i, \bar x_j)` of the
-        observable means accumulated across frames. The diagonal (``key_i == key_j``)
-        equals the squared standard error of the mean, :attr:`sems`.
+        Thin wrapper around :meth:`maicos.lib._moments.MomentAccumulator.cov`.
 
         Parameters
         ----------
@@ -605,39 +600,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             observables do not broadcast against each other or because they are
             not co-sampled (different populations).
         """
-        if key_i == key_j:
-            return self.sems[key_i] ** 2
-        if not self._requested_pairs:
-            raise RuntimeError(
-                "Covariance tracking is disabled. List the observable pairs in the "
-                "`_compute_covariance` class attribute to use `cov`/`propagate_error`."
-            )
-        pair_key = make_pair_key(key_i, key_j)
-        if pair_key not in self.C:
-            raise KeyError(
-                f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
-                f"requested in `_compute_covariance`, or the observables do not "
-                f"broadcast or are not co-sampled (different populations), so they "
-                f"cannot enter the same estimator"
-            )
-        return self.C[pair_key] / self.joint_pop(key_i, key_j) ** 2
+        return self._moments.cov(key_i, key_j)
 
     def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.
 
-        Computes the standard error of an estimator :math:`f` from the full
-        covariance of the observable means,
-
-        .. math::
-
-            \sigma_f^2 = \sum_{ij}
-                \frac{\partial f}{\partial x_i}
-                \frac{\partial f}{\partial x_j}
-                \mathrm{Cov}(\bar x_i, \bar x_j),
-
-        where ``grads[key]`` provides :math:`\partial f / \partial x_{key}`. The
-        diagonal terms reproduce the independent-variable (uncorrelated) estimate;
-        the off-diagonal terms add the cross-covariance contributions.
+        Thin wrapper around
+        :meth:`maicos.lib._moments.MomentAccumulator.propagate_error`. Computes the
+        standard error of an estimator :math:`f` from the full covariance of the
+        observable means, ``grads[key]`` being :math:`\partial f / \partial x_{key}`.
 
         Parameters
         ----------
@@ -656,25 +627,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             If two of the supplied observables have no tracked covariance (see
             :meth:`cov`).
         """
-        keys = list(grads)
-        # Cross terms first: an untracked pair raises before the diagonal sum,
-        # which would otherwise fail to broadcast incompatible observables.
-        var = 0.0
-        for key_i, key_j in combinations(keys, 2):
-            cov_ij = self.cov(key_i, key_j)  # raises KeyError for an untracked pair
-            var = var + 2 * grads[key_i] * grads[key_j] * cov_ij
-
-        for key in keys:
-            var = var + grads[key] ** 2 * self.sems[key] ** 2
-
-        try:
-            return np.sqrt(var)
-        except RuntimeWarning:
-            # variance is negative (usually due to an issue with the covariance)
-            var = 0.0
-            for key in keys:
-                var = var + grads[key] ** 2 * self.sems[key] ** 2
-            return np.sqrt(var)
+        return self._moments.propagate_error(grads)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.
