@@ -992,3 +992,23 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
         return timedict
 
     return timedict
+
+
+def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
+    """Shared sample count of two co-sampled observables.
+
+    Parameters
+    ----------
+    pop_x, pop_y : str
+        Population (sample count) of the two observables.
+
+    Returns
+    -------
+    numpy.ndarray
+        The (broadcast) number of samples shared by both observables.
+    """
+    broadcasted = np.broadcast_arrays(pop_x, pop_y)
+    # find the array with the higher dimension
+    if np.ndim(pop_x) > np.ndim(pop_y):
+        return broadcasted[0]
+    return broadcasted[1]
