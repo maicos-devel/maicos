@@ -904,6 +904,25 @@ def get_module_input_str(module_obj):
     return module_input
 
 
+def make_pair_key(key_i: str, key_j: str) -> tuple[str, str]:
+    """Return a canonical pair key for two observable keys.
+
+    The key is ordered so that ``make_pair_key(a, b) == make_pair_key(b, a)``,
+    guaranteeing deterministic lookups regardless of argument order.
+
+    Parameters
+    ----------
+    key_i, key_j : str
+        Keys of the two observables.
+
+    Returns
+    -------
+    tuple[str, str]
+        Canonical ``(smaller, larger)`` pair key.
+    """
+    return (key_i, key_j) if key_i <= key_j else (key_j, key_i)
+
+
 def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
     """Convert 'start', 'stop', 'step' into their frame number based on given dt.
 

@@ -77,6 +77,14 @@ class DielectricCylinder(CylinderBase):
 
     """
 
+    # Radial dielectric error estimate propagates the correlated error of the
+    # three radial observables; only their pairwise covariances are tracked.
+    _compute_covariance = [
+        {"mM_r", "m_r"},
+        {"mM_r", "M_r"},
+        {"m_r", "M_r"},
+    ]
+
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
@@ -366,11 +374,10 @@ class DielectricCylinder(CylinderBase):
                 + self.sems.m_z**2 * self.means.M_z**2
                 + self.means.m_z**2 * self.sems.M_z**2
             )
-            dcov_r = np.sqrt(
-                self.sems.mM_r**2
-                + self.sems.m_r**2 * self.means.M_r**2
-                + self.means.m_r**2 * self.sems.M_r**2
-            )
+
+            grads_r = {"mM_r": 1, "m_r": -self.means.M_r, "M_r": -self.means.m_r}
+
+            dcov_r = self.propagate_error(grads_r)
 
             dcov_phi = np.sqrt(
                 self.sems.mM_phi**2

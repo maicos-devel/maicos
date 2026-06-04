@@ -644,3 +644,47 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
         M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB
+
+
+def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
+    r"""Combine the co-moment of two datasets of arbitrary size.
+
+    Streaming merge of the co-moment :math:`C = \sum (x - \bar x)(y - \bar y)` of
+    two datasets, generalizing :func:`combine_subsample_variance` to a pair of
+    variables. Setting ``x is y`` (and ``C = M``) recovers that function exactly.
+    Inputs broadcast against each other, so the element-wise covariance of
+    array-valued observables is the natural result.
+
+    Parameters
+    ----------
+    n_A : int
+        Number of elements in dataset A.
+    n_B : int
+        Number of elements in dataset B.
+    mux_A : float
+        Mean of the first variable in dataset A.
+    mux_B : float
+        Mean of the first variable in dataset B.
+    muy_A : float
+        Mean of the second variable in dataset A.
+    muy_B : float
+        Mean of the second variable in dataset B.
+    C_A : float
+        Co-moment of dataset A.
+    C_B : float
+        Co-moment of dataset B.
+
+    Returns
+    -------
+    n_AB : int
+        Total number of elements in the combined dataset (n_A + n_B).
+    C_AB : float
+        Co-moment of the combined dataset.
+    """
+    n_AB = n_A + n_B
+    dx = np.nan_to_num(mux_B) - np.nan_to_num(mux_A)
+    dy = np.nan_to_num(muy_B) - np.nan_to_num(muy_A)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + dx * dy * n_A * n_B / n_AB
+
+    return n_AB, C_AB
