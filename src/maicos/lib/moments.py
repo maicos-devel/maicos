@@ -35,7 +35,7 @@ import numpy as np
 from MDAnalysis.analysis.base import Results
 
 from .math import combine_subsample_covariance, combine_subsample_variance
-from .util import make_pair_key
+from .util import make_pair_key, joint_pop
 
 __all__ = ["MomentAccumulator"]
 
@@ -200,10 +200,12 @@ class MomentAccumulator:
                     block.C_mat[index, index] = block.M2[index]
                 for pair_key in pairs_key:
                     i, j = block.index[pair_key[0]], block.index[pair_key[1]]
-                    block.C_mat[i, j] = _cov[pair_key]
-                    block.C_mat[j, i] = _cov[pair_key]
-                    block.pairs.append((i, j, pair_key))
-                    self.C[pair_key] = block.C_mat[i, j]
+                    # make sure pairs are cosampled
+                    if np.all(block.POP[i] == block.POP[j]):
+                        block.C_mat[i, j] = _cov[pair_key]
+                        block.C_mat[j, i] = _cov[pair_key]
+                        block.pairs.append((i, j, pair_key))
+                        self.C[pair_key] = block.C_mat[i, j]
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
 
@@ -220,58 +222,27 @@ class MomentAccumulator:
             self._blocks.append(block)
 
         # Covariances of observables with different shapes
-        self._organize_cross(cross, _pop)
+        for pair_key in cross_covariances:
+            key_x, key_y = pair_key
+            try:
+                pair_shape = np.broadcast_shapes(
+                    np.shape(_obs[key_x]), np.shape(_obs[key_y])
+                )
+            except ValueError:
+                continue  # shapes do not broadcast -> covariance not tracked
+            # TODO: check cosampling properly
+            jpop = joint_pop(_pop[key_x], _pop[key_y])
+            # check if it's a single sample
+            if np.all(jpop == 1):
+                # Observable is a single sample, so _cov is 0
+                _cov[pair_key] = np.zeros(pair_shape, dtype=float)
 
-    def _organize_cross(self, cross, _pop):
-        by_shape = {}
-        for pair_key in cross:
-            by_shape.setdefault(np.shape(self.C[pair_key]), []).append(pair_key)
-
-        for shape, pair_keys in by_shape.items():
-            if shape == ():
-                self._cov_fallback.extend(pair_keys)
-                continue
-            groups = {}
-            for pair_key in pair_keys:
-                sig = self._signature(pair_key[0], shape, self.pop, _pop)
-                groups.setdefault(sig, []).append(pair_key)
-            for group_pairs in groups.values():
-                keys = sorted({k for pk in group_pairs for k in pk})
-                if not self._cosampled(keys, shape, self.pop, _pop):
-                    self._cov_fallback.extend(group_pairs)
-                    continue
-                block = _CovBlock(keys, shape)
-                block.single_sample = bool(np.all(_pop[keys[0]] == 1))
-                for pk in group_pairs:
-                    i, j = block.index[pk[0]], block.index[pk[1]]
-                    block.C_mat[i, j] = self.C[pk]
-                    block.C_mat[j, i] = self.C[pk]
-                    block.pairs.append((i, j, pk))
-                    self.C[pk] = block.C_mat[i, j]
-                self._cov_blocks.append(block)
-
-
-    # -- shared helpers -----------------------------------------------------
+            self.C[pair_key] = np.broadcast_to(
+                self._cov[pair_key] * jpop, pshape
+            ).astype(float)
 
     @staticmethod
-    def _stack(keys, shape, container, default=None):
-        """Stack `container` values for `keys`, broadcast to `shape`, as float."""
-        return np.stack(
-            [
-                np.broadcast_to(container.get(k, default), shape).astype(float)
-                for k in keys
-            ]
-        )
-
-    @staticmethod
-    def _signature(key, shape, pop, _pop):
-        """Co-sampling fingerprint: running and frame populations on `shape`."""
-        run = np.broadcast_to(pop[key], shape)
-        frame = np.broadcast_to(_pop[key], shape)
-        return (run.tobytes(), frame.tobytes())
-
-    @staticmethod
-    def _cosampled(keys, shape, pop, _pop):
+    def _cosampled(pop_i, pop_j):
         """True if all keys share one (broadcast) running and frame population."""
         run0 = np.broadcast_to(pop[keys[0]], shape)
         frame0 = np.broadcast_to(_pop[keys[0]], shape)
@@ -281,11 +252,6 @@ class MomentAccumulator:
             if not np.array_equal(np.broadcast_to(_pop[k], shape), frame0):
                 return False
         return True
-
-    @staticmethod
-    def _joint_pop(pop, ki, kj):
-        b = np.broadcast_arrays(pop[ki], pop[kj])
-        return b[0] if np.ndim(pop[ki]) > np.ndim(pop[kj]) else b[1]
 
     # -- per-frame update ---------------------------------------------------
 
