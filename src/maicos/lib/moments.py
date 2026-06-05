@@ -5,7 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Unified vectorized streaming accumulator for means, variances and covariances.
+"""Vectorized accumulator for means, variances and covariances.
 
 A single blocked backend for the running statistics of
 :class:`maicos.core.base.AnalysisBase`, replacing a per-key variance merge and a
@@ -70,9 +70,9 @@ class _Block:
         self.POP = None  # (N, *shape)
         self.SEMS = None  # (N, *shape)
         self.SUMS = None  # (N, *shape)
-        self.M2 = None  # (N, *shape); a diagonal view of C_mat when has_matrix
-        self.C_mat = None  # (N, N, *shape) when has embedded covariance pairs
-        self.pairs = []  # (i, j, pair_key) embedded off-diagonal entries
+        self.M2 = None  # (N, *shape); moment of the variance
+        self.C_mat = None  # (N, N, *shape) covariance matrix of pairs
+        self.pairs = []  # pair_key of index i, j in C_mat
 
     @property
     def has_matrix(self):
@@ -80,8 +80,9 @@ class _Block:
 
 
 class _CovBlock:
-    """Off-diagonal-only block for covariance pairs that broadcast across shapes."""
+    """Covariance of observable pairs with different shapes that broadcast."""
 
+    # NOTE: only works if the broadcast shape is always the same
     def __init__(self, keys, shape):
         self.keys = list(keys)
         self.index = {k: i for i, k in enumerate(self.keys)}
@@ -96,8 +97,8 @@ class MomentAccumulator:
 
     Parameters
     ----------
-    requested_pairs : collections.abc.Iterable of tuple of str
-        Canonical observable pairs (see :func:`maicos.lib.util.make_pair_key`) whose
+    requested_pairs : iterable of tuple of str
+        Canonical observable pairs whose
         off-diagonal covariance should be accumulated. Only the listed pairs are
         tracked. Empty (the default) disables covariance entirely.
 
@@ -113,7 +114,7 @@ class MomentAccumulator:
         self.sums = Results()  # sum of the observables across frames
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
         self._requested = set(requested_pairs)
-        self._blocks = []  # variance blocks (optionally with embedded covariance)
+        self._blocks = []  # stacked observable blocks
         self._var_fallback = []  # scalar observables -> per-key variance merge
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
         self._cov_fallback = []  # scalar covariance pairs -> per-pair merge
@@ -149,8 +150,7 @@ class MomentAccumulator:
                 obs[key] = np.array(obs[key])
             if key not in _pop:
                 _pop[key] = np.ones(np.shape(obs[key]), dtype=int)
-                _var[key] = np.empty(np.shape(obs[key]), dtype=float)
-                _var[key].fill(np.nan)
+                _var[key] = np.zeros(np.shape(obs[key]), dtype=float)
 
             if isinstance(obs[key], np.ndarray):
                 self.means[key] = obs[key].astype(float)
