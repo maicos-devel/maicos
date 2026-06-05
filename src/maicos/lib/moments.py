@@ -113,7 +113,7 @@ class MomentAccumulator:
         self.pop = Results()  # count of samples across frames
         self.sums = Results()  # sum of the observables across frames
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
-        self._requested = set(requested_pairs)
+        self._requested_cov_pairs = set(requested_pairs)
         self._blocks = []  # stacked observable blocks
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
 
@@ -148,17 +148,18 @@ class MomentAccumulator:
             if isinstance(obs[key], list):
                 obs[key] = np.array(obs[key])
             shape = np.shape(obs[key])
+            # reshape scalar to arrays of length 1
             if np.shape(obs[key]) == ():
                 shape = (1,)
             if key not in _pop:
                 _pop[key] = np.ones(shape, dtype=int)
-                _var[key] = np.zeros(shape, dtype=float)
-
+                _var[key] = np.empty(shape, dtype=float)
+                _var[key].fill(np.nan) # TODO: maybe remove nan, do zeroes instead
             obs[key] = np.reshape(obs[key], shape)
             _pop[key] = np.reshape(obs[key], shape)
             _var[key] = np.reshape(obs[key], shape)
 
-        # Data groups by shape
+        # Group observables by shape
         shape_groups = {}  # shape -> [keys]
         for key in obs:
             shape = np.shape(obs[key])
@@ -166,48 +167,60 @@ class MomentAccumulator:
                 shape = (1,) # make scalar into 1D array with 1 element
                 obs[key] = np.reshape(obs[key], shape)
                 continue
-            groups[shape].append(key)
+            shape_groups[shape].append(key)
+            shape_of_key[key] = shape
+
+        # Group the covariances by shape
+        embedded_covariances = {}
+        cross_covariances = {}
+        for pair_key in self._requested_cov_pairs:
+            key_i, key_j = pair_key
+            group_i, group_j = shape_of_key[key_i], shape_of_key[key_j]
+            if group_i == group_j:
+                embedded_covariances[group_i].append(pair_key)
+            else:
+                cross_covariances.append(pair_key)
 
         # Build stacked data blocks.
         for shape, keys in shape_groups.items():
             block = _Block(keys, shape)
-            n_keys = len(keys)
             block.MEANS = np.stack([obs[key] for key in keys])
-            block.POP = self._stack([_pop[key] for key in keys])
-            block.SEMS = self._stack(keys, shape, self.sems)
-            block.SUMS = self._stack(keys, shape, self.sums)
+            block.POP = np.stack([_pop[key] for key in keys])
+            block.M2 = np.stack([_var[key] for key in keys]) * block.POP
+            with np.errstate(divide="ignore", invalid="ignore"):
+                block.SEMS = block.M2 / block.POP**2
+            block.SUMS = block.MEANS * block.POP
 
-            block_pairs = embedded.get(group_key, [])
-            if block_pairs:
+            try:
+                pair_keys = embedded_covariances[shape]
                 n = len(keys)
                 block.C_mat = np.zeros((n, n, *shape), dtype=float)
                 # Seed diagonal with M2, off-diagonal with the requested C entries.
-                for i, k in enumerate(keys):
-                    block.C_mat[i, i] = np.broadcast_to(self.M2[k], shape)
-                for pk in block_pairs:
-                    i, j = block.index[pk[0]], block.index[pk[1]]
-                    block.C_mat[i, j] = self.C[pk]
-                    block.C_mat[j, i] = self.C[pk]
-                    block.pairs.append((i, j, pk))
-                    self.C[pk] = block.C_mat[i, j]
-                block.M2 = None  # M2 lives on the diagonal of C_mat
-                for i, k in enumerate(keys):
-                    self.M2[k] = block.C_mat[i, i]
-            else:
-                block.M2 = self._stack(keys, shape, self.M2)
-                for i, k in enumerate(keys):
-                    self.M2[k] = block.M2[i]
+                for key, index in block.index.items():
+                    block.C_mat[index, index] = block.M2[index]
+                for pair_key in pairs_key:
+                    i, j = block.index[pair_key[0]], block.index[pair_key[1]]
+                    block.C_mat[i, j] = _cov[pair_key]
+                    block.C_mat[j, i] = _cov[pair_key]
+                    block.pairs.append((i, j, pair_key))
+                    self.C[pair_key] = block.C_mat[i, j]
+                for key, index in block.index.items():
+                    self.M2[key] = block.C_mat[index, index]
 
-            for i, k in enumerate(keys):
-                self.means[k] = block.MEANS[i]
-                self.pop[k] = block.POP[i]
-                self.sems[k] = block.SEMS[i]
-                self.sums[k] = block.SUMS[i]
+            except KeyError:
+                for key, index in block.index:
+                    self.M2[key] = block.M2[index]
+            
+            # Point the Results() object to the block arrays
+            for key, index in block.index.items():
+                self.means[key] = block.MEANS[index]
+                self.pop[key] = block.POP[index]
+                self.sems[key] = block.SEMS[index]
+                self.sums[key] = block.SUMS[index]
             self._blocks.append(block)
 
-        # 4) Broadcast covariance pairs: group by result shape (off-diagonal only).
+        # Covariances of observables with different shapes
         self._organize_cross(cross, _pop)
-        self._organized = True
 
     def _organize_cross(self, cross, _pop):
         by_shape = {}
