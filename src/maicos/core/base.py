@@ -22,7 +22,7 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
-from ..lib._moments import MomentAccumulator
+from ..lib.moments import MomentAccumulator
 from ..lib.math import (
     center_cluster,
 )
@@ -334,7 +334,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         _pop: Results
         _var: Results
         _cov: Results
-        _moments: MomentAccumulator
+        moments: MomentAccumulator
 
     def __init__(
         self,
@@ -535,12 +535,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # therefore not a performance issue like a if statement would be.
         try:
             # Fail fast if the backend is not initialised yet.
-            self._moments  # noqa B018
+            self.moments  # noqa B018
 
             # One vectorized backend updates the running means, variances and the
             # requested covariances. It accumulates the off-diagonal covariance
             # (which needs the pre-frame means) before overwriting the means.
-            self._moments.update(self._obs, self._pop, self._var, self._cov)
+            self.moments.update(self._obs, self._pop, self._var, self._cov)
 
         except AttributeError:
             with logging_redirect_tqdm():
@@ -548,87 +548,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # Seed the running statistics from the first frame. The backend owns
             # the means/sems/M2/pop/sums/C containers; expose them on the analysis
             # for the modules, checkpointing and `cov`/`propagate_error`.
-            self._moments = MomentAccumulator(self._requested_pairs)
-            self._moments.initialize(self._obs, self._pop, self._var, self._cov)
-            self.means = self._moments.means
-            self.sems = self._moments.sems
-            self.M2 = self._moments.M2
-            self.pop = self._moments.pop
-            self.sums = self._moments.sums
-            self.C = self._moments.C
+            self.moments = MomentAccumulator(self._requested_pairs)
+            self.moments.initialize(self._obs, self._pop, self._var, self._cov)
+            self.means = self.moments.means
+            self.sems = self.moments.sems
+            self.M2 = self.moments.M2
+            self.pop = self.moments.pop
+            self.sums = self.moments.sums
+            self.C = self.moments.C
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
             if self.module_has_save:
                 self.save()
-
-    def joint_pop(self, key_i: str, key_j: str) -> np.ndarray:
-        """Shared sample count of two co-sampled observables.
-
-        Thin wrapper around :meth:`maicos.lib._moments.MomentAccumulator.joint_pop`.
-
-        Parameters
-        ----------
-        key_i, key_j : str
-            Keys of the two observables.
-
-        Returns
-        -------
-        numpy.ndarray
-            The (broadcast) number of samples shared by both observables.
-        """
-        return self._moments.joint_pop(key_i, key_j)
-
-    def cov(self, key_i: str, key_j: str) -> np.ndarray:
-        r"""Covariance of the means of two observables.
-
-        Thin wrapper around :meth:`maicos.lib._moments.MomentAccumulator.cov`.
-
-        Parameters
-        ----------
-        key_i, key_j : str
-            Keys of the two observables.
-
-        Returns
-        -------
-        numpy.ndarray
-            Covariance of the means of ``key_i`` and ``key_j``.
-
-        Raises
-        ------
-        KeyError
-            If the off-diagonal pair was not tracked, either because the two
-            observables do not broadcast against each other or because they are
-            not co-sampled (different populations).
-        """
-        return self._moments.cov(key_i, key_j)
-
-    def propagate_error(self, grads: dict) -> np.ndarray:
-        r"""Propagate observable errors through an estimator.
-
-        Thin wrapper around
-        :meth:`maicos.lib._moments.MomentAccumulator.propagate_error`. Computes the
-        standard error of an estimator :math:`f` from the full covariance of the
-        observable means, ``grads[key]`` being :math:`\partial f / \partial x_{key}`.
-
-        Parameters
-        ----------
-        grads : dict
-            Mapping of observable key to the gradient of the estimator with
-            respect to that observable's mean.
-
-        Returns
-        -------
-        numpy.ndarray
-            Standard error of the estimator.
-
-        Raises
-        ------
-        KeyError
-            If two of the supplied observables have no tracked covariance (see
-            :meth:`cov`).
-        """
-        return self._moments.propagate_error(grads)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.

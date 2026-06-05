@@ -1712,25 +1712,25 @@ class Test_Covariance:
 
     def test_diagonal_equals_variance(self, ana):
         """cov(key, key) reproduces the squared standard error of the mean."""
-        assert_allclose(ana.cov("x", "x"), ana.sems.x**2, rtol=1e-12)
+        assert_allclose(ana.moments.cov("x", "x"), ana.sems.x**2, rtol=1e-12)
 
     def test_cov_is_covariance_of_means(self, ana):
         """cov() divides the co-moment by the squared shared population."""
         n = ana.n_frames
-        assert_allclose(ana.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
+        assert_allclose(ana.moments.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
         assert_allclose(
-            ana.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n
+            ana.moments.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n
         )
 
     def test_cov_symmetric(self, ana):
         """cov() is symmetric in its arguments."""
-        assert_allclose(ana.cov("x", "y"), ana.cov("y", "x"))
+        assert_allclose(ana.moments.cov("x", "y"), ana.moments.cov("y", "x"))
 
     def test_incompatible_pair_not_tracked(self, ana):
         """Pairs whose shapes do not broadcast are never tracked."""
         assert make_pair_key("other", "prof") not in ana.C
         with pytest.raises(KeyError, match="do not broadcast"):
-            ana.cov("prof", "other")
+            ana.moments.cov("prof", "other")
 
     def test_propagate_matches_manual(self, ana):
         """propagate() of f = x*y matches the explicit bilinear form."""
@@ -1738,9 +1738,9 @@ class Test_Covariance:
         expected = np.sqrt(
             grads["x"] ** 2 * ana.sems.x**2
             + grads["y"] ** 2 * ana.sems.y**2
-            + 2 * grads["x"] * grads["y"] * ana.cov("x", "y")
+            + 2 * grads["x"] * grads["y"] * ana.moments.cov("x", "y")
         )
-        assert_allclose(ana.propagate_error(grads), expected, rtol=1e-12)
+        assert_allclose(ana.moments.propagate_error(grads), expected, rtol=1e-12)
 
     def test_propagate_differs_from_diagonal(self, ana):
         """Correlated variables: full propagation differs from the diagonal-only one."""
@@ -1748,12 +1748,12 @@ class Test_Covariance:
         diagonal_only = np.sqrt(
             grads["x"] ** 2 * ana.sems.x**2 + grads["y"] ** 2 * ana.sems.y**2
         )
-        assert not np.isclose(ana.propagate_error(grads), diagonal_only)
+        assert not np.isclose(ana.moments.propagate_error(grads), diagonal_only)
 
     def test_propagate_raises_on_untracked(self, ana):
         """propagate() raises when a requested pair has no tracked covariance."""
         with pytest.raises(KeyError, match="do not broadcast"):
-            ana.propagate_error({"prof": np.ones(3), "other": np.ones(2)})
+            ana.moments.propagate_error({"prof": np.ones(3), "other": np.ones(2)})
 
     def test_uncorrelated_covariance_is_small(self, ag):
         """Independent observables have near-zero off-diagonal covariance of means."""
@@ -1762,9 +1762,9 @@ class Test_Covariance:
         ana.run()
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
         cov_xother = (
-            ana.C[make_pair_key("other", "x")] / ana.joint_pop("other", "x") ** 2
+            ana.C[make_pair_key("other", "x")] / ana.moments.joint_pop("other", "x") ** 2
         )
-        assert np.all(np.abs(cov_xother) < np.abs(ana.cov("x", "y")))
+        assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
 
     def test_not_cosampled_pair_not_tracked(self, ag):
         """Shape-compatible but differently-populated observables are not tracked."""
@@ -1773,7 +1773,7 @@ class Test_Covariance:
         ana.run()
         assert make_pair_key("single", "weighted") not in ana.C
         with pytest.raises(KeyError, match="do not broadcast"):
-            ana.cov("single", "weighted")
+            ana.moments.cov("single", "weighted")
 
     def test_roundtrip_covariance(self, ana, tmp_path):
         """The covariance container survives a dump/load roundtrip with tuple keys."""
@@ -1808,4 +1808,4 @@ class Test_Covariance:
         allx = np.concatenate([s[:, 0] for s in ana.batch[0]])
         ally = np.concatenate([s[:, 1] for s in ana.batch[0]])
         n = allx.size
-        assert_allclose(ana.cov("x", "y"), np.cov(allx, ally, bias=True)[0, 1] / n)
+        assert_allclose(ana.moments.cov("x", "y"), np.cov(allx, ally, bias=True)[0, 1] / n)

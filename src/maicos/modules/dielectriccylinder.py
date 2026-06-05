@@ -377,7 +377,7 @@ class DielectricCylinder(CylinderBase):
 
             grads_r = {"mM_r": 1, "m_r": -self.means.M_r, "M_r": -self.means.m_r}
 
-            dcov_r = self.propagate_error(grads_r)
+            dcov_r = self.moments.propagate_error(grads_r)
 
             dcov_phi = np.sqrt(
                 self.sems.mM_phi**2
