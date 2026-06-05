@@ -27,8 +27,7 @@ original per-key / per-pair merges.
 
 The merge mirrors :func:`combine_subsample_variance` /
 :func:`combine_subsample_covariance` exactly (same ``nan_to_num`` handling), so
-results are identical to the per-key / per-pair loops.
-"""
+results are identical to the per-key / per-pair loops."""
 
 from itertools import combinations
 
@@ -79,6 +78,7 @@ class _Block:
         return self.C_mat is not None
 
 
+
 class _CovBlock:
     """Covariance of observable pairs with different shapes that broadcast."""
 
@@ -115,10 +115,7 @@ class MomentAccumulator:
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
         self._requested = set(requested_pairs)
         self._blocks = []  # stacked observable blocks
-        self._var_fallback = []  # scalar observables -> per-key variance merge
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
-        self._cov_fallback = []  # scalar covariance pairs -> per-pair merge
-        self._organized = False
 
     # -- first-frame initialisation -----------------------------------------
 
@@ -143,126 +140,40 @@ class MomentAccumulator:
             observable pair (see :func:`maicos.lib.util.make_pair_key`).
 
         """
+
+        # Sanitize data
         for key in obs:
             if not isinstance(obs[key], _COMPATIBLE_TYPES):
                 raise TypeError(f"Observable {key!r} has an incompatible type.")
             if isinstance(obs[key], list):
                 obs[key] = np.array(obs[key])
+            shape = np.shape(obs[key])
+            if np.shape(obs[key]) == ():
+                shape = (1,)
             if key not in _pop:
-                _pop[key] = np.ones(np.shape(obs[key]), dtype=int)
-                _var[key] = np.zeros(np.shape(obs[key]), dtype=float)
+                _pop[key] = np.ones(shape, dtype=int)
+                _var[key] = np.zeros(shape, dtype=float)
 
-            if isinstance(obs[key], np.ndarray):
-                self.means[key] = obs[key].astype(float)
-            else:
-                self.means[key] = float(obs[key])
-            with np.errstate(divide="ignore", invalid="ignore"):
-                self.sems[key] = np.sqrt(_var[key] / _pop[key])
-            self.M2[key] = _var[key] * _pop[key]
-            self.pop[key] = _pop[key]
-            self.sums[key] = obs[key] * _pop[key]
+            obs[key] = np.reshape(obs[key], shape)
+            _pop[key] = np.reshape(obs[key], shape)
+            _var[key] = np.reshape(obs[key], shape)
 
-        self._initialize_covariance(obs, _pop, _cov)
-
-    def _initialize_covariance(self, obs, _pop, _cov):
-        """Seed ``C`` for the requested pairs that broadcast and are co-sampled."""
-        for pair_key in self._requested:
-            key_i, key_j = pair_key
-            for key in pair_key:
-                if key not in obs:
-                    raise KeyError(
-                        f"requested covariance pair {set(pair_key)} references "
-                        f"unknown observable {key!r}; available observables: "
-                        f"{list(obs)}"
-                    ) from None
-            try:
-                pshape = np.broadcast_shapes(
-                    np.shape(self.means[key_i]), np.shape(self.means[key_j])
-                )
-            except ValueError:
-                continue  # shapes do not broadcast -> covariance not tracked
-            if not np.array_equal(*np.broadcast_arrays(_pop[key_i], _pop[key_j])):
-                continue  # not co-sampled -> covariance is undefined
-            joint = self._joint_pop(_pop, key_i, key_j)
-            # Single samples have no within-frame spread; otherwise use the
-            # within-frame covariance the analysis provides (zero if it only
-            # reports the diagonal _var).
-            if np.all(joint == 1):
-                _cov[pair_key] = np.zeros(pshape, dtype=float)
-            within = _cov.get(pair_key, 0.0)
-            self.C[pair_key] = np.broadcast_to(within * joint, pshape).astype(float)
-
-    # -- shared helpers -----------------------------------------------------
-
-    @staticmethod
-    def _stack(keys, shape, container, default=None):
-        """Stack `container` values for `keys`, broadcast to `shape`, as float."""
-        return np.stack(
-            [
-                np.broadcast_to(container.get(k, default), shape).astype(float)
-                for k in keys
-            ]
-        )
-
-    @staticmethod
-    def _signature(key, shape, pop, _pop):
-        """Co-sampling fingerprint: running and frame populations on `shape`."""
-        run = np.broadcast_to(pop[key], shape)
-        frame = np.broadcast_to(_pop[key], shape)
-        return (run.tobytes(), frame.tobytes())
-
-    @staticmethod
-    def _cosampled(keys, shape, pop, _pop):
-        """True if all keys share one (broadcast) running and frame population."""
-        run0 = np.broadcast_to(pop[keys[0]], shape)
-        frame0 = np.broadcast_to(_pop[keys[0]], shape)
-        for k in keys[1:]:
-            if not np.array_equal(np.broadcast_to(pop[k], shape), run0):
-                return False
-            if not np.array_equal(np.broadcast_to(_pop[k], shape), frame0):
-                return False
-        return True
-
-    @staticmethod
-    def _joint_pop(pop, ki, kj):
-        b = np.broadcast_arrays(pop[ki], pop[kj])
-        return b[0] if np.ndim(pop[ki]) > np.ndim(pop[kj]) else b[1]
-
-    # -- organisation (runs once, on the second frame) ----------------------
-
-    def _organize(self, obs, _pop):
-        """Group observables into variance blocks and covariance into them/aside."""
-        # 1) Variance groups by (own shape, co-sampling signature). Scalars fall back.
-        groups = {}  # (shape, sig) -> [keys]
-        key_group = {}  # key -> (shape, sig)  for embeddability checks
+        # Data groups by shape
+        shape_groups = {}  # shape -> [keys]
         for key in obs:
-            shape = np.shape(self.means[key])
+            shape = np.shape(obs[key])
             if shape == ():
-                self._var_fallback.append(key)
+                shape = (1,) # make scalar into 1D array with 1 element
+                obs[key] = np.reshape(obs[key], shape)
                 continue
-            sig = self._signature(key, shape, self.pop, _pop)
-            groups.setdefault((shape, sig), []).append(key)
-            key_group[key] = (shape, sig)
+            groups[shape].append(key)
 
-        # 2) Partition requested pairs into embeddable (same variance block) and
-        #    broadcast/scalar pairs handled off-diagonal.
-        embedded = {}  # (shape, sig) -> [pair_key]
-        cross = []
-        for pair_key in self.C:
-            ki, kj = pair_key
-            gi, gj = key_group.get(ki), key_group.get(kj)
-            if gi is not None and gi == gj and np.shape(self.C[pair_key]) == gi[0]:
-                embedded.setdefault(gi, []).append(pair_key)
-            else:
-                cross.append(pair_key)
-
-        # 3) Build variance blocks, embedding the matching covariance pairs.
-        for group_key, keys in groups.items():
-            shape = group_key[0]
+        # Build stacked data blocks.
+        for shape, keys in shape_groups.items():
             block = _Block(keys, shape)
-            block.single_sample = bool(np.all(_pop[keys[0]] == 1))
-            block.MEANS = self._stack(keys, shape, self.means)
-            block.POP = self._stack(keys, shape, self.pop)
+            n_keys = len(keys)
+            block.MEANS = np.stack([obs[key] for key in keys])
+            block.POP = self._stack([_pop[key] for key in keys])
             block.SEMS = self._stack(keys, shape, self.sems)
             block.SUMS = self._stack(keys, shape, self.sums)
 
@@ -325,6 +236,43 @@ class MomentAccumulator:
                     block.pairs.append((i, j, pk))
                     self.C[pk] = block.C_mat[i, j]
                 self._cov_blocks.append(block)
+
+
+    # -- shared helpers -----------------------------------------------------
+
+    @staticmethod
+    def _stack(keys, shape, container, default=None):
+        """Stack `container` values for `keys`, broadcast to `shape`, as float."""
+        return np.stack(
+            [
+                np.broadcast_to(container.get(k, default), shape).astype(float)
+                for k in keys
+            ]
+        )
+
+    @staticmethod
+    def _signature(key, shape, pop, _pop):
+        """Co-sampling fingerprint: running and frame populations on `shape`."""
+        run = np.broadcast_to(pop[key], shape)
+        frame = np.broadcast_to(_pop[key], shape)
+        return (run.tobytes(), frame.tobytes())
+
+    @staticmethod
+    def _cosampled(keys, shape, pop, _pop):
+        """True if all keys share one (broadcast) running and frame population."""
+        run0 = np.broadcast_to(pop[keys[0]], shape)
+        frame0 = np.broadcast_to(_pop[keys[0]], shape)
+        for k in keys[1:]:
+            if not np.array_equal(np.broadcast_to(pop[k], shape), run0):
+                return False
+            if not np.array_equal(np.broadcast_to(_pop[k], shape), frame0):
+                return False
+        return True
+
+    @staticmethod
+    def _joint_pop(pop, ki, kj):
+        b = np.broadcast_arrays(pop[ki], pop[kj])
+        return b[0] if np.ndim(pop[ki]) > np.ndim(pop[kj]) else b[1]
 
     # -- per-frame update ---------------------------------------------------
 
