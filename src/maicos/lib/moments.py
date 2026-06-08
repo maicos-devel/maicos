@@ -208,7 +208,6 @@ class MomentAccumulator:
                         self.C[pair_key] = block.C_mat[i, j]
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
-
             except KeyError:
                 for key, index in block.index:
                     self.M2[key] = block.M2[index]
@@ -297,6 +296,24 @@ class MomentAccumulator:
         for block in self._blocks:
             self._update_block(block, obs, _pop, _var, _cov)
 
+    def _update_cov_block(block, obs, _pop, _cov):
+        shape = block.shape
+        keys = block.keys
+
+        obs_stacked = np.stack([obs[key] for key in keys])
+        _pop_stacked = np.stack([_pop[key] for key in keys])
+        means_stacked = np.stack([self.means[key] for key in keys])
+        means_stacked = np.stack([self.pop[key] for key in keys])
+
+        cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var=None)
+
+        _, C_AB = combine_subsample_covariance(pop_stacked, _pop_stacked,
+                                               means_stacked, obs_stacked,
+                                               means_stacked, obs_stacked,
+                                               block.C_mat, cov_matrix)
+        block.C_mat = C_AB
+
+
     def _update_block(self, block, obs, _pop, _var, _cov):
         shape = block.shape
         keys = block.keys
@@ -305,11 +322,11 @@ class MomentAccumulator:
         _pop_stacked = np.stack([_pop[key] for key in keys])
 
         if block.has_cov_matrix:
-        _, C_AB = combine_subsample_covariance(block.POP, _pop_stacked,
-                                               block.MEANS, obs_stacked,
-                                               block.MEANS, obs_stacked,
-                                               block.C_mat,
-                                               # TODO put covs in matrix)
+            cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var)
+            _, C_AB = combine_subsample_covariance(block.POP, _pop_stacked,
+                                                block.MEANS, obs_stacked,
+                                                block.MEANS, obs_stacked,
+                                                block.C_mat, cov_matrix)
 
         pop_new, mu_AB, M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked)          
 
@@ -319,15 +336,22 @@ class MomentAccumulator:
         if not block.has_cov_matrix:
             block.M2 = M_AB
         
-    def _create_cov_matrix(self, _var, _cov, _pop, block):
+    def _create_cov_matrix(self, block, _pop, _cov, _var):
         #TODO: there should be a memory matrix, that the user writes directly to via views.
-        for pair_key in block.pair_keys:
-            i = block.index[pair_key[0]]
-            j = cov_block.index[pair_key[1]]
+        N = len(block.keys)
+        cov_matrix = np.zeros(N, N, block.shape)
+        for indices, pair_key in block.pairs.items():
+            i = indices[0]
+            j = indices[1]
             jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
-            cov_block.C_mat[i, j] = np.broadcast_to(
-            self._cov[pair_key] * jpop, pair_shape
+            cov_matrix[i, j] = np.broadcast_to(
+                _cov[pair_key] * jpop, block.shape
             ).astype(float)
+
+        if _var not None:
+            for i, key in block.index.items():
+                cov_matrix[i, i] = _var[key] * _pop[key]
+
         return cov_matrix
 
     def cov(self, key_i: str, key_j: str) -> np.ndarray:
@@ -370,7 +394,7 @@ class MomentAccumulator:
                 f"broadcast or are not co-sampled (different populations), so they "
                 f"cannot enter the same estimator"
             )
-        return self.C[pair_key] / self.joint_pop(key_i, key_j) ** 2
+        return self.C[pair_key] / joint_pop(self.pop[key_i], self.pop[key_j]) ** 2
 
     def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.
@@ -426,5 +450,4 @@ class MomentAccumulator:
             for key in keys:
                 var = var + grads[key] ** 2 * self.sems[key] ** 2
             return np.sqrt(var)
-
 
