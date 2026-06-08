@@ -161,6 +161,7 @@ class MomentAccumulator:
 
         # Group observables by shape
         shape_groups = {}  # shape -> [keys]
+        shape_of_key = {}
         for key in obs:
             shape = np.shape(obs[key])
             if shape == ():
@@ -208,7 +209,7 @@ class MomentAccumulator:
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
             except KeyError:
-                for key, index in block.index:
+                for key, index in block.index.items():
                     self.M2[key] = block.M2[index]
             
             # Point the Results() object to the block arrays
