@@ -527,7 +527,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
-        self._cov = Results()  # within-frame covariance of the samples
+        #self._cov = Results()  # within-frame covariance of the samples
+        self._cov = Results()
+
+        try: 
+            self._cov = self.moments._cov 
+        except AttributeError:
+            print("hi")
 
         self.timeseries[current_frame_index] = self._single_frame()
 

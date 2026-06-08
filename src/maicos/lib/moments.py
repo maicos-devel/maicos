@@ -116,6 +116,7 @@ class MomentAccumulator:
         self._requested_cov_pairs = set(requested_pairs)
         self._blocks = []  # stacked observable blocks
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
+        self._cov = Results()
 
     # -- first-frame initialisation -----------------------------------------
 
@@ -208,10 +209,9 @@ class MomentAccumulator:
                     if np.all(jpop == 1):
                         # Observable is a single sample, so _cov is 0
                         _cov[pair_key] = np.zeros(shape, dtype=float)
-                    block.C_mat[i, j] = _cov[pair_key] * jpop
-                    block.C_mat[j, i] = _cov[pair_key] * jpop
                     block.pairs[(i, j)] = pair_key
                     self.C[pair_key] = block.C_mat[i, j]
+                self._create_cov_matrix(block, _pop, _cov, _var)
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
             except KeyError:
@@ -253,12 +253,9 @@ class MomentAccumulator:
             for pair_key in pair_keys:
                 i = cov_block.index[pair_key[0]]
                 j = cov_block.index[pair_key[1]]
-                jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
-                cov_block.C_mat[i, j] = np.broadcast_to(
-                    _cov[pair_key] * jpop, pair_shape
-                ).astype(float)
                 cov_block.pairs[(i, j)] = pair_key
                 self.C[pair_key] = cov_block.C_mat[i, j]
+            self._create_cov_matrix(block, _pop, _cov, _var)
 
             self._cov_blocks.append(cov_block)
 
@@ -321,15 +318,10 @@ class MomentAccumulator:
         means_stacked = np.stack([np.broadcast_to(self.means[key], shape) for key in keys])
         pop_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
 
-        cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var=None)
-
         combine_subsample_covariance(pop_stacked, _pop_stacked,
                                                means_stacked, obs_stacked,
                                                means_stacked, obs_stacked,
-                                               block.C_mat, cov_matrix, block.C_mat)
-        for (i, j), pair_key in block.pairs.items():
-            self.C[pair_key] = block.C_mat[i, j]
-
+                                               block.C_mat, block.cov_matrix, block.C_mat)
 
     def _update_block(self, block, obs, _pop, _var, _cov):
         shape = block.shape
@@ -339,16 +331,12 @@ class MomentAccumulator:
         _pop_stacked = np.stack([_pop[key] for key in keys])
 
         if block.has_cov_matrix:
-            cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var)
             combine_subsample_covariance(block.POP, _pop_stacked,
                                                 block.MEANS, obs_stacked,
                                                 block.MEANS, obs_stacked,
-                                                block.C_mat, cov_matrix, block.C_mat)
+                                                block.C_mat, block.cov_matrix, block.C_mat)
 
         combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked, block.POP, block.MEANS, block.M2)
-
-        if block.has_cov_matrix:
-            block.M2[:] = np.einsum("ii...->i...", block.C_mat)
 
         with np.errstate(divide="ignore", invalid="ignore"):
             block.SEMS[:] = np.sqrt(block.M2 / block.POP**2)
@@ -357,22 +345,21 @@ class MomentAccumulator:
     def _create_cov_matrix(self, block, _pop, _cov, _var):
         #TODO: there should be a memory matrix, that the user writes directly to via views.
         N = len(block.keys)
-        cov_matrix = np.zeros((N, N, *block.shape), dtype=float)
+        block.cov_matrix = np.zeros((N, N, *block.shape), dtype=float)
         for indices, pair_key in block.pairs.items():
             i = indices[0]
             j = indices[1]
             jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
-            if pair_key not in _cov and np.all(jpop == 1):
-                _cov[pair_key] = np.zeros(block.shape, dtype=float)
-            cov_matrix[i, j] = np.broadcast_to(
+            if np.all(jpop == 1):
+                block.cov_matrix[i,j] = np.zeros(block.shape, dtype=float)
+            block.cov_matrix[i, j] = np.broadcast_to(
                 _cov[pair_key] * jpop, block.shape
             ).astype(float)
+            self._cov[pair_key] = block.cov_matrix[i, j]
 
         if _var is not None:
             for key, i in block.index.items():
-                cov_matrix[i, i] = _var[key] * _pop[key]
-
-        return cov_matrix
+                block.cov_matrix[i, i] = _var[key] * _pop[key]
 
     def cov(self, key_i: str, key_j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
