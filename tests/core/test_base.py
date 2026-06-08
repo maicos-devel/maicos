@@ -1808,10 +1808,10 @@ class Test_Covariance:
         ana.dump(str(fpath))
         restored = CorrelatedSeries.load(str(fpath))
 
-        assert set(restored.moments.C) == set(ana.moments.C)
+        assert set(restored.C) == set(ana.moments.C)
         for key in ana.moments.C:
             assert isinstance(key, tuple)
-            assert_allclose(restored.moments.C[key], ana.moments.C[key])
+            assert_allclose(restored.C[key], ana.moments.C[key])
 
     def test_multisample_array_matches_batch(self, ag):
         """Multi-sample array observables (block path) match the batch co-moment."""

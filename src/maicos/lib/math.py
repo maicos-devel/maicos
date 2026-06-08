@@ -681,9 +681,10 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B)
         Co-moment of the combined dataset.
     """
     n_AB = n_A + n_B
-    dx = np.nan_to_num(mux_B) - np.nan_to_num(mux_A)
-    dy = np.nan_to_num(muy_B) - np.nan_to_num(muy_A)
+    dx = np.atleast_1d(np.nan_to_num(mux_B) - np.nan_to_num(mux_A))
+    dy = np.atleast_1d(np.nan_to_num(muy_B) - np.nan_to_num(muy_A))
     with np.errstate(divide="ignore", invalid="ignore"):
-        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + np.outer(dx, dy) * n_A * n_B / n_AB
+        outer = np.einsum("i...,j...->ij...", dx, dy)
+        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + outer * n_A * n_B / n_AB
 
     return n_AB, C_AB

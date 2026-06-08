@@ -72,7 +72,7 @@ class _Block:
         self.M2 = None  # (N, *shape); moment of the variance
         self.C_mat = None  # (N, N, *shape) covariance matrix of pairs
         # TODO: maybe reduce C_mat to only requested pairs
-        self.pairs = []  # pair_key of index i, j in C_mat
+        self.pairs = {}  # (i, j) index in C_mat -> pair_key
 
     @property
     def has_cov_matrix(self):
@@ -89,7 +89,7 @@ class _CovBlock:
         self.index = {k: i for i, k in enumerate(self.keys)}
         self.shape = shape
         self.C_mat = np.zeros((len(self.keys), len(self.keys), *shape), dtype=float)
-        self.pairs = []
+        self.pairs = {}  # (i, j) index in C_mat -> pair_key
 
 
 class MomentAccumulator:
@@ -208,9 +208,9 @@ class MomentAccumulator:
                     if np.all(jpop == 1):
                         # Observable is a single sample, so _cov is 0
                         _cov[pair_key] = np.zeros(shape, dtype=float)
-                    block.C_mat[i, j] = _cov[pair_key]
-                    block.C_mat[j, i] = _cov[pair_key]
-                    block.pairs.append((i, j, pair_key))
+                    block.C_mat[i, j] = _cov[pair_key] * jpop
+                    block.C_mat[j, i] = _cov[pair_key] * jpop
+                    block.pairs[(i, j)] = pair_key
                     self.C[pair_key] = block.C_mat[i, j]
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
@@ -257,6 +257,7 @@ class MomentAccumulator:
                 cov_block.C_mat[i, j] = np.broadcast_to(
                     _cov[pair_key] * jpop, pair_shape
                 ).astype(float)
+                cov_block.pairs[(i, j)] = pair_key
                 self.C[pair_key] = cov_block.C_mat[i, j]
 
             self._cov_blocks.append(cov_block)
@@ -305,11 +306,6 @@ class MomentAccumulator:
             _pop[key] = np.reshape(_pop[key], shape)
             _var[key] = np.reshape(_var[key], shape)
 
-
-            if key not in _pop:
-                _pop[key] = np.ones(np.shape(obs[key]), dtype=int)
-                _var[key] = np.zeros(np.shape(obs[key]), dtype=float)
-
         for block in self._cov_blocks:
             self._update_cov_block(block, obs, _pop, _cov)
 
@@ -332,7 +328,7 @@ class MomentAccumulator:
                                                means_stacked, obs_stacked,
                                                block.C_mat, cov_matrix)
         block.C_mat = C_AB
-        for i, j, pair_key in block.pairs:
+        for (i, j), pair_key in block.pairs.items():
             self.C[pair_key] = block.C_mat[i, j]
 
 
@@ -373,7 +369,7 @@ class MomentAccumulator:
             self.sums[key] = block.SUMS[index]
             self.M2[key] = block.M2[index]
         if block.has_cov_matrix:
-            for i, j, pair_key in block.pairs:
+            for (i, j), pair_key in block.pairs.items():
                 self.C[pair_key] = block.C_mat[i, j]
 
     def _create_cov_matrix(self, block, _pop, _cov, _var):
@@ -384,12 +380,14 @@ class MomentAccumulator:
             i = indices[0]
             j = indices[1]
             jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
+            if pair_key not in _cov and np.all(jpop == 1):
+                _cov[pair_key] = np.zeros(block.shape, dtype=float)
             cov_matrix[i, j] = np.broadcast_to(
                 _cov[pair_key] * jpop, block.shape
             ).astype(float)
 
-        if _var != None:
-            for i, key in block.index.items():
+        if _var is not None:
+            for key, i in block.index.items():
                 cov_matrix[i, i] = _var[key] * _pop[key]
 
         return cov_matrix
