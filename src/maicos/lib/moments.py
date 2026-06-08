@@ -71,6 +71,7 @@ class _Block:
         self.SUMS = None  # (N, *shape)
         self.M2 = None  # (N, *shape); moment of the variance
         self.C_mat = None  # (N, N, *shape) covariance matrix of pairs
+        # TODO: maybe reduce C_mat to only requested pairs
         self.pairs = []  # pair_key of index i, j in C_mat
 
     @property
@@ -250,6 +251,7 @@ class MomentAccumulator:
                 cov_block.C_mat[i, j] = np.broadcast_to(
                     self._cov[pair_key] * jpop, pair_shape
                 ).astype(float)
+                self.C[pair_key] = cov_block.C_mat[i, j]
 
         self._cov_blocks.append(cov_block)
 
@@ -302,87 +304,32 @@ class MomentAccumulator:
         _var_stacked = np.stack([_var[key] for key in keys])
         _pop_stacked = np.stack([_pop[key] for key in keys])
 
+        if block.has_cov_matrix:
+        _, C_AB = combine_subsample_covariance(block.POP, _pop_stacked,
+                                               block.MEANS, obs_stacked,
+                                               block.MEANS, obs_stacked,
+                                               block.C_mat,
+                                               # TODO put covs in matrix)
+
         pop_new, mu_AB, M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked)          
 
         block.POP = pop_new
         block.MEANS = mu_AB
+
         if not block.has_cov_matrix:
             block.M2 = M_AB
         
-    def _update_matrix(self, block, delta, var, n_new, n_old, n_tot, shape, _cov):
-        # One co-moment merge for the whole block: diagonal == variance M2,
-        # off-diagonal == covariance. Populations are shared across the block.
-        weight = n_new[0] * n_old[0] / n_tot[0]
-        merged = (
-            np.nan_to_num(block.C_mat)
-            + np.einsum("i...,j...->ij...", delta, delta) * weight
-        )
-        # Within-frame term: diagonal var * n_frame, off-diagonal _cov * n_frame.
-        n_frame = n_new[0]
-        diag_within = np.nan_to_num(var * n_new)  # (N, *shape)
-        for i in range(len(block.keys)):
-            merged[i, i] += diag_within[i]
-        if not block.single_sample:
-            for i, j, pair_key in block.pairs:
-                c = _cov.get(pair_key)
-                if c is None:
-                    continue
-                w = np.nan_to_num(np.broadcast_to(c, shape)) * n_frame
-                merged[i, j] += w
-                merged[j, i] += w
-        block.C_mat[:] = merged
+    def _create_cov_matrix(self, _var, _cov, _pop, block):
+        #TODO: there should be a memory matrix, that the user writes directly to via views.
+        for pair_key in block.pair_keys:
+            i = block.index[pair_key[0]]
+            j = cov_block.index[pair_key[1]]
+            jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
+            cov_block.C_mat[i, j] = np.broadcast_to(
+            self._cov[pair_key] * jpop, pair_shape
+            ).astype(float)
+        return cov_matrix
 
-    def _update_var_key(self, key, obs, _pop, _var):
-        self.pop[key], self.means[key], self.M2[key] = combine_subsample_variance(
-            _pop[key],
-            self.pop[key],
-            obs[key],
-            self.means[key],
-            _var[key] * _pop[key],
-            self.M2[key],
-        )
-        self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)
-        self.sums[key] += obs[key] * _pop[key]
-
-    def _update_cov_block(self, block, obs, _pop, _cov):
-        shape = block.shape
-        keys = block.keys
-        X = self._stack(keys, shape, obs)
-        X = np.nan_to_num(X)
-        MB = np.stack(
-            [np.nan_to_num(np.broadcast_to(self.means[k], shape)) for k in keys]
-        )
-        n_old = np.broadcast_to(self.pop[keys[0]], shape).astype(float)
-        n_new = np.broadcast_to(_pop[keys[0]], shape).astype(float)
-
-        dx = X - MB
-        n_tot = n_old + n_new
-        with np.errstate(divide="ignore", invalid="ignore"):
-            weight = np.where(n_tot > 0, n_old * n_new / n_tot, 0.0)
-        block.C_mat += np.einsum("i...,j...->ij...", dx, dx) * weight
-
-        if not block.single_sample:
-            for i, j, pair_key in block.pairs:
-                c = _cov.get(pair_key)
-                if c is None:
-                    continue
-                within = np.nan_to_num(np.broadcast_to(c, shape)) * n_new
-                block.C_mat[i, j] += within
-                block.C_mat[j, i] += within
-
-    def _update_cov_fallback(self, pair_key, obs, _pop, _cov):
-        ki, kj = pair_key
-        within = _cov.get(pair_key, 0.0) * self._joint_pop(_pop, ki, kj)
-        _, self.C[pair_key] = combine_subsample_covariance(
-            _pop[ki],
-            self.pop[ki],
-            obs[ki],
-            self.means[ki],
-            obs[kj],
-            self.means[kj],
-            within,
-            self.C[pair_key],
-        )
     def cov(self, key_i: str, key_j: str) -> np.ndarray:
         r"""Covariance of the means of two observables.
 

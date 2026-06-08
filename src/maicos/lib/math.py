@@ -645,7 +645,6 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
 
     return n_AB, mu_AB, M_AB
 
-
 def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
     r"""Combine the co-moment of two datasets of arbitrary size.
 
@@ -685,6 +684,6 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B)
     dx = np.nan_to_num(mux_B) - np.nan_to_num(mux_A)
     dy = np.nan_to_num(muy_B) - np.nan_to_num(muy_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + dx * dy * n_A * n_B / n_AB
+        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + np.outer(dx, dy) * n_A * n_B / n_AB
 
     return n_AB, C_AB
