@@ -327,7 +327,7 @@ class MomentAccumulator:
                                                means_stacked, obs_stacked,
                                                means_stacked, obs_stacked,
                                                block.C_mat, cov_matrix)
-        block.C_mat = C_AB
+        block.C_mat[:] = C_AB
         for (i, j), pair_key in block.pairs.items():
             self.C[pair_key] = block.C_mat[i, j]
 
@@ -346,20 +346,17 @@ class MomentAccumulator:
                                                 block.MEANS, obs_stacked,
                                                 block.C_mat, cov_matrix)
 
-        pop_AB, mu_AB, M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked)
-
-        block.POP = pop_AB
-        block.MEANS = mu_AB
+        block.POP[:], block.MEANS[:], M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked)
 
         if block.has_cov_matrix:
-            block.C_mat = C_AB
-            block.M2 = np.einsum("ii...->i...", block.C_mat)
+            block.C_mat[:] = C_AB
+            block.M2[:] = np.einsum("ii...->i...", block.C_mat)
         else:
-            block.M2 = M_AB
+            block.M2[:] = M_AB
 
         with np.errstate(divide="ignore", invalid="ignore"):
-            block.SEMS = np.sqrt(block.M2 / block.POP**2)
-        block.SUMS = block.MEANS * block.POP
+            block.SEMS[:] = np.sqrt(block.M2 / block.POP**2)
+        block.SUMS[:] = block.MEANS * block.POP
 
         # Point the Results() object to the block arrays
         for key, index in block.index.items():
