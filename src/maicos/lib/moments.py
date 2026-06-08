@@ -184,11 +184,12 @@ class MomentAccumulator:
         # Build stacked data blocks.
         for shape, keys in shape_groups.items():
             block = _Block(keys, shape)
+            keys = block.keys
             block.MEANS = np.stack([obs[key] for key in keys])
             block.POP = np.stack([_pop[key] for key in keys])
             block.M2 = np.stack([_var[key] for key in keys]) * block.POP
             with np.errstate(divide="ignore", invalid="ignore"):
-                block.SEMS = block.M2 / block.POP**2
+                block.SEMS = np.sqrt(block.M2 / block.POP**2)
             block.SUMS = block.MEANS * block.POP
 
             
@@ -292,6 +293,19 @@ class MomentAccumulator:
         for key in obs:
             if isinstance(obs[key], list):
                 obs[key] = np.array(obs[key])
+            shape = np.shape(obs[key])
+            if np.shape(obs[key]) == ():
+                shape = (1,)
+            if key not in _pop:
+                _pop[key] = np.ones(shape, dtype=int)
+                _var[key] = np.empty(shape, dtype=float)
+                _var[key].fill(np.nan) # TODO: maybe remove nan, do zeroes instead
+
+            obs[key] = np.reshape(obs[key], shape)
+            _pop[key] = np.reshape(_pop[key], shape)
+            _var[key] = np.reshape(_var[key], shape)
+
+
             if key not in _pop:
                 _pop[key] = np.ones(np.shape(obs[key]), dtype=int)
                 _var[key] = np.zeros(np.shape(obs[key]), dtype=float)
@@ -309,7 +323,7 @@ class MomentAccumulator:
         obs_stacked = np.stack([np.broadcast_to(obs[key], shape) for key in keys])
         _pop_stacked = np.stack([np.broadcast_to(_pop[key], shape) for key in keys])
         means_stacked = np.stack([np.broadcast_to(self.means[key], shape) for key in keys])
-        means_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
+        pop_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
 
         cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var=None)
 
@@ -318,6 +332,8 @@ class MomentAccumulator:
                                                means_stacked, obs_stacked,
                                                block.C_mat, cov_matrix)
         block.C_mat = C_AB
+        for i, j, pair_key in block.pairs:
+            self.C[pair_key] = block.C_mat[i, j]
 
 
     def _update_block(self, block, obs, _pop, _var, _cov):
@@ -334,14 +350,32 @@ class MomentAccumulator:
                                                 block.MEANS, obs_stacked,
                                                 block.C_mat, cov_matrix)
 
-        pop_new, mu_AB, M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked)          
+        pop_AB, mu_AB, M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked)
 
-        block.POP = pop_new
+        block.POP = pop_AB
         block.MEANS = mu_AB
 
-        if not block.has_cov_matrix:
+        if block.has_cov_matrix:
+            block.C_mat = C_AB
+            block.M2 = np.einsum("ii...->i...", block.C_mat)
+        else:
             block.M2 = M_AB
-        
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            block.SEMS = np.sqrt(block.M2 / block.POP**2)
+        block.SUMS = block.MEANS * block.POP
+
+        # Point the Results() object to the block arrays
+        for key, index in block.index.items():
+            self.means[key] = block.MEANS[index]
+            self.pop[key] = block.POP[index]
+            self.sems[key] = block.SEMS[index]
+            self.sums[key] = block.SUMS[index]
+            self.M2[key] = block.M2[index]
+        if block.has_cov_matrix:
+            for i, j, pair_key in block.pairs:
+                self.C[pair_key] = block.C_mat[i, j]
+
     def _create_cov_matrix(self, block, _pop, _cov, _var):
         #TODO: there should be a memory matrix, that the user writes directly to via views.
         N = len(block.keys)

@@ -100,6 +100,27 @@ class SingularSeries(AnalysisBase):
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
 
+class DebugSeries(AnalysisBase):
+    """Class creating a time series with one observable per frame."""
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.series = np.arange(self.n_frames)
+
+    def _single_frame(self):
+        self._obs.observable = self.series[self._frame_index]
+
+
 
 class MultipleSeries(AnalysisBase):
     """Class creating a time series with multiple observables per frame."""
@@ -532,12 +553,13 @@ class Test_AnalysisBase:
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = SingularSeries(atomgroup=ag)
+        ana = DebugSeries(atomgroup=ag)
+        ana.n_frames = 2
         ana.run()
 
-        assert_allclose(ana.sums.observable, np.sum(ana.series))
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
+        assert_allclose(ana.sums.observable, np.sum(ana.series))
 
         ana = MultipleSeries(atomgroup=ag)
         ana.run()
