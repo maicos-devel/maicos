@@ -166,8 +166,7 @@ class MomentAccumulator:
             if shape == ():
                 shape = (1,) # make scalar into 1D array with 1 element
                 obs[key] = np.reshape(obs[key], shape)
-                continue
-            shape_groups[shape].append(key)
+            shape_groups.setdefault(shape, []).append(key)
             shape_of_key[key] = shape
 
         # Group the covariances by shape
@@ -252,7 +251,7 @@ class MomentAccumulator:
                 ).astype(float)
                 self.C[pair_key] = cov_block.C_mat[i, j]
 
-        self._cov_blocks.append(cov_block)
+            self._cov_blocks.append(cov_block)
 
     @staticmethod
     def _cosampled(pop_i, pop_j):
@@ -348,7 +347,7 @@ class MomentAccumulator:
                 _cov[pair_key] * jpop, block.shape
             ).astype(float)
 
-        if _var not None:
+        if _var != None:
             for i, key in block.index.items():
                 cov_matrix[i, i] = _var[key] * _pop[key]
 
