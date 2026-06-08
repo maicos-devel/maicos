@@ -323,11 +323,10 @@ class MomentAccumulator:
 
         cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var=None)
 
-        _, C_AB = combine_subsample_covariance(pop_stacked, _pop_stacked,
+        combine_subsample_covariance(pop_stacked, _pop_stacked,
                                                means_stacked, obs_stacked,
                                                means_stacked, obs_stacked,
-                                               block.C_mat, cov_matrix)
-        block.C_mat[:] = C_AB
+                                               block.C_mat, cov_matrix, block.C_mat)
         for (i, j), pair_key in block.pairs.items():
             self.C[pair_key] = block.C_mat[i, j]
 
@@ -341,33 +340,19 @@ class MomentAccumulator:
 
         if block.has_cov_matrix:
             cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var)
-            _, C_AB = combine_subsample_covariance(block.POP, _pop_stacked,
+            combine_subsample_covariance(block.POP, _pop_stacked,
                                                 block.MEANS, obs_stacked,
                                                 block.MEANS, obs_stacked,
-                                                block.C_mat, cov_matrix)
+                                                block.C_mat, cov_matrix, block.C_mat)
 
-        block.POP[:], block.MEANS[:], M_AB = combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked)
+        combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked, block.POP, block.MEANS, block.M2)
 
         if block.has_cov_matrix:
-            block.C_mat[:] = C_AB
             block.M2[:] = np.einsum("ii...->i...", block.C_mat)
-        else:
-            block.M2[:] = M_AB
 
         with np.errstate(divide="ignore", invalid="ignore"):
             block.SEMS[:] = np.sqrt(block.M2 / block.POP**2)
         block.SUMS[:] = block.MEANS * block.POP
-
-        # Point the Results() object to the block arrays
-        for key, index in block.index.items():
-            self.means[key] = block.MEANS[index]
-            self.pop[key] = block.POP[index]
-            self.sems[key] = block.SEMS[index]
-            self.sums[key] = block.SUMS[index]
-            self.M2[key] = block.M2[index]
-        if block.has_cov_matrix:
-            for (i, j), pair_key in block.pairs.items():
-                self.C[pair_key] = block.C_mat[i, j]
 
     def _create_cov_matrix(self, block, _pop, _cov, _var):
         #TODO: there should be a memory matrix, that the user writes directly to via views.

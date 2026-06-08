@@ -606,7 +606,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     return trans_positions
 
 
-def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
+def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB):
     """Calculate the mean and variance of two datasets of arbitrary size.
 
     Given two datasets of arbitrary size, this function calculates the mean and
@@ -637,15 +637,13 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     M_AB : float
         Sum of squares of deviations from the mean for the combined dataset.
     """
-    n_AB = n_A + n_B
+    n_AB[:] = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+        mu_AB[:] = np.nan_to_num(mu_A) + delta * n_B / n_AB
+        M_AB[:] = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
-    return n_AB, mu_AB, M_AB
-
-def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
+def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B, C_AB):
     r"""Combine the co-moment of two datasets of arbitrary size.
 
     Streaming merge of the co-moment :math:`C = \sum (x - \bar x)(y - \bar y)` of
@@ -685,6 +683,4 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B)
     dy = np.atleast_1d(np.nan_to_num(muy_B) - np.nan_to_num(muy_A))
     with np.errstate(divide="ignore", invalid="ignore"):
         outer = np.einsum("i...,j...->ij...", dx, dy)
-        C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + outer * n_A * n_B / n_AB
-
-    return n_AB, C_AB
+        C_AB[:] = np.nan_to_num(C_A) + np.nan_to_num(C_B) + outer * n_A * n_B / n_AB
