@@ -24,7 +24,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
-from maicos.lib.util import make_pair_key
+from maicos.lib.util import make_pair_key, joint_pop
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -1706,14 +1706,14 @@ class Test_Covariance:
     def test_comoment_matches_batch(self, ana):
         """Streamed co-moment equals the batch reference for scalar pairs."""
         assert_allclose(
-            ana.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9
+            ana.moments.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9
         )
 
     def test_comoment_array_observable(self, ana):
         """Element-wise co-moment of a scalar with an array observable."""
         ref = self._comoment(ana.x[:, None], ana.prof)
-        assert ana.C[make_pair_key("prof", "x")].shape == (3,)
-        assert_allclose(ana.C[make_pair_key("prof", "x")], ref, rtol=1e-9)
+        assert ana.moments.C[make_pair_key("prof", "x")].shape == (3,)
+        assert_allclose(ana.moments.C[make_pair_key("prof", "x")], ref, rtol=1e-9)
 
     def test_diagonal_equals_variance(self, ana):
         """cov(key, key) reproduces the squared standard error of the mean."""
@@ -1733,7 +1733,7 @@ class Test_Covariance:
 
     def test_incompatible_pair_not_tracked(self, ana):
         """Pairs whose shapes do not broadcast are never tracked."""
-        assert make_pair_key("other", "prof") not in ana.C
+        assert make_pair_key("other", "prof") not in ana.moments.C
         with pytest.raises(KeyError, match="do not broadcast"):
             ana.moments.cov("prof", "other")
 
@@ -1767,7 +1767,7 @@ class Test_Covariance:
         ana.run()
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
         cov_xother = (
-            ana.C[make_pair_key("other", "x")] / ana.moments.joint_pop("other", "x") ** 2
+            ana.moments.C[make_pair_key("other", "x")] / joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
         )
         assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
 
@@ -1776,7 +1776,7 @@ class Test_Covariance:
         np.random.seed(1)
         ana = WeightedSeries(ag)
         ana.run()
-        assert make_pair_key("single", "weighted") not in ana.C
+        assert make_pair_key("single", "weighted") not in ana.moments.C
         with pytest.raises(KeyError, match="do not broadcast"):
             ana.moments.cov("single", "weighted")
 
@@ -1786,16 +1786,16 @@ class Test_Covariance:
         ana.dump(str(fpath))
         restored = CorrelatedSeries.load(str(fpath))
 
-        assert set(restored.C) == set(ana.C)
-        for key in ana.C:
+        assert set(restored.moments.C) == set(ana.moments.C)
+        for key in ana.moments.C:
             assert isinstance(key, tuple)
-            assert_allclose(restored.C[key], ana.C[key])
+            assert_allclose(restored.moments.C[key], ana.moments.C[key])
 
     def test_multisample_array_matches_batch(self, ag):
         """Multi-sample array observables (block path) match the batch co-moment."""
         ana = MultiSampleSeries(ag, n_bins=4, seed=0)
         ana.run()
-        streamed = ana.C[make_pair_key("x", "y")]
+        streamed = ana.moments.C[make_pair_key("x", "y")]
         assert streamed.shape == (4,)
         assert_allclose(streamed, ana.batch_comoment(), rtol=1e-9)
 
@@ -1803,7 +1803,7 @@ class Test_Covariance:
         """Multi-sample scalar observables (fallback path) match the batch co-moment."""
         ana = MultiSampleSeries(ag, n_bins=1, seed=3)
         ana.run()
-        streamed = ana.C[make_pair_key("x", "y")]
+        streamed = ana.moments.C[make_pair_key("x", "y")]
         assert_allclose(streamed, ana.batch_comoment(), rtol=1e-9)
 
     def test_multisample_cov_matches_numpy(self, ag):

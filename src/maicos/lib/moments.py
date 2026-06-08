@@ -156,8 +156,8 @@ class MomentAccumulator:
                 _var[key] = np.empty(shape, dtype=float)
                 _var[key].fill(np.nan) # TODO: maybe remove nan, do zeroes instead
             obs[key] = np.reshape(obs[key], shape)
-            _pop[key] = np.reshape(obs[key], shape)
-            _var[key] = np.reshape(obs[key], shape)
+            _pop[key] = np.reshape(_pop[key], shape)
+            _var[key] = np.reshape(_var[key], shape)
 
         # Group observables by shape
         shape_groups = {}  # shape -> [keys]
@@ -172,12 +172,12 @@ class MomentAccumulator:
 
         # Group the covariances by shape
         embedded_covariances = {}
-        cross_covariances = {}
+        cross_covariances = []
         for pair_key in self._requested_cov_pairs:
             key_i, key_j = pair_key
             group_i, group_j = shape_of_key[key_i], shape_of_key[key_j]
             if group_i == group_j:
-                embedded_covariances[group_i].append(pair_key)
+                embedded_covariances.setdefault(group_i, []).append(pair_key)
             else:
                 cross_covariances.append(pair_key)
 
@@ -191,6 +191,7 @@ class MomentAccumulator:
                 block.SEMS = block.M2 / block.POP**2
             block.SUMS = block.MEANS * block.POP
 
+            
             try:
                 pair_keys = embedded_covariances[shape]
                 n = len(keys)
@@ -198,14 +199,18 @@ class MomentAccumulator:
                 # Seed diagonal with M2, off-diagonal with the requested C entries.
                 for key, index in block.index.items():
                     block.C_mat[index, index] = block.M2[index]
-                for pair_key in pairs_key:
+                for pair_key in pair_keys:
                     i, j = block.index[pair_key[0]], block.index[pair_key[1]]
-                    # make sure pairs are cosampled
-                    if np.all(block.POP[i] == block.POP[j]):
-                        block.C_mat[i, j] = _cov[pair_key]
-                        block.C_mat[j, i] = _cov[pair_key]
-                        block.pairs.append((i, j, pair_key))
-                        self.C[pair_key] = block.C_mat[i, j]
+                    # TODO: make sure pairs are cosampled
+                    jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
+                    # check if it's a single sample
+                    if np.all(jpop == 1):
+                        # Observable is a single sample, so _cov is 0
+                        _cov[pair_key] = np.zeros(shape, dtype=float)
+                    block.C_mat[i, j] = _cov[pair_key]
+                    block.C_mat[j, i] = _cov[pair_key]
+                    block.pairs.append((i, j, pair_key))
+                    self.C[pair_key] = block.C_mat[i, j]
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
             except KeyError:
@@ -227,7 +232,7 @@ class MomentAccumulator:
             key_x, key_y = pair_key
             try:
                 pair_shape = np.broadcast_shapes(
-                    np.shape(_obs[key_x]), np.shape(_obs[key_y])
+                    np.shape(obs[key_x]), np.shape(obs[key_y])
                 )
             except ValueError:
                 continue  # shapes do not broadcast -> covariance not tracked
@@ -238,17 +243,18 @@ class MomentAccumulator:
                 # Observable is a single sample, so _cov is 0
                 _cov[pair_key] = np.zeros(pair_shape, dtype=float)
 
-            pair_shape_groups[pair_shape].append(pair_key)
+            pair_shape_groups.setdefault(pair_shape, []).append(pair_key)
 
         # prepare blocks for cross-covariances
         for pair_shape, pair_keys in pair_shape_groups.items():
-            cov_block = _CovBlock(keys, pair_shape)
+            unique_keys = list(dict.fromkeys(x for pair in pair_keys for x in pair))
+            cov_block = _CovBlock(unique_keys, pair_shape)
             for pair_key in pair_keys:
                 i = cov_block.index[pair_key[0]]
                 j = cov_block.index[pair_key[1]]
                 jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
                 cov_block.C_mat[i, j] = np.broadcast_to(
-                    self._cov[pair_key] * jpop, pair_shape
+                    _cov[pair_key] * jpop, pair_shape
                 ).astype(float)
                 self.C[pair_key] = cov_block.C_mat[i, j]
 
@@ -296,14 +302,14 @@ class MomentAccumulator:
         for block in self._blocks:
             self._update_block(block, obs, _pop, _var, _cov)
 
-    def _update_cov_block(block, obs, _pop, _cov):
+    def _update_cov_block(self, block, obs, _pop, _cov):
         shape = block.shape
         keys = block.keys
 
-        obs_stacked = np.stack([obs[key] for key in keys])
-        _pop_stacked = np.stack([_pop[key] for key in keys])
-        means_stacked = np.stack([self.means[key] for key in keys])
-        means_stacked = np.stack([self.pop[key] for key in keys])
+        obs_stacked = np.stack([np.broadcast_to(obs[key], shape) for key in keys])
+        _pop_stacked = np.stack([np.broadcast_to(_pop[key], shape) for key in keys])
+        means_stacked = np.stack([np.broadcast_to(self.means[key], shape) for key in keys])
+        means_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
 
         cov_matrix = self._create_cov_matrix(block, _pop, _cov, _var=None)
 
@@ -339,7 +345,7 @@ class MomentAccumulator:
     def _create_cov_matrix(self, block, _pop, _cov, _var):
         #TODO: there should be a memory matrix, that the user writes directly to via views.
         N = len(block.keys)
-        cov_matrix = np.zeros(N, N, block.shape)
+        cov_matrix = np.zeros((N, N, *block.shape), dtype=float)
         for indices, pair_key in block.pairs.items():
             i = indices[0]
             j = indices[1]
@@ -381,7 +387,7 @@ class MomentAccumulator:
         """
         if key_i == key_j:
             return self.sems[key_i] ** 2
-        if not self._requested:
+        if not self._requested_cov_pairs:
             raise RuntimeError(
                 "Covariance tracking is disabled. List the observable pairs in the "
                 "`_compute_covariance` class attribute to use `cov`/`propagate_error`."
