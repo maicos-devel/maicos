@@ -533,7 +533,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         try: 
             self._cov = self.moments._cov 
         except AttributeError:
-            print("hi")
+            pass
 
         self.timeseries[current_frame_index] = self._single_frame()
 

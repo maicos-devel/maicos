@@ -115,7 +115,7 @@ class DebugSeries(AnalysisBase):
         )
 
     def _prepare(self):
-        self.series = np.arange(self.n_frames)
+        self.series = np.arange(self.n_frames, dtype=float)
 
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
