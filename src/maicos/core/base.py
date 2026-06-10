@@ -530,24 +530,23 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         #self._cov = Results()  # within-frame covariance of the samples
         self._cov = Results()
 
-        try: 
+        try:
             self._cov = self.moments._cov 
+            print("set to moments cov")
+            print(self._cov)
         except AttributeError:
-            pass
+            with logging_redirect_tqdm():
+                logger.debug("no _cov was initialized")
 
         self.timeseries[current_frame_index] = self._single_frame()
 
+        print("after single frame")
+        print(self._cov)
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
         try:
             # Fail fast if the backend is not initialised yet.
             self.moments  # noqa B018
-
-            # One vectorized backend updates the running means, variances and the
-            # requested covariances. It accumulates the off-diagonal covariance
-            # (which needs the pre-frame means) before overwriting the means.
-            self.moments.update(self._obs, self._pop, self._var, self._cov)
-
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
@@ -562,6 +561,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.pop = self.moments.pop
             self.sums = self.moments.sums
             self.C = self.moments.C
+        else:
+            # One vectorized backend updates the running means, variances and the
+            # requested covariances. It accumulates the off-diagonal covariance
+            # (which needs the pre-frame means) before overwriting the means.
+            self.moments.update(self._obs, self._pop, self._var, self._cov)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()

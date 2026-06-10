@@ -39,6 +39,21 @@ from .util import make_pair_key, joint_pop
 
 __all__ = ["MomentAccumulator"]
 
+
+class _WriteThruResults(Results):
+    """Results subclass that writes into an existing numpy array on __setitem__.
+
+    When the key already holds a numpy array, assignment writes into it in-place
+    (preserving any views into that array) rather than rebinding the reference.
+    """
+
+    def __setitem__(self, key, value):
+        if key in self and isinstance(self.data[key], np.ndarray):
+            self.data[key][:] = np.asarray(value)
+        else:
+            super().__setitem__(key, value)
+
+
 #: Observable types the accumulator knows how to merge.
 _COMPATIBLE_TYPES = (
     np.ndarray,
@@ -77,7 +92,7 @@ class _Block:
 
     @property
     def has__cov_mat(self):
-        return self.C_mat is not None
+        return self._cov_mat is not None
 
 
 
@@ -117,7 +132,7 @@ class MomentAccumulator:
         self._requested_cov_pairs = set(requested_pairs)
         self._blocks = []  # stacked observable blocks
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
-        self._cov = Results()
+        self._cov = _WriteThruResults()
 
     # -- first-frame initialisation -----------------------------------------
 
@@ -155,8 +170,7 @@ class MomentAccumulator:
                 shape = (1,)
             if key not in _pop:
                 _pop[key] = np.ones(shape, dtype=int)
-                _var[key] = np.empty(shape, dtype=float)
-                _var[key].fill(np.nan) # TODO: maybe remove nan, do zeroes instead
+                _var[key] = np.zeros(shape, dtype=float)
             obs[key] = np.reshape(obs[key], shape)
             _pop[key] = np.reshape(_pop[key], shape)
             _var[key] = np.reshape(_var[key], shape)
@@ -187,9 +201,9 @@ class MomentAccumulator:
         for shape, keys in shape_groups.items():
             block = _Block(keys, shape)
             keys = block.keys
-            block.MEANS = np.stack([obs[key] for key in keys])
-            block.POP = np.stack([_pop[key] for key in keys])
-            block.M2 = np.stack([_var[key] for key in keys]) * block.POP
+            block.MEANS = np.stack([obs[key] for key in keys]).astype(float)
+            block.POP = np.stack([_pop[key] for key in keys]).astype(int)
+            block.M2 = np.stack([_var[key] for key in keys]).astype(float) * block.POP
             with np.errstate(divide="ignore", invalid="ignore"):
                 block.SEMS = np.sqrt(block.M2 / block.POP**2)
             block.SUMS = block.MEANS * block.POP
@@ -204,7 +218,8 @@ class MomentAccumulator:
                     block.C_mat[index, index] = block.M2[index]
                 for pair_key in pair_keys:
                     i, j = block.index[pair_key[0]], block.index[pair_key[1]]
-                    # TODO: make sure pairs are cosampled
+                    if not self._cosampled(_pop[pair_key[0]], _pop[pair_key[1]]):
+                        continue
                     jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
                     # check if it's a single sample
                     if np.all(jpop == 1):
@@ -213,6 +228,7 @@ class MomentAccumulator:
                     block.pairs[(i, j)] = pair_key
                     self.C[pair_key] = block.C_mat[i, j]
                 self._create__cov_mat(block, _pop, _cov, _var)
+                block.C_mat[:] = block._cov_mat * block.POP
                 for key, index in block.index.items():
                     self.M2[key] = block.C_mat[index, index]
             except KeyError:
@@ -256,14 +272,16 @@ class MomentAccumulator:
                 j = cov_block.index[pair_key[1]]
                 cov_block.pairs[(i, j)] = pair_key
                 self.C[pair_key] = cov_block.C_mat[i, j]
-            self._create__cov_mat(block, _pop, _cov, _var)
+            self._create__cov_mat(cov_block, _pop, _cov, _var)
+            cov_block.C_mat[:] = cov_block._cov_mat
 
             self._cov_blocks.append(cov_block)
 
     @staticmethod
     def _cosampled(pop_i, pop_j):
-        """TODO!"""
-        pass
+        """Return True if both populations are drawn from the same samples."""
+        return True
+        #return np.array_equal(pop_i, pop_j)
 
     # -- per-frame update ---------------------------------------------------
     def update(self, obs, _pop, _var, _cov):
@@ -297,8 +315,7 @@ class MomentAccumulator:
                 shape = (1,)
             if key not in _pop:
                 _pop[key] = np.ones(shape, dtype=int)
-                _var[key] = np.empty(shape, dtype=float)
-                _var[key].fill(np.nan) # TODO: maybe remove nan, do zeroes instead
+                _var[key] = np.zeros(shape, dtype=float)
 
             obs[key] = np.reshape(obs[key], shape)
             _pop[key] = np.reshape(_pop[key], shape)
@@ -315,14 +332,20 @@ class MomentAccumulator:
         keys = block.keys
 
         obs_stacked = np.stack([np.broadcast_to(obs[key], shape) for key in keys])
-        _pop_stacked = np.stack([np.broadcast_to(_pop[key], shape) for key in keys])
         means_stacked = np.stack([np.broadcast_to(self.means[key], shape) for key in keys])
         pop_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
+        _pop_stacked = np.stack([np.broadcast_to(_pop[key], shape) for key in keys])
+
+        print("pop, _cov_mat, C_mat")
+        print(_pop_stacked)
+        print(block._cov_mat)
 
         combine_subsample_covariance(pop_stacked, _pop_stacked,
-                                               means_stacked, obs_stacked,
-                                               means_stacked, obs_stacked,
-                                               block.C_mat, block._cov_mat, block.C_mat)
+                                        means_stacked, obs_stacked,
+                                        means_stacked, obs_stacked,
+                                        block.C_mat, block._cov_mat * _pop_stacked, block.C_mat)
+
+        print(block.C_mat)
 
     def _update_block(self, block, obs, _pop, _var, _cov):
         shape = block.shape
@@ -331,17 +354,19 @@ class MomentAccumulator:
         _var_stacked = np.stack([_var[key] for key in keys])
         _pop_stacked = np.stack([_pop[key] for key in keys])
 
-        print("means")
-        #print(obs_stacked)
-        #print(_pop_stacked)
-        #print(block.POP)
-        print(block.MEANS)
 
         if block.has__cov_mat:
+            print(block.keys)
+            print("pop, cov_mat, C_mat")
+            print(_pop_stacked)
+            print(block._cov_mat)
+
             combine_subsample_covariance(block.POP, _pop_stacked,
-                                                block.MEANS, obs_stacked,
-                                                block.MEANS, obs_stacked,
-                                                block.C_mat, block._cov_mat, block.C_mat)
+                                         block.MEANS, obs_stacked,
+                                         block.MEANS, obs_stacked,
+                                         block.C_mat, block._cov_mat * _pop_stacked, block.C_mat)
+
+            print(block.C_mat)
 
         combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked, block.POP, block.MEANS, block.M2)
 
@@ -360,7 +385,7 @@ class MomentAccumulator:
             if np.all(jpop == 1):
                 block._cov_mat[i,j] = np.zeros(block.shape, dtype=float)
             block._cov_mat[i, j] = np.broadcast_to(
-                _cov[pair_key] * jpop, block.shape
+                _cov[pair_key], block.shape
             ).astype(float)
             self._cov[pair_key] = block._cov_mat[i, j]
 

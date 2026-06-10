@@ -308,6 +308,11 @@ class MultiSampleSeries(AnalysisBase):
             if len(s) == 0:
                 continue
             x, y = s[:, 0], s[:, 1]
+            x.fill(1) # for debugging
+            x[::2] = 2
+            y.fill(2) # for debugging
+            y[::4] = 4 
+
             xm[m], ym[m] = x.mean(), y.mean()
             vx[m], vy[m] = x.var(), y.var()
             cxy[m] = ((x - x.mean()) * (y - y.mean())).mean()
@@ -322,6 +327,8 @@ class MultiSampleSeries(AnalysisBase):
         self._pop.x = int(pop[0]) if scalar else pop.copy()
         self._pop.y = int(pop[0]) if scalar else pop.copy()
         self._cov[make_pair_key("x", "y")] = maybe_scalar(cxy)
+        print("cov in single frame")
+        print(self._cov)
 
     def batch_comoment(self):
         """Co-moment ``sum((x - x.mean())(y - y.mean()))`` over all samples."""
