@@ -273,7 +273,8 @@ class MomentAccumulator:
                 cov_block.pairs[(i, j)] = pair_key
                 self.C[pair_key] = cov_block.C_mat[i, j]
             self._create__cov_mat(cov_block, _pop, _cov, _var)
-            cov_block.C_mat[:] = cov_block._cov_mat
+            _pop_stacked = np.stack([np.broadcast_to(_pop[key], cov_block.shape) for key in cov_block.keys])
+            cov_block.C_mat[:] = cov_block._cov_mat * _pop_stacked
 
             self._cov_blocks.append(cov_block)
 
