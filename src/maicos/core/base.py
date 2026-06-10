@@ -527,21 +527,19 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
-        #self._cov = Results()  # within-frame covariance of the samples
         self._cov = Results()
 
         try:
-            self._cov = self.moments._cov 
-            print("set to moments cov")
-            print(self._cov)
+            self._cov = self.moments._cov
+            self._obs = self.moments._obs
+            self._pop = self.moments._pop
+            self._var = self.moments._var
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("no _cov was initialized")
 
         self.timeseries[current_frame_index] = self._single_frame()
 
-        print("after single frame")
-        print(self._cov)
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
         try:

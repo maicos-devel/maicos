@@ -88,7 +88,10 @@ class _Block:
         self.C_mat = None  # (N, N, *shape) covariance matrix of pairs
         # TODO: maybe reduce C_mat to only requested pairs
         self.pairs = {}  # (i, j) index in C_mat -> pair_key
-        self._cov_mat = None # (N, N, *shape)
+        self._cov_mat = None  # (N, N, *shape)
+        self._obs_mat = None  # (N, *shape)  within-frame observables
+        self._pop_mat = None  # (N, *shape)  within-frame populations
+        self._var_mat = None  # (N, *shape)  within-frame variances
 
     @property
     def has__cov_mat(self):
@@ -133,6 +136,9 @@ class MomentAccumulator:
         self._blocks = []  # stacked observable blocks
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
         self._cov = _WriteThruResults()
+        self._obs = _WriteThruResults()
+        self._pop = _WriteThruResults()
+        self._var = _WriteThruResults()
 
     # -- first-frame initialisation -----------------------------------------
 
@@ -201,9 +207,12 @@ class MomentAccumulator:
         for shape, keys in shape_groups.items():
             block = _Block(keys, shape)
             keys = block.keys
-            block.MEANS = np.stack([obs[key] for key in keys]).astype(float)
-            block.POP = np.stack([_pop[key] for key in keys]).astype(int)
-            block.M2 = np.stack([_var[key] for key in keys]).astype(float) * block.POP
+            block._obs_mat = np.stack([obs[key] for key in keys]).astype(float)
+            block._pop_mat = np.stack([_pop[key] for key in keys]).astype(int)
+            block._var_mat = np.stack([_var[key] for key in keys]).astype(float)
+            block.MEANS = block._obs_mat.copy()
+            block.POP = block._pop_mat.copy()
+            block.M2 = block._var_mat.copy() * block.POP
             with np.errstate(divide="ignore", invalid="ignore"):
                 block.SEMS = np.sqrt(block.M2 / block.POP**2)
             block.SUMS = block.MEANS * block.POP
@@ -241,6 +250,9 @@ class MomentAccumulator:
                 self.pop[key] = block.POP[index]
                 self.sems[key] = block.SEMS[index]
                 self.sums[key] = block.SUMS[index]
+                self._obs[key] = block._obs_mat[index]
+                self._pop[key] = block._pop_mat[index]
+                self._var[key] = block._var_mat[index]
             self._blocks.append(block)
 
         # Covariances of observables with different shapes
@@ -321,7 +333,7 @@ class MomentAccumulator:
             self._update_cov_block(block, obs, _pop, _cov)
 
         for block in self._blocks:
-            self._update_block(block, obs, _pop, _var, _cov)
+            self._update_block(block)
 
     def _update_cov_block(self, block, obs, _pop, _cov):
         shape = block.shape
@@ -332,39 +344,19 @@ class MomentAccumulator:
         pop_stacked = np.stack([np.broadcast_to(self.pop[key], shape) for key in keys])
         _pop_stacked = np.stack([np.broadcast_to(_pop[key], shape) for key in keys])
 
-        print("pop, _cov_mat, C_mat")
-        print(_pop_stacked)
-        print(block._cov_mat)
-
         combine_subsample_covariance(pop_stacked, _pop_stacked,
                                         means_stacked, obs_stacked,
                                         means_stacked, obs_stacked,
                                         block.C_mat, block._cov_mat * _pop_stacked, block.C_mat)
 
-        print(block.C_mat)
-
-    def _update_block(self, block, obs, _pop, _var, _cov):
-        shape = block.shape
-        keys = block.keys
-        obs_stacked = np.stack([obs[key] for key in keys])
-        _var_stacked = np.stack([_var[key] for key in keys])
-        _pop_stacked = np.stack([_pop[key] for key in keys])
-
-
+    def _update_block(self, block):
         if block.has__cov_mat:
-            print(block.keys)
-            print("pop, cov_mat, C_mat")
-            print(_pop_stacked)
-            print(block._cov_mat)
+            combine_subsample_covariance(block.POP, block._pop_mat,
+                                         block.MEANS, block._obs_mat,
+                                         block.MEANS, block._obs_mat,
+                                         block.C_mat, block._cov_mat * block._pop_mat, block.C_mat)
 
-            combine_subsample_covariance(block.POP, _pop_stacked,
-                                         block.MEANS, obs_stacked,
-                                         block.MEANS, obs_stacked,
-                                         block.C_mat, block._cov_mat * _pop_stacked, block.C_mat)
-
-            print(block.C_mat)
-
-        combine_subsample_variance(block.POP, _pop_stacked, block.MEANS, obs_stacked, block.M2, _var_stacked * _pop_stacked, block.POP, block.MEANS, block.M2)
+        combine_subsample_variance(block.POP, block._pop_mat, block.MEANS, block._obs_mat, block.M2, block._var_mat * block._pop_mat, block.POP, block.MEANS, block.M2)
 
         with np.errstate(divide="ignore", invalid="ignore"):
             block.SEMS[:] = np.sqrt(block.M2 / block.POP**2)
