@@ -990,3 +990,9 @@ def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     if np.ndim(pop_x) > np.ndim(pop_y):
         return broadcasted[0]
     return broadcasted[1]
+
+def is_cosampled(pop_i, pop_j):
+    """Return True if both populations are drawn from the same samples."""
+    b1, b2 = np.broadcast_arrays(pop_i, pop_j)
+    return np.array_equal(b1, b2)
+

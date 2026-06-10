@@ -35,7 +35,7 @@ import numpy as np
 from MDAnalysis.analysis.base import Results
 
 from .math import combine_subsample_covariance, combine_subsample_variance
-from .util import make_pair_key, joint_pop
+from .util import make_pair_key, joint_pop, is_cosampled
 
 __all__ = ["MomentAccumulator"]
 
@@ -218,7 +218,7 @@ class MomentAccumulator:
                     block.C_mat[index, index] = block.M2[index]
                 for pair_key in pair_keys:
                     i, j = block.index[pair_key[0]], block.index[pair_key[1]]
-                    if not self._cosampled(_pop[pair_key[0]], _pop[pair_key[1]]):
+                    if not is_cosampled(_pop[pair_key[0]], _pop[pair_key[1]]):
                         continue
                     jpop = joint_pop(_pop[pair_key[0]], _pop[pair_key[1]])
                     # check if it's a single sample
@@ -268,21 +268,16 @@ class MomentAccumulator:
             unique_keys = list(dict.fromkeys(x for pair in pair_keys for x in pair))
             cov_block = _CovBlock(unique_keys, pair_shape)
             for pair_key in pair_keys:
-                i = cov_block.index[pair_key[0]]
-                j = cov_block.index[pair_key[1]]
-                cov_block.pairs[(i, j)] = pair_key
-                self.C[pair_key] = cov_block.C_mat[i, j]
+                if is_cosampled(_pop[pair_key[0]], _pop[pair_key[1]]):
+                    i = cov_block.index[pair_key[0]]
+                    j = cov_block.index[pair_key[1]]
+                    cov_block.pairs[(i, j)] = pair_key
+                    self.C[pair_key] = cov_block.C_mat[i, j]
             self._create__cov_mat(cov_block, _pop, _cov, _var)
             _pop_stacked = np.stack([np.broadcast_to(_pop[key], cov_block.shape) for key in cov_block.keys])
             cov_block.C_mat[:] = cov_block._cov_mat * _pop_stacked
 
             self._cov_blocks.append(cov_block)
-
-    @staticmethod
-    def _cosampled(pop_i, pop_j):
-        """Return True if both populations are drawn from the same samples."""
-        return True
-        #return np.array_equal(pop_i, pop_j)
 
     # -- per-frame update ---------------------------------------------------
     def update(self, obs, _pop, _var, _cov):
