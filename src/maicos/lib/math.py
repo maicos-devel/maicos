@@ -606,7 +606,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     return trans_positions
 
 
-def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB):
+def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """Calculate the mean and variance of two datasets of arbitrary size.
 
     Given two datasets of arbitrary size, this function calculates the mean and
@@ -637,23 +637,25 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB
     M_AB : float
         Sum of squares of deviations from the mean for the combined dataset.
     """
-    n_AB_loc = n_A + n_B
+    n_AB = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        M_AB_loc = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB_loc
-        mu_AB_loc = np.nan_to_num(mu_A) + delta * n_B / n_AB_loc
-    M_AB[:] = M_AB_loc
-    mu_AB[:] = mu_AB_loc
-    n_AB[:] = n_AB_loc
+        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
+        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
-def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B, C_AB):
+    return n_AB, mu_AB, M_AB
+
+
+def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
     r"""Combine the co-moment of two datasets of arbitrary size.
 
     Streaming merge of the co-moment :math:`C = \sum (x - \bar x)(y - \bar y)` of
     two datasets, generalizing :func:`combine_subsample_variance` to a pair of
     variables. Setting ``x is y`` (and ``C = M``) recovers that function exactly.
-    Inputs broadcast against each other, so the element-wise covariance of
-    array-valued observables is the natural result.
+    Inputs are combined element-wise and broadcast against each other, so the
+    element-wise covariance of array-valued observables is the natural result.
+    Empty merges (``n_AB == 0``) contribute zero rather than a NaN, so a bin that
+    is intermittently empty does not poison the running co-moment.
 
     Parameters
     ----------
@@ -682,9 +684,10 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B,
         Co-moment of the combined dataset.
     """
     n_AB = n_A + n_B
-    dx = mux_B - mux_A
-    dy = muy_B - muy_A
+    dx = np.nan_to_num(mux_B) - np.nan_to_num(mux_A)
+    dy = np.nan_to_num(muy_B) - np.nan_to_num(muy_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        C_AB_loc = C_A + C_B + np.nan_to_num(np.einsum("i...,j...->ij...", dx, dy)) * n_A * n_B / n_AB
-    C_AB[:] = C_AB_loc.astype(float)
+        weight = np.where(n_AB > 0, n_A * n_B / n_AB, 0.0)
+    C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + dx * dy * weight
 
+    return n_AB, C_AB

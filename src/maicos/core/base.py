@@ -22,10 +22,10 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
-from ..lib.moments import MomentAccumulator
 from ..lib.math import (
     center_cluster,
 )
+from ..lib.moments import MomentAccumulator
 from ..lib.util import (
     atomgroup_header,
     check_file_extension,
@@ -527,16 +527,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
-        self._cov = Results()
-
-        try:
-            self._cov = self.moments._cov
-            self._obs = self.moments._obs
-            self._pop = self.moments._pop
-            self._var = self.moments._var
-        except AttributeError:
-            with logging_redirect_tqdm():
-                logger.debug("no _cov was initialized")
+        self._cov = Results()  # within-frame covariance of the samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
@@ -545,6 +536,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         try:
             # Fail fast if the backend is not initialised yet.
             self.moments  # noqa B018
+
+            # One vectorized backend updates the running means, variances and the
+            # requested covariances. It accumulates the off-diagonal covariance
+            # (which needs the pre-frame means) before overwriting the means.
+            self.moments.update(self._obs, self._pop, self._var, self._cov)
+
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
@@ -559,18 +556,28 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.pop = self.moments.pop
             self.sums = self.moments.sums
             self.C = self.moments.C
-            self.cov = self.moments.cov
-            self.propagate_error = self.moments.propagate_error
-        else:
-            # One vectorized backend updates the running means, variances and the
-            # requested covariances. It accumulates the off-diagonal covariance
-            # (which needs the pre-frame means) before overwriting the means.
-            self.moments.update(self._obs, self._pop, self._var, self._cov)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
             if self.module_has_save:
                 self.save()
+
+    def cov(self, key_i: str, key_j: str) -> np.ndarray:
+        """Covariance of the means of two observables.
+
+        Thin delegator to :meth:`maicos.lib.moments.MomentAccumulator.cov`.
+        Available after :meth:`run` for pairs listed in
+        :attr:`_compute_covariance`.
+        """
+        return self.moments.cov(key_i, key_j)
+
+    def propagate_error(self, grads: dict) -> np.ndarray:
+        """Propagate observable errors through an estimator.
+
+        Thin delegator to
+        :meth:`maicos.lib.moments.MomentAccumulator.propagate_error`.
+        """
+        return self.moments.propagate_error(grads)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.
@@ -817,13 +824,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 pair_sep = cls._CHECKPOINT_PAIR_SEP
                 out_key = tuple(key.split(pair_sep)) if pair_sep in key else key
                 # Convert 0-d arrays back to Python scalars
-                containers[prefix][out_key] = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
+                containers[prefix][out_key] = arr.item() if arr.ndim == 0 else arr
 
             elif prefix == "_array":
                 setattr(instance, key, arr)
 
             elif prefix == "_meta":
-                val = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
+                val = arr.item() if arr.ndim == 0 else arr
                 setattr(instance, key, val)
 
         for name, container in containers.items():
