@@ -481,12 +481,11 @@ def test_combine_subsample_variance_empty():
     assert mu_out[0] == mu_A
     assert M_out[0] == M_A
 
-    # Test both series are empty — numpy division 0/0 produces NaN with a warning
-    with pytest.warns(RuntimeWarning):
-        maicos.lib.math.combine_subsample_variance(
-            np.array(0), np.array(0), np.nan, np.nan, np.nan, np.nan,
-            n_out, mu_out, M_out
-        )
+    # Test both series are empty — division 0/0 is suppressed, result is NaN
+    maicos.lib.math.combine_subsample_variance(
+        np.array(0), np.array(0), np.nan, np.nan, np.nan, np.nan,
+        n_out, mu_out, M_out
+    )
 
     assert n_out[0] == 0
     assert np.isnan(mu_out[0])

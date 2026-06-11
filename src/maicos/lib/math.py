@@ -639,9 +639,10 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB
     """
     n_AB_loc = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
-    M_AB_loc = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB_loc
+    with np.errstate(divide="ignore", invalid="ignore"):
+        M_AB_loc = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB_loc
+        mu_AB_loc = np.nan_to_num(mu_A) + delta * n_B / n_AB_loc
     M_AB[:] = M_AB_loc
-    mu_AB_loc = np.nan_to_num(mu_A) + delta * n_B / n_AB_loc
     mu_AB[:] = mu_AB_loc
     n_AB[:] = n_AB_loc
 
@@ -683,6 +684,7 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B,
     n_AB = n_A + n_B
     dx = mux_B - mux_A
     dy = muy_B - muy_A
-    C_AB_loc = C_A + C_B + np.nan_to_num(np.einsum("i...,j...->ij...", dx, dy)) * n_A * n_B / n_AB
+    with np.errstate(divide="ignore", invalid="ignore"):
+        C_AB_loc = C_A + C_B + np.nan_to_num(np.einsum("i...,j...->ij...", dx, dy)) * n_A * n_B / n_AB
     C_AB[:] = C_AB_loc.astype(float)
 

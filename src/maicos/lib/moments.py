@@ -49,7 +49,11 @@ class _WriteThruResults(Results):
 
     def __setitem__(self, key, value):
         if key in self and isinstance(self.data[key], np.ndarray):
-            self.data[key][:] = np.asarray(value)
+            existing = self.data[key]
+            if existing.ndim == 0:
+                existing[()] = np.asarray(value).flat[0]
+            else:
+                existing[:] = np.asarray(value)
         else:
             super().__setitem__(key, value)
 
@@ -133,6 +137,7 @@ class MomentAccumulator:
         self.sums = Results()  # sum of the observables across frames
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
         self._requested_cov_pairs = set(requested_pairs)
+        self._scalar_keys: set = set()
         self._blocks = []  # stacked observable blocks
         self._cov_blocks = []  # broadcast covariance blocks (off-diagonal only)
         self._cov = _WriteThruResults()
@@ -174,6 +179,7 @@ class MomentAccumulator:
             # reshape scalar to arrays of length 1
             if np.shape(obs[key]) == ():
                 shape = (1,)
+                self._scalar_keys.add(key)
             if key not in _pop:
                 _pop[key] = np.ones(shape, dtype=int)
                 _var[key] = np.zeros(shape, dtype=float)
@@ -239,20 +245,23 @@ class MomentAccumulator:
                 self._create__cov_mat(block, _pop, _cov, _var)
                 block.C_mat[:] = block._cov_mat * block.POP
                 for key, index in block.index.items():
-                    self.M2[key] = block.C_mat[index, index]
+                    v = block.C_mat[index, index]
+                    self.M2[key] = v.squeeze() if key in self._scalar_keys else v
             except KeyError:
                 for key, index in block.index.items():
-                    self.M2[key] = block.M2[index]
-            
+                    v = block.M2[index]
+                    self.M2[key] = v.squeeze() if key in self._scalar_keys else v
+
             # Point the Results() object to the block arrays
             for key, index in block.index.items():
-                self.means[key] = block.MEANS[index]
-                self.pop[key] = block.POP[index]
-                self.sems[key] = block.SEMS[index]
-                self.sums[key] = block.SUMS[index]
-                self._obs[key] = block._obs_mat[index]
-                self._pop[key] = block._pop_mat[index]
-                self._var[key] = block._var_mat[index]
+                sq = key in self._scalar_keys
+                self.means[key] = block.MEANS[index].squeeze() if sq else block.MEANS[index]
+                self.pop[key] = block.POP[index].squeeze() if sq else block.POP[index]
+                self.sems[key] = block.SEMS[index].squeeze() if sq else block.SEMS[index]
+                self.sums[key] = block.SUMS[index].squeeze() if sq else block.SUMS[index]
+                self._obs[key] = block._obs_mat[index].squeeze() if sq else block._obs_mat[index]
+                self._pop[key] = block._pop_mat[index].squeeze() if sq else block._pop_mat[index]
+                self._var[key] = block._var_mat[index].squeeze() if sq else block._var_mat[index]
             self._blocks.append(block)
 
         # Covariances of observables with different shapes

@@ -559,6 +559,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.pop = self.moments.pop
             self.sums = self.moments.sums
             self.C = self.moments.C
+            self.cov = self.moments.cov
+            self.propagate_error = self.moments.propagate_error
         else:
             # One vectorized backend updates the running means, variances and the
             # requested covariances. It accumulates the off-diagonal covariance
@@ -815,13 +817,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 pair_sep = cls._CHECKPOINT_PAIR_SEP
                 out_key = tuple(key.split(pair_sep)) if pair_sep in key else key
                 # Convert 0-d arrays back to Python scalars
-                containers[prefix][out_key] = arr.item() if arr.ndim == 0 else arr
+                containers[prefix][out_key] = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
 
             elif prefix == "_array":
                 setattr(instance, key, arr)
 
             elif prefix == "_meta":
-                val = arr.item() if arr.ndim == 0 else arr
+                val = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
                 setattr(instance, key, val)
 
         for name, container in containers.items():
