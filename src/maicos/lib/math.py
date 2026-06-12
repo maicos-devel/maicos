@@ -638,10 +638,15 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
         Sum of squares of deviations from the mean for the combined dataset.
     """
     n_AB = n_A + n_B
-    delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
+    mu_A0 = np.where(np.isnan(mu_A), 0.0, mu_A)
+    delta = np.where(np.isnan(mu_B), 0.0, mu_B) - mu_A0
     with np.errstate(divide="ignore", invalid="ignore"):
-        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+        mu_AB = mu_A0 + delta * n_B / n_AB
+        M_AB = (
+            np.where(np.isnan(M_A), 0.0, M_A)
+            + np.where(np.isnan(M_B), 0.0, M_B)
+            + delta**2 * n_A * n_B / n_AB
+        )
 
     return n_AB, mu_AB, M_AB
 
@@ -684,10 +689,14 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B)
         Co-moment of the combined dataset.
     """
     n_AB = n_A + n_B
-    dx = np.nan_to_num(mux_B) - np.nan_to_num(mux_A)
-    dy = np.nan_to_num(muy_B) - np.nan_to_num(muy_A)
+    dx = np.where(np.isnan(mux_B), 0.0, mux_B) - np.where(np.isnan(mux_A), 0.0, mux_A)
+    dy = np.where(np.isnan(muy_B), 0.0, muy_B) - np.where(np.isnan(muy_A), 0.0, muy_A)
     with np.errstate(divide="ignore", invalid="ignore"):
         weight = np.where(n_AB > 0, n_A * n_B / n_AB, 0.0)
-    C_AB = np.nan_to_num(C_A) + np.nan_to_num(C_B) + dx * dy * weight
+    C_AB = (
+        np.where(np.isnan(C_A), 0.0, C_A)
+        + np.where(np.isnan(C_B), 0.0, C_B)
+        + dx * dy * weight
+    )
 
     return n_AB, C_AB

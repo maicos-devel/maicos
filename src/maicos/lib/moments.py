@@ -5,30 +5,7 @@
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-r"""Streaming accumulator for means, variances and covariances.
-
-A per-observable backend for the running statistics of
-:class:`maicos.core.base.AnalysisBase`. Each observable keeps its own
-mean/M2/pop/sums arrays, seeded on the first frame and merged *in place* on every
-later frame, so after initialisation there are no per-key writes into the
-:class:`~MDAnalysis.analysis.base.Results` containers (each such write revalidates
-the key with an expensive ``dir`` call). numpy vectorises the merge over each
-observable's bins; there is no stacking across observables, so the code is one
-Welford step per observable.
-
-Each requested covariance pair keeps its own running co-moment
-:math:`C = \sum (x - \bar x)(y - \bar y)`, merged the same way. Only pairs whose
-observables broadcast against each other and are co-sampled (identical
-populations) are tracked. The diagonal of the covariance of the means is the
-squared standard error of the mean, so :meth:`MomentAccumulator.cov` reads it
-from :attr:`~MomentAccumulator.sems` directly.
-
-The per-frame merge delegates to :func:`maicos.lib.math.combine_subsample_variance`
-and :func:`maicos.lib.math.combine_subsample_covariance` -- the parallel Welford
-update is implemented once there -- so empty frames and within-frame
-variances/covariances are supported. Single-sample observables take an inlined
-fast path that skips the ``nan_to_num`` scrubbing those helpers do.
-"""
+"""Streaming accumulator for means, variances and covariances."""
 
 from itertools import combinations
 
@@ -78,11 +55,6 @@ class MomentAccumulator:
         self._requested_cov_pairs = set(requested_pairs)
         self._keys = []  # observable keys, in first-seen order
         self._pairs = []  # covariance pairs actually tracked
-        # Keys for which the module reports a population (multiple samples per
-        # frame, possibly empty bins). Their absence marks a single-sample key,
-        # whose merge skips the NaN scrubbing. Recorded on the first frame;
-        # presence is assumed stable across frames.
-        self._multisample_keys = set()
 
     # -- per-frame normalisation --------------------------------------------
 
@@ -104,9 +76,6 @@ class MomentAccumulator:
                 s_pop[key] = np.asarray(_pop[key])
                 s_var[key] = np.asarray(_var[key], dtype=float)
             else:
-                # Single sample: unit population, no within-frame spread. Seeding
-                # the variance with 0 (rather than NaN) keeps single-sample keys
-                # NaN-free so their merge can skip ``nan_to_num``.
                 s_pop[key] = np.ones(s_obs[key].shape, dtype=int)
                 s_var[key] = np.zeros(s_obs[key].shape)
         return s_obs, s_pop, s_var
@@ -130,10 +99,6 @@ class MomentAccumulator:
             observable pair (see :func:`maicos.lib.util.make_pair_key`).
 
         """
-        # Keys the module populates explicitly are multi-sample; the rest carry a
-        # single sample per frame. Recorded before sanitize fills the defaults.
-        self._multisample_keys = set(_pop)
-
         s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
         for key in s_obs:
             # Own writable buffers, kept as (0-d for scalars) arrays so the
@@ -207,32 +172,13 @@ class MomentAccumulator:
 
     def _merge_var(self, key, s_obs, s_pop, s_var):
         """Merge the current frame into one observable's mean / variance."""
-        x = s_obs[key]
         mean, M2, pop = self.means[key], self.M2[key], self.pop[key]
-        n_old = pop  # alias: pop is overwritten last, after mean and M2 use n_old
-
-        if key not in self._multisample_keys:
-            # Single sample: n_new == 1, no NaN, no within-frame variance.
-            n_tot = n_old + 1
-            delta = mean - x
-            M2[...] += delta**2 * n_old / n_tot
-            mean[...] = x + delta * n_old / n_tot
-            pop[...] = n_tot
-            self.sems[key][...] = np.sqrt(M2 / pop**2)
-            self.sums[key][...] += x
-            return
-
-        n_new = s_pop[key]
-        # A = this frame, B = the running statistics so far.
-        n_AB, mu_AB, M_AB = combine_subsample_variance(
-            n_new, n_old, x, mean, s_var[key] * n_new, M2
+        pop[...], mean[...], M2[...] = combine_subsample_variance(
+            s_pop[key], pop, s_obs[key], mean, s_var[key] * s_pop[key], M2
         )
-        pop[...] = n_AB
-        mean[...] = mu_AB
-        M2[...] = M_AB
         with np.errstate(divide="ignore", invalid="ignore"):
             self.sems[key][...] = np.sqrt(M2 / pop**2)
-        self.sums[key][...] += np.nan_to_num(x) * n_new
+        self.sums[key][...] += np.nan_to_num(s_obs[key]) * s_pop[key]
 
     def _merge_cov(self, pair_key, s_obs, s_pop, _cov):
         """Merge the current frame into one pair's running co-moment.
