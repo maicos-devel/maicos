@@ -428,21 +428,17 @@ def test_combine_subsample_variance(n_A, n_B):
     series_B = np.random.rand(n_B) * 10
     series_AB = np.concatenate([series_A, series_B])
 
-    n_A = np.reshape(np.array(len(series_A)), (1,))
-    n_B = np.reshape(np.array(len(series_B)), (1,))
+    n_A = len(series_A)
+    n_B = len(series_B)
 
-    mu_A = np.reshape(np.array(series_A.mean()), (1,))
-    mu_B = np.reshape(np.array(series_B.mean()), (1,))
+    mu_A = series_A.mean()
+    mu_B = series_B.mean()
 
-    M_A = np.reshape(np.array(len(series_A) * series_A.var()), (1,))
-    M_B = np.reshape(np.array(len(series_B) * series_B.var()), (1,))
+    M_A = len(series_A) * series_A.var()
+    M_B = len(series_B) * series_B.var()
 
-    n_AB = n_A.copy()
-    mu_AB = mu_A.copy()
-    M_AB = M_A.copy()
-
-    maicos.lib.math.combine_subsample_variance(
-        n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB
+    n_AB, mu_AB, M_AB = maicos.lib.math.combine_subsample_variance(
+        n_A, n_B, mu_A, mu_B, M_A, M_B
     )
 
     assert n_AB == len(series_AB)
@@ -460,36 +456,31 @@ def test_combine_subsample_variance_empty():
     M_A = len(series_A) * series_A.var()
     M_B = np.nan
 
-    n_out = np.zeros(1)
-    mu_out = np.zeros(1)
-    M_out = np.zeros(1)
-
-    maicos.lib.math.combine_subsample_variance(
-        n_A, n_B, mu_A, mu_B, M_A, M_B, n_out, mu_out, M_out
+    n_AB, mu_AB, M_AB = maicos.lib.math.combine_subsample_variance(
+        n_A, n_B, mu_A, mu_B, M_A, M_B
     )
 
-    assert n_out[0] == len(series_A)
-    assert mu_out[0] == mu_A
-    assert M_out[0] == M_A
+    assert n_AB == len(series_A)
+    assert mu_AB == mu_A
+    assert M_AB == M_A
 
     # Test the other way around, series_A is empty
-    maicos.lib.math.combine_subsample_variance(
-        n_B, n_A, mu_B, mu_A, M_B, M_A, n_out, mu_out, M_out
+    n_AB, mu_AB, M_AB = maicos.lib.math.combine_subsample_variance(
+        n_B, n_A, mu_B, mu_A, M_B, M_A
     )
 
-    assert n_out[0] == len(series_A)
-    assert mu_out[0] == mu_A
-    assert M_out[0] == M_A
+    assert n_AB == len(series_A)
+    assert mu_AB == mu_A
+    assert M_AB == M_A
 
-    # Test both series are empty — division 0/0 is suppressed, result is NaN
-    maicos.lib.math.combine_subsample_variance(
-        np.array(0), np.array(0), np.nan, np.nan, np.nan, np.nan,
-        n_out, mu_out, M_out
+    # Test both series are empty
+    n_AB, mu_AB, M_AB = maicos.lib.math.combine_subsample_variance(
+        0, 0, np.nan, np.nan, np.nan, np.nan
     )
 
-    assert n_out[0] == 0
-    assert np.isnan(mu_out[0])
-    assert np.isnan(M_out[0])
+    assert n_AB == 0
+    assert np.isnan(mu_AB)
+    assert np.isnan(M_AB)
 
 
 @pytest.mark.parametrize(
@@ -517,20 +508,19 @@ def test_combine_subsample_covariance(n_A, n_B):
     def comoment(x, y):
         return ((x - x.mean()) * (y - y.mean())).sum()
 
-    # Means must be 1-D arrays so the einsum "i...,j...->ij..." inside
-    # combine_subsample_covariance has an explicit first dimension to contract.
-    mux_A = np.array([x_A.mean()])
-    mux_B = np.array([x_B.mean()])
-    muy_A = np.array([y_A.mean()])
-    muy_B = np.array([y_B.mean()])
-    C_AB = np.zeros((1, 1))
-
-    maicos.lib.math.combine_subsample_covariance(
-        n_A, n_B, mux_A, mux_B, muy_A, muy_B,
-        comoment(x_A, y_A), comoment(x_B, y_B), C_AB,
+    n_AB, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n_A,
+        n_B,
+        x_A.mean(),
+        x_B.mean(),
+        y_A.mean(),
+        y_B.mean(),
+        comoment(x_A, y_A),
+        comoment(x_B, y_B),
     )
 
-    assert_allclose(C_AB[0, 0], comoment(x_AB, y_AB), rtol=1e-9)
+    assert n_AB == len(x_AB)
+    assert_allclose(C_AB, comoment(x_AB, y_AB), rtol=1e-9)
 
 
 def test_combine_subsample_covariance_is_variance():
@@ -541,21 +531,14 @@ def test_combine_subsample_covariance_is_variance():
     M_A = n_A * a.var()
     M_B = n_B * b.var()
 
-    n_out = np.zeros(1)
-    mu_out = np.zeros(1)
-    M_AB = np.zeros(1)
-    maicos.lib.math.combine_subsample_variance(
-        n_A, n_B, a.mean(), b.mean(), M_A, M_B, n_out, mu_out, M_AB
+    _, _, M_AB = maicos.lib.math.combine_subsample_variance(
+        n_A, n_B, a.mean(), b.mean(), M_A, M_B
+    )
+    _, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n_A, n_B, a.mean(), b.mean(), a.mean(), b.mean(), M_A, M_B
     )
 
-    mu_A_arr = np.array([a.mean()])
-    mu_B_arr = np.array([b.mean()])
-    C_AB = np.zeros((1, 1))
-    maicos.lib.math.combine_subsample_covariance(
-        n_A, n_B, mu_A_arr, mu_B_arr, mu_A_arr, mu_B_arr, M_A, M_B, C_AB
-    )
-
-    assert_allclose(C_AB[0, 0], M_AB[0], rtol=1e-12)
+    assert_allclose(C_AB, M_AB, rtol=1e-12)
 
 
 def test_combine_subsample_covariance_empty():
@@ -565,10 +548,8 @@ def test_combine_subsample_covariance_empty():
     n = len(x)
     C = ((x - x.mean()) * (y - y.mean())).sum()
 
-    mu_x = np.array([x.mean()])
-    mu_y = np.array([y.mean()])
-    C_AB = np.zeros((1, 1))
-    maicos.lib.math.combine_subsample_covariance(
-        n, 0, mu_x, np.array([np.nan]), mu_y, np.array([np.nan]), C, 0.0, C_AB
+    n_AB, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n, 0, x.mean(), np.nan, y.mean(), np.nan, C, np.nan
     )
-    assert_allclose(C_AB[0, 0], C, rtol=1e-12)
+    assert n_AB == n
+    assert_allclose(C_AB, C, rtol=1e-12)

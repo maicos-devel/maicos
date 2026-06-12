@@ -972,6 +972,7 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
 
     return timedict
 
+
 def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     """Shared sample count of two co-sampled observables.
 

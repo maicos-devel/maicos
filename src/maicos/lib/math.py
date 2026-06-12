@@ -638,10 +638,9 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
         Sum of squares of deviations from the mean for the combined dataset.
     """
     n_AB = n_A + n_B
-    mu_A0 = np.where(np.isnan(mu_A), 0.0, mu_A)
-    delta = np.where(np.isnan(mu_B), 0.0, mu_B) - mu_A0
+    delta = np.where(np.isnan(mu_B), 0.0, mu_B) - np.where(np.isnan(mu_A), 0.0, mu_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        mu_AB = mu_A0 + delta * n_B / n_AB
+        mu_AB = np.where(np.isnan(mu_A), 0.0, mu_A) + delta * n_B / n_AB
         M_AB = (
             np.where(np.isnan(M_A), 0.0, M_A)
             + np.where(np.isnan(M_B), 0.0, M_B)
