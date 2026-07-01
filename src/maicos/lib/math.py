@@ -423,6 +423,15 @@ def symmetrize(
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
     inplace : bool
         Do symmetrizations inplace. If :obj:`False` a new array is returned.
+
+        .. warning::
+
+            No dtype conversion is performed. The symmetrized result is always
+            computed as ``float``, but when writing back into ``m`` NumPy
+            applies the existing dtype. For integer arrays this means fractional
+            values are silently truncated (e.g. ``(3 + 4) / 2 = 3.5`` becomes
+            ``3``). Use ``inplace=False`` and reassign if ``m`` is an integer
+            array and exact float results are required.
     is_odd : bool
         The parity to use for symmetrization. If :obj:`False` (default), the
         symmetrization is done with "even" parity, meaning that the output array will be
@@ -440,7 +449,7 @@ def symmetrize(
 
     Examples
     --------
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A)
@@ -451,7 +460,7 @@ def symmetrize(
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
     Antisymmetrization can be achieved by setting ``is_odd=True``.
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A, is_odd=True)
@@ -459,7 +468,7 @@ def symmetrize(
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
-    >>> A = np.arange(20).astype(float).reshape(2, 10).T
+    >>> A = np.arange(20, dtype=float).reshape(2, 10).T
     >>> A
     array([[ 0., 10.],
            [ 1., 11.],
@@ -496,17 +505,14 @@ def symmetrize(
 
     """
     # The returned array will be of type float
-    out = m.copy().astype("float")
+    out = m.astype("float")
     out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
 
     if inplace:
-        # To safely cast the the original array type to float in-place,
-        # first change the dtype to float...
-        m.dtype = np.dtype("float")
-        # ...and then write the new values to the original array.
         m[...] = out
         return m
+
     return out
 
 

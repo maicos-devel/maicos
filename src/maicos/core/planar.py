@@ -296,4 +296,4 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
             symmetrize(self.sems.profile, inplace=True, is_odd=False)
 
             if self.normalization == "number":
-                symmetrize(self.sums.bincount, inplace=True, is_odd=self.sym_odd)
+                self.sums.bincount = symmetrize(self.sums.bincount, is_odd=self.sym_odd)

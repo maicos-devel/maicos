@@ -52,28 +52,32 @@ def minimum_image_distance(a, b, L):
     return np.linalg.norm((a - b) - np.rint((a - b) / L) * L)
 
 
-def test_symmetrize_even():
+@pytest.mark.parametrize("dtype", [int, float])
+def test_symmetrize_even(dtype):
     """Tests symmetrization for even array."""
-    A_sym = maicos.lib.math.symmetrize(np.arange(10).astype(float))
+    A_sym = maicos.lib.math.symmetrize(np.arange(10, dtype=dtype))
+    assert A_sym.dtype == np.dtype("float")
     assert np.all(A_sym == 4.5)
 
 
-def test_symmetrize_odd():
+@pytest.mark.parametrize("dtype", [int, float])
+def test_symmetrize_odd(dtype):
     """Tests symmetrization for odd array."""
-    A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float))
+    A_sym = maicos.lib.math.symmetrize(np.arange(11, dtype=dtype))
+    assert A_sym.dtype == np.dtype("float")
     assert np.all(A_sym == 5)
 
 
 def test_symmetrize_parity_even():
     """Tests symmetrization for even parity."""
-    A_sym = maicos.lib.math.symmetrize(np.arange(11).astype(float), is_odd=False)
+    A_sym = maicos.lib.math.symmetrize(np.arange(11, dtype=float), is_odd=False)
     assert np.all(A_sym == 5)
 
 
 def test_symmetrize_parity_odd():
     """Tests symmetrization for odd parity."""
-    A = np.arange(10).astype(float)
-    A_result = np.arange(10).astype(float) - 4.5
+    A = np.arange(10, dtype=float)
+    A_result = np.arange(10, dtype=float) - 4.5
     A_sym = maicos.lib.math.symmetrize(A, is_odd=True)
     assert np.all(A_sym == A_result)
 
@@ -83,14 +87,14 @@ def test_symmetrize_parity_odd_antisymmetric():
 
     The array is unchanged, as it is already antisymmetric.
     """
-    A = np.arange(11).astype(float) - 5
+    A = np.arange(11, dtype=float) - 5
     A_sym = maicos.lib.math.symmetrize(A, is_odd=True)
     assert np.all(A_sym == A)
 
 
 def test_higher_dimensions_length_1():
     """Tests arrays with higher dimensions of length 1."""
-    A = np.arange(11).astype(float)[:, np.newaxis]
+    A = np.arange(11, dtype=float)[:, np.newaxis]
     A_sym = maicos.lib.math.symmetrize(A)
     A_sym_ref = 5 * np.ones((11, 1))
     assert_equal(A_sym, A_sym_ref)
@@ -98,24 +102,33 @@ def test_higher_dimensions_length_1():
 
 def test_higher_dimensions():
     """Tests array with higher dimensions."""
-    A = np.arange(20).astype(float).reshape(2, 10).T
+    A = np.arange(20, dtype=float).reshape(2, 10).T
     A_sym = maicos.lib.math.symmetrize(A)
     assert_equal(A_sym, 9.5)
 
 
 def test_higher_dimensions_axis():
     """Tests array with higher dimensions with respect to given axis."""
-    A = np.arange(20).astype(float).reshape(2, 10).T
+    A = np.arange(20, dtype=float).reshape(2, 10).T
     A_sym = maicos.lib.math.symmetrize(A, axis=0)
     A_sym_ref = np.vstack((4.5 * np.ones(10), 14.5 * np.ones(10))).T
     assert_equal(A_sym, A_sym_ref)
 
 
-def test_symmetrize_inplace():
-    """Tests inplace symmetrization."""
-    arr = np.arange(11).astype(float)
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [(float, 4.5), (int, 4)],
+)
+def test_symmetrize_inplace(dtype, expected):
+    """Tests inplace symmetrization preserves dtype and writes correct values.
+
+    float arrays receive the exact symmetrized value (4.5); int arrays truncate
+    it (4), since the buffer dtype is unchanged.
+    """
+    arr = np.arange(10, dtype=dtype)
     maicos.lib.math.symmetrize(arr, inplace=True)
-    assert np.all(arr == 5)
+    assert arr.dtype == np.dtype(dtype)
+    assert np.all(arr == expected)
 
 
 @pytest.mark.parametrize(

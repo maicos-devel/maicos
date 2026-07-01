@@ -14,6 +14,8 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Preserve input array dtype in :func:`maicos.lib.math.symmetrize` when using
+  ``inplace=True``; integer arrays are no longer silently reinterpreted as float
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
