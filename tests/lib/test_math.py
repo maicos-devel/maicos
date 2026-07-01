@@ -115,20 +115,15 @@ def test_higher_dimensions_axis():
     assert_equal(A_sym, A_sym_ref)
 
 
-@pytest.mark.parametrize(
-    ("dtype", "expected"),
-    [(float, 4.5), (int, 4)],
-)
-def test_symmetrize_inplace(dtype, expected):
-    """Tests inplace symmetrization preserves dtype and writes correct values.
-
-    float arrays receive the exact symmetrized value (4.5); int arrays truncate
-    it (4), since the buffer dtype is unchanged.
-    """
+@pytest.mark.parametrize("dtype", [int, float])
+def test_symmetrize_preserves_input(dtype):
+    """Symmetrize always returns float and does not modify the input array."""
     arr = np.arange(10, dtype=dtype)
-    maicos.lib.math.symmetrize(arr, inplace=True)
-    assert arr.dtype == np.dtype(dtype)
-    assert np.all(arr == expected)
+    arr_copy = arr.copy()
+    result = maicos.lib.math.symmetrize(arr)
+    assert result.dtype == np.dtype(float)
+    assert np.all(arr == arr_copy)
+    assert np.all(result == 4.5)
 
 
 @pytest.mark.parametrize(

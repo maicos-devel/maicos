@@ -404,13 +404,12 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 def symmetrize(
     m: np.ndarray,
     axis: None | int | tuple[int] = None,
-    inplace: bool = False,
     is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
     The shape of the array is preserved, but the elements are symmetrized with respect
-    to the given axis.
+    to the given axis. The returned array always has ``float`` dtype.
 
     Parameters
     ----------
@@ -421,17 +420,6 @@ def symmetrize(
          symmetrize over all of the axes of the input array. If axis is negative it
          counts from the last to the first axis. If axis is a :obj:`tuple` of ints,
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
-    inplace : bool
-        Do symmetrizations inplace. If :obj:`False` a new array is returned.
-
-        .. warning::
-
-            No dtype conversion is performed. The symmetrized result is always
-            computed as ``float``, but when writing back into ``m`` NumPy
-            applies the existing dtype. For integer arrays this means fractional
-            values are silently truncated (e.g. ``(3 + 4) / 2 = 3.5`` becomes
-            ``3``). Use ``inplace=False`` and reassign if ``m`` is an integer
-            array and exact float results are required.
     is_odd : bool
         The parity to use for symmetrization. If :obj:`False` (default), the
         symmetrization is done with "even" parity, meaning that the output array will be
@@ -453,10 +441,6 @@ def symmetrize(
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A)
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> symmetrize(A, inplace=True)
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> A
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
     Antisymmetrization can be achieved by setting ``is_odd=True``.
@@ -504,15 +488,9 @@ def symmetrize(
            [ 4.5, 14.5]])
 
     """
-    # The returned array will be of type float
     out = m.astype("float")
     out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
-
-    if inplace:
-        m[...] = out
-        return m
-
     return out
 
 

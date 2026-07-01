@@ -288,12 +288,12 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
 
     def _conclude(self):
         PlanarBase._conclude(self)
-        ProfileBase._conclude(self)
         if self.sym:
-            symmetrize(self.sums.profile, inplace=True, is_odd=self.sym_odd)
-            symmetrize(self.means.profile, inplace=True, is_odd=self.sym_odd)
+            self.sums.profile = symmetrize(self.sums.profile, is_odd=self.sym_odd)
+            self.means.profile = symmetrize(self.means.profile, is_odd=self.sym_odd)
 
-            symmetrize(self.sems.profile, inplace=True, is_odd=False)
+            self.sems.profile = symmetrize(self.sems.profile, is_odd=False)
 
             if self.normalization == "number":
                 self.sums.bincount = symmetrize(self.sums.bincount, is_odd=self.sym_odd)
+        ProfileBase._conclude(self)
