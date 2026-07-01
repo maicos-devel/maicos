@@ -621,7 +621,7 @@ class Test_AnalysisBase:
         class_obj.run(stop=2)
         assert class_obj.means.observable == result
 
-    @pytest.mark.parametrize("data,", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
+    @pytest.mark.parametrize("data", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
     def test_frame_dict_wrong_types(self, ag, data):
         """Check that unsupported types for the frame Dict throw an error."""
         class_obj = Frame_types(ag)
