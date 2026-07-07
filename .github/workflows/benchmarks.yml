@@ -15,7 +15,7 @@ jobs:
     env:
       REGRESSION_FACTOR: "1.5"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Full history needed for ASV
 
