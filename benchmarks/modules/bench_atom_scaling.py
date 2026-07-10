@@ -42,6 +42,11 @@ def _make(n_atoms):
     return make_universe(n_atoms=n_atoms, n_frames=1, n_residues=n_atoms // 3)
 
 
+# ---------------------------------------------------------------------------
+# Density
+# ---------------------------------------------------------------------------
+
+
 class DensityPlanarAtomScaling:
     """_single_frame cost of DensityPlanar vs. atom count."""
 
@@ -50,10 +55,14 @@ class DensityPlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
-        DensityPlanar(self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False).run()
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
+        DensityPlanar(
+            self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
+        ).run()
 
 
 class DensityCylinderAtomScaling:
@@ -64,9 +73,11 @@ class DensityCylinderAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DensityCylinder(
             self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
         ).run()
@@ -80,12 +91,19 @@ class DensitySphereAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DensitySphere(
             self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
         ).run()
+
+
+# ---------------------------------------------------------------------------
+# Dielectric
+# ---------------------------------------------------------------------------
 
 
 class DielectricPlanarAtomScaling:
@@ -96,9 +114,11 @@ class DielectricPlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DielectricPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -110,9 +130,11 @@ class DielectricCylinderAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DielectricCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -124,10 +146,17 @@ class DielectricSphereAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DielectricSphere(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
+
+
+# ---------------------------------------------------------------------------
+# Diporder
+# ---------------------------------------------------------------------------
 
 
 class DiporderPlanarAtomScaling:
@@ -138,9 +167,11 @@ class DiporderPlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DiporderPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -152,9 +183,11 @@ class DiporderCylinderAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DiporderCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -166,10 +199,17 @@ class DiporderSphereAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         DiporderSphere(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
+
+
+# ---------------------------------------------------------------------------
+# Temperature / Velocity
+# ---------------------------------------------------------------------------
 
 
 class TemperaturePlanarAtomScaling:
@@ -180,9 +220,11 @@ class TemperaturePlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         TemperaturePlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -194,9 +236,11 @@ class VelocityPlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         VelocityPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -208,11 +252,17 @@ class VelocityCylinderAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         VelocityCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
+
+# ---------------------------------------------------------------------------
+# PDF  (O(N²) kernel — capped at 3000 atoms)
+# ---------------------------------------------------------------------------
 
 
 class PDFPlanarAtomScaling:
@@ -223,9 +273,11 @@ class PDFPlanarAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         PDFPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
 
 
@@ -237,7 +289,9 @@ class PDFCylinderAtomScaling:
     param_names = ["n_atoms"]
 
     def setup(self, n_atoms):
+        """Build the synthetic atomgroup."""
         self.ag = _make(n_atoms)
 
-    def time_single_frame(self, n_atoms):
+    def time_single_frame(self, _n_atoms):
+        """Time a single-frame run."""
         PDFCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
