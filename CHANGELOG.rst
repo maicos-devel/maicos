@@ -17,6 +17,8 @@ Lucas Kleindienst, Philipp Stärk, Leo Legrand
 - Add per-module atom-count scaling benchmarks (``bench_atom_scaling.py``) using
   synthetic in-memory universes to measure ``_single_frame`` cost for all 14 analysis
   modules (#590)
+- Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
+  function now always returns a new ``float`` array without modifying the input
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
