@@ -321,15 +321,15 @@ class DielectricPlanar(PlanarBase):
         self.results.eps_par_coll = self._pref * cov_par_coll
 
         if self.sym:
-            symmetrize(self.results.eps_perp, axis=0, inplace=True)
-            symmetrize(self.results.deps_perp, axis=0, inplace=True)
-            symmetrize(self.results.eps_perp_self, axis=0, inplace=True)
-            symmetrize(self.results.eps_perp_coll, axis=0, inplace=True)
+            self.results.eps_perp = symmetrize(self.results.eps_perp, axis=0)
+            self.results.deps_perp = symmetrize(self.results.deps_perp, axis=0)
+            self.results.eps_perp_self = symmetrize(self.results.eps_perp_self, axis=0)
+            self.results.eps_perp_coll = symmetrize(self.results.eps_perp_coll, axis=0)
 
-            symmetrize(self.results.eps_par, axis=0, inplace=True)
-            symmetrize(self.results.deps_par, axis=0, inplace=True)
-            symmetrize(self.results.eps_par_self, axis=0, inplace=True)
-            symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
+            self.results.eps_par = symmetrize(self.results.eps_par, axis=0)
+            self.results.deps_par = symmetrize(self.results.deps_par, axis=0)
+            self.results.eps_par_self = symmetrize(self.results.eps_par_self, axis=0)
+            self.results.eps_par_coll = symmetrize(self.results.eps_par_coll, axis=0)
 
     @render_docs
     def save(self) -> None:

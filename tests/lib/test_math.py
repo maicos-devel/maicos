@@ -111,13 +111,6 @@ def test_higher_dimensions_axis():
     assert_equal(A_sym, A_sym_ref)
 
 
-def test_symmetrize_inplace():
-    """Tests inplace symmetrization."""
-    arr = np.arange(11).astype(float)
-    maicos.lib.math.symmetrize(arr, inplace=True)
-    assert np.all(arr == 5)
-
-
 @pytest.mark.parametrize(
     ("vector1", "vector2", "subtract_mean", "result"),
     [

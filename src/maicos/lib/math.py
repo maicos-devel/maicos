@@ -404,13 +404,12 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 def symmetrize(
     m: np.ndarray,
     axis: None | int | tuple[int] = None,
-    inplace: bool = False,
     is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
     The shape of the array is preserved, but the elements are symmetrized with respect
-    to the given axis.
+    to the given axis. The returned array always has ``float`` dtype.
 
     Parameters
     ----------
@@ -421,8 +420,6 @@ def symmetrize(
          symmetrize over all of the axes of the input array. If axis is negative it
          counts from the last to the first axis. If axis is a :obj:`tuple` of ints,
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
-    inplace : bool
-        Do symmetrizations inplace. If :obj:`False` a new array is returned.
     is_odd : bool
         The parity to use for symmetrization. If :obj:`False` (default), the
         symmetrization is done with "even" parity, meaning that the output array will be
@@ -440,18 +437,14 @@ def symmetrize(
 
     Examples
     --------
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A)
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> symmetrize(A, inplace=True)
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> A
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
     Antisymmetrization can be achieved by setting ``is_odd=True``.
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A, is_odd=True)
@@ -459,7 +452,7 @@ def symmetrize(
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
-    >>> A = np.arange(20).astype(float).reshape(2, 10).T
+    >>> A = np.arange(20, dtype=float).reshape(2, 10).T
     >>> A
     array([[ 0., 10.],
            [ 1., 11.],
@@ -495,18 +488,9 @@ def symmetrize(
            [ 4.5, 14.5]])
 
     """
-    # The returned array will be of type float
-    out = m.copy().astype("float")
+    out = m.astype("float")
     out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
-
-    if inplace:
-        # To safely cast the the original array type to float in-place,
-        # first change the dtype to float...
-        m.dtype = np.dtype("float")
-        # ...and then write the new values to the original array.
-        m[...] = out
-        return m
     return out
 
 
