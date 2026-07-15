@@ -318,8 +318,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     #: names two observable keys, e.g. ``[{"mM_r", "m_r"}, {"mM_r", "M_r"}]``.
     #: Only the requested pairs are tracked, so analyses pay only for the
     #: covariances their error estimate actually consumes. Empty (the default)
-    #: disables covariance entirely. Required for :meth:`cov` /
-    #: :meth:`propagate_error`; subclasses needing them declare their pairs here.
+    #: disables covariance entirely. Required for
+    #: :meth:`~maicos.lib.moments.MomentAccumulator.cov` /
+    #: :meth:`~maicos.lib.moments.MomentAccumulator.propagate_error`; subclasses
+    #: needing them declare their pairs here.
     _compute_covariance: list = []
 
     if TYPE_CHECKING:  # pragma: no cover
@@ -547,7 +549,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 logger.debug("Initializing error estimation.")
             # Seed the running statistics from the first frame. The backend owns
             # the means/sems/M2/pop/sums/C containers; expose them on the analysis
-            # for the modules, checkpointing and `cov`/`propagate_error`.
+            # for the modules and checkpointing. Covariance and error propagation
+            # are reached through `self.moments.cov`/`self.moments.propagate_error`.
             self.moments = MomentAccumulator(self._requested_pairs)
             self.moments.initialize(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means
@@ -561,23 +564,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self._conclude()
             if self.module_has_save:
                 self.save()
-
-    def cov(self, key_i: str, key_j: str) -> np.ndarray:
-        """Covariance of the means of two observables.
-
-        Thin delegator to :meth:`maicos.lib.moments.MomentAccumulator.cov`.
-        Available after :meth:`run` for pairs listed in
-        :attr:`_compute_covariance`.
-        """
-        return self.moments.cov(key_i, key_j)
-
-    def propagate_error(self, grads: dict) -> np.ndarray:
-        """Propagate observable errors through an estimator.
-
-        Thin delegator to
-        :meth:`maicos.lib.moments.MomentAccumulator.propagate_error`.
-        """
-        return self.moments.propagate_error(grads)
 
     def _conclude(self) -> None:
         """Finalize the results you've gathered.
