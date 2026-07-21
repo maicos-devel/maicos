@@ -365,6 +365,9 @@ class TestDielectricCylinder:
         eps.means.M_r = 0.3
         eps.sems.M_r = 0.1
 
+        for key in eps.C:
+            eps.C[key].fill(0.0)
+
         # rerun conclude function with changed values
         eps._conclude()
 
@@ -392,3 +395,21 @@ class TestDielectricCylinder:
             2 * np.pi * eps._obs.L * eps._pref * eps.results.bin_pos * dcov_r_sympy
         )
         assert_allclose(deps_r_sympy, eps.results.deps_r)
+
+    def test_covariance_error_propagation(self, ag):
+        """Test error propagation via covariance."""
+        eps = DielectricCylinder(ag).run()
+
+        dcov_r_analytic = np.sqrt(
+            eps.sems.mM_r**2
+            + eps.means.m_r**2 * eps.sems.M_r**2
+            - 2 * eps.means.m_r * eps.moments.cov("mM_r", "M_r")
+            - 2 * eps.means.M_r * eps.moments.cov("mM_r", "m_r")
+            + 2 * eps.means.m_r * eps.means.M_r * eps.moments.cov("M_r", "m_r")
+            + eps.means.M_r**2 * eps.sems.m_r**2
+        )
+        deps_r_analytic = (
+            2 * np.pi * eps._obs.L * eps._pref * eps.results.bin_pos * dcov_r_analytic
+        )
+
+        assert_allclose(deps_r_analytic, eps.results.deps_r)

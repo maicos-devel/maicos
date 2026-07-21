@@ -489,3 +489,75 @@ def test_combine_subsample_variance_empty():
     assert n_AB == 0
     assert np.isnan(mu_AB)
     assert np.isnan(M_AB)
+
+
+@pytest.mark.parametrize(
+    ("n_A", "n_B"),
+    [
+        (1, 1),
+        (1, 10),
+        (10, 1),
+        (10000, 10000),
+        (10000, 1),
+        (1, 10000),
+    ],
+)
+def test_combine_subsample_covariance(n_A, n_B):
+    """Test parallel Welford algorithm for the co-moment of two variables."""
+    # Correlate y with x so the off-diagonal co-moment is non-zero.
+    x_A = np.random.rand(n_A) * 100 - 50
+    y_A = 2 * x_A + np.random.rand(n_A)
+    x_B = np.random.rand(n_B) * 10
+    y_B = -3 * x_B + np.random.rand(n_B)
+
+    x_AB = np.concatenate([x_A, x_B])
+    y_AB = np.concatenate([y_A, y_B])
+
+    def comoment(x, y):
+        return ((x - x.mean()) * (y - y.mean())).sum()
+
+    n_AB, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n_A,
+        n_B,
+        x_A.mean(),
+        x_B.mean(),
+        y_A.mean(),
+        y_B.mean(),
+        comoment(x_A, y_A),
+        comoment(x_B, y_B),
+    )
+
+    assert n_AB == len(x_AB)
+    assert_allclose(C_AB, comoment(x_AB, y_AB), rtol=1e-9)
+
+
+def test_combine_subsample_covariance_is_variance():
+    """The co-moment of a variable with itself reproduces the variance merge."""
+    a = np.random.rand(50) * 10
+    b = np.random.rand(30) * 10 - 5
+    n_A, n_B = len(a), len(b)
+    M_A = n_A * a.var()
+    M_B = n_B * b.var()
+
+    _, _, M_AB = maicos.lib.math.combine_subsample_variance(
+        n_A, n_B, a.mean(), b.mean(), M_A, M_B
+    )
+    _, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n_A, n_B, a.mean(), b.mean(), a.mean(), b.mean(), M_A, M_B
+    )
+
+    assert_allclose(C_AB, M_AB, rtol=1e-12)
+
+
+def test_combine_subsample_covariance_empty():
+    """Test the co-moment merge with an empty series."""
+    x = np.random.rand(10)
+    y = 2 * x
+    n = len(x)
+    C = ((x - x.mean()) * (y - y.mean())).sum()
+
+    n_AB, C_AB = maicos.lib.math.combine_subsample_covariance(
+        n, 0, x.mean(), np.nan, y.mean(), np.nan, C, np.nan
+    )
+    assert n_AB == n
+    assert_allclose(C_AB, C, rtol=1e-12)

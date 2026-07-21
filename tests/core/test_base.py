@@ -24,6 +24,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
+from maicos.lib.util import joint_pop, make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -100,6 +101,27 @@ class SingularSeries(AnalysisBase):
         self._obs.observable = self.series[self._frame_index]
 
 
+class DebugSeries(AnalysisBase):
+    """Class creating a time series with one observable per frame."""
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.series = np.arange(self.n_frames)
+
+    def _single_frame(self):
+        self._obs.observable = self.series[self._frame_index]
+
+
 class MultipleSeries(AnalysisBase):
     """Class creating a time series with multiple observables per frame."""
 
@@ -151,6 +173,164 @@ class Frame_types(AnalysisBase):
 
     def _single_frame(self):
         self._obs.observable = self.data[self._frame_index]
+
+
+class CorrelatedSeries(AnalysisBase):
+    # TODO @quewakira: The name can be misleading (could be time correlation)
+    """Class emitting several correlated observables per frame.
+
+    Observables (one sample per frame):
+    - ``x``     : scalar, drawn at random
+    - ``y``     : scalar, linearly correlated with ``x``
+    - ``prof``  : shape (3,) array, correlated with ``x``
+    - ``other`` : shape (2,) array (does not broadcast against ``prof``)
+    """
+
+    _compute_covariance = [
+        {"x", "y"},
+        {"x", "prof"},
+        {"x", "other"},
+        {"y", "prof"},
+        {"y", "other"},
+        {"prof", "other"},
+    ]
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        n = self.n_frames
+        self.x = np.random.rand(n) * 10 - 5
+        self.y = 2.5 * self.x + np.random.rand(n)
+        self.prof = self.x[:, None] * np.array([1.0, -2.0, 0.5]) + np.random.rand(n, 3)
+        self.other = np.random.rand(n, 2)
+
+    def _single_frame(self):
+        i = self._frame_index
+        self._obs.x = self.x[i]
+        self._obs.y = self.y[i]
+        self._obs.prof = self.prof[i]
+        self._obs.other = self.other[i]
+
+
+class WeightedSeries(AnalysisBase):
+    """Class with a single-sample and a weighted-population observable.
+
+    ``single`` (shape (3,), one sample per frame) and ``weighted`` (shape (3,)
+    with a per-bin sample count) broadcast in shape but are *not* co-sampled, so
+    their covariance must not be tracked.
+    """
+
+    _compute_covariance = [{"single", "weighted"}]
+
+    def __init__(self, atomgroup):
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        self.rng = np.random.default_rng(0)
+
+    def _single_frame(self):
+        self._obs.single = self.rng.random(3)
+        self._obs.weighted = self.rng.random(3)
+        self._var.weighted = self.rng.random(3)
+        self._pop.weighted = self.rng.integers(2, 10, 3)
+
+
+class MultiSampleSeries(AnalysisBase):
+    """Two co-sampled observables carrying multiple samples per frame.
+
+    Each frame draws a variable number of correlated ``(x, y)`` samples per bin
+    (some frames empty) and reports the per-frame mean, within-frame variance,
+    within-frame covariance, and population. The streamed co-moment must equal
+    the batch co-moment over all individual samples. With ``n_bins == 1`` the
+    observables are scalars (fallback path); otherwise they are arrays of shape
+    ``(n_bins,)`` (vectorized block path).
+    """
+
+    _compute_covariance = [{"x", "y"}]
+
+    def __init__(self, atomgroup, n_bins=3, seed=0):
+        self._n_bins = n_bins
+        self._seed = seed
+        super().__init__(
+            atomgroup=atomgroup,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+    def _prepare(self):
+        rng = np.random.default_rng(self._seed)
+        chol = np.array([[1.0, 0.0], [0.7, 0.6]])
+        # samples[frame][bin] -> (k, 2) array; batch[bin] -> list of arrays.
+        self._samples = []
+        self.batch = [[] for _ in range(self._n_bins)]
+        for _ in range(self.n_frames):
+            per_bin = []
+            for m in range(self._n_bins):
+                k = int(rng.integers(0, 6))
+                s = rng.standard_normal((k, 2)) @ chol.T + np.array([m, -m])
+                per_bin.append(s)
+                if k:
+                    self.batch[m].append(s)
+            self._samples.append(per_bin)
+
+    def _single_frame(self):
+        per_bin = self._samples[self._frame_index]
+        scalar = self._n_bins == 1
+        xm = np.full(self._n_bins, np.nan)
+        ym = np.full(self._n_bins, np.nan)
+        vx = np.zeros(self._n_bins)
+        vy = np.zeros(self._n_bins)
+        cxy = np.zeros(self._n_bins)
+        pop = np.zeros(self._n_bins, dtype=int)
+        for m, s in enumerate(per_bin):
+            pop[m] = len(s)
+            if len(s) == 0:
+                continue
+            x, y = s[:, 0], s[:, 1]
+            xm[m], ym[m] = x.mean(), y.mean()
+            vx[m], vy[m] = x.var(), y.var()
+            cxy[m] = ((x - x.mean()) * (y - y.mean())).mean()
+
+        def maybe_scalar(arr):
+            return arr[0] if scalar else arr
+
+        self._obs.x = maybe_scalar(xm)
+        self._obs.y = maybe_scalar(ym)
+        self._var.x = maybe_scalar(vx)
+        self._var.y = maybe_scalar(vy)
+        self._pop.x = int(pop[0]) if scalar else pop.copy()
+        self._pop.y = int(pop[0]) if scalar else pop.copy()
+        self._cov[make_pair_key("x", "y")] = maybe_scalar(cxy)
+
+    def batch_comoment(self):
+        """Co-moment ``sum((x - x.mean())(y - y.mean()))`` over all samples."""
+        out = np.zeros(self._n_bins)
+        for m in range(self._n_bins):
+            alls = np.concatenate(self.batch[m], axis=0)
+            x, y = alls[:, 0], alls[:, 1]
+            out[m] = ((x - x.mean()) * (y - y.mean())).sum()
+        return out[0] if self._n_bins == 1 else out
 
 
 class Conclude(AnalysisBase):
@@ -373,12 +553,13 @@ class Test_AnalysisBase:
 
     def test_frame_data(self, ag):
         """Test the calculation of the frame, sums, mean and sems results dicts."""
-        ana = SingularSeries(atomgroup=ag)
+        ana = DebugSeries(atomgroup=ag)
+        ana.n_frames = 2
         ana.run()
 
-        assert_allclose(ana.sums.observable, np.sum(ana.series))
         assert_allclose(ana.means.observable, np.mean(ana.series))
         assert_allclose(ana.sems.observable, np.std(ana.series) / np.sqrt(ana.n_frames))
+        assert_allclose(ana.sums.observable, np.sum(ana.series))
 
         ana = MultipleSeries(atomgroup=ag)
         ana.run()
@@ -626,7 +807,7 @@ class Test_AnalysisBase:
         """Check that unsupported types for the frame Dict throw an error."""
         class_obj = Frame_types(ag)
         class_obj.data = data
-        error_msg = "Obervable observable has uncompatible type."
+        error_msg = "Observable 'observable' has an incompatible type."
         with pytest.raises(TypeError, match=error_msg):
             class_obj.run(stop=2)
 
@@ -840,6 +1021,11 @@ class Test_AnalysisBase:
         density profile has no peak at a position of 100 (which would be the case
         without jitter).
         """
+        dims = ag_single_frame.universe.dimensions.copy()
+        dims[2] = 2
+        ag_single_frame.universe.dimensions = dims
+        ag_single_frame = ag_single_frame[ag_single_frame.positions[:, 2] <= 2]
+
         dens = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.0).run()
         dens_jitter = DensityPlanar(ag_single_frame, bin_width=1e-6, jitter=0.01).run()
 
@@ -1515,4 +1701,144 @@ class TestDumpLoad:
             f"Topology attrs disappeared from the test universe: "
             f"{sorted(missing)}. MDAnalysis may have renamed or removed "
             f"them; update `known` and roundtrip coverage."
+        )
+
+
+class Test_Covariance:
+    """Tests for the iterative off-diagonal covariance accumulation."""
+
+    @pytest.fixture
+    def ag(self):
+        """Import MDA universe."""
+        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
+
+    @pytest.fixture
+    def ana(self, ag):
+        """Run a CorrelatedSeries analysis with a fixed seed."""
+        np.random.seed(42)
+        ana = CorrelatedSeries(ag)
+        ana.run()
+        return ana
+
+    @staticmethod
+    def _comoment(a, b):
+        """Batch co-moment sum((a - a.mean())(b - b.mean())) along axis 0."""
+        return ((a - a.mean(axis=0)) * (b - b.mean(axis=0))).sum(axis=0)
+
+    def test_comoment_matches_batch(self, ana):
+        """Streamed co-moment equals the batch reference for scalar pairs."""
+        assert_allclose(
+            ana.moments.C[make_pair_key("x", "y")],
+            self._comoment(ana.x, ana.y),
+            rtol=1e-9,
+        )
+
+    def test_comoment_array_observable(self, ana):
+        """Element-wise co-moment of a scalar with an array observable."""
+        ref = self._comoment(ana.x[:, None], ana.prof)
+        assert ana.moments.C[make_pair_key("prof", "x")].shape == (3,)
+        assert_allclose(ana.moments.C[make_pair_key("prof", "x")], ref, rtol=1e-9)
+
+    def test_diagonal_equals_variance(self, ana):
+        """cov(key, key) reproduces the squared standard error of the mean."""
+        assert_allclose(ana.moments.cov("x", "x"), ana.sems.x**2, rtol=1e-12)
+
+    def test_cov_is_covariance_of_means(self, ana):
+        """cov() divides the co-moment by the squared shared population."""
+        n = ana.n_frames
+        assert_allclose(ana.moments.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
+        assert_allclose(
+            ana.moments.cov("x", "y"),
+            np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n,
+        )
+
+    def test_cov_symmetric(self, ana):
+        """cov() is symmetric in its arguments."""
+        assert_allclose(ana.moments.cov("x", "y"), ana.moments.cov("y", "x"))
+
+    def test_incompatible_pair_not_tracked(self, ana):
+        """Pairs whose shapes do not broadcast are never tracked."""
+        assert make_pair_key("other", "prof") not in ana.moments.C
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.moments.cov("prof", "other")
+
+    def test_propagate_matches_manual(self, ana):
+        """propagate() of f = x*y matches the explicit bilinear form."""
+        grads = {"x": ana.means.y, "y": ana.means.x}
+        expected = np.sqrt(
+            grads["x"] ** 2 * ana.sems.x**2
+            + grads["y"] ** 2 * ana.sems.y**2
+            + 2 * grads["x"] * grads["y"] * ana.moments.cov("x", "y")
+        )
+        assert_allclose(ana.moments.propagate_error(grads), expected, rtol=1e-12)
+
+    def test_propagate_differs_from_diagonal(self, ana):
+        """Correlated variables: full propagation differs from the diagonal-only one."""
+        grads = {"x": ana.means.y, "y": ana.means.x}
+        diagonal_only = np.sqrt(
+            grads["x"] ** 2 * ana.sems.x**2 + grads["y"] ** 2 * ana.sems.y**2
+        )
+        assert not np.isclose(ana.moments.propagate_error(grads), diagonal_only)
+
+    def test_propagate_raises_on_untracked(self, ana):
+        """propagate() raises when a requested pair has no tracked covariance."""
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.moments.propagate_error({"prof": np.ones(3), "other": np.ones(2)})
+
+    def test_uncorrelated_covariance_is_small(self, ag):
+        """Independent observables have near-zero off-diagonal covariance of means."""
+        np.random.seed(7)
+        ana = CorrelatedSeries(ag)
+        ana.run()
+        # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
+        cov_xother = (
+            ana.moments.C[make_pair_key("other", "x")]
+            / joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
+        )
+        assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
+
+    def test_not_cosampled_pair_not_tracked(self, ag):
+        """Shape-compatible but differently-populated observables are not tracked."""
+        np.random.seed(1)
+        ana = WeightedSeries(ag)
+        ana.run()
+        assert make_pair_key("single", "weighted") not in ana.moments.C
+        with pytest.raises(KeyError, match="do not broadcast"):
+            ana.moments.cov("single", "weighted")
+
+    def test_roundtrip_covariance(self, ana, tmp_path):
+        """The covariance container survives a dump/load roundtrip with tuple keys."""
+        fpath = tmp_path / "checkpoint.npz"
+        ana.dump(str(fpath))
+        restored = CorrelatedSeries.load(str(fpath))
+
+        assert set(restored.C) == set(ana.moments.C)
+        for key in ana.moments.C:
+            assert isinstance(key, tuple)
+            assert_allclose(restored.C[key], ana.moments.C[key])
+
+    def test_multisample_array_matches_batch(self, ag):
+        """Multi-sample array observables (block path) match the batch co-moment."""
+        ana = MultiSampleSeries(ag, n_bins=4, seed=0)
+        ana.run()
+        streamed = ana.moments.C[make_pair_key("x", "y")]
+        assert streamed.shape == (4,)
+        assert_allclose(streamed, ana.batch_comoment(), rtol=1e-9)
+
+    def test_multisample_scalar_matches_batch(self, ag):
+        """Multi-sample scalar observables (fallback path) match the batch co-moment."""
+        ana = MultiSampleSeries(ag, n_bins=1, seed=3)
+        ana.run()
+        streamed = ana.moments.C[make_pair_key("x", "y")]
+        assert_allclose(streamed, ana.batch_comoment(), rtol=1e-9)
+
+    def test_multisample_cov_matches_numpy(self, ag):
+        """cov() of multi-sample observables equals numpy's pooled covariance."""
+        ana = MultiSampleSeries(ag, n_bins=1, seed=3)
+        ana.run()
+        allx = np.concatenate([s[:, 0] for s in ana.batch[0]])
+        ally = np.concatenate([s[:, 1] for s in ana.batch[0]])
+        n = allx.size
+        assert_allclose(
+            ana.moments.cov("x", "y"), np.cov(allx, ally, bias=True)[0, 1] / n
         )
