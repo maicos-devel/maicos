@@ -78,6 +78,24 @@ forked branch to your machine.
 
   git clone git@github.com:your-user-name/maicos.git
 
+.. note::
+
+  The repository contains symbolic links (for example the example trajectories used in
+  the documentation). On Windows, Git only creates them if symlink support is enabled,
+  otherwise you end up with plain text files containing the link target and building the
+  documentation fails. Enable `Developer Mode`_ (or run Git as administrator) and clone
+  with
+
+  .. code-block:: bash
+
+    git clone -c core.symlinks=true git@github.com:your-user-name/maicos.git
+
+  To enable it permanently for all repositories run ``git config --global core.symlinks
+  true``. If you already cloned without symlink support, re-clone the repository after
+  enabling the option.
+
+.. _`Developer Mode` : https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
+
 Now you have a local version on your machine which you can install by
 
 .. code-block:: bash
