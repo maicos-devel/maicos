@@ -552,7 +552,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # for the modules and checkpointing. Covariance and error propagation
             # are reached through `self.moments.cov`/`self.moments.propagate_error`.
             self.moments = MomentAccumulator(self._requested_pairs)
-            self.moments.initialize(self._obs, self._pop, self._var, self._cov)
+            self.moments.register(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means
             self.sems = self.moments.sems
             self.M2 = self.moments.M2

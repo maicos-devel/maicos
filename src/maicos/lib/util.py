@@ -1022,7 +1022,7 @@ class MomentAccumulator:
 
     def __init__(self, requested_pairs=()):
         # Running containers, owned by the accumulator and exposed by the
-        # analysis. Each value is an array seeded by :meth:`initialize` and
+        # analysis. Each value is an array seeded by :meth:`register` and
         # updated in place; the buffers' identities never change afterwards.
         self.means = Results()  # mean of the observables across frames
         self.sems = Results()  # standard error of the mean across frames
@@ -1056,7 +1056,7 @@ class MomentAccumulator:
                 s_var[key] = np.zeros(s_obs[key].shape)
         return s_obs, s_pop, s_var
 
-    def initialize(self, obs, _pop, _var, _cov):
+    def register(self, obs, _pop, _var, _cov):
         """Seed the running containers from the first frame's observables.
 
         Parameters
