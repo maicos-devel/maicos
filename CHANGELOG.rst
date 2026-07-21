@@ -14,8 +14,11 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Add ``MomentAccumulator`` backend and add covariance calculation between observables
+  for correlated errors (#594)
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
   function now always returns a new ``float`` array without modifying the input
+  (#596)
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
