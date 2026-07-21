@@ -404,13 +404,12 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 def symmetrize(
     m: np.ndarray,
     axis: None | int | tuple[int] = None,
-    inplace: bool = False,
     is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
     The shape of the array is preserved, but the elements are symmetrized with respect
-    to the given axis.
+    to the given axis. The returned array always has ``float`` dtype.
 
     Parameters
     ----------
@@ -421,8 +420,6 @@ def symmetrize(
          symmetrize over all of the axes of the input array. If axis is negative it
          counts from the last to the first axis. If axis is a :obj:`tuple` of ints,
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
-    inplace : bool
-        Do symmetrizations inplace. If :obj:`False` a new array is returned.
     is_odd : bool
         The parity to use for symmetrization. If :obj:`False` (default), the
         symmetrization is done with "even" parity, meaning that the output array will be
@@ -440,18 +437,14 @@ def symmetrize(
 
     Examples
     --------
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A)
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> symmetrize(A, inplace=True)
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> A
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
     Antisymmetrization can be achieved by setting ``is_odd=True``.
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A, is_odd=True)
@@ -459,7 +452,7 @@ def symmetrize(
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
-    >>> A = np.arange(20).astype(float).reshape(2, 10).T
+    >>> A = np.arange(20, dtype=float).reshape(2, 10).T
     >>> A
     array([[ 0., 10.],
            [ 1., 11.],
@@ -495,18 +488,9 @@ def symmetrize(
            [ 4.5, 14.5]])
 
     """
-    # The returned array will be of type float
-    out = m.copy().astype("float")
+    out = m.astype("float")
     out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
-
-    if inplace:
-        # To safely cast the the original array type to float in-place,
-        # first change the dtype to float...
-        m.dtype = np.dtype("float")
-        # ...and then write the new values to the original array.
-        m[...] = out
-        return m
     return out
 
 
@@ -606,7 +590,7 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     return trans_positions
 
 
-def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB):
+def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """Calculate the mean and variance of two datasets of arbitrary size.
 
     Given two datasets of arbitrary size, this function calculates the mean and
@@ -637,23 +621,29 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B, n_AB, mu_AB, M_AB
     M_AB : float
         Sum of squares of deviations from the mean for the combined dataset.
     """
-    n_AB_loc = n_A + n_B
-    delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
+    n_AB = n_A + n_B
+    delta = np.where(np.isnan(mu_B), 0.0, mu_B) - np.where(np.isnan(mu_A), 0.0, mu_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        M_AB_loc = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB_loc
-        mu_AB_loc = np.nan_to_num(mu_A) + delta * n_B / n_AB_loc
-    M_AB[:] = M_AB_loc
-    mu_AB[:] = mu_AB_loc
-    n_AB[:] = n_AB_loc
+        mu_AB = np.where(np.isnan(mu_A), 0.0, mu_A) + delta * n_B / n_AB
+        M_AB = (
+            np.where(np.isnan(M_A), 0.0, M_A)
+            + np.where(np.isnan(M_B), 0.0, M_B)
+            + delta**2 * n_A * n_B / n_AB
+        )
 
-def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B, C_AB):
+    return n_AB, mu_AB, M_AB
+
+
+def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
     r"""Combine the co-moment of two datasets of arbitrary size.
 
     Streaming merge of the co-moment :math:`C = \sum (x - \bar x)(y - \bar y)` of
     two datasets, generalizing :func:`combine_subsample_variance` to a pair of
     variables. Setting ``x is y`` (and ``C = M``) recovers that function exactly.
-    Inputs broadcast against each other, so the element-wise covariance of
-    array-valued observables is the natural result.
+    Inputs are combined element-wise and broadcast against each other, so the
+    element-wise covariance of array-valued observables is the natural result.
+    Empty merges (``n_AB == 0``) contribute zero rather than a NaN, so a bin that
+    is intermittently empty does not poison the running co-moment.
 
     Parameters
     ----------
@@ -682,9 +672,14 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B,
         Co-moment of the combined dataset.
     """
     n_AB = n_A + n_B
-    dx = mux_B - mux_A
-    dy = muy_B - muy_A
+    dx = np.where(np.isnan(mux_B), 0.0, mux_B) - np.where(np.isnan(mux_A), 0.0, mux_A)
+    dy = np.where(np.isnan(muy_B), 0.0, muy_B) - np.where(np.isnan(muy_A), 0.0, muy_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        C_AB_loc = C_A + C_B + np.nan_to_num(np.einsum("i...,j...->ij...", dx, dy)) * n_A * n_B / n_AB
-    C_AB[:] = C_AB_loc.astype(float)
+        weight = np.where(n_AB > 0, n_A * n_B / n_AB, 0.0)
+    C_AB = (
+        np.where(np.isnan(C_A), 0.0, C_A)
+        + np.where(np.isnan(C_B), 0.0, C_B)
+        + dx * dy * weight
+    )
 
+    return n_AB, C_AB

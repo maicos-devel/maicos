@@ -403,9 +403,9 @@ class TestDielectricCylinder:
         dcov_r_analytic = np.sqrt(
             eps.sems.mM_r**2
             + eps.means.m_r**2 * eps.sems.M_r**2
-            - 2 * eps.means.m_r * eps.cov("mM_r", "M_r")
-            - 2 * eps.means.M_r * eps.cov("mM_r", "m_r")
-            + 2 * eps.means.m_r * eps.means.M_r * eps.cov("M_r", "m_r")
+            - 2 * eps.means.m_r * eps.moments.cov("mM_r", "M_r")
+            - 2 * eps.means.M_r * eps.moments.cov("mM_r", "m_r")
+            + 2 * eps.means.m_r * eps.means.M_r * eps.moments.cov("M_r", "m_r")
             + eps.means.M_r**2 * eps.sems.m_r**2
         )
         deps_r_analytic = (

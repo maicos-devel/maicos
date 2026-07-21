@@ -22,11 +22,11 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
-from ..lib.moments import MomentAccumulator
 from ..lib.math import (
     center_cluster,
 )
 from ..lib.util import (
+    MomentAccumulator,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -318,8 +318,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     #: names two observable keys, e.g. ``[{"mM_r", "m_r"}, {"mM_r", "M_r"}]``.
     #: Only the requested pairs are tracked, so analyses pay only for the
     #: covariances their error estimate actually consumes. Empty (the default)
-    #: disables covariance entirely. Required for :meth:`cov` /
-    #: :meth:`propagate_error`; subclasses needing them declare their pairs here.
+    #: disables covariance entirely. Required for
+    #: :meth:`~maicos.lib.util.MomentAccumulator.cov` /
+    #: :meth:`~maicos.lib.util.MomentAccumulator.propagate_error`; subclasses
+    #: needing them declare their pairs here.
     _compute_covariance: list = []
 
     if TYPE_CHECKING:  # pragma: no cover
@@ -527,16 +529,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
-        self._cov = Results()
-
-        try:
-            self._cov = self.moments._cov
-            self._obs = self.moments._obs
-            self._pop = self.moments._pop
-            self._var = self.moments._var
-        except AttributeError:
-            with logging_redirect_tqdm():
-                logger.debug("no _cov was initialized")
+        self._cov = Results()  # within-frame covariance of the samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
@@ -545,27 +538,27 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         try:
             # Fail fast if the backend is not initialised yet.
             self.moments  # noqa B018
+
+            # One vectorized backend updates the running means, variances and the
+            # requested covariances. It accumulates the off-diagonal covariance
+            # (which needs the pre-frame means) before overwriting the means.
+            self.moments.update(self._obs, self._pop, self._var, self._cov)
+
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
             # Seed the running statistics from the first frame. The backend owns
             # the means/sems/M2/pop/sums/C containers; expose them on the analysis
-            # for the modules, checkpointing and `cov`/`propagate_error`.
+            # for the modules and checkpointing. Covariance and error propagation
+            # are reached through `self.moments.cov`/`self.moments.propagate_error`.
             self.moments = MomentAccumulator(self._requested_pairs)
-            self.moments.initialize(self._obs, self._pop, self._var, self._cov)
+            self.moments.register(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means
             self.sems = self.moments.sems
             self.M2 = self.moments.M2
             self.pop = self.moments.pop
             self.sums = self.moments.sums
             self.C = self.moments.C
-            self.cov = self.moments.cov
-            self.propagate_error = self.moments.propagate_error
-        else:
-            # One vectorized backend updates the running means, variances and the
-            # requested covariances. It accumulates the off-diagonal covariance
-            # (which needs the pre-frame means) before overwriting the means.
-            self.moments.update(self._obs, self._pop, self._var, self._cov)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
@@ -817,13 +810,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
                 pair_sep = cls._CHECKPOINT_PAIR_SEP
                 out_key = tuple(key.split(pair_sep)) if pair_sep in key else key
                 # Convert 0-d arrays back to Python scalars
-                containers[prefix][out_key] = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
+                containers[prefix][out_key] = arr.item() if arr.ndim == 0 else arr
 
             elif prefix == "_array":
                 setattr(instance, key, arr)
 
             elif prefix == "_meta":
-                val = arr.item() if arr.ndim == 0 or arr.shape == (1,) else arr
+                val = arr.item() if arr.ndim == 0 else arr
                 setattr(instance, key, val)
 
         for name, container in containers.items():

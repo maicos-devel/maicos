@@ -24,7 +24,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
-from maicos.lib.util import make_pair_key, joint_pop
+from maicos.lib.util import joint_pop, make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -100,6 +100,7 @@ class SingularSeries(AnalysisBase):
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
 
+
 class DebugSeries(AnalysisBase):
     """Class creating a time series with one observable per frame."""
 
@@ -115,11 +116,10 @@ class DebugSeries(AnalysisBase):
         )
 
     def _prepare(self):
-        self.series = np.arange(self.n_frames, dtype=float)
+        self.series = np.arange(self.n_frames)
 
     def _single_frame(self):
         self._obs.observable = self.series[self._frame_index]
-
 
 
 class MultipleSeries(AnalysisBase):
@@ -322,8 +322,6 @@ class MultiSampleSeries(AnalysisBase):
         self._pop.x = int(pop[0]) if scalar else pop.copy()
         self._pop.y = int(pop[0]) if scalar else pop.copy()
         self._cov[make_pair_key("x", "y")] = maybe_scalar(cxy)
-        print("cov in single frame")
-        print(self._cov)
 
     def batch_comoment(self):
         """Co-moment ``sum((x - x.mean())(y - y.mean()))`` over all samples."""
@@ -804,7 +802,7 @@ class Test_AnalysisBase:
         class_obj.run(stop=2)
         assert class_obj.means.observable == result
 
-    @pytest.mark.parametrize("data,", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
+    @pytest.mark.parametrize("data", [["1", "2"], [{"1": 1}, {"1": 1}]])
     def test_frame_dict_wrong_types(self, ag, data):
         """Check that unsupported types for the frame Dict throw an error."""
         class_obj = Frame_types(ag)
@@ -1730,7 +1728,9 @@ class Test_Covariance:
     def test_comoment_matches_batch(self, ana):
         """Streamed co-moment equals the batch reference for scalar pairs."""
         assert_allclose(
-            ana.moments.C[make_pair_key("x", "y")], self._comoment(ana.x, ana.y), rtol=1e-9
+            ana.moments.C[make_pair_key("x", "y")],
+            self._comoment(ana.x, ana.y),
+            rtol=1e-9,
         )
 
     def test_comoment_array_observable(self, ana):
@@ -1748,7 +1748,8 @@ class Test_Covariance:
         n = ana.n_frames
         assert_allclose(ana.moments.cov("x", "y"), self._comoment(ana.x, ana.y) / n**2)
         assert_allclose(
-            ana.moments.cov("x", "y"), np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n
+            ana.moments.cov("x", "y"),
+            np.cov(np.vstack([ana.x, ana.y]), bias=True)[0, 1] / n,
         )
 
     def test_cov_symmetric(self, ana):
@@ -1791,7 +1792,8 @@ class Test_Covariance:
         ana.run()
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
         cov_xother = (
-            ana.moments.C[make_pair_key("other", "x")] / joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
+            ana.moments.C[make_pair_key("other", "x")]
+            / joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
         )
         assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
 
@@ -1837,4 +1839,6 @@ class Test_Covariance:
         allx = np.concatenate([s[:, 0] for s in ana.batch[0]])
         ally = np.concatenate([s[:, 1] for s in ana.batch[0]])
         n = allx.size
-        assert_allclose(ana.moments.cov("x", "y"), np.cov(allx, ally, bias=True)[0, 1] / n)
+        assert_allclose(
+            ana.moments.cov("x", "y"), np.cov(allx, ally, bias=True)[0, 1] / n
+        )
