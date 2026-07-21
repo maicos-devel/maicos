@@ -92,7 +92,9 @@ print(f"Liquid reference density: {rho_liq:.3f} ± {rho_liq_err:.3f} u/Å³")
 # The film has two symmetric interfaces. We place a dividing surface on each
 # side relative to the slab centre at :math:`z = 0`.
 z_g_plus, z_g_plus_err = gibbs_surface(z, rho, rho_err, rho_liq, rho_liq_err, side="+")
-z_g_minus, z_g_minus_err = gibbs_surface(z, rho, rho_err, rho_liq, rho_liq_err, side="-")
+z_g_minus, z_g_minus_err = gibbs_surface(
+    z, rho, rho_err, rho_liq, rho_liq_err, side="-"
+)
 thickness = z_g_plus - z_g_minus
 thickness_err = np.sqrt(z_g_plus_err**2 + z_g_minus_err**2)
 
