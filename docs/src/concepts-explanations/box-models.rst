@@ -8,7 +8,7 @@ Many quantities computed by MAICoS — density, dielectric permittivity or veloc
 drastically and in complex way across an interface. For thermodynamic and continuum-mechanical descriptions it
 is often convenient to express such a profile in terms of a piecewise-constant *box model*:
 a constant value is assigned on both sides of an idealized, infinitely thin dividing surface.
-The position of that surface is not unique; it is usually chosen such that the effective response corresonds to the one in bulk on one of the sides, i.e. in general it depends on which quantity is being
+The position of that surface is not unique; it is usually chosen such that the effective response corresponds to the one in bulk on one of the sides, i.e. in general it depends on which quantity is being
 conserved across the system. This page collects the typical use-cases for such effective models which MAICoS users
 encounter and explains how to obtain each of them from the analysis output.
 
@@ -94,57 +94,26 @@ identical interfaces), it is usually more robust to set ``sym=True`` on
 Dielectric dividing surface
 ----------------------------
 
-The dielectric dividing surface (DDS) is the analogue of the GDS for the dielectric
-profile :math:`\varepsilon(z)`. It is the plane that bounds the effective
-bulk-dielectric slab whose integrated response matches the integrated response of
-the real profile. For a symmetric slab centred at :math:`z=0` with perpendicular
-inverse dielectric profile :math:`\varepsilon_\perp^{-1}(z)` and bulk value
-:math:`\varepsilon_\perp^{-1,\mathrm{bulk}}` in the centre, the effective slab
-thickness :math:`h_\mathrm{eff}` is defined by
-
-.. math::
-    \int_{-\infty}^{+\infty}
-        \bigl[1 - \varepsilon_\perp^{-1}(z)\bigr]\,\mathrm{d}z
-    \;=\;
-    h_\mathrm{eff}\,\bigl(1 - \varepsilon_\perp^{-1,\mathrm{bulk}}\bigr),
-
-and the perpendicular DDS positions sit at :math:`z_\mathrm{D}^\pm = \pm
-h_\mathrm{eff}/2`. The same construction applied to :math:`\varepsilon_\parallel(z)`
-gives a parallel DDS, which in general differs from the perpendicular one. The shift
+The dielectric dividing surface (DDS) is the analogue of the GDS for the relative
+permittivity profiles :math:`\varepsilon_\parallel(z)` and
+:math:`\varepsilon_\perp^{-1}(z)`. It bounds the effective slab of homogeneous
+dielectric that reproduces the potential drop across the system, and the shift
 :math:`z_\mathrm{D} - z_\mathrm{G}` quantifies the dielectric *dead layer* near the
 interface — the region in which the fluid is structurally present but contributes
 less than the bulk to the dielectric response.
 
-The DDS construction has been used to map molecular-dynamics dielectric profiles onto
-continuum slab models in :footcite:t:`bonthuisProfileStaticPermittivity2012` and
-:footcite:t:`schlaichWaterDielectricEffects2016`. It is less standard than the GDS
-and the precise definition of "bulk" matters: in confined systems the bulk reference
-should be taken from a region of the profile that has recovered its homogeneous
-value, which is not always available for narrow pores.
+Unlike the Gibbs construction, the DDS cannot be read off a single profile: the
+effective-medium equations contain both an effective response
+:math:`\varepsilon_\alpha^\mathrm{eff}` and an effective length
+:math:`L_\alpha^\mathrm{eff}` and are therefore under-determined for a single pore
+size. Resolving them requires the additional input that
+:math:`\varepsilon_\alpha^\mathrm{eff}` approaches the bulk dielectric constant for
+large pores, and the resulting offsets are best reported relative to the Gibbs
+surface :footcite:p:`locheUniversalNonuniversalAspects2020,stark_static_2026`.
 
-.. code-block:: python
-
-    import maicos
-
-    eps = maicos.DielectricPlanar(
-        water, bin_width=0.5, refgroup=water, sym=True, is_3d=True,
-    )
-    eps.run()
-
-    z = eps.results.bin_pos
-    eps_perp_inv = 1.0 + eps.results.eps_perp  # MAICoS returns the reduced profile
-    bw = z[1] - z[0]
-
-    # bulk value from the slab centre
-    centre = np.argmin(np.abs(z))
-    eps_perp_inv_bulk = eps_perp_inv[centre - 2 : centre + 3].mean()
-
-    # equation above, solved for h_eff
-    h_eff = np.sum(1.0 - eps_perp_inv) * bw / (1.0 - eps_perp_inv_bulk)
-    z_dds = h_eff / 2.0  # symmetric slab, positive interface
-
-The shift :math:`z_\mathrm{D} - z_\mathrm{G}` is then ``z_dds`` minus the Gibbs
-surface obtained from the mass-density profile of the same trajectory.
+The full construction, together with the underlying electrostatic theory, is
+covered in :ref:`dielectric-explanations`; a worked example including error
+propagation is given in the :ref:`userdoc-how-to-dielectrics` how-to guide.
 
 --------------------------------------------
 Hydrodynamic boundary and slip-length models
@@ -209,7 +178,8 @@ A few rules of thumb:
   Gibbs free energy) use the **Gibbs surface** of the relevant species.
 * If you want to map a polarization profile onto an effective continuum slab — for
   example to predict an image-charge interaction or a capacitance — use the
-  **dielectric dividing surface** for the appropriate component.
+  **dielectric dividing surface** for the appropriate component, following the
+  effective-medium procedure in :ref:`dielectric-explanations`.
 * If you want to predict flow rates, pressure drops or apparent viscosities use the
   **hydrodynamic boundary** with the corresponding slip length. The Gibbs surface
   is generally a poor proxy for it.
