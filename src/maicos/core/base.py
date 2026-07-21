@@ -25,8 +25,8 @@ from .. import __version__
 from ..lib.math import (
     center_cluster,
 )
-from ..lib.moments import MomentAccumulator
 from ..lib.util import (
+    MomentAccumulator,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -319,8 +319,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     #: Only the requested pairs are tracked, so analyses pay only for the
     #: covariances their error estimate actually consumes. Empty (the default)
     #: disables covariance entirely. Required for
-    #: :meth:`~maicos.lib.moments.MomentAccumulator.cov` /
-    #: :meth:`~maicos.lib.moments.MomentAccumulator.propagate_error`; subclasses
+    #: :meth:`~maicos.lib.util.MomentAccumulator.cov` /
+    #: :meth:`~maicos.lib.util.MomentAccumulator.propagate_error`; subclasses
     #: needing them declare their pairs here.
     _compute_covariance: list = []
 
