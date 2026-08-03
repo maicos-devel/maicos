@@ -19,7 +19,7 @@ from numpy.testing import assert_allclose
 from maicos import DiporderPlanar
 
 sys.path.append(str(Path(__file__).parents[1]))
-from util import line_of_water_molecules  # noqa: E402
+from util import line_of_water_molecules
 
 
 class ReferenceAtomGroups:

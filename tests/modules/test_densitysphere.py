@@ -17,7 +17,7 @@ from numpy.testing import assert_allclose
 from maicos import DensitySphere
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
+from data import WATER_TPR_NPT, WATER_TRR_NPT
 
 
 class TestDensitySphere:

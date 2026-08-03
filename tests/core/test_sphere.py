@@ -25,7 +25,7 @@ from maicos.lib.weights import density_weights
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
+from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT
 
 
 class SphereClass(SphereBase):
@@ -255,7 +255,7 @@ class TestSphereBase:
     @pytest.mark.parametrize("rmax", [1, 2, 4.5])
     def test_compute_lab_frame_sphere(self, ag, rmax):
         """Test lab frame values with explicit values."""
-        p_obj = SphereClass(ag, **{"pos_arg": 42, "rmax": rmax})
+        p_obj = SphereClass(ag, pos_arg=42, rmax=rmax)
         p_obj._compute_lab_frame_sphere()
 
         assert p_obj.rmax == rmax

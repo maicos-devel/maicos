@@ -18,8 +18,8 @@ from numpy.testing import assert_allclose, assert_equal
 from maicos import PDFCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
-from util import circle_of_water_molecules, line_of_water_molecules  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
+from util import circle_of_water_molecules, line_of_water_molecules
 
 
 class TestPDFCylinder:

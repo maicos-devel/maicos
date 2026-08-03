@@ -20,7 +20,7 @@ from util import error_prop
 from maicos import DielectricSphere
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import (  # noqa: E402
+from data import (
     DIPOLE_GRO,
     DIPOLE_ITP,
     WATER_2F_TRR_NPT,

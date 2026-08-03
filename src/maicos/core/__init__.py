@@ -10,13 +10,13 @@
 __all__ = [
     "AnalysisBase",
     "AnalysisCollection",
-    "ProfileBase",
     "CylinderBase",
-    "ProfileCylinderBase",
     "PlanarBase",
+    "ProfileBase",
+    "ProfileCylinderBase",
     "ProfilePlanarBase",
-    "SphereBase",
     "ProfileSphereBase",
+    "SphereBase",
 ]
 
 from .base import AnalysisBase, AnalysisCollection, ProfileBase

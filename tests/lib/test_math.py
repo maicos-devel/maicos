@@ -19,7 +19,7 @@ import maicos.lib.math
 import maicos.lib.util
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
 
 
 def generate_correlated_data(T, repeat, seed=0):

@@ -27,7 +27,7 @@ from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import (  # noqa: E402
+from data import (
     DIPOLE_GRO,
     DIPOLE_ITP,
     WATER_GRO_NPT,

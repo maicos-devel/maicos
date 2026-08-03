@@ -12,7 +12,7 @@ functions, which are used in the other MAICoS modules.
 """
 
 __all__ = [
-    "util",
     "math",
+    "util",
     "weights",
 ]

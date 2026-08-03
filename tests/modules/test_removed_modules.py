@@ -14,7 +14,7 @@ import MDAnalysis as mda
 import pytest
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
 
 
 @pytest.fixture

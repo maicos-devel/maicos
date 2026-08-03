@@ -19,7 +19,7 @@ from maicos import PDFPlanar
 from maicos.lib.util import get_compound
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
 
 
 class TestPDFPlanar:

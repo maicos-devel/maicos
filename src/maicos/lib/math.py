@@ -95,11 +95,11 @@ def scalar_prod_corr(
     corr = np.zeros(len(a[:, 0]))
 
     if b is None:
-        for i in range(0, len(a[0, :])):
+        for i in range(len(a[0, :])):
             corr[:] += correlation(a[:, i], None, subtract_mean)
 
     else:
-        for i in range(0, len(a[0, :])):
+        for i in range(len(a[0, :])):
             corr[:] += correlation(a[:, i], b[:, i], subtract_mean)
 
     return corr
@@ -343,8 +343,7 @@ def new_variance(
     if isinstance(S_new, np.ndarray):
         S_new[S_new < 0] = 0
     else:
-        if S_new < 0:
-            S_new = 0
+        S_new = max(S_new, 0)
 
     return S_new / length
 

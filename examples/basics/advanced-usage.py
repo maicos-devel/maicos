@@ -225,7 +225,7 @@ dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
 # If you prefer to use times instead of frame slice, the function times_to_frames
 # is available :
 
-import maicos.lib.util as util  # noqa: E402
+from maicos.lib import util  # noqa: E402
 
 time_step = u.trajectory.dt
 

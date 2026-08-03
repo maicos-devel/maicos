@@ -17,7 +17,7 @@ from numpy.testing import assert_allclose
 from maicos import VelocityCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
-from util import circle_of_water_molecules  # noqa: E402
+from util import circle_of_water_molecules
 
 
 def test_invalid_vdim():

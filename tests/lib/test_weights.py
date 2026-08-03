@@ -20,7 +20,7 @@ from maicos.lib.tables import electron_count
 from maicos.lib.util import unit_vectors_planar
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import (  # noqa: E402
+from data import (
     SALT_WATER_GRO,
     SPCE_GRO,
     SPCE_ITP,

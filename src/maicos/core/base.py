@@ -402,7 +402,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
-        pass  # pylint: disable=unnecessary-pass
+        # pylint: disable=unnecessary-pass
 
     def _call_prepare(self) -> None:
         """Base method wrapping all _prepare logic into a single call."""
@@ -595,7 +595,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Called at the end of the :meth:`run` method to finish everything up.
         """
-        pass  # pylint: disable=unnecessary-pass
+        # pylint: disable=unnecessary-pass
 
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""

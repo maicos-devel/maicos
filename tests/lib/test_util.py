@@ -23,8 +23,8 @@ from maicos.core.base import AnalysisBase
 from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
-from util import circle_of_water_molecules  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT
+from util import circle_of_water_molecules
 
 
 @pytest.mark.parametrize(
