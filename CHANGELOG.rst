@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Fix ruff lint errors and remove non-executable shebang lines from module headers
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
   function now always returns a new ``float`` array without modifying the input
 - Add function and example how to use times instead of frame slices (#585)
