@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,6 +9,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -313,7 +312,7 @@ class TestCylinderBaseChilds:
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    members = []
+    members: ClassVar[list[type]] = []
     for _, member in inspect.getmembers(maicos):
         if (
             inspect.isclass(member)
@@ -325,19 +324,19 @@ class TestCylinderBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(
-            unwrap=False,
-            refgroup=None,
-            pack=True,
-            jitter=0.0,
-            concfreq=0,
-            dim=2,
-            zmin=None,
-            zmax=None,
-            rmin=0,
-            rmax=None,
-            bin_width=1,
-        )
+        params = {
+            "unwrap": False,
+            "refgroup": None,
+            "pack": True,
+            "jitter": 0.0,
+            "concfreq": 0,
+            "dim": 2,
+            "zmin": None,
+            "zmax": None,
+            "rmin": 0,
+            "rmax": None,
+            "bin_width": 1,
+        }
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = CylinderBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
@@ -439,26 +438,26 @@ class TestProfileCylinderBase:
     @pytest.fixture
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        return dict(
-            weighting_function=self.weights,
-            weighting_function_kwargs=None,
-            jitter=0.0,
-            atomgroup=u.atoms,
-            normalization="number",
-            dim=2,
-            zmin=None,
-            zmax=None,
-            rmin=0,
-            rmax=None,
-            bin_width=0.1,
-            refgroup=None,
-            grouping="atoms",
-            unwrap=False,
-            pack=True,
-            bin_method="com",
-            concfreq=0,
-            output="profile.dat",
-        )
+        return {
+            "weighting_function": self.weights,
+            "weighting_function_kwargs": None,
+            "jitter": 0.0,
+            "atomgroup": u.atoms,
+            "normalization": "number",
+            "dim": 2,
+            "zmin": None,
+            "zmax": None,
+            "rmin": 0,
+            "rmax": None,
+            "bin_width": 0.1,
+            "refgroup": None,
+            "grouping": "atoms",
+            "unwrap": False,
+            "pack": True,
+            "bin_method": "com",
+            "concfreq": 0,
+            "output": "profile.dat",
+        }
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):
@@ -558,20 +557,20 @@ class TestProfileCylinderBase:
         warning = "`rmax` is bigger than half the smallest box vector"
         odims = np.roll(np.arange(3), -dimension)[1:]
 
-        params = dict(
-            unwrap=False,
-            pack=True,
-            refgroup=None,
-            jitter=0.0,
-            wrap_compound="atoms",
-            concfreq=0,
-            dim=dimension,
-            zmin=None,
-            zmax=None,
-            rmin=0,
-            rmax=None,
-            bin_width=1,
-        )
+        params = {
+            "unwrap": False,
+            "pack": True,
+            "refgroup": None,
+            "jitter": 0.0,
+            "wrap_compound": "atoms",
+            "concfreq": 0,
+            "dim": dimension,
+            "zmin": None,
+            "zmax": None,
+            "rmin": 0,
+            "rmax": None,
+            "bin_width": 1,
+        }
         params["atomgroup"] = u_dimers.atoms
         params["rmax"] = 1.1 * u_dimers.dimensions[odims].min() / 2
         ana_obj = CylinderBase(**params)

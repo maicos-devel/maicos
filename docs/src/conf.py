@@ -12,7 +12,7 @@ This file does only contain a selection of the most common options. For a full l
 the documentation: http://www.sphinx-doc.org/en/master/config
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from importlib.metadata import metadata
 from pathlib import Path
 
@@ -26,7 +26,7 @@ project = "maicos"
 project_dict = metadata(project)
 author = project_dict["Author"]
 version = project_dict["Version"]
-copyright = f"{datetime.now().date().year}, {author}"
+copyright = f"{datetime.now(tz=UTC).year}, {author}"
 
 # -- General configuration ---------------------------------------------------
 

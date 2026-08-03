@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,7 +9,7 @@ import logging
 import numbers
 import warnings
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
@@ -652,7 +650,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # This method breaks if fname is a Path object. We therefore convert it to a str
         fname = str(fname)
         # Get the required information first
-        current_time = datetime.now().strftime("%a, %b %d %Y at %H:%M:%S ")
+        current_time = (
+            datetime.now(tz=UTC).astimezone().strftime("%a, %b %d %Y at %H:%M:%S ")
+        )
         module_name = self.__class__.__name__
 
         # Here the specific output messages of the modules are collected. We only take

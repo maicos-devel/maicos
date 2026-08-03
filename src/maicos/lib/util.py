@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -91,18 +89,20 @@ def check_file_extension(filename: str, extension: str) -> str:
 
 DOC_REGEX_PATTERN = re.compile(r"\$\{([^\}]+)\}")
 
-DOC_DICT = dict(
+DOC_DICT = {
     #####################
     # DESCRIPTION SECTION
     #####################
-    SAVE_METHOD_DESCRIPTION="Save results of analysis to file specified by ``output``.",
-    SAVE_METHOD_PREFIX_DESCRIPTION=r"""Save results of analysis to files specified by
+    "SAVE_METHOD_DESCRIPTION": (
+        "Save results of analysis to file specified by ``output``."
+    ),
+    "SAVE_METHOD_PREFIX_DESCRIPTION": r"""Save results of analysis to files specified by
 ``output_prefix``.""",
-    DENSITY_DESCRIPTION_1=r"""Calculations are carried out for ``mass``
+    "DENSITY_DESCRIPTION_1": r"""Calculations are carried out for ``mass``
 :math:`(\rm u \cdot Å^{-3})`, ``number`` :math:`(\rm Å^{-3})`, partial ``charge``
 :math:`(\rm e \cdot Å^{-3})` or electron :math:`(\rm e \cdot Å^{-3})` density
 profiles """,
-    DENSITY_DESCRIPTION_2="""Cell dimensions are allowed to fluctuate in time.
+    "DENSITY_DESCRIPTION_2": """Cell dimensions are allowed to fluctuate in time.
 
 For grouping with respect to ``molecules``, ``residues`` etc., the corresponding
 centers (i.e., center of mass), taking into account periodic boundary conditions,
@@ -110,36 +110,36 @@ are calculated. For these calculations molecules will be unwrapped/made whole.
 Trajectories containing already whole molecules can be run with ``unwrap=False`` to
 gain a speedup. For grouping with respect to atoms, the ``unwrap`` option is always
 ignored.""",
-    PLANAR_DESCRIPTION="""along certain cartesian axes ``[x, y, z]`` of the simulation
-cell.""",
-    CYLINDRICAL_DESCRIPTION="""along the radial axis in a cylindrical coordinate system,
-with principal axis along ``[x, y, z]`` axes of the simulation cell. The origin of the
-coordinate system defaults to the box center, but can be set to dynamically follow the
-center of mass of a reference group via ``refgroup``""",
-    SPHERICAL_DESCRIPTION="""along radial axis in spherical coordinate system. The
+    "PLANAR_DESCRIPTION": """along certain cartesian axes ``[x, y, z]`` of the
+simulation cell.""",
+    "CYLINDRICAL_DESCRIPTION": """along the radial axis in a cylindrical coordinate
+system, with principal axis along ``[x, y, z]`` axes of the simulation cell. The
+origin of the coordinate system defaults to the box center, but can be set to
+dynamically follow the center of mass of a reference group via ``refgroup``""",
+    "SPHERICAL_DESCRIPTION": """along radial axis in spherical coordinate system. The
 origin of the coordinate system defaults to the box center, but can be set to
 dynamically follow the center of mass of a reference group via `refgroup`.""",
-    DENSITY_PLANAR_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+    "DENSITY_PLANAR_DESCRIPTION": r"""${DENSITY_DESCRIPTION_1}
 ${PLANAR_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DENSITY_CYLINDER_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+    "DENSITY_CYLINDER_DESCRIPTION": r"""${DENSITY_DESCRIPTION_1}
 ${CYLINDRICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DENSITY_SPHERE_DESCRIPTION=r"""${DENSITY_DESCRIPTION_1}
+    "DENSITY_SPHERE_DESCRIPTION": r"""${DENSITY_DESCRIPTION_1}
 ${SPHERICAL_DESCRIPTION}
 ${DENSITY_DESCRIPTION_2}""",
-    DIPORDER_DESCRIPTION=r"""Calculations include the first- and second-rank
+    "DIPORDER_DESCRIPTION": r"""Calculations include the first- and second-rank
 orientational order parameters,
 which are the Legendre polynomials :math:`P_1(x) = x` and :math:`P_2(x) = \frac{3
 x^2 - 1}{2}` with :math:`x = \cos(θ[z])`.""",
-    CORRELATION_INFO=r"""For further information on the correlation analysis please
+    "CORRELATION_INFO": r"""For further information on the correlation analysis please
 refer to :class:`AnalysisBase <maicos.core.base.AnalysisBase>` or the
 :ref:`general-design` section.""",
-    CORRELATION_INFO_PLANAR=r"""For the correlation analysis the central bin
+    "CORRELATION_INFO_PLANAR": r"""For the correlation analysis the central bin
 (:math:`N / 2`) of the 0th's group profile is used. ${CORRELATION_INFO}""",
-    CORRELATION_INFO_RADIAL="""For the correlation analysis the 0th bin of the 0th's
+    "CORRELATION_INFO_RADIAL": """For the correlation analysis the 0th bin of the 0th's
 group profile is used. ${CORRELATION_INFO}""",
-    RUN_METHOD_DESCRIPTION="""Iterate over the trajectory.
+    "RUN_METHOD_DESCRIPTION": """Iterate over the trajectory.
 
 Parameters
 ----------
@@ -168,30 +168,30 @@ self : object
     ##########################
     # SINGLE PARAMETER SECTION
     ##########################
-    ATOMGROUP_PARAMETER="""atomgroup : MDAnalysis.core.groups.AtomGroup
+    "ATOMGROUP_PARAMETER": """atomgroup : MDAnalysis.core.groups.AtomGroup
     A :class:`~MDAnalysis.core.groups.AtomGroup` for which the calculations are
     performed.""",
-    WRAP_COMPOUND_PARAMETER="""wrap_compound : str
+    "WRAP_COMPOUND_PARAMETER": """wrap_compound : str
     The group which will be kept together through the wrap processes. Allowed values
     are: ``"atoms"``, ``"group"``, ``"residues"``, ``"segments"``, ``"molecules"``, or
     ``"fragments"``.""",
-    DENS_PARAMETER="""dens : {``"mass"``, ``"number"``, ``"charge"``, ``"electron"``}
+    "DENS_PARAMETER": """dens : {``"mass"``, ``"number"``, ``"charge"``, ``"electron"``}
     density type to be calculated.""",
-    TEMPERATURE_PARAMETER="""temperature : float
+    "TEMPERATURE_PARAMETER": """temperature : float
     Reference temperature (K)""",
-    BIN_WIDTH_PARAMETER="""bin_width : float
+    "BIN_WIDTH_PARAMETER": """bin_width : float
     Width of the bins (in Å).""",
-    DIM_PARAMETER="""dim : {0, 1, 2}
+    "DIM_PARAMETER": """dim : {0, 1, 2}
     Dimension for binning (``x=0``, ``y=1``, ``z=1``).""",
-    VDIM_PARAMETER="""vdim : {0, 1, 2}
+    "VDIM_PARAMETER": """vdim : {0, 1, 2}
     Dimension for velocity binning (``x=0``, ``y=1``, ``z=1``).""",
-    PDIM_PLANAR_PARAMETER="""pdim : {0, 1, 2}
+    "PDIM_PLANAR_PARAMETER": """pdim : {0, 1, 2}
     direction of the projection""",
-    PDIM_RADIAL_PARAMETER="""pdim : {``"r"``, ``"z"``}
+    "PDIM_RADIAL_PARAMETER": """pdim : {``"r"``, ``"z"``}
     direction of the projection""",
-    FLUX_PARAMETER=r"""flux : bool
+    "FLUX_PARAMETER": r"""flux : bool
     Calculate the flux (:math:`[Å^2/\mathrm{ps}]`) instead of the velocity.""",
-    GROUPING_PARAMETER="""grouping : {``"atoms"``, ``"residues"``, \
+    "GROUPING_PARAMETER": """grouping : {``"atoms"``, ``"residues"``, \
 ``"segments"``, ``"molecules"``, ``"fragments"``}
     Atom grouping for the calculations.
 
@@ -199,18 +199,18 @@ self : object
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
     ``"fragments"``).""",
-    OUTPUT_PARAMETER="""output : str
+    "OUTPUT_PARAMETER": """output : str
     Output filename.""",
-    OUTPUT_PREFIX_PARAMETER="""output_prefix : str
+    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str
     Prefix for output files.""",
-    SYM_PARAMETER="""sym : bool
+    "SYM_PARAMETER": """sym : bool
     Symmetrize the profile. Only works in combination with ``refgroup``.""",
-    BIN_METHOD_PARAMETER="""bin_method : {``"com"``, ``"cog"``, ``"coc"``}
+    "BIN_METHOD_PARAMETER": """bin_method : {``"com"``, ``"cog"``, ``"coc"``}
     Method for the position binning.
 
     The possible options are center of mass (``"com"``), center of geometry (``"cog"``),
     and center of charge (``"coc"``).""",
-    ORDER_PARAMETER_PARAMETER=r"""order_parameter : {``"P1"``, ``"P2"``}
+    "ORDER_PARAMETER_PARAMETER": r"""order_parameter : {``"P1"``, ``"P2"``}
     Order parameter to be calculated:
         - ``"P1"``: Legendre polynomial :math:`P_1(cos[θ]) = cos[θ]`
         - ``"P2"``: Legendre polynomial
@@ -218,7 +218,7 @@ self : object
     ###################################
     # MULTI/COMBINES PARAMETERS SECTION
     ###################################
-    BASE_CLASS_PARAMETERS="""refgroup : MDAnalysis.core.groups.AtomGroup
+    "BASE_CLASS_PARAMETERS": """refgroup : MDAnalysis.core.groups.AtomGroup
     Reference :class:`~MDAnalysis.core.groups.AtomGroup` used for the calculation. If
     ``refgroup`` is provided, the calculation is performed relative to the center of
     mass of the AtomGroup. If ``refgroup`` is :obj:`None` the calculations are performed
@@ -255,7 +255,7 @@ jitter : float
 concfreq : int
     When concfreq (for conclude frequency) is larger than ``0``, the conclude function
     is called and the output files are written every ``concfreq`` frames.""",
-    PROFILE_CLASS_PARAMETERS_PRIVATE="""weighting_function : callable
+    "PROFILE_CLASS_PARAMETERS_PRIVATE": """weighting_function : callable
     The function calculating the array weights for the histogram analysis. It must take
     an :py:class:`AtomGroup<MDAnalysis.AtomGroup>` as first argument and a grouping
     (``"atoms"``, ``"residues"``, ``"segments"``, ``"molecules"``, ``"fragments"``) as
@@ -269,7 +269,7 @@ normalization : {``"none"``, ``"number"``, ``"volume"``}
     normalization is performed. If `number`, the histogram is divided by the number of
     occurences in each bin. If `volume`, the profile is divided by the volume of each
     bin.""",
-    PLANAR_Z_PARAMETERS="""zmin : float
+    "PLANAR_Z_PARAMETERS": """zmin : float
     Minimal coordinate for evaluation (in Å) with respect to the center of mass of
     the refgroup.
     If ``zmin=None``, all coordinates down to the lower cell boundary are taken into
@@ -279,10 +279,10 @@ zmax : float
     refgroup.
     If ``zmax = None``, all coordinates up to the upper cell boundary are taken into
     account.""",
-    PLANAR_CLASS_PARAMETERS="""${DIM_PARAMETER}
+    "PLANAR_CLASS_PARAMETERS": """${DIM_PARAMETER}
 ${PLANAR_Z_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
-    RADIAL_CLASS_PARAMETERS="""rmin : float
+    "RADIAL_CLASS_PARAMETERS": """rmin : float
     Minimal radial coordinate relative to the center of mass of the refgroup for
     evaluation (in Å).
 rmax : float
@@ -290,49 +290,49 @@ rmax : float
     evaluation (in Å).
 
     If ``rmax=None``, the box extension is taken.""",
-    PDF_PARAMETERS="""g1 : MDAnalysis.core.groups.AtomGroup
+    "PDF_PARAMETERS": """g1 : MDAnalysis.core.groups.AtomGroup
     First AtomGroup.
 g2 : MDAnalysis.core.groups.AtomGroup
     Second AtomGroup.""",
-    PROFILE_CLASS_PARAMETERS="""${BIN_METHOD_PARAMETER}
+    "PROFILE_CLASS_PARAMETERS": """${BIN_METHOD_PARAMETER}
 ${GROUPING_PARAMETER}""",
-    CYLINDER_CLASS_PARAMETERS="""${DIM_PARAMETER}
+    "CYLINDER_CLASS_PARAMETERS": """${DIM_PARAMETER}
 ${PLANAR_Z_PARAMETERS}
 ${RADIAL_CLASS_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
-    SPHERE_CLASS_PARAMETERS="""${RADIAL_CLASS_PARAMETERS}
+    "SPHERE_CLASS_PARAMETERS": """${RADIAL_CLASS_PARAMETERS}
 ${BIN_WIDTH_PARAMETER}""",
-    PROFILE_PLANAR_CLASS_PARAMETERS="""
+    "PROFILE_PLANAR_CLASS_PARAMETERS": """
 ${PLANAR_CLASS_PARAMETERS}
 ${PROFILE_CLASS_PARAMETERS}
 ${SYM_PARAMETER}
 ${BASE_CLASS_PARAMETERS}""",
-    PROFILE_CYLINDER_CLASS_PARAMETERS="""${CYLINDER_CLASS_PARAMETERS}
+    "PROFILE_CYLINDER_CLASS_PARAMETERS": """${CYLINDER_CLASS_PARAMETERS}
 ${PROFILE_CLASS_PARAMETERS}
 ${BASE_CLASS_PARAMETERS}""",
-    PROFILE_SPHERE_CLASS_PARAMETERS="""${SPHERE_CLASS_PARAMETERS}
+    "PROFILE_SPHERE_CLASS_PARAMETERS": """${SPHERE_CLASS_PARAMETERS}
 ${PROFILE_CLASS_PARAMETERS}
 ${BASE_CLASS_PARAMETERS}""",
     ###################
     # ATTRIBUTE SECTION
     ###################
-    PLANAR_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
+    "PLANAR_CLASS_ATTRIBUTES": """results.bin_pos : numpy.ndarray
     Bin positions (in Å) ranging from ``zmin`` to ``zmax``.""",
-    RADIAL_CLASS_ATTRIBUTES="""results.bin_pos : numpy.ndarray
+    "RADIAL_CLASS_ATTRIBUTES": """results.bin_pos : numpy.ndarray
     Bin positions (in Å) ranging from ``rmin`` to ``rmax``.""",
-    PROFILE_CLASS_ATTRIBUTES="""results.profile : numpy.ndarray
+    "PROFILE_CLASS_ATTRIBUTES": """results.profile : numpy.ndarray
     Calculated profile.
 results.dprofile : numpy.ndarray
     Estimated profile's uncertainity.""",
-    CYLINDER_CLASS_ATTRIBUTES="${RADIAL_CLASS_ATTRIBUTES}",
-    SPHERE_CLASS_ATTRIBUTES="${RADIAL_CLASS_ATTRIBUTES}",
-    PROFILE_PLANAR_CLASS_ATTRIBUTES="""${PLANAR_CLASS_ATTRIBUTES}
+    "CYLINDER_CLASS_ATTRIBUTES": "${RADIAL_CLASS_ATTRIBUTES}",
+    "SPHERE_CLASS_ATTRIBUTES": "${RADIAL_CLASS_ATTRIBUTES}",
+    "PROFILE_PLANAR_CLASS_ATTRIBUTES": """${PLANAR_CLASS_ATTRIBUTES}
 ${PROFILE_CLASS_ATTRIBUTES}""",
-    PROFILE_CYLINDER_CLASS_ATTRIBUTES="""${RADIAL_CLASS_ATTRIBUTES}
+    "PROFILE_CYLINDER_CLASS_ATTRIBUTES": """${RADIAL_CLASS_ATTRIBUTES}
 ${PROFILE_CLASS_ATTRIBUTES}""",
-    PROFILE_SPHERE_CLASS_ATTRIBUTES="""${RADIAL_CLASS_ATTRIBUTES}
+    "PROFILE_SPHERE_CLASS_ATTRIBUTES": """${RADIAL_CLASS_ATTRIBUTES}
 ${PROFILE_CLASS_ATTRIBUTES}""",
-)
+}
 """Dictionary containing the keys and the actual docstring used by :func:`maicos.lib.util.render_docs`.
 
     :meta hide-value:

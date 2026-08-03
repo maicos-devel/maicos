@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Benchmarks for :class:`maicos.DensityPlanar`."""
+
+from typing import ClassVar
 
 import MDAnalysis as mda
 
@@ -48,8 +48,8 @@ class DensityPlanarScalingBenchmark:
     """Benchmark DensityPlanar across a range of bin widths."""
 
     timeout = 180
-    params = [0.1, 0.5, 1.0, 2.0]
-    param_names = ["bin_width"]
+    params: ClassVar[list[float]] = [0.1, 0.5, 1.0, 2.0]
+    param_names: ClassVar[list[str]] = ["bin_width"]
 
     def setup(self, _bin_width):
         """Set up the analysis objects."""
@@ -66,8 +66,8 @@ class DensityPlanarGroupingBenchmark:
     """Benchmark DensityPlanar across grouping modes."""
 
     timeout = 180
-    params = ["atoms", "residues", "molecules"]
-    param_names = ["grouping"]
+    params: ClassVar[list[str]] = ["atoms", "residues", "molecules"]
+    param_names: ClassVar[list[str]] = ["grouping"]
 
     def setup(self, _grouping):
         """Set up the analysis objects."""

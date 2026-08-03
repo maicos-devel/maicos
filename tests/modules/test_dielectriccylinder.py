@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -260,7 +258,7 @@ class TestDielectricCylinder:
 
         eps = DielectricCylinder(dipole.atoms, bin_width=0.5, vcutwidth=0.001)
         eps.run()
-        rbins, testrpos = eps._get_coc_rbins()
+        rbins, _testrpos = eps._get_coc_rbins()
         ind = np.argmin(np.abs(eps.results.bin_pos - 1.1))
         # print(eps.results.bin_pos)
         # print(eps._obs.bin_edges)
@@ -288,7 +286,7 @@ class TestDielectricCylinder:
         eps = DielectricCylinder(dipole.atoms, bin_width=0.01, vcutwidth=0.001)
         eps.run()
 
-        rbins, testrpos = eps._get_coc_rbins()
+        _rbins, testrpos = eps._get_coc_rbins()
         pos_phi = eps._wrap_phi_positions(testrpos, shift=0)
         assert_allclose(pos_phi[0], pos_phi[1])
         pos_phi = eps._wrap_phi_positions(testrpos, shift=-np.pi / 2)
