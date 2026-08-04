@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """init file for datafiles."""
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
 #

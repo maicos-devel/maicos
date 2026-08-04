@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -10,6 +8,7 @@
 import sys
 import warnings
 from pathlib import Path
+from typing import ClassVar
 from unittest.mock import patch
 
 import MDAnalysis as mda
@@ -23,8 +22,8 @@ from maicos.core.base import AnalysisBase
 from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
-from util import circle_of_water_molecules  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT
+from util import circle_of_water_molecules
 
 
 @pytest.mark.parametrize(
@@ -92,12 +91,12 @@ def test_render_docs(doc, new_doc):
     def func():
         pass
 
-    DOC_DICT = dict(
-        TEST="test",
-        BLA="blu",
-        INNER="inner",
-        OUTER="desc with ${INNER}",
-    )
+    DOC_DICT = {
+        "TEST": "test",
+        "BLA": "blu",
+        "INNER": "inner",
+        "OUTER": "desc with ${INNER}",
+    }
 
     func.__doc__ = doc
     func_decorated = maicos.lib.util._render_docs(func, doc_dict=DOC_DICT)
@@ -402,7 +401,13 @@ class TestCorrelationAnalysis:
 class Testget_center:
     """Test the ``get_center`` function."""
 
-    compounds = ["group", "segments", "residues", "molecules", "fragments"]
+    compounds: ClassVar[list[str]] = [
+        "group",
+        "segments",
+        "residues",
+        "molecules",
+        "fragments",
+    ]
 
     @pytest.fixture
     def ag(self):

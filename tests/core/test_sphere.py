@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -10,6 +8,7 @@
 import inspect
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -25,7 +24,7 @@ from maicos.lib.weights import density_weights
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
+from data import AIRWATER_TPR, AIRWATER_TRR, WATER_GRO_NPT, WATER_TPR_NPT
 
 
 class SphereClass(SphereBase):
@@ -255,7 +254,7 @@ class TestSphereBase:
     @pytest.mark.parametrize("rmax", [1, 2, 4.5])
     def test_compute_lab_frame_sphere(self, ag, rmax):
         """Test lab frame values with explicit values."""
-        p_obj = SphereClass(ag, **{"pos_arg": 42, "rmax": rmax})
+        p_obj = SphereClass(ag, pos_arg=42, rmax=rmax)
         p_obj._compute_lab_frame_sphere()
 
         assert p_obj.rmax == rmax
@@ -308,7 +307,7 @@ class TestSphereBaseChilds:
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT)
         return u.atoms
 
-    members = []
+    members: ClassVar[list[type]] = []
     for _, member in inspect.getmembers(maicos):
         if (
             inspect.isclass(member)
@@ -320,16 +319,16 @@ class TestSphereBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(
-            unwrap=False,
-            pack=True,
-            jitter=0.0,
-            concfreq=0,
-            bin_width=1,
-            refgroup=None,
-            rmin=0,
-            rmax=None,
-        )
+        params = {
+            "unwrap": False,
+            "pack": True,
+            "jitter": 0.0,
+            "concfreq": 0,
+            "bin_width": 1,
+            "refgroup": None,
+            "rmin": 0,
+            "rmax": None,
+        }
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = SphereBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
@@ -427,23 +426,23 @@ class TestProfileSphereBase:
     @pytest.fixture
     def params(self, u):
         """Fixture for CylinderBase class atributes."""
-        return dict(
-            weighting_function=self.weights,
-            weighting_function_kwargs=None,
-            jitter=0.0,
-            atomgroup=u.atoms,
-            normalization="number",
-            rmin=0,
-            rmax=None,
-            bin_width=0.1,
-            refgroup=None,
-            grouping="atoms",
-            unwrap=False,
-            pack=True,
-            bin_method="com",
-            concfreq=0,
-            output="profile.dat",
-        )
+        return {
+            "weighting_function": self.weights,
+            "weighting_function_kwargs": None,
+            "jitter": 0.0,
+            "atomgroup": u.atoms,
+            "normalization": "number",
+            "rmin": 0,
+            "rmax": None,
+            "bin_width": 0.1,
+            "refgroup": None,
+            "grouping": "atoms",
+            "unwrap": False,
+            "pack": True,
+            "bin_method": "com",
+            "concfreq": 0,
+            "output": "profile.dat",
+        }
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):

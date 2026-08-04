@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -10,13 +8,13 @@
 __all__ = [
     "AnalysisBase",
     "AnalysisCollection",
-    "ProfileBase",
     "CylinderBase",
-    "ProfileCylinderBase",
     "PlanarBase",
+    "ProfileBase",
+    "ProfileCylinderBase",
     "ProfilePlanarBase",
-    "SphereBase",
     "ProfileSphereBase",
+    "SphereBase",
 ]
 
 from .base import AnalysisBase, AnalysisCollection, ProfileBase

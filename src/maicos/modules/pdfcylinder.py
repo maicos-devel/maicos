@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -226,7 +224,7 @@ class PDFCylinder(CylinderBase):
         )
 
         # Calculate pdf per bin by averaging over all atoms in one bin.
-        for r_bin in range(0, self.n_bins):
+        for r_bin in range(self.n_bins):
             # Get all atoms in a bin.
             g1_in_rbin_positions = g1_bin_positions_cyl[
                 np.logical_and(
