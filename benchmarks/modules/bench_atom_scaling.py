@@ -7,13 +7,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Per-module ``_single_frame`` cost as a function of atom count.
 
-Each class benchmarks one module over a 1-frame synthetic universe at
-``n_atoms`` in [300, 1000, 3000, 10000] (PDF modules use [300, 1000, 3000]
-because their O(N²) pairwise kernel makes 10 k atoms prohibitively slow).
+``setup`` builds a one-frame synthetic universe and runs the analysis over it, which
+initialises every attribute the per-frame kernel needs. The benchmark itself then calls
+``_single_frame`` alone, so neither the trajectory loop nor the coordinate transforms
+(``unwrap``, ``pack``) are timed. The pair distribution modules get their own class
+because their pairwise kernels need smaller systems to stay within the time budget.
 
-``unwrap=False, pack=False`` are passed wherever possible to isolate the
-analysis kernel from coordinate-transform overhead.
+The single frame makes :func:`maicos.lib.util.correlation_analysis` warn about the
+trajectory being too short, which is expected here and muted so that it does not drown
+the benchmark output.
 """
+
+import warnings
 
 from benchmarks.synthetic import make_universe
 from maicos import (
@@ -33,265 +38,49 @@ from maicos import (
     VelocityPlanar,
 )
 
-_N_ATOMS = [300, 1000, 3000, 10000]
-_N_ATOMS_PDF = [300, 1000, 3000]
+LINEAR = (
+    DensityCylinder,
+    DensityPlanar,
+    DensitySphere,
+    DielectricCylinder,
+    DielectricPlanar,
+    DielectricSphere,
+    DiporderCylinder,
+    DiporderPlanar,
+    DiporderSphere,
+    TemperaturePlanar,
+    VelocityCylinder,
+    VelocityPlanar,
+)
+PAIRWISE = (PDFCylinder, PDFPlanar)
+MODULES = {cls.__name__: cls for cls in LINEAR + PAIRWISE}
 
 
-def _make(n_atoms):
-    """1-frame synthetic atomgroup with water-like residue layout."""
-    return make_universe(n_atoms=n_atoms, n_frames=1, n_residues=n_atoms // 3)
-
-
-# ---------------------------------------------------------------------------
-# Density
-# ---------------------------------------------------------------------------
-
-
-class DensityPlanarAtomScaling:
-    """_single_frame cost of DensityPlanar vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DensityPlanar(
-            self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
-        ).run()
-
-
-class DensityCylinderAtomScaling:
-    """_single_frame cost of DensityCylinder vs. atom count."""
+class _AtomScaling:
+    """Time ``_single_frame`` of a prepared analysis over growing atom counts."""
 
     timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
+    param_names = ["module", "n_atoms"]
 
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
+    def setup(self, module, n_atoms):
+        """Build a one-frame universe and prepare the analysis on it."""
+        self.analysis = MODULES[module](make_universe(n_atoms=n_atoms, n_frames=1))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.analysis.run()
 
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DensityCylinder(
-            self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
-        ).run()
+    def time_single_frame(self, _module, _n_atoms):
+        """Time one call of the per-frame kernel."""
+        self.analysis._single_frame()
 
 
-class DensitySphereAtomScaling:
-    """_single_frame cost of DensitySphere vs. atom count."""
+class AtomScaling(_AtomScaling):
+    """Atom-count scaling of the modules whose kernel is linear in the atom count."""
 
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
+    params = [[cls.__name__ for cls in LINEAR], [3_000, 10_000, 30_000, 100_000]]
 
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
 
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DensitySphere(
-            self.ag, dens="mass", bin_width=1.0, unwrap=False, pack=False
-        ).run()
+class PairwiseAtomScaling(_AtomScaling):
+    """Atom-count scaling of the pairwise pair distribution modules."""
 
-
-# ---------------------------------------------------------------------------
-# Dielectric
-# ---------------------------------------------------------------------------
-
-
-class DielectricPlanarAtomScaling:
-    """_single_frame cost of DielectricPlanar vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DielectricPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class DielectricCylinderAtomScaling:
-    """_single_frame cost of DielectricCylinder vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DielectricCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class DielectricSphereAtomScaling:
-    """_single_frame cost of DielectricSphere vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DielectricSphere(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-# ---------------------------------------------------------------------------
-# Diporder
-# ---------------------------------------------------------------------------
-
-
-class DiporderPlanarAtomScaling:
-    """_single_frame cost of DiporderPlanar vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DiporderPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class DiporderCylinderAtomScaling:
-    """_single_frame cost of DiporderCylinder vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DiporderCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class DiporderSphereAtomScaling:
-    """_single_frame cost of DiporderSphere vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        DiporderSphere(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-# ---------------------------------------------------------------------------
-# Temperature / Velocity
-# ---------------------------------------------------------------------------
-
-
-class TemperaturePlanarAtomScaling:
-    """_single_frame cost of TemperaturePlanar vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        TemperaturePlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class VelocityPlanarAtomScaling:
-    """_single_frame cost of VelocityPlanar vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        VelocityPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class VelocityCylinderAtomScaling:
-    """_single_frame cost of VelocityCylinder vs. atom count."""
-
-    timeout = 300
-    params = _N_ATOMS
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        VelocityCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-# ---------------------------------------------------------------------------
-# PDF  (O(N²) kernel — capped at 3000 atoms)
-# ---------------------------------------------------------------------------
-
-
-class PDFPlanarAtomScaling:
-    """_single_frame cost of PDFPlanar vs. atom count (O(N²), capped at 3000)."""
-
-    timeout = 600
-    params = _N_ATOMS_PDF
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        PDFPlanar(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
-
-
-class PDFCylinderAtomScaling:
-    """_single_frame cost of PDFCylinder vs. atom count (O(N²), capped at 3000)."""
-
-    timeout = 600
-    params = _N_ATOMS_PDF
-    param_names = ["n_atoms"]
-
-    def setup(self, n_atoms):
-        """Build the synthetic atomgroup."""
-        self.ag = _make(n_atoms)
-
-    def time_single_frame(self, _n_atoms):
-        """Time a single-frame run."""
-        PDFCylinder(self.ag, bin_width=1.0, unwrap=False, pack=False).run()
+    params = [[cls.__name__ for cls in PAIRWISE], [1_500, 3_000, 6_000, 12_000]]

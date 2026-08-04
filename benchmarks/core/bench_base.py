@@ -80,7 +80,7 @@ class SingleFrameBenchmark:
         if transform == "pack":
             return {"pack": True}
         if transform == "unwrap":
-            return {"unwrap": True, "wrap_compound": "atoms"}
+            return {"unwrap": True, "wrap_compound": "residues"}
         if transform == "refgroup":
             # the framework requires pack when a refgroup is set
             half = self.atomgroup[: len(self.atomgroup) // 2]
