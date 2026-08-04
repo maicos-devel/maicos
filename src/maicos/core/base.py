@@ -400,7 +400,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
-        # pylint: disable=unnecessary-pass
 
     def _call_prepare(self) -> None:
         """Base method wrapping all _prepare logic into a single call."""
@@ -593,7 +592,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Called at the end of the :meth:`run` method to finish everything up.
         """
-        # pylint: disable=unnecessary-pass
 
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
@@ -650,9 +648,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         # This method breaks if fname is a Path object. We therefore convert it to a str
         fname = str(fname)
         # Get the required information first
-        current_time = (
-            datetime.now(tz=UTC).astimezone().strftime("%a, %b %d %Y at %H:%M:%S ")
-        )
+        current_time = datetime.now(tz=UTC).strftime("%a, %b %d %Y at %H:%M:%S ")
         module_name = self.__class__.__name__
 
         # Here the specific output messages of the modules are collected. We only take
