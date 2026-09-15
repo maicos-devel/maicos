@@ -8,6 +8,7 @@
 """Module for calculating spherical dielectric profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -69,7 +70,7 @@ class DielectricSphere(SphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str = "eps_sph",
+        output_prefix: str | Path = "eps_sph",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

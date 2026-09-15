@@ -8,6 +8,7 @@
 r"""Module for computing 2D planar pair distribution functions."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -122,7 +123,7 @@ class PDFPlanar(PlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "pdf.dat",
+        output: str | Path = "pdf.dat",
     ) -> None:
         self._locals = locals()
         self.comp_1 = get_compound(g1)

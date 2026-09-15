@@ -205,6 +205,13 @@ def test_get_module_input_str(ag):
 
     assert "test_input='some_other_value'" in module_input
 
+    # Path values are quoted like strings
+    ana = ModuleInput(ag, test_input=Path("results") / "foo.dat")
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert f"test_input='{Path('results') / 'foo.dat'}'" in module_input
+
     ana.run(step=2, stop=7, start=5, verbose=True)
     module_input = maicos.lib.util.get_module_input_str(ana)
     assert (
@@ -607,23 +614,24 @@ def test_error_of_times_to_frames(start, stop, step, dt, mesg_error):
         maicos.lib.util.times_to_frames(start, stop, step, dt)
 
 
+@pytest.mark.parametrize("filename_type", [str, Path])
 class TestCheckFileExtension:
     """Tests for check_file_extension."""
 
-    def test_extension_present_returns_unchanged(self):
+    def test_extension_present_returns_unchanged(self, filename_type):
         """Matching extension leaves the filename untouched and warns nothing."""
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            assert check_file_extension("foo.dat", ".dat") == "foo.dat"
+            assert check_file_extension(filename_type("foo.dat"), ".dat") == "foo.dat"
 
-    def test_missing_extension_is_appended_with_warning(self):
+    def test_missing_extension_is_appended_with_warning(self, filename_type):
         """Missing extension is appended and a UserWarning is issued."""
         with pytest.warns(UserWarning, match=r"\.dat"):
-            result = check_file_extension("foo", ".dat")
+            result = check_file_extension(filename_type("foo"), ".dat")
         assert result == "foo.dat"
 
-    def test_different_extension_is_appended_with_warning(self):
+    def test_different_extension_is_appended_with_warning(self, filename_type):
         """Wrong extension still leads to appending the expected one."""
         with pytest.warns(UserWarning, match=r"\.npz"):
-            result = check_file_extension("foo.txt", ".npz")
+            result = check_file_extension(filename_type("foo.txt"), ".npz")
         assert result == "foo.txt.npz"

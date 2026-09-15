@@ -8,6 +8,7 @@
 """Module for computing planar dielectric profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -103,7 +104,7 @@ class DielectricPlanar(PlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str = "eps",
+        output_prefix: str | Path = "eps",
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)

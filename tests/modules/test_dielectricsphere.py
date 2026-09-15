@@ -153,11 +153,12 @@ class TestDielectricSphere:
         res_rad = np.loadtxt(f"{eps.output_prefix}_rad.dat")
         assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
 
-    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path, filename_type):
         """Tests output name."""
         monkeypatch.chdir(tmp_path)
 
-        eps = DielectricSphere(ag_single_frame, output_prefix="foo")
+        eps = DielectricSphere(ag_single_frame, output_prefix=filename_type("foo"))
         eps.run()
         eps.save()
         with Path("foo_rad.dat").open():

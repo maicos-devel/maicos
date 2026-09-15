@@ -8,6 +8,7 @@
 """Module for computing cylindrical dielectric profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -94,7 +95,7 @@ class DielectricCylinder(CylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str = "eps_cyl",
+        output_prefix: str | Path = "eps_cyl",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)

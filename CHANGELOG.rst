@@ -14,6 +14,10 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Accept ``pathlib.Path`` filenames in ``savetxt``, ``check_file_extension``,
+  ``dump``, ``load``, and analysis module ``output`` and ``output_prefix``
+  parameters. ``PDFCylinder`` now writes its ``phi_`` and ``z_`` files next to
+  ``output`` when it contains a directory (#587)
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
   function now always returns a new ``float`` array without modifying the input
 - Add function and example how to use times instead of frame slices (#585)

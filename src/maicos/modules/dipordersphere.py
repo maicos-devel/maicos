@@ -8,6 +8,7 @@
 r"""Module for computing spherical dipolar order parameters."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -53,7 +54,7 @@ class DiporderSphere(ProfileSphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "diporder_sphere.dat",
+        output: str | Path = "diporder_sphere.dat",
     ) -> None:
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):

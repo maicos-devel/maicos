@@ -8,6 +8,7 @@
 """Module for computing cylindrical velocity profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -65,7 +66,7 @@ class VelocityCylinder(ProfileCylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "velocity.dat",
+        output: str | Path = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

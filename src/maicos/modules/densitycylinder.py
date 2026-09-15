@@ -8,6 +8,7 @@
 """Module for computing cylindrical density profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -56,7 +57,7 @@ class DensityCylinder(ProfileCylinderBase):
         pack: bool = True,
         concfreq: int = 0,
         jitter: float = 0.0,
-        output: str = "density.dat",
+        output: str | Path = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(
