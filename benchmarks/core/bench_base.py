@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Benchmarks for :class:`maicos.core.AnalysisBase`."""
 
+from typing import ClassVar
+
 import numpy as np
 
 from benchmarks.synthetic import make_universe
@@ -51,8 +53,8 @@ class ObsAccumulationBenchmark:
     """Observable-accumulation overhead as the number of ``_obs`` entries grows."""
 
     timeout = 180
-    params = [1, 10, 100, 1000]
-    param_names = ["n_obs"]
+    params: ClassVar[list[int]] = [1, 10, 100, 1000]
+    param_names: ClassVar[list[str]] = ["n_obs"]
 
     def setup(self, _n_obs):
         """Build the synthetic atomgroup."""
@@ -67,8 +69,8 @@ class SingleFrameBenchmark:
     """Marginal cost of the per-frame transforms (pack, unwrap, refgroup)."""
 
     timeout = 180
-    params = ["none", "pack", "unwrap", "refgroup"]
-    param_names = ["transform"]
+    params: ClassVar[list[str]] = ["none", "pack", "unwrap", "refgroup"]
+    param_names: ClassVar[list[str]] = ["transform"]
 
     def setup(self, _transform):
         """Build the synthetic atomgroup."""

@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Bin-dependent benchmarks for profile-based analyses on synthetic data."""
+
+from typing import ClassVar
 
 from benchmarks.synthetic import make_universe
 from maicos import DensityPlanar, DielectricPlanar
@@ -22,8 +22,8 @@ class ProfileBinBenchmark:
     """
 
     timeout = 180
-    params = [1.0, 0.1, 0.01, 0.001]
-    param_names = ["bin_width"]
+    params: ClassVar[list[float]] = [1.0, 0.1, 0.01, 0.001]
+    param_names: ClassVar[list[str]] = ["bin_width"]
 
     def setup(self, _bin_width):
         """Build the synthetic atomgroup."""
@@ -49,8 +49,8 @@ class DielectricBinBenchmark:
     """
 
     timeout = 180
-    params = [1.0, 0.5, 0.1, 0.05, 0.02]
-    param_names = ["bin_width"]
+    params: ClassVar[list[float]] = [1.0, 0.5, 0.1, 0.05, 0.02]
+    param_names: ClassVar[list[str]] = ["bin_width"]
 
     def setup(self, _bin_width):
         """Build the synthetic atomgroup."""

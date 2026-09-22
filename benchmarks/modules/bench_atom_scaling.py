@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -19,6 +17,7 @@ the benchmark output.
 """
 
 import warnings
+from typing import ClassVar
 
 from benchmarks.synthetic import make_universe
 from maicos import (
@@ -60,7 +59,7 @@ class _AtomScaling:
     """Time ``_single_frame`` of a prepared analysis over growing atom counts."""
 
     timeout = 300
-    param_names = ["module", "n_atoms"]
+    param_names: ClassVar[list[str]] = ["module", "n_atoms"]
 
     def setup(self, module, n_atoms):
         """Build a one-frame universe and prepare the analysis on it."""
@@ -77,10 +76,16 @@ class _AtomScaling:
 class AtomScaling(_AtomScaling):
     """Atom-count scaling of the modules whose kernel is linear in the atom count."""
 
-    params = [[cls.__name__ for cls in LINEAR], [3_000, 10_000, 30_000, 100_000]]
+    params: ClassVar[list[list]] = [
+        [cls.__name__ for cls in LINEAR],
+        [3_000, 10_000, 30_000, 100_000],
+    ]
 
 
 class PairwiseAtomScaling(_AtomScaling):
     """Atom-count scaling of the pairwise pair distribution modules."""
 
-    params = [[cls.__name__ for cls in PAIRWISE], [1_500, 3_000, 6_000, 12_000]]
+    params: ClassVar[list[list]] = [
+        [cls.__name__ for cls in PAIRWISE],
+        [1_500, 3_000, 6_000, 12_000],
+    ]
