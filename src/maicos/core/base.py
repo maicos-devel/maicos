@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,8 +9,8 @@ import logging
 import numbers
 import warnings
 from collections.abc import Callable
-from datetime import datetime
 from pathlib import Path
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
@@ -403,7 +401,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
-        pass  # pylint: disable=unnecessary-pass
 
     def _call_prepare(self) -> None:
         """Base method wrapping all _prepare logic into a single call."""
@@ -596,7 +593,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Called at the end of the :meth:`run` method to finish everything up.
         """
-        pass  # pylint: disable=unnecessary-pass
 
     def _call_conclude(self) -> None:
         """Base method wrapping all _conclude logic into a single call."""
@@ -651,7 +647,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
           - output messages from modules and base classes (if they exist)
         """
         # Get the required information first
-        current_time = datetime.now().strftime("%a, %b %d %Y at %H:%M:%S ")
+        current_time = datetime.now(tz=UTC).strftime("%a, %b %d %Y at %H:%M:%S ")
         module_name = self.__class__.__name__
 
         # Here the specific output messages of the modules are collected. We only take

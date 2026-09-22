@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -19,7 +17,7 @@ from numpy.testing import assert_allclose
 from maicos import DensityPlanar
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import (  # noqa: E402
+from data import (
     MICA_TPR,
     MICA_XTC,
     SALT_WATER_GRO,

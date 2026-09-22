@@ -12,7 +12,7 @@ This file does only contain a selection of the most common options. For a full l
 the documentation: http://www.sphinx-doc.org/en/master/config
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from importlib.metadata import metadata
 from pathlib import Path
 
@@ -26,7 +26,7 @@ project = "maicos"
 project_dict = metadata(project)
 author = project_dict["Author"]
 version = project_dict["Version"]
-copyright = f"{datetime.now().date().year}, {author}"
+copyright = f"{datetime.now(tz=UTC).year}, {author}"
 
 # -- General configuration ---------------------------------------------------
 
@@ -123,9 +123,9 @@ html_theme_options = {
 
 # font-awesome logos
 html_css_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",  # noqa: E501
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",  # noqa: E501
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",  # noqa: E501
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",
 ]
 
 # -- Options for HTMLHelp output ---------------------------------------------
