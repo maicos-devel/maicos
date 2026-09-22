@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -12,7 +10,7 @@ functions, which are used in the other MAICoS modules.
 """
 
 __all__ = [
-    "util",
     "math",
+    "util",
     "weights",
 ]

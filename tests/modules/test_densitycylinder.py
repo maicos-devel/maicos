@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -18,8 +16,8 @@ from numpy.testing import assert_allclose
 from maicos import DensityCylinder
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO_NPT, WATER_TPR_NPT  # noqa: E402
-from util import circle_of_water_molecules  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT
+from util import circle_of_water_molecules
 
 
 class ReferenceAtomGroups:
