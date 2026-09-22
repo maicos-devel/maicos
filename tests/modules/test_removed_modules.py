@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -14,7 +12,7 @@ import MDAnalysis as mda
 import pytest
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
 
 
 @pytest.fixture
