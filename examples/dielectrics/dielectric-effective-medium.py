@@ -19,7 +19,6 @@ from matplotlib.patches import Rectangle
 
 def draw_effective_box(ax, leff, value, color="C1", label=None):
     """Draw a finite effective-medium slab centered in the pore."""
-    xmin, xmax = ax.get_xlim()
     x_center = 0
     rect = Rectangle(
         (x_center - leff / 2, 0),
