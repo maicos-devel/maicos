@@ -9,8 +9,8 @@ import logging
 import numbers
 import warnings
 from collections.abc import Callable
-from pathlib import Path
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda

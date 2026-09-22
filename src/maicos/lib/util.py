@@ -199,9 +199,9 @@ self : object
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
     ``"fragments"``).""",
-    OUTPUT_PARAMETER="""output : str or pathlib.Path
+    "OUTPUT_PARAMETER": """output : str or pathlib.Path
     Output filename.""",
-    OUTPUT_PREFIX_PARAMETER="""output_prefix : str or pathlib.Path
+    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str or pathlib.Path
     Prefix for output files.""",
     "SYM_PARAMETER": """sym : bool
     Symmetrize the profile. Only works in combination with ``refgroup``.""",
