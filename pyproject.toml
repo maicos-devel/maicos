@@ -48,6 +48,7 @@ requires-python = ">=3.11"
 dependencies = [
     "mdacli>=0.2.1",
     "MDAnalysis>=2.10.0",
+    "tqdm<4.70",  # tqdm 4.70 changed how the iteration are handled
 ]
 
 [project.optional-dependencies]
