@@ -15,6 +15,7 @@ Contributors
 ------------
 
 - Adyant Agrawal
+- Anirban Dutta
 - Maximilian Becker
 - Shane Carlson
 - Kira Fischer
