@@ -38,7 +38,7 @@ class AnalysisBaseBenchmark:
 
     def setup(self):
         """Build the synthetic atomgroup."""
-        self.atomgroup = make_universe()
+        self.atomgroup = make_universe().atoms
 
     def time_run(self):
         """Time a bare run over the trajectory."""
@@ -58,7 +58,7 @@ class ObsAccumulationBenchmark:
 
     def setup(self, _n_obs):
         """Build the synthetic atomgroup."""
-        self.atomgroup = make_universe()
+        self.atomgroup = make_universe().atoms
 
     def time_run(self, n_obs):
         """Time a run accumulating ``n_obs`` observables per frame."""
@@ -74,7 +74,7 @@ class SingleFrameBenchmark:
 
     def setup(self, _transform):
         """Build the synthetic atomgroup."""
-        self.atomgroup = make_universe()
+        self.atomgroup = make_universe().atoms
 
     def _kwargs(self, transform):
         if transform == "pack":

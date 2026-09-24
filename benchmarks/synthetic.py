@@ -20,7 +20,7 @@ CHARGES = [-0.8476, 0.4238, 0.4238]
 
 
 def make_universe(n_atoms: int = 3000, n_frames: int = 10, seed: int = 0):
-    """Create an in-memory :class:`MDAnalysis.AtomGroup` for benchmarking.
+    """Create an in-memory :class:`MDAnalysis.Universe` for benchmarking.
 
     Atoms are grouped into net-neutral, water-like molecules of one oxygen bonded to
     two hydrogens sitting 1 Å away in random directions. The bonds are what let MAiCoS
@@ -35,7 +35,12 @@ def make_universe(n_atoms: int = 3000, n_frames: int = 10, seed: int = 0):
     n_frames : int
         number of trajectory frames.
     seed : int
-        seed for the random number generator (deterministic output).
+        seed for the random number generator.
+
+    Returns
+    -------
+    universe : MDAnalysis.Universe
+        universe holding the trajectory.
     """
     rng = np.random.default_rng(seed)
     n_molecules = n_atoms // 3
@@ -68,4 +73,4 @@ def make_universe(n_atoms: int = 3000, n_frames: int = 10, seed: int = 0):
         velocities=rng.normal(size=(n_frames, n_atoms, 3)).astype(np.float32),
         dimensions=np.tile([box, box, box, 90.0, 90.0, 90.0], (n_frames, 1)),
     )
-    return u.atoms
+    return u

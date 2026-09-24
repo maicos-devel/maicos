@@ -63,7 +63,9 @@ class _AtomScaling:
 
     def setup(self, module, n_atoms):
         """Build a one-frame universe and prepare the analysis on it."""
-        self.analysis = MODULES[module](make_universe(n_atoms=n_atoms, n_frames=1))
+        self.analysis = MODULES[module](
+            make_universe(n_atoms=n_atoms, n_frames=1).atoms
+        )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.analysis.run()

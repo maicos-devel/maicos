@@ -27,7 +27,7 @@ class ProfileBinBenchmark:
 
     def setup(self, _bin_width):
         """Build the synthetic atomgroup."""
-        self.atomgroup = make_universe(n_atoms=N_ATOMS)
+        self.atomgroup = make_universe(n_atoms=N_ATOMS).atoms
 
     def time_run(self, bin_width):
         """Time DensityPlanar over a range of bin widths."""
@@ -54,7 +54,7 @@ class DielectricBinBenchmark:
 
     def setup(self, _bin_width):
         """Build the synthetic atomgroup."""
-        self.atomgroup = make_universe(n_atoms=N_ATOMS)
+        self.atomgroup = make_universe(n_atoms=N_ATOMS).atoms
 
     def time_run(self, bin_width):
         """Time DielectricPlanar over a range of bin widths."""
