@@ -196,20 +196,35 @@ class TestPDFCylinder:
 
         assert_allclose(ana_obj._obs.count_phi[0], [2, 2, 2])
 
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    @pytest.mark.parametrize("location", ["current", "relative", "absolute"])
     @pytest.mark.parametrize(
         ("name", "output", "expect_warning"),
         [
             ("foo", ["z_foo.dat", "phi_foo.dat"], True),
             ("bar.dat", ["z_bar.dat", "phi_bar.dat"], False),
+            ("foo.txt", ["z_foo.txt.dat", "phi_foo.txt.dat"], True),
         ],
     )
     def test_output_name(
-        self, spce_water, name, output, expect_warning, monkeypatch, tmp_path
+        self,
+        spce_water,
+        name,
+        output,
+        expect_warning,
+        monkeypatch,
+        tmp_path,
+        filename_type,
+        location,
     ):
         """Test output name."""
         monkeypatch.chdir(tmp_path)
+        directory = Path() if location == "current" else Path("results")
+        if location == "absolute":
+            directory = tmp_path / directory
+        directory.mkdir(exist_ok=True)
 
-        ana_obj = PDFCylinder(spce_water.atoms, output=name)
+        ana_obj = PDFCylinder(spce_water.atoms, output=filename_type(directory / name))
         ana_obj.run()
         if expect_warning:
             with pytest.warns(UserWarning, match="should have a '.dat' file extension"):
@@ -217,7 +232,7 @@ class TestPDFCylinder:
         else:
             ana_obj.save()
         for file in output:
-            assert Path(file).exists()
+            assert (directory / file).exists()
 
     def test_wrong_bin_method(self, spce_water):
         """Test grouping for a non existing bin_method."""

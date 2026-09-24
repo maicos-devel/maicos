@@ -6,6 +6,7 @@
 """Module for computing planar temperature profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -52,7 +53,7 @@ class TemperaturePlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "temperature.dat",
+        output: str | Path = "temperature.dat",
     ) -> None:
         self._locals = locals()
         if grouping != "atoms":

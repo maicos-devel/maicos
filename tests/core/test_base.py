@@ -21,7 +21,7 @@ from MDAnalysisTests.core.util import UnWrapUniverse
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import DensityPlanar, __version__
+from maicos import DensityCylinder, DensityPlanar, DensitySphere, PDFPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -391,7 +391,8 @@ class Test_AnalysisBase:
             rtol=1e-5,
         )
 
-    def test_output_message(self, ag, monkeypatch, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_output_message(self, ag, monkeypatch, tmp_path, filename_type):
         """Test the output message of modules."""
         monkeypatch.chdir(tmp_path)
 
@@ -402,14 +403,19 @@ class Test_AnalysisBase:
         sub_ana._index = 1
 
         # Simple check if a single message gets written to the output file
-        ana.savetxt("foo.dat", data, columns=["First", "Second"])
+        ana.savetxt(
+            filename_type(tmp_path / "foo.dat"), data, columns=["First", "Second"]
+        )
+        assert_allclose(np.loadtxt("foo.dat"), data)
 
         with Path("foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
-        sub_ana.savetxt("foo2.dat", data, columns=["First", "Second"])
+        sub_ana.savetxt(
+            filename_type(tmp_path / "foo2.dat"), data, columns=["First", "Second"]
+        )
 
         with Path("foo2.dat").open() as f:
             foo = f.readlines()
@@ -477,14 +483,26 @@ class Test_AnalysisBase:
                 "progressbar_kwargs=None)" in f.read()
             )
 
-    def test_savetxt_warns_on_missing_extension(self, ag, monkeypatch, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    @pytest.mark.parametrize("name", ["missing_ext", "wrong.txt"])
+    def test_savetxt_appends_extension(self, ag, tmp_path, filename_type, name):
         """Savetxt warns when fname lacks the .dat extension and appends it."""
-        monkeypatch.chdir(tmp_path)
         ana = Output(ag)
         ana._index = 1
         with pytest.warns(UserWarning, match=r"\.dat"):
-            ana.savetxt("missing_ext", np.random.rand(10, 2))
-        assert Path("missing_ext.dat").exists()
+            ana.savetxt(filename_type(tmp_path / name), np.random.rand(10, 2))
+        assert (tmp_path / f"{name}.dat").exists()
+
+    @pytest.mark.parametrize(
+        "module", [DensityPlanar, DensityCylinder, DensitySphere, PDFPlanar]
+    )
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_module_output(self, ag, tmp_path, module, filename_type):
+        """Modules save results to string and pathlib filenames."""
+        output = tmp_path / "profile.dat"
+        ana = module(ag, output=filename_type(output)).run(stop=2)
+        ana.save()
+        assert np.loadtxt(output).size > 0
 
     @pytest.mark.parametrize(
         ("concfreq", "files"),
@@ -1131,11 +1149,12 @@ class Test_ProfileBase:
 
         assert 2 * profile.weighting_function(1) == profile_scaled.weighting_function(1)
 
-    def test_output_name(self, params, monkeypatch, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_output_name(self, params, monkeypatch, tmp_path, filename_type):
         """Test output name of save method."""
         monkeypatch.chdir(tmp_path)
 
-        params.update(output="foo.dat")
+        params.update(output=filename_type("foo.dat"))
         profile = ProfileBase(**params)
         profile.results.bin_pos = np.zeros(10)
         profile.results.profile = np.zeros(10)
@@ -1213,17 +1232,19 @@ class TestDumpLoad:
         ana.run()
         return ana
 
-    def test_dump_creates_file(self, singular, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_dump_creates_file(self, singular, tmp_path, filename_type):
         """Test that dump creates an .npz file."""
         fpath = tmp_path / "checkpoint.npz"
-        singular.dump(str(fpath))
+        singular.dump(filename_type(fpath))
         assert fpath.exists()
 
-    def test_dump_warns_on_missing_extension(self, singular, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_dump_warns_on_missing_extension(self, singular, tmp_path, filename_type):
         """Dump warns when filename lacks the .npz extension and appends it."""
         fpath = tmp_path / "missing_ext"
         with pytest.warns(UserWarning, match=r"\.npz"):
-            singular.dump(str(fpath))
+            singular.dump(filename_type(fpath))
         assert fpath.with_suffix(".npz").exists()
 
     def test_dump_does_not_mutate_universe(self, singular, tmp_path):
@@ -1236,12 +1257,13 @@ class TestDumpLoad:
         assert singular._universe.trajectory.n_frames == n_frames_before
         assert singular._trajectory is traj_before
 
-    def test_roundtrip_means(self, singular, tmp_path):
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_roundtrip_means(self, singular, tmp_path, filename_type):
         """Test that means survive a dump/load roundtrip."""
         fpath = tmp_path / "checkpoint.npz"
-        singular.dump(str(fpath))
+        singular.dump(filename_type(fpath))
 
-        restored = SingularSeries.load(str(fpath))
+        restored = SingularSeries.load(filename_type(fpath))
 
         for key in singular.means:
             assert_allclose(restored.means[key], singular.means[key])

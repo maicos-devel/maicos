@@ -10,6 +10,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
 import MDAnalysis as mda
@@ -624,7 +625,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         )
 
     def savetxt(
-        self, fname: str, X: np.ndarray, columns: list[str] | None = None
+        self, fname: str | Path, X: np.ndarray, columns: list[str] | None = None
     ) -> None:
         """Save to text.
 
@@ -645,8 +646,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
           - atomgroup that was analyzed
           - output messages from modules and base classes (if they exist)
         """
-        # This method breaks if fname is a Path object. We therefore convert it to a str
-        fname = str(fname)
         # Get the required information first
         current_time = datetime.now(tz=UTC).strftime("%a, %b %d %Y at %H:%M:%S ")
         module_name = self.__class__.__name__
@@ -692,7 +691,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     _CHECKPOINT_SEP = ":::"
 
-    def dump(self, filename: str) -> None:
+    def dump(self, filename: str | Path) -> None:
         """Save analysis state to an ``.npz`` file.
 
         .. warning::
@@ -711,7 +710,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str
+        filename : str or pathlib.Path
             Path to the output ``.npz`` file.
         """
         sep = self._CHECKPOINT_SEP
@@ -743,7 +742,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         np.savez(filename, **data)
 
     @classmethod
-    def load(cls, filename: str) -> Self:
+    def load(cls, filename: str | Path) -> Self:
         """Restore an analysis instance from a file created by :meth:`dump`.
 
         Returns a new instance of ``cls`` with all statistical accumulators,
@@ -755,7 +754,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str
+        filename : str or pathlib.Path
             Path to the ``.npz`` file written by :meth:`dump`.
 
         Returns
@@ -768,14 +767,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         if "_maicos_version" not in npz.files:
             raise ValueError(
-                f"{filename!r} is missing a MAICoS version tag. It was either "
+                f"{str(filename)!r} is missing a MAICoS version tag. It was either "
                 "not produced by `dump` or written by an incompatible "
                 "version."
             )
         dump_version = str(npz["_maicos_version"])
         if dump_version != __version__:
             raise ValueError(
-                f"{filename!r} was written by MAICoS v{dump_version} but the "
+                f"{str(filename)!r} was written by MAICoS v{dump_version} but the "
                 f"installed version is v{__version__}. `dump`/`load` is "
                 f"version-locked; re-run the analysis with the current "
                 f"version or install v{dump_version} to load this file."
@@ -1023,7 +1022,7 @@ class ProfileBase:
         atomgroup: mda.AtomGroup,
         grouping: str,
         bin_method: str,
-        output: str,
+        output: str | Path,
         weighting_function: Callable,
         weighting_function_kwargs: None | dict,
         normalization: str,

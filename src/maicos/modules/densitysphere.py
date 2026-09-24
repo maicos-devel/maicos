@@ -6,6 +6,7 @@
 """Module for computing spherical density profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -51,7 +52,7 @@ class DensitySphere(ProfileSphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "density.dat",
+        output: str | Path = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

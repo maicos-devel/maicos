@@ -6,6 +6,7 @@
 r"""Module for computing 1D cylindrical pair distribution functions."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -112,7 +113,7 @@ class PDFCylinder(CylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "pdf.dat",
+        output: str | Path = "pdf.dat",
     ) -> None:
         self.comp_1 = get_compound(g1)
         super().__init__(
@@ -396,18 +397,19 @@ class PDFCylinder(CylinderBase):
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_DESCRIPTION}"""  # noqa: D415
+        output = Path(self.output)
         columns = ["r [Å]"]
         for r in self.results.bin_pos:
             columns.append(f"pdf at {r:.2f} Å [Å^-3]")
 
         self.savetxt(
-            "phi_" + self.output,
+            output.with_name(f"phi_{output.name}"),
             np.hstack([self.results.bins_phi[:, np.newaxis], self.results.pdf_phi.T]),
             columns=columns,
         )
 
         self.savetxt(
-            "z_" + self.output,
+            output.with_name(f"z_{output.name}"),
             np.hstack([self.results.bins_z[:, np.newaxis], self.results.pdf_z.T]),
             columns=columns,
         )
