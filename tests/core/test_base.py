@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,6 +9,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -28,7 +27,7 @@ from maicos.lib.util import joint_pop, make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import (  # noqa: E402
+from data import (
     DIPOLE_GRO,
     DIPOLE_ITP,
     WATER_GRO_NPT,
@@ -409,14 +408,14 @@ class Test_AnalysisBase:
         """
         # We select a frame from the middle, since we want to rewind to the first frame
         # of a sliced trajectory.
-        params = dict(
-            unwrap=False,
-            pack=True,
-            refgroup=None,
-            jitter=0.0,
-            wrap_compound="atoms",
-            concfreq=0,
-        )
+        params = {
+            "unwrap": False,
+            "pack": True,
+            "refgroup": None,
+            "jitter": 0.0,
+            "wrap_compound": "atoms",
+            "concfreq": 0,
+        }
         positions = ag.universe.trajectory[5].positions.copy()
 
         ana_obj = AnalysisBase(ag, **params)
@@ -1274,15 +1273,15 @@ class Test_ProfileBase:
     @pytest.fixture
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        return dict(
-            weighting_function=lambda x, grouping, a=1: a * x,  # noqa: ARG005
-            weighting_function_kwargs=None,
-            atomgroup=u.atoms,
-            normalization="number",
-            grouping="atoms",
-            bin_method="com",
-            output="profile.dat",
-        )
+        return {
+            "weighting_function": lambda x, grouping, a=1: a * x,  # noqa: ARG005
+            "weighting_function_kwargs": None,
+            "atomgroup": u.atoms,
+            "normalization": "number",
+            "grouping": "atoms",
+            "bin_method": "com",
+            "output": "profile.dat",
+        }
 
     def test_wrong_normalization(self, params):
         """Test a wrong normalization string."""
@@ -1358,7 +1357,7 @@ class Test_ProfileBase:
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["atomgroup", "wrap_compound"]
+    ignored_parameters: ClassVar[list[str]] = ["atomgroup", "wrap_compound"]
 
     @pytest.mark.parametrize("Member", find_cls_members(AnalysisBase, ["maicos"]))
     def test_parameters(self, Member):
