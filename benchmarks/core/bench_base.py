@@ -29,6 +29,7 @@ class _RandomObs(AnalysisBase):
     def _single_frame(self):
         for i in range(self._n_obs):
             self._obs[f"obs{i}"] = np.random.rand()
+        return np.random.rand()
 
 
 class AnalysisBaseBenchmark:
@@ -66,10 +67,10 @@ class ObsAccumulationBenchmark:
 
 
 class SingleFrameBenchmark:
-    """Marginal cost of the per-frame transforms (pack, unwrap, refgroup)."""
+    """Cost of the per-frame transforms (pack, refgroup, unwrap)."""
 
     timeout = 180
-    params: ClassVar[list[str]] = ["none", "pack", "unwrap", "refgroup"]
+    params: ClassVar[list[str]] = ["none", "pack", "pack+refgroup", "unwrap"]
     param_names: ClassVar[list[str]] = ["transform"]
 
     def setup(self, _transform):
@@ -79,12 +80,11 @@ class SingleFrameBenchmark:
     def _kwargs(self, transform):
         if transform == "pack":
             return {"pack": True}
-        if transform == "unwrap":
-            return {"unwrap": True, "wrap_compound": "residues"}
-        if transform == "refgroup":
-            # the framework requires pack when a refgroup is set
+        if transform == "pack+refgroup":
             half = self.atomgroup[: len(self.atomgroup) // 2]
             return {"refgroup": half, "pack": True}
+        if transform == "unwrap":
+            return {"unwrap": True, "wrap_compound": "residues"}
         return {}
 
     def time_run(self, transform):
