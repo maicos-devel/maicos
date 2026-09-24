@@ -15,9 +15,10 @@ Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 - Accept ``pathlib.Path`` objects as filenames (#603)
-- Fix ruff lint errors and remove non-executable shebang lines from module headers
+- Add note to the getting started section about symlinks for Windows devs (#592)
+- Fix ruff lint errors and remove non-executable shebang lines from module headers (#602)
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
-  function now always returns a new ``float`` array without modifying the input
+  function now always returns a new ``float`` array without modifying the input (#596)
 - Add function and example how to use times instead of frame slices (#585)
 - Refactor diporder modules to use Legendre polynomials (#586)
 - Treat all warnings as error in tests (#575)
