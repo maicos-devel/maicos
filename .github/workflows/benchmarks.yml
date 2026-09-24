@@ -40,7 +40,7 @@ jobs:
         run: |
           asv machine --yes
           tox -e benchmarks-compare
-          if grep -qE '^\+\s+[0-9]' benchmark_regressions.txt; then
+          if grep -qE '^\|\s*\+\s*\|' benchmark_regressions.txt; then
             echo "has_regression=true" >> "$GITHUB_ENV"
           else
             echo "has_regression=false" >> "$GITHUB_ENV"
@@ -129,5 +129,5 @@ jobs:
         if: always() && github.event_name == 'pull_request' && env.has_regression == 'true'
         run: |
           echo "--- Regressions exceeding ${REGRESSION_FACTOR}x ---"
-          grep -E '^\+\s+[0-9]' benchmark_regressions.txt
+          grep -E '^\|\s*\+\s*\|' benchmark_regressions.txt
           exit 1
