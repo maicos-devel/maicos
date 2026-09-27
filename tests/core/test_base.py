@@ -175,8 +175,10 @@ class Frame_types(AnalysisBase):
 
 
 class CorrelatedSeries(AnalysisBase):
-    # TODO @quewakira: The name can be misleading (could be time correlation)
     """Class emitting several correlated observables per frame.
+
+    The observables are correlated with each other within a frame, but not across frames.
+    There is no time correlation between frames.
 
     Observables (one sample per frame):
     - ``x``     : scalar, drawn at random
@@ -191,10 +193,11 @@ class CorrelatedSeries(AnalysisBase):
         {"x", "other"},
         {"y", "prof"},
         {"y", "other"},
-        {"prof", "other"},
     ]
 
-    def __init__(self, atomgroup):
+    def __init__(self, atomgroup, compute_covariance=None):
+        if compute_covariance is not None:
+            self._compute_covariance = compute_covariance
         super().__init__(
             atomgroup=atomgroup,
             unwrap=False,
@@ -225,7 +228,7 @@ class WeightedSeries(AnalysisBase):
 
     ``single`` (shape (3,), one sample per frame) and ``weighted`` (shape (3,)
     with a per-bin sample count) broadcast in shape but are *not* co-sampled, so
-    their covariance must not be tracked.
+    requesting their covariance must raise KeyError.
     """
 
     _compute_covariance: ClassVar[list[set[str]]] = [{"single", "weighted"}]
@@ -1755,10 +1758,16 @@ class Test_Covariance:
         """cov() is symmetric in its arguments."""
         assert_allclose(ana.moments.cov("x", "y"), ana.moments.cov("y", "x"))
 
-    def test_incompatible_pair_not_tracked(self, ana):
-        """Pairs whose shapes do not broadcast are never tracked."""
+    def test_incompatible_pair_raises(self, ag):
+        """Requesting a pair whose shapes do not broadcast raises."""
+        ana = CorrelatedSeries(ag, compute_covariance=[{"prof", "other"}])
+        with pytest.raises(ValueError, match="is invalid"):
+            ana.run()
+
+    def test_unrequested_pair_raises(self, ana):
+        """cov() raises for a pair not listed in `_compute_covariance`."""
         assert make_pair_key("other", "prof") not in ana.moments.C
-        with pytest.raises(KeyError, match="do not broadcast"):
+        with pytest.raises(KeyError, match="not requested"):
             ana.moments.cov("prof", "other")
 
     def test_propagate_matches_manual(self, ana):
@@ -1781,7 +1790,7 @@ class Test_Covariance:
 
     def test_propagate_raises_on_untracked(self, ana):
         """propagate() raises when a requested pair has no tracked covariance."""
-        with pytest.raises(KeyError, match="do not broadcast"):
+        with pytest.raises(KeyError, match="not requested"):
             ana.moments.propagate_error({"prof": np.ones(3), "other": np.ones(2)})
 
     def test_uncorrelated_covariance_is_small(self, ag):
@@ -1796,14 +1805,12 @@ class Test_Covariance:
         )
         assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
 
-    def test_not_cosampled_pair_not_tracked(self, ag):
-        """Shape-compatible but differently-populated observables are not tracked."""
+    def test_not_cosampled_pair_raises(self, ag):
+        """Requesting shape-compatible but differently-populated observables raises."""
         np.random.seed(1)
         ana = WeightedSeries(ag)
-        ana.run()
-        assert make_pair_key("single", "weighted") not in ana.moments.C
-        with pytest.raises(KeyError, match="do not broadcast"):
-            ana.moments.cov("single", "weighted")
+        with pytest.raises(ValueError, match="is invalid"):
+            ana.run()
 
     def test_roundtrip_covariance(self, ana, tmp_path):
         """The covariance container survives a dump/load roundtrip with tuple keys."""

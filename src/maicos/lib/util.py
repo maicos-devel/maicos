@@ -982,6 +982,9 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
 def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     """Shared sample count of two co-sampled observables.
 
+    A covariance is only defined for co-sampled observables, i.e. when the
+    populations agree element-wise after broadcasting.
+
     Parameters
     ----------
     pop_x, pop_y : numpy.ndarray
@@ -991,8 +994,18 @@ def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     -------
     numpy.ndarray
         The (broadcast) number of samples shared by both observables.
+
+    Raises
+    ------
+    ValueError
+        If the populations do not broadcast or differ.
     """
-    return np.broadcast_arrays(pop_x, pop_y)[0]
+    b_x, b_y = np.broadcast_arrays(pop_x, pop_y)
+    if not np.array_equal(b_x, b_y):
+        raise ValueError(
+            "cannot sample the covariance of observables with different populations"
+        )
+    return b_x
 
 
 #: Observable types the accumulator knows how to merge.
@@ -1090,7 +1103,7 @@ class MomentAccumulator:
         self._build_pairs(s_obs, s_pop, _cov)
 
     def _build_pairs(self, s_obs, s_pop, _cov):
-        """Seed ``C`` for the requested pairs that broadcast and are co-sampled."""
+        """Seed ``C`` for the requested pairs; raise if a pair is not co-sampled."""
         for pair_key in self._requested_cov_pairs:
             key_i, key_j = pair_key
             for key in pair_key:
@@ -1101,18 +1114,17 @@ class MomentAccumulator:
                     )
             try:
                 shape = np.broadcast_shapes(s_obs[key_i].shape, s_obs[key_j].shape)
-            except ValueError:
-                continue
-            if not np.array_equal(
-                np.broadcast_to(s_pop[key_i], shape),
-                np.broadcast_to(s_pop[key_j], shape),
-            ):
-                continue
+                pop = joint_pop(s_pop[key_i], s_pop[key_j])
+            except ValueError as err:
+                raise ValueError(
+                    f"requested covariance pair {set(pair_key)} is invalid: the "
+                    f"observables must broadcast against each other (shapes "
+                    f"{s_obs[key_i].shape} and {s_obs[key_j].shape}) and be "
+                    f"co-sampled (same population)"
+                ) from err
             # Seed with the first frame's within-frame co-moment (zero for
             # single-sample observables, where _cov is absent).
-            seed = np.nan_to_num(_cov.get(pair_key, 0.0)) * joint_pop(
-                s_pop[key_i], s_pop[key_j]
-            )
+            seed = np.nan_to_num(_cov.get(pair_key, 0.0)) * pop
             self.C[pair_key] = np.broadcast_to(seed, shape).astype(float).copy()
             self._pairs.append(pair_key)
 
@@ -1165,7 +1177,7 @@ class MomentAccumulator:
         """
         key_i, key_j = pair_key
         C = self.C[pair_key]
-        n_new = s_pop[key_i]
+        n_new = joint_pop(s_pop[key_i], s_pop[key_j])
         within = np.nan_to_num(_cov.get(pair_key, 0.0)) * n_new
 
         _, C[...] = combine_subsample_covariance(
@@ -1199,9 +1211,7 @@ class MomentAccumulator:
         Raises
         ------
         KeyError
-            If the off-diagonal pair was not tracked, either because the two
-            observables do not broadcast against each other or because they are
-            not co-sampled (different populations).
+            If the off-diagonal pair was not requested in ``_compute_covariance``.
 
         """
         if key_i == key_j:
@@ -1215,9 +1225,7 @@ class MomentAccumulator:
         if pair_key not in self.C:
             raise KeyError(
                 f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
-                f"requested in `_compute_covariance`, or the observables do not "
-                f"broadcast or are not co-sampled (different populations), so they "
-                f"cannot enter the same estimator"
+                f"requested in `_compute_covariance`"
             )
         return self.C[pair_key] / joint_pop(self.pop[key_i], self.pop[key_j]) ** 2
 

@@ -644,6 +644,8 @@ def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B)
     Empty merges (``n_AB == 0``) contribute zero rather than a NaN, so a bin that
     is intermittently empty does not poison the running co-moment.
 
+    See `<https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online>`_.
+
     Parameters
     ----------
     n_A : int

@@ -314,12 +314,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     #: Observable pairs to accumulate the off-diagonal covariance for. Each entry
     #: names two observable keys, e.g. ``[{"mM_r", "m_r"}, {"mM_r", "M_r"}]``.
-    #: Only the requested pairs are tracked, so analyses pay only for the
-    #: covariances their error estimate actually consumes. Empty (the default)
-    #: disables covariance entirely. Required for
-    #: :meth:`~maicos.lib.util.MomentAccumulator.cov` /
-    #: :meth:`~maicos.lib.util.MomentAccumulator.propagate_error`; subclasses
-    #: needing them declare their pairs here.
     _compute_covariance: ClassVar[list[set[str]]] = []
 
     if TYPE_CHECKING:  # pragma: no cover
@@ -360,8 +354,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self.pack = pack
         self.jitter = jitter
         self.concfreq = concfreq
-        # Canonical set of requested covariance pairs (order-independent keys).
-        self._requested_pairs = {
+        self._covariance_pair_keys = {
             make_pair_key(*pair) for pair in self._compute_covariance
         }
         if wrap_compound not in [
@@ -535,10 +528,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         try:
             # Fail fast if the backend is not initialised yet.
             self.moments  # noqa B018
-
-            # One vectorized backend updates the running means, variances and the
-            # requested covariances. It accumulates the off-diagonal covariance
-            # (which needs the pre-frame means) before overwriting the means.
             self.moments.update(self._obs, self._pop, self._var, self._cov)
 
         except AttributeError:
@@ -548,7 +537,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             # the means/sems/M2/pop/sums/C containers; expose them on the analysis
             # for the modules and checkpointing. Covariance and error propagation
             # are reached through `self.moments.cov`/`self.moments.propagate_error`.
-            self.moments = MomentAccumulator(self._requested_pairs)
+            self.moments = MomentAccumulator(self._covariance_pair_keys)
             self.moments.register(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means
             self.sems = self.moments.sems
