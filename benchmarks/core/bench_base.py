@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Benchmarks for :class:`maicos.core.AnalysisBase`."""
 
+from typing import ClassVar
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -66,8 +68,8 @@ class CovarianceBenchmark:
     """Benchmark the per-frame off-diagonal covariance accumulation."""
 
     timeout = 300
-    params = [4, 8, 16]
-    param_names = ["n_obs"]
+    params: ClassVar[list[int]] = [4, 8, 16]
+    param_names: ClassVar[list[str]] = ["n_obs"]
 
     def setup(self, _n_obs):
         """Load a multi-frame universe shared across the parametrized runs."""

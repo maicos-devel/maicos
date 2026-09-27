@@ -6,6 +6,7 @@
 """Module for computing cylindrical dielectric profiles."""
 
 import logging
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -77,7 +78,7 @@ class DielectricCylinder(CylinderBase):
 
     # Radial dielectric error estimate propagates the correlated error of the
     # three radial observables; only their pairwise covariances are tracked.
-    _compute_covariance = [
+    _compute_covariance: ClassVar[list[set[str]]] = [
         {"mM_r", "m_r"},
         {"mM_r", "M_r"},
         {"m_r", "M_r"},

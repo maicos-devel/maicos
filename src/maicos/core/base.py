@@ -10,7 +10,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -320,7 +320,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     #: :meth:`~maicos.lib.util.MomentAccumulator.cov` /
     #: :meth:`~maicos.lib.util.MomentAccumulator.propagate_error`; subclasses
     #: needing them declare their pairs here.
-    _compute_covariance: list = []
+    _compute_covariance: ClassVar[list[set[str]]] = []
 
     if TYPE_CHECKING:  # pragma: no cover
         # Type annotations for attributes set dynamically in _call_single_frame.

@@ -185,7 +185,7 @@ class CorrelatedSeries(AnalysisBase):
     - ``other`` : shape (2,) array (does not broadcast against ``prof``)
     """
 
-    _compute_covariance = [
+    _compute_covariance: ClassVar[list[set[str]]] = [
         {"x", "y"},
         {"x", "prof"},
         {"x", "other"},
@@ -228,7 +228,7 @@ class WeightedSeries(AnalysisBase):
     their covariance must not be tracked.
     """
 
-    _compute_covariance = [{"single", "weighted"}]
+    _compute_covariance: ClassVar[list[set[str]]] = [{"single", "weighted"}]
 
     def __init__(self, atomgroup):
         super().__init__(
@@ -262,7 +262,7 @@ class MultiSampleSeries(AnalysisBase):
     ``(n_bins,)`` (vectorized block path).
     """
 
-    _compute_covariance = [{"x", "y"}]
+    _compute_covariance: ClassVar[list[set[str]]] = [{"x", "y"}]
 
     def __init__(self, atomgroup, n_bins=3, seed=0):
         self._n_bins = n_bins
