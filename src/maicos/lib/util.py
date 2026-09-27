@@ -1173,7 +1173,8 @@ class MomentAccumulator:
                 ) from err
             # Seed with the first frame's within-frame co-moment (zero for
             # single-sample observables, where _cov is absent).
-            seed = np.nan_to_num(_cov.get(pair_key, 0.0)) * pop
+            cov = np.asarray(_cov.get(pair_key, 0.0), dtype=float)
+            seed = np.where(np.isnan(cov), 0.0, cov) * pop
             self.C[pair_key] = np.broadcast_to(seed, shape).astype(float).copy()
             self._pairs.append(pair_key)
 
@@ -1211,7 +1212,8 @@ class MomentAccumulator:
         )
         with np.errstate(divide="ignore", invalid="ignore"):
             self.sems[key][...] = np.sqrt(M2 / pop**2)
-        self.sums[key][...] += np.nan_to_num(s_obs[key]) * s_pop[key]
+        obs = s_obs[key]
+        self.sums[key][...] += np.where(np.isnan(obs), 0.0, obs) * s_pop[key]
 
     def _merge_cov(self, pair_key, s_obs, s_pop, _cov):
         """Merge the current frame into one pair's running co-moment.
@@ -1227,7 +1229,8 @@ class MomentAccumulator:
         key_i, key_j = pair_key
         C = self.C[pair_key]
         n_new = _joint_pop(s_pop[key_i], s_pop[key_j])
-        within = np.nan_to_num(_cov.get(pair_key, 0.0)) * n_new
+        cov = np.asarray(_cov.get(pair_key, 0.0), dtype=float)
+        within = np.where(np.isnan(cov), 0.0, cov) * n_new
 
         _, C[...] = combine_subsample_covariance(
             n_new,
