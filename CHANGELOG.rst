@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Add more module benchmarks and synthetic scaling tests (#595)
 - Add note to the getting started section about symlinks for Windows devs (#592)
 - Fix ruff lint errors and remove non-executable shebang lines from module headers (#602)
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
