@@ -78,6 +78,16 @@ forked branch to your machine.
 
   git clone git@github.com:your-user-name/maicos.git
 
+.. note::
+
+  For Windows users: The repository contains symbolic links. On Windows, Git only
+  creates them if symlink support is enabled. Enable `Developer Mode`_ (or run Git as
+  administrator) and clone with
+
+  .. code-block:: bash
+
+    git clone -c core.symlinks=true git@github.com:your-user-name/maicos.git
+
 Now you have a local version on your machine which you can install by
 
 .. code-block:: bash
@@ -90,6 +100,7 @@ you to edit the code and directly use the updated version.
 
 .. _Tox: https://tox.readthedocs.io/en/latest/
 .. _`MAICoS develop project` : https://github.com/maicos-devel/maicos
+.. _`Developer Mode` : https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
 
 Useful developer scripts
 ------------------------

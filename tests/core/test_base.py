@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,6 +9,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -27,7 +26,7 @@ from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 
 sys.path.append(str(Path(__file__).parents[1]))
 
-from data import (  # noqa: E402
+from data import (
     DIPOLE_GRO,
     DIPOLE_ITP,
     WATER_GRO_NPT,
@@ -243,14 +242,14 @@ class Test_AnalysisBase:
         """
         # We select a frame from the middle, since we want to rewind to the first frame
         # of a sliced trajectory.
-        params = dict(
-            unwrap=False,
-            pack=True,
-            refgroup=None,
-            jitter=0.0,
-            wrap_compound="atoms",
-            concfreq=0,
-        )
+        params = {
+            "unwrap": False,
+            "pack": True,
+            "refgroup": None,
+            "jitter": 0.0,
+            "wrap_compound": "atoms",
+            "concfreq": 0,
+        }
         positions = ag.universe.trajectory[5].positions.copy()
 
         ana_obj = AnalysisBase(ag, **params)
@@ -432,14 +431,14 @@ class Test_AnalysisBase:
         sub_ana.n_frames = 1
 
         # Simple check if a single message gets written to the output file
-        ana.savetxt("foo", data, columns=["First", "Second"])
+        ana.savetxt("foo.dat", data, columns=["First", "Second"])
 
         with Path("foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
         # get written to the file in the right order.
-        sub_ana.savetxt("foo2", data, columns=["First", "Second"])
+        sub_ana.savetxt("foo2.dat", data, columns=["First", "Second"])
 
         with Path("foo2.dat").open() as f:
             foo = f.readlines()
@@ -506,6 +505,16 @@ class Test_AnalysisBase:
                 ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
                 "n_workers=None, n_parts=None, backend=None)" in f.read()
             )
+
+    def test_savetxt_warns_on_missing_extension(self, ag, monkeypatch, tmp_path):
+        """Savetxt warns when fname lacks the .dat extension and appends it."""
+        monkeypatch.chdir(tmp_path)
+        ana = Output(ag)
+        ana._index = 1
+        ana.n_frames = 1
+        with pytest.warns(UserWarning, match=r"\.dat"):
+            ana.savetxt("missing_ext", np.random.rand(10, 2))
+        assert Path("missing_ext.dat").exists()
 
     @pytest.mark.parametrize(
         ("concfreq", "files"),
@@ -641,7 +650,7 @@ class Test_AnalysisBase:
         class_obj.run(stop=2)
         assert class_obj.means.observable == result
 
-    @pytest.mark.parametrize("data,", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
+    @pytest.mark.parametrize("data", [(["1", "2"]), ([{"1": 1}, {"1": 1}])])
     def test_frame_dict_wrong_types(self, ag, data):
         """Check that unsupported types for the frame Dict throw an error."""
         class_obj = Frame_types(ag)
@@ -968,7 +977,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms)
         ana_2 = Conclude(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run()
 
         assert ana_1.results is not None
@@ -1011,7 +1021,8 @@ class TestAnalysisCollection:
         ana_1 = PositionShifter(u.atoms)
         ana_2 = PositionShifter(u.atoms)
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(frames=[0])
 
         # If positions are properly restored between analyses, both should
@@ -1022,7 +1033,10 @@ class TestAnalysisCollection:
         """Test error raise if two analysis objects have a different trajectory."""
         v = mda.Universe(TPR, XTC)
 
-        with pytest.raises(ValueError, match="`analysis_instances` do not have the"):
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(ValueError, match="`analysis_instances` do not have the"),
+        ):
             AnalysisCollection(Conclude(u.atoms), Conclude(v.atoms))
 
     def test_no_base_child(self, u):
@@ -1033,7 +1047,10 @@ class TestAnalysisCollection:
                 self._trajectory = trajectory
 
         # Create collection for common trajectory loop with inconsistent trajectory
-        with pytest.raises(TypeError, match="not a child of `AnalysisBase`"):
+        with (
+            pytest.warns(UserWarning, match="still experimental"),
+            pytest.raises(TypeError, match="not a child of `AnalysisBase`"),
+        ):
             AnalysisCollection(CustomAnalysis(u.trajectory))
 
     def test_save(self, u, monkeypatch, tmp_path):
@@ -1043,7 +1060,8 @@ class TestAnalysisCollection:
         ana_1 = Conclude(u.atoms, output_prefix="ana1")
         ana_2 = Conclude(u.atoms, output_prefix="ana2")
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         collection.save()
 
@@ -1069,7 +1087,8 @@ class TestAnalysisCollection:
         ana_2._single_frame = lambda: None
         ana_2._conclude = lambda: None
 
-        collection = AnalysisCollection(ana_1, ana_2)
+        with pytest.warns(UserWarning, match="still experimental"):
+            collection = AnalysisCollection(ana_1, ana_2)
         collection.run(stop=1)
         with pytest.warns(UserWarning, match=r"has no save\(\) method"):
             collection.save()
@@ -1098,15 +1117,15 @@ class Test_ProfileBase:
     @pytest.fixture
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        return dict(
-            weighting_function=lambda x, grouping, a=1: a * x,  # noqa: ARG005
-            weighting_function_kwargs=None,
-            atomgroup=u.atoms,
-            normalization="number",
-            grouping="atoms",
-            bin_method="com",
-            output="profile.dat",
-        )
+        return {
+            "weighting_function": lambda x, grouping, a=1: a * x,  # noqa: ARG005
+            "weighting_function_kwargs": None,
+            "atomgroup": u.atoms,
+            "normalization": "number",
+            "grouping": "atoms",
+            "bin_method": "com",
+            "output": "profile.dat",
+        }
 
     def test_wrong_normalization(self, params):
         """Test a wrong normalization string."""
@@ -1184,7 +1203,7 @@ class Test_ProfileBase:
 class TestPlanarBaseChilds:
     """Tests for the AnalayseBase child classes."""
 
-    ignored_parameters = ["atomgroup", "wrap_compound"]
+    ignored_parameters: ClassVar[list[str]] = ["atomgroup", "wrap_compound"]
 
     @pytest.mark.parametrize("Member", find_cls_members(AnalysisBase, ["maicos"]))
     def test_parameters(self, Member):
@@ -1200,3 +1219,331 @@ class TestPlanarBaseChilds:
                 mod_sig.parameters[param.name]
             except KeyError as err:
                 raise KeyError(f"{param.name} is not a parameter of {Member}!") from err
+
+
+class TestDumpLoad:
+    """Tests for the dump/load checkpoint methods."""
+
+    @pytest.fixture
+    def ag(self):
+        """Import MDA universe."""
+        return mda.Universe(WATER_TPR_NPT, WATER_TRR_NPT, in_memory=True).atoms
+
+    @pytest.fixture
+    def singular(self, ag):
+        """Run a SingularSeries analysis."""
+        np.random.seed(42)
+        ana = SingularSeries(ag)
+        ana.run()
+        return ana
+
+    @pytest.fixture
+    def multiple(self, ag):
+        """Run a MultipleSeries analysis."""
+        np.random.seed(42)
+        ana = MultipleSeries(ag)
+        ana.run()
+        return ana
+
+    def test_dump_creates_file(self, singular, tmp_path):
+        """Test that dump creates an .npz file."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+        assert fpath.exists()
+
+    def test_dump_warns_on_missing_extension(self, singular, tmp_path):
+        """Dump warns when filename lacks the .npz extension and appends it."""
+        fpath = tmp_path / "missing_ext"
+        with pytest.warns(UserWarning, match=r"\.npz"):
+            singular.dump(str(fpath))
+        assert fpath.with_suffix(".npz").exists()
+
+    def test_dump_does_not_mutate_universe(self, singular, tmp_path):
+        """Test that dump leaves the user's universe untouched."""
+        fpath = tmp_path / "checkpoint.npz"
+        traj_before = singular._universe.trajectory
+        n_frames_before = traj_before.n_frames
+        singular.dump(str(fpath))
+        assert singular._universe.trajectory is traj_before
+        assert singular._universe.trajectory.n_frames == n_frames_before
+        assert singular._trajectory is traj_before
+
+    def test_roundtrip_means(self, singular, tmp_path):
+        """Test that means survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        for key in singular.means:
+            assert_allclose(restored.means[key], singular.means[key])
+
+    def test_roundtrip_sems(self, singular, tmp_path):
+        """Test that sems survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        for key in singular.sems:
+            assert_allclose(restored.sems[key], singular.sems[key])
+
+    def test_roundtrip_results(self, singular, tmp_path):
+        """Test that results survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        for key in singular.results:
+            assert_allclose(restored.results[key], singular.results[key])
+
+    def test_roundtrip_accumulators(self, singular, tmp_path):
+        """Test that sums, pop, M2 survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        for attr in ("sums", "pop", "M2"):
+            orig = getattr(singular, attr)
+            rest = getattr(restored, attr)
+            for key in orig:
+                assert_allclose(rest[key], orig[key])
+
+    def test_roundtrip_arrays(self, singular, tmp_path):
+        """Test that timeseries, frames, times survive a dump/load roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        assert_allclose(restored.timeseries, singular.timeseries)
+        assert_allclose(restored.frames, singular.frames)
+        assert_allclose(restored.times, singular.times)
+
+    def test_roundtrip_metadata(self, singular, tmp_path):
+        """Test that _frame_index, _index, corrtime survive a roundtrip."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        assert restored._frame_index == singular._frame_index
+        assert restored._index == singular._index
+        assert_allclose(restored.corrtime, singular.corrtime)
+
+    def test_roundtrip_multiple_observables(self, multiple, tmp_path):
+        """Test dump/load with variance and population tracking."""
+        fpath = tmp_path / "checkpoint.npz"
+        multiple.dump(str(fpath))
+
+        restored = MultipleSeries.load(str(fpath))
+
+        for key in multiple.means:
+            assert_allclose(restored.means[key], multiple.means[key])
+        for key in multiple.sems:
+            assert_allclose(restored.sems[key], multiple.sems[key])
+
+    def test_scalar_types_preserved(self, singular, tmp_path):
+        """Test that scalar values remain scalars after roundtrip, not 0-d arrays."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        for key in singular.means:
+            orig = singular.means[key]
+            rest = restored.means[key]
+            if np.ndim(orig) == 0:
+                assert not isinstance(rest, np.ndarray), (
+                    f"means[{key!r}] should be scalar, got {type(rest)}"
+                )
+
+    def test_roundtrip_atomgroup(self, singular, tmp_path):
+        """Test that the analysed atomgroup is restored on load."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        assert restored.atomgroup.n_atoms == singular.atomgroup.n_atoms
+        np.testing.assert_array_equal(
+            restored.atomgroup.indices, singular.atomgroup.indices
+        )
+
+    def test_loaded_universe_has_no_trajectory(self, singular, tmp_path):
+        """Test that the rebuilt universe carries only the topology."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        assert restored._trajectory is None
+        assert not hasattr(restored._universe, "trajectory")
+
+    def test_load_run_raises_runtime_error(self, singular, tmp_path):
+        """Test that calling run() on a loaded instance raises a useful error."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        with pytest.raises(RuntimeError, match="restored via `load`"):
+            restored.run()
+
+    @pytest.mark.parametrize(
+        ("level", "attr_name"),
+        [
+            ("atoms", "names"),
+            ("atoms", "types"),
+            ("atoms", "masses"),
+            ("atoms", "charges"),
+            ("residues", "resnames"),
+            ("residues", "resids"),
+            ("segments", "segids"),
+        ],
+    )
+    def test_roundtrip_topology_attrs(self, singular, tmp_path, level, attr_name):
+        """Common topology attrs must round-trip — canary for MDA dev changes."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        restored = SingularSeries.load(str(fpath))
+
+        orig = getattr(getattr(singular._universe, level), attr_name)
+        rest = getattr(getattr(restored._universe, level), attr_name)
+        np.testing.assert_array_equal(rest, orig)
+
+    def test_load_rejects_version_mismatch(self, singular, tmp_path, monkeypatch):
+        """Test that load refuses files written by a different MAICoS version."""
+        fpath = tmp_path / "checkpoint.npz"
+        singular.dump(str(fpath))
+
+        monkeypatch.setattr("maicos.core.base.__version__", "0.0.0-other")
+        with pytest.raises(ValueError, match="version-locked"):
+            SingularSeries.load(str(fpath))
+
+    def test_load_rejects_missing_version_tag(self, tmp_path):
+        """Test that load refuses files without a MAICoS version tag."""
+        fpath = tmp_path / "untagged.npz"
+        np.savez(str(fpath), foo=np.zeros(3))
+        with pytest.raises(ValueError, match="version tag"):
+            SingularSeries.load(str(fpath))
+
+    def test_no_new_mda_topology_attrs(self):
+        """Alert when MDAnalysis registers new per-object TopologyAttr classes.
+
+        ``dump`` serialises anything in ``_topology.attrs`` whose
+        ``per_object`` is one of ``atom``/``residue``/``segment``, so new
+        attrs round-trip automatically. We still want a deliberate review
+        when MDAnalysis grows its registry: a new attr may carry data that
+        needs explicit roundtrip coverage in
+        ``test_roundtrip_topology_attrs``, or may use a dtype our
+        ``object → str`` coercion does not handle. This test enumerates
+        leaf TopologyAttr subclasses from MDAnalysis itself and fails
+        loudly when the set changes (run under ``tox -e tests-dev`` to
+        surface upstream additions early).
+        """
+        from MDAnalysis.core.topologyattrs import TopologyAttr
+
+        def walk(cls):
+            yield cls
+            for sub in cls.__subclasses__():
+                yield from walk(sub)
+
+        # Concrete leaves only: skip abstract bases like ResidueAttr that
+        # share an ``attrname`` with their subclasses.
+        levels = {"atom", "residue", "segment"}
+        seen: set[tuple[str, str]] = set()
+        for cls in walk(TopologyAttr):
+            per_object = getattr(cls, "per_object", None)
+            if per_object not in levels or cls.__subclasses__():
+                continue
+            seen.add((str(per_object), str(cls.attrname)))
+        known = {
+            ("atom", "altLocs"),
+            ("atom", "aromaticities"),
+            ("atom", "atomiccharges"),
+            ("atom", "chainIDs"),
+            ("atom", "charges"),
+            ("atom", "epsilon14s"),
+            ("atom", "epsilons"),
+            ("atom", "formalcharges"),
+            ("atom", "gbscreens"),
+            ("atom", "ids"),
+            ("atom", "masses"),
+            ("atom", "names"),
+            ("atom", "nbindices"),
+            ("atom", "occupancies"),
+            ("atom", "radii"),
+            ("atom", "record_types"),
+            ("atom", "rmin14s"),
+            ("atom", "rmins"),
+            ("atom", "solventradii"),
+            ("atom", "tempfactors"),
+            ("atom", "types"),
+            ("residue", "icodes"),
+            ("residue", "molnums"),
+            ("residue", "moltypes"),
+            ("residue", "resids"),
+            ("residue", "resnames"),
+            ("residue", "resnums"),
+            ("segment", "models"),
+            ("segment", "segids"),
+        }
+        unexpected = seen - known
+        missing = known - seen
+        assert not unexpected, (
+            f"MDAnalysis registered new per-object TopologyAttr classes: "
+            f"{sorted(unexpected)}. Decide whether each needs explicit "
+            f"`test_roundtrip_topology_attrs` coverage (esp. for non-string "
+            f"object dtypes), then add them to `known`."
+        )
+        assert not missing, (
+            f"TopologyAttr classes disappeared from MDAnalysis: "
+            f"{sorted(missing)}. Update `known` and roundtrip coverage."
+        )
+
+    def test_no_unknown_topology_attrs(self, singular):
+        """Alert when MDAnalysis exposes new topology attrs we don't yet test.
+
+        ``dump`` serialises everything in ``_topology.attrs`` whose
+        ``per_object`` is one of ``atom``/``residue``/``segment``. New attrs
+        are picked up automatically, but a new attr can also signal that we
+        should extend ``test_roundtrip_topology_attrs`` with explicit
+        coverage. This test fails loudly when the set grows so the change
+        gets a deliberate review (run under ``tox -e tests-dev``).
+        """
+        known = {
+            ("atom", "chainIDs"),
+            ("atom", "charges"),
+            ("atom", "ids"),
+            ("atom", "masses"),
+            ("atom", "names"),
+            ("atom", "types"),
+            ("residue", "molnums"),
+            ("residue", "moltypes"),
+            ("residue", "resids"),
+            ("residue", "resnames"),
+            ("residue", "resnums"),
+            ("segment", "segids"),
+        }
+        seen = {
+            (attr.per_object, attr.attrname)
+            for attr in singular._universe._topology.attrs
+            if getattr(attr, "per_object", None) in {"atom", "residue", "segment"}
+        }
+        unexpected = seen - known
+        missing = known - seen
+        assert not unexpected, (
+            f"MDAnalysis exposes new per-object topology attrs not covered "
+            f"by dump/load tests: {sorted(unexpected)}. Update `known` and "
+            f"add them to `test_roundtrip_topology_attrs` if they should "
+            f"round-trip."
+        )
+        assert not missing, (
+            f"Topology attrs disappeared from the test universe: "
+            f"{sorted(missing)}. MDAnalysis may have renamed or removed "
+            f"them; update `known` and roundtrip coverage."
+        )

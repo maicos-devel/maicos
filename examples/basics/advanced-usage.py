@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -219,3 +217,17 @@ logger.setLevel(logging.NOTSET)
 # 4, 6, 8, and 10, use the ``start``, ``stop``, and ``step`` keywords as follow:
 
 dplan = maicos.DensityPlanar(group_H2O).run(start=10, stop=20, step=2)
+
+
+# %%
+# If you prefer to use times instead of frame slice, the function times_to_frames
+# is available :
+
+from maicos.lib import util  # noqa: E402
+
+time_step = u.trajectory.dt
+
+time_dict = util.times_to_frames(start="100ps", stop="200ps", step="20ps", dt=time_step)
+
+dplan = maicos.DensityPlanar(group_H2O).run(**time_dict)
+# %%

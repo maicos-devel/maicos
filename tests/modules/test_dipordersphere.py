@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
 # Released under the GNU Public Licence, v3 or any higher version
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Tests for the DiporderPlanar class."""
+"""Tests for the DiporderSphere class."""
 
 import sys
 from pathlib import Path
@@ -44,13 +42,12 @@ class TestDiporderSphere(ReferenceAtomGroups):
         """Results dictionary for test_DiporderSphere_trajectory."""
         res = {}
 
-        res["P0"] = [-0.00174, 0.00057, 0.000126]
-        res["cos_theta"] = [-0.107, 0.0331, 0.00747]
-        res["cos_2_theta"] = [0.240, 0.308, 0.344]
+        res["P1"] = [-0.1074, 0.0331, 0.007478]
+        res["P2"] = [-0.1387, -0.03689, 0.01605]
 
         return res
 
-    @pytest.mark.parametrize("order_parameter", ["P0", "cos_theta", "cos_2_theta"])
+    @pytest.mark.parametrize("order_parameter", ["P1", "P2"])
     def test_DiporderSphere_trajectory(
         self, ag_single_frame, order_parameter, result_dict
     ):

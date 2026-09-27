@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -112,7 +110,7 @@ print(ax)
 tax = ax[1].twinx()
 shift = 0
 shift_amount = 2
-for i in range(0, len(ana_obj.results.pdf[0])):
+for i in range(len(ana_obj.results.pdf[0])):
     bin_pos = ana_obj.results.bin_pos[i]
 
     pdf_prof = ana_obj.results.pdf[:, i]

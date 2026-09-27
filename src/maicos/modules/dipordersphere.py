@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -42,7 +40,7 @@ class DiporderSphere(ProfileSphereBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        order_parameter: str = "P0",
+        order_parameter: str = "P1",
         rmin: float = 0,
         rmax: float | None = None,
         bin_width: float = 1,
@@ -55,7 +53,6 @@ class DiporderSphere(ProfileSphereBase):
         concfreq: int = 0,
         output: str = "diporder_sphere.dat",
     ) -> None:
-        normalization = "volume" if order_parameter == "P0" else "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_sphere(
@@ -80,7 +77,7 @@ class DiporderSphere(ProfileSphereBase):
                 "order_parameter": order_parameter,
                 "get_unit_vectors": get_unit_vectors,
             },
-            normalization=normalization,
+            normalization="number",
         )
 
     def _prepare(self):

@@ -12,10 +12,21 @@ Changelog
 Unreleased
 ----------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
-Philipp Stärk
+Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 - Add support for parallel analysis via MDAnalysis split-apply-combine backends
   (``serial``/``multiprocessing``/``dask``) (#517)
+- Add more module benchmarks and synthetic scaling tests (#595)
+- Add note to the getting started section about symlinks for Windows devs (#592)
+- Fix ruff lint errors and remove non-executable shebang lines from module headers (#602)
+- Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
+  function now always returns a new ``float`` array without modifying the input (#596)
+- Add function and example how to use times instead of frame slices (#585)
+- Refactor diporder modules to use Legendre polynomials (#586)
+- Treat all warnings as error in tests (#575)
+- Add ``dump()`` and ``load()`` methods to ``AnalysisBase`` for saving and loading
+  analysis states (#565)
+- Add benchmarks to the CI workflow (#557)
 - Add example for effective-medium dielectric analysis (#584)
 - Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
 - Add azimuthal component to ``DielectricCylinder`` (#543)

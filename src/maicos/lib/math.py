@@ -7,6 +7,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Helper functions for mathematical and physical operations."""
 
+import warnings
+
 import MDAnalysis as mda
 import numpy as np
 
@@ -93,11 +95,11 @@ def scalar_prod_corr(
     corr = np.zeros(len(a[:, 0]))
 
     if b is None:
-        for i in range(0, len(a[0, :])):
+        for i in range(len(a[0, :])):
             corr[:] += correlation(a[:, i], None, subtract_mean)
 
     else:
-        for i in range(0, len(a[0, :])):
+        for i in range(len(a[0, :])):
             corr[:] += correlation(a[:, i], b[:, i], subtract_mean)
 
     return corr
@@ -155,7 +157,8 @@ def correlation_time(
     tau : float
         Integrated correlation time :math:`\tau`. If ``-1`` (only for
         ``method="sokal"``) the provided time series does not provide sufficient
-        statistics to estimate a correlation time.
+        statistics to estimate a correlation time. Returns :obj:`numpy.nan` if
+        the time series has zero variance.
 
     Raises
     ------
@@ -169,6 +172,11 @@ def correlation_time(
     .. footbibliography::
 
     """
+    if method not in ["sokal", "chodera"]:
+        raise ValueError(
+            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
+        )
+
     if mintime > len(timeseries):
         raise ValueError(
             f"mintime ({mintime}) has to be smaller then the length of `timeseries` "
@@ -176,6 +184,14 @@ def correlation_time(
         )
 
     corr = correlation(timeseries, subtract_mean=True)
+
+    if corr[0] == 0:
+        warnings.warn(
+            "The timeseries has zero variance. "
+            "The correlation time cannot be estimated.",
+            stacklevel=2,
+        )
+        return np.nan
 
     if method == "sokal":
         for cutoff in range(mintime, len(timeseries)):
@@ -187,16 +203,12 @@ def correlation_time(
 
             if cutoff > len(timeseries) / 3:
                 return -1
-
-    elif method == "chodera":
+    else:
         cutoff = np.max([mintime, np.min(np.argwhere(corr < 0))])
         tau = np.sum(
             (1 - np.arange(1, cutoff) / len(timeseries)) * corr[1:cutoff] / corr[0]
         )
-    else:
-        raise ValueError(
-            f"Unknown method: {method}. Chose either 'sokal' or 'chodera'."
-        )
+
     return tau
 
 
@@ -331,8 +343,7 @@ def new_variance(
     if isinstance(S_new, np.ndarray):
         S_new[S_new < 0] = 0
     else:
-        if S_new < 0:
-            S_new = 0
+        S_new = max(S_new, 0)
 
     return S_new / length
 
@@ -392,13 +403,12 @@ def center_cluster(ag: mda.AtomGroup, weights: np.ndarray) -> np.ndarray:
 def symmetrize(
     m: np.ndarray,
     axis: None | int | tuple[int] = None,
-    inplace: bool = False,
     is_odd: bool = False,
 ) -> np.ndarray:
     """Symmeterize an array.
 
     The shape of the array is preserved, but the elements are symmetrized with respect
-    to the given axis.
+    to the given axis. The returned array always has ``float`` dtype.
 
     Parameters
     ----------
@@ -409,8 +419,6 @@ def symmetrize(
          symmetrize over all of the axes of the input array. If axis is negative it
          counts from the last to the first axis. If axis is a :obj:`tuple` of ints,
          symmetrizing is performed on all of the axes specified in the :obj:`tuple`.
-    inplace : bool
-        Do symmetrizations inplace. If :obj:`False` a new array is returned.
     is_odd : bool
         The parity to use for symmetrization. If :obj:`False` (default), the
         symmetrization is done with "even" parity, meaning that the output array will be
@@ -428,18 +436,14 @@ def symmetrize(
 
     Examples
     --------
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A)
     array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> symmetrize(A, inplace=True)
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
-    >>> A
-    array([4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5, 4.5])
 
     Antisymmetrization can be achieved by setting ``is_odd=True``.
-    >>> A = np.arange(10).astype(float)
+    >>> A = np.arange(10, dtype=float)
     >>> A
     array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
     >>> symmetrize(A, is_odd=True)
@@ -447,7 +451,7 @@ def symmetrize(
 
     It also works for arrays with more than 1 dimensions in a general dimension.
 
-    >>> A = np.arange(20).astype(float).reshape(2, 10).T
+    >>> A = np.arange(20, dtype=float).reshape(2, 10).T
     >>> A
     array([[ 0., 10.],
            [ 1., 11.],
@@ -483,18 +487,9 @@ def symmetrize(
            [ 4.5, 14.5]])
 
     """
-    # The returned array will be of type float
-    out = m.copy().astype("float")
+    out = m.astype("float")
     out += (-1 if is_odd else 1) * np.flip(m, axis=axis)
     out /= 2
-
-    if inplace:
-        # To safely cast the the original array type to float in-place,
-        # first change the dtype to float...
-        m.dtype = np.dtype("float")
-        # ...and then write the new values to the original array.
-        m[...] = out
-        return m
     return out
 
 
@@ -548,9 +543,15 @@ def transform_cylinder(
 
 
 def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
-    """Transform positions into spherical coordinates.
+    r"""Transform positions into spherical coordinates.
 
     The origin of the new coordinate system is at ``origin``.
+
+    .. note::
+
+        If a ``position`` is exactly at the ``origin`` :math:`\theta=\arccos(z/r)`
+        (third coloumn in the output vector) is undefined. In this case the
+        :math:`\theta` component is set to 0.
 
     Parameters
     ----------
@@ -575,8 +576,15 @@ def transform_sphere(positions: np.ndarray, origin: np.ndarray) -> np.ndarray:
     trans_positions[:, 0] = np.linalg.norm(pos_xyz_center, axis=1)
     # phi component
     np.arctan2(pos_xyz_center[:, 1], pos_xyz_center[:, 0], out=trans_positions[:, 1])
-    # theta component
-    np.arccos(pos_xyz_center[:, 2] / trans_positions[:, 0], out=trans_positions[:, 2])
+
+    # theta component — arccos(z/r) is undefined for r=0 (particle at origin)
+    # Set theta=0 in this case
+    at_origin = trans_positions[:, 0] == 0
+    trans_positions[:, 2] = np.where(
+        at_origin,
+        0,
+        np.arccos(pos_xyz_center[:, 2] / np.where(at_origin, 1, trans_positions[:, 0])),
+    )
 
     return trans_positions
 
@@ -614,7 +622,8 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
     """
     n_AB = n_A + n_B
     delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
-    mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-    M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+    with np.errstate(divide="ignore", invalid="ignore"):
+        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
+        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
 
     return n_AB, mu_AB, M_AB

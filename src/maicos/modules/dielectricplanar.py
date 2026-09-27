@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -332,15 +330,15 @@ class DielectricPlanar(PlanarBase):
         self.results.eps_par_coll = self._pref * cov_par_coll
 
         if self.sym:
-            symmetrize(self.results.eps_perp, axis=0, inplace=True)
-            symmetrize(self.results.deps_perp, axis=0, inplace=True)
-            symmetrize(self.results.eps_perp_self, axis=0, inplace=True)
-            symmetrize(self.results.eps_perp_coll, axis=0, inplace=True)
+            self.results.eps_perp = symmetrize(self.results.eps_perp, axis=0)
+            self.results.deps_perp = symmetrize(self.results.deps_perp, axis=0)
+            self.results.eps_perp_self = symmetrize(self.results.eps_perp_self, axis=0)
+            self.results.eps_perp_coll = symmetrize(self.results.eps_perp_coll, axis=0)
 
-            symmetrize(self.results.eps_par, axis=0, inplace=True)
-            symmetrize(self.results.deps_par, axis=0, inplace=True)
-            symmetrize(self.results.eps_par_self, axis=0, inplace=True)
-            symmetrize(self.results.eps_par_coll, axis=0, inplace=True)
+            self.results.eps_par = symmetrize(self.results.eps_par, axis=0)
+            self.results.deps_par = symmetrize(self.results.deps_par, axis=0)
+            self.results.eps_par_self = symmetrize(self.results.eps_par_self, axis=0)
+            self.results.eps_par_coll = symmetrize(self.results.eps_par_coll, axis=0)
 
     @render_docs
     def save(self) -> None:
@@ -362,7 +360,9 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_perp"), outdata_perp, columns=columns
+            "{}{}".format(self.output_prefix, "_perp.dat"),
+            outdata_perp,
+            columns=columns,
         )
 
         columns = ["position [Å]"]
@@ -382,5 +382,5 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_par"), outdata_par, columns=columns
+            "{}{}".format(self.output_prefix, "_par.dat"), outdata_par, columns=columns
         )

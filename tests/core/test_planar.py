@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -11,6 +9,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import MDAnalysis as mda
 import numpy as np
@@ -338,7 +337,7 @@ class TestPlanarBaseChilds:
         u = mda.Universe(WATER_TPR_NPT, WATER_GRO_NPT, in_memory=True)
         return u.atoms
 
-    members = []
+    members: ClassVar[list[type]] = []
     # Exclude CylinderBase since it is tested individually.
     for _, member in inspect.getmembers(maicos):
         if (
@@ -352,17 +351,17 @@ class TestPlanarBaseChilds:
     @pytest.mark.parametrize("Member", members)
     def test_check_attr_change(self, Member, ag_single_frame):
         """Test check attr change."""
-        params = dict(
-            unwrap=False,
-            pack=True,
-            jitter=0.0,
-            concfreq=0,
-            dim=2,
-            zmin=None,
-            zmax=None,
-            bin_width=1,
-            refgroup=None,
-        )
+        params = {
+            "unwrap": False,
+            "pack": True,
+            "jitter": 0.0,
+            "concfreq": 0,
+            "dim": 2,
+            "zmin": None,
+            "zmax": None,
+            "bin_width": 1,
+            "refgroup": None,
+        }
         ana_obj = Member(ag_single_frame, **params).run()
         pb_obj = PlanarBase(ag_single_frame, wrap_compound="atoms", **params).run()
 
@@ -449,26 +448,26 @@ class TestProfilePlanarBase:
     @pytest.fixture
     def params(self, u):
         """Fixture for PlanarBase class atributes."""
-        return dict(
-            weighting_function=self.weights,
-            weighting_function_kwargs=None,
-            atomgroup=u.atoms,
-            normalization="number",
-            dim=2,
-            zmin=None,
-            zmax=None,
-            bin_width=0.1,
-            refgroup=None,
-            sym=False,
-            sym_odd=False,
-            grouping="atoms",
-            unwrap=False,
-            pack=True,
-            bin_method="com",
-            concfreq=0,
-            output="profile.dat",
-            jitter=False,
-        )
+        return {
+            "weighting_function": self.weights,
+            "weighting_function_kwargs": None,
+            "atomgroup": u.atoms,
+            "normalization": "number",
+            "dim": 2,
+            "zmin": None,
+            "zmax": None,
+            "bin_width": 0.1,
+            "refgroup": None,
+            "sym": False,
+            "sym_odd": False,
+            "grouping": "atoms",
+            "unwrap": False,
+            "pack": True,
+            "bin_method": "com",
+            "concfreq": 0,
+            "output": "profile.dat",
+            "jitter": False,
+        }
 
     @pytest.mark.parametrize("normalization", ["volume", "number", "None"])
     def test_profile(self, u, normalization, params):

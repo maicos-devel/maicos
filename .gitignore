@@ -4,13 +4,15 @@
 *.lock
 *.dat
 
-# Unit test / coverage reports
+# Unit test / coverage / benchmark reports
 .tox/
 .asv/
 .coverage.*
 .coverage
 coverage.xml
 report.xml
+benchmark_comparison.txt
+benchmark_regressions.txt
 
 # Ignore build and cache folders
 __pycache__/

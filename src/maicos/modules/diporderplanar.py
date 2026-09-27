@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -43,7 +41,7 @@ class DiporderPlanar(ProfilePlanarBase):
     def __init__(
         self,
         atomgroup: mda.AtomGroup,
-        order_parameter: str = "P0",
+        order_parameter: str = "P1",
         pdim: int = 2,
         dim: int = 2,
         zmin: float | None = None,
@@ -60,7 +58,6 @@ class DiporderPlanar(ProfilePlanarBase):
         output: str = "diporder_planar.dat",
     ) -> None:
         self._locals = locals()
-        normalization = "volume" if order_parameter == "P0" else "number"
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_planar(
@@ -88,7 +85,7 @@ class DiporderPlanar(ProfilePlanarBase):
                 "order_parameter": order_parameter,
                 "get_unit_vectors": get_unit_vectors,
             },
-            normalization=normalization,
+            normalization="number",
         )
 
     def _prepare(self):

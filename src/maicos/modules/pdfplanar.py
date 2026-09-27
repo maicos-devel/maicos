@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -212,7 +210,7 @@ class PDFPlanar(PlanarBase):
         )
 
         # Calculate planar pdf per bin by averaging over all atoms in one bin.
-        for z_bin in range(0, self.n_bins):
+        for z_bin in range(self.n_bins):
             # Set zmin and zmax of the bin.
             z_min = self.zmin + bin_width * z_bin
             z_max = self.zmin + bin_width * (z_bin + 1)
@@ -278,8 +276,11 @@ class PDFPlanar(PlanarBase):
         )
         ring_volumes = np.expand_dims(ring_volumes, axis=0)
         self.results.bins = self.results.bins
-        self.results.pdf = self.means.count / self.means.n_g1 / ring_volumes
-        self.results.pdf = np.nan_to_num(self.results.pdf.T, nan=0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            pdf = self.means.count / self.means.n_g1
+
+        pdf /= ring_volumes
+        self.results.pdf = np.nan_to_num(pdf.T, nan=0)
 
     @render_docs
     def save(self) -> None:

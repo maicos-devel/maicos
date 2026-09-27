@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -10,6 +8,7 @@
 import sys
 import warnings
 from pathlib import Path
+from typing import ClassVar
 from unittest.mock import patch
 
 import MDAnalysis as mda
@@ -20,11 +19,11 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
-from maicos.lib.util import triclinic_to_orthorhombic
+from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT  # noqa: E402
-from util import circle_of_water_molecules  # noqa: E402
+from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT
+from util import circle_of_water_molecules
 
 
 @pytest.mark.parametrize(
@@ -92,12 +91,12 @@ def test_render_docs(doc, new_doc):
     def func():
         pass
 
-    DOC_DICT = dict(
-        TEST="test",
-        BLA="blu",
-        INNER="inner",
-        OUTER="desc with ${INNER}",
-    )
+    DOC_DICT = {
+        "TEST": "test",
+        "BLA": "blu",
+        "INNER": "inner",
+        "OUTER": "desc with ${INNER}",
+    }
 
     func.__doc__ = doc
     func_decorated = maicos.lib.util._render_docs(func, doc_dict=DOC_DICT)
@@ -246,7 +245,10 @@ class TestChargedDecorator:
     def test_universe_non_neutral_raises(self, ag):
         """Test that a non-neutral universe raises ValueError."""
         ag[0].charge += 1
-        with pytest.raises(ValueError, match="non-neutral systems is not supported"):
+        with (
+            pytest.warns(UserWarning, match="At least one AtomGroup has free"),
+            pytest.raises(ValueError, match="non-neutral systems is not supported"),
+        ):
             multi_class(ag, filter="default")._prepare()
 
 
@@ -399,7 +401,13 @@ class TestCorrelationAnalysis:
 class Testget_center:
     """Test the ``get_center`` function."""
 
-    compounds = ["group", "segments", "residues", "molecules", "fragments"]
+    compounds: ClassVar[list[str]] = [
+        "group",
+        "segments",
+        "residues",
+        "molecules",
+        "fragments",
+    ]
 
     @pytest.fixture
     def ag(self):
@@ -631,3 +639,48 @@ class TestTriclinicToOrthorhombic:
         result = triclinic_to_orthorhombic(box)
         vol_ortho = result[0] * result[1] * result[2]
         assert_allclose(vol_ortho, vol_tri, rtol=1e-5)
+
+
+@pytest.mark.parametrize(
+    ("start", "stop", "step", "dt", "new_dict"),
+    [
+        ("12ps", "14ps", "1ps", 0.1, {"start": 120, "stop": 140, "step": 10}),
+    ],
+)
+def test_times_to_frames(start, stop, step, dt, new_dict):
+    """Tests into util.times_to_frames."""
+    assert maicos.lib.util.times_to_frames(start, stop, step, dt) == new_dict
+
+
+@pytest.mark.parametrize(
+    ("start", "stop", "step", "dt", "mesg_error"),
+    [
+        ("12ps", "14ps", "1ps", 0.6, "step should be a multiple of dt."),
+    ],
+)
+def test_error_of_times_to_frames(start, stop, step, dt, mesg_error):
+    """Errors test into util.times_to_frames."""
+    with pytest.raises(ValueError, match=mesg_error):
+        maicos.lib.util.times_to_frames(start, stop, step, dt)
+
+
+class TestCheckFileExtension:
+    """Tests for check_file_extension."""
+
+    def test_extension_present_returns_unchanged(self):
+        """Matching extension leaves the filename untouched and warns nothing."""
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            assert check_file_extension("foo.dat", ".dat") == "foo.dat"
+
+    def test_missing_extension_is_appended_with_warning(self):
+        """Missing extension is appended and a UserWarning is issued."""
+        with pytest.warns(UserWarning, match=r"\.dat"):
+            result = check_file_extension("foo", ".dat")
+        assert result == "foo.dat"
+
+    def test_different_extension_is_appended_with_warning(self):
+        """Wrong extension still leads to appending the expected one."""
+        with pytest.warns(UserWarning, match=r"\.npz"):
+            result = check_file_extension("foo.txt", ".npz")
+        assert result == "foo.txt.npz"

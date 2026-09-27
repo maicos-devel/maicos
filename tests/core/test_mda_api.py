@@ -7,7 +7,7 @@ monkeypatching which explain in detail below in code.
 
 import MDAnalysis as mda
 import pytest
-from MDAnalysisTests.analysis.test_base import *  # noqa: F401, F403
+from MDAnalysisTests.analysis.test_base import *  # noqa: F403
 from MDAnalysisTests.analysis.test_base import (
     FrameAnalysis,
     IncompleteAnalysis,

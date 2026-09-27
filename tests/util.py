@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright (c) 2026 Authors and contributors
 # (see the AUTHORS.rst file for the full list of names)
 #
@@ -15,7 +13,7 @@ import numpy as np
 import sympy as sp
 
 sys.path.append(str(Path(__file__).parents[1]))
-from data import SPCE_GRO, SPCE_ITP  # noqa: E402
+from data import SPCE_GRO, SPCE_ITP
 
 
 def error_prop(f, variables, errors):
@@ -140,7 +138,7 @@ def circle_of_water_molecules(
 
     # define evenly spaced positions along a circle
     positions = []
-    for _n in range(0, n_molecules):
+    for _n in range(n_molecules):
         x = np.cos(2 * np.pi / n_molecules * _n) * radius
         y = np.sin(2 * np.pi / n_molecules * _n) * radius
         z = 0
