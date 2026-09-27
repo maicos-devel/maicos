@@ -23,7 +23,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
-from maicos.lib.util import joint_pop, make_pair_key
+from maicos.lib.util import _joint_pop, make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -177,8 +177,8 @@ class Frame_types(AnalysisBase):
 class CorrelatedSeries(AnalysisBase):
     """Class emitting several correlated observables per frame.
 
-    The observables are correlated with each other within a frame, but not across frames.
-    There is no time correlation between frames.
+    The observables are correlated with each other within a frame, but not across
+    frames. There is no time correlation between frames.
 
     Observables (one sample per frame):
     - ``x``     : scalar, drawn at random
@@ -1801,7 +1801,7 @@ class Test_Covariance:
         # `other` is independent of `x`; covariance of the means -> 0 as 1/n.
         cov_xother = (
             ana.moments.C[make_pair_key("other", "x")]
-            / joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
+            / _joint_pop(ana.pop["other"], ana.pop["x"]) ** 2
         )
         assert np.all(np.abs(cov_xother) < np.abs(ana.moments.cov("x", "y")))
 

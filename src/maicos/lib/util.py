@@ -979,7 +979,7 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
     return timedict
 
 
-def joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
+def _joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     """Shared sample count of two co-sampled observables.
 
     A covariance is only defined for co-sampled observables, i.e. when the
@@ -1022,14 +1022,63 @@ _COMPATIBLE_TYPES = (
 
 
 class MomentAccumulator:
-    """Backend producing the means/sems/M2/pop/sums and ``C`` containers.
+    """Streaming mean, variance and covariance of per-frame observables.
+
+    This is the statistics backend of :class:`~maicos.core.AnalysisBase`. Each
+    frame's observables are merged into running statistics with Welford's online
+    algorithm, so no per-frame data has to be stored. Observables may be scalars
+    or arrays (e.g. profiles), in which case every element is accumulated
+    independently. A frame can report a single sample per observable or, via the
+    population / variance / covariance containers, the mean of several samples.
+
+    After the first frame is passed to :meth:`register`, every following frame is
+    merged with :meth:`update`. The running statistics are exposed as
+    :class:`~MDAnalysis.analysis.base.Results` containers keyed by observable name:
+
+    - ``means``: mean of each observable
+    - ``sems``: standard error of the mean
+    - ``M2``: sum of squared deviations from the mean
+    - ``pop``: number of samples
+    - ``sums``: sum of the samples
+    - ``C``: co-moment of each requested pair, keyed by
+      :func:`~maicos.lib.util.make_pair_key`
+
+    :meth:`cov` returns the covariance of two observable means and
+    :meth:`propagate_error` the standard error of a function of several
+    observables, including their cross-covariances.
 
     Parameters
     ----------
     requested_pairs : iterable of tuple of str
-        Canonical observable pairs whose off-diagonal covariance should be
-        accumulated. Only the listed pairs are tracked. Empty (the default)
+        Canonical observable pairs (see :func:`~maicos.lib.util.make_pair_key`)
+        whose off-diagonal covariance should be accumulated. The observables of
+        each pair must broadcast against each other and be co-sampled (same
+        population). Only the listed pairs are tracked. Empty (the default)
         disables covariance entirely.
+
+    Examples
+    --------
+    Accumulate two correlated scalar observables over four frames
+
+    >>> import numpy as np
+    >>> from MDAnalysis.analysis.base import Results
+    >>> from maicos.lib.util import MomentAccumulator, make_pair_key
+    >>> acc = MomentAccumulator({make_pair_key("x", "y")})
+    >>> acc.register(Results(x=0.0, y=0.0), Results(), Results(), Results())
+    >>> for x, y in [(0.0, 1.0), (0.0, 1.0), (6.0, 6.0)]:
+    ...     acc.update(Results(x=x, y=y), Results(), Results(), Results())
+    >>> print(acc.means.x, acc.means.y)
+    1.5 2.0
+
+    Covariance of the means and the error of ``f = x - y``, which is smaller than
+    the uncorrelated estimate because ``x`` and ``y`` are positively correlated
+
+    >>> print(acc.cov("x", "y"))
+    1.5
+    >>> print(acc.propagate_error({"x": 1.0, "y": -1.0}))
+    0.25
+    >>> print(np.sqrt(acc.sems.x**2 + acc.sems.y**2))
+    1.75
 
     """
 
@@ -1039,7 +1088,7 @@ class MomentAccumulator:
         # updated in place; the buffers' identities never change afterwards.
         self.means = Results()  # mean of the observables across frames
         self.sems = Results()  # standard error of the mean across frames
-        self.M2 = Results()  # second moment of the samples across frames
+        self.M2 = Results()  # sum of squared deviations from the mean
         self.pop = Results()  # count of samples across frames
         self.sums = Results()  # sum of the observables across frames
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
@@ -1114,7 +1163,7 @@ class MomentAccumulator:
                     )
             try:
                 shape = np.broadcast_shapes(s_obs[key_i].shape, s_obs[key_j].shape)
-                pop = joint_pop(s_pop[key_i], s_pop[key_j])
+                pop = _joint_pop(s_pop[key_i], s_pop[key_j])
             except ValueError as err:
                 raise ValueError(
                     f"requested covariance pair {set(pair_key)} is invalid: the "
@@ -1177,7 +1226,7 @@ class MomentAccumulator:
         """
         key_i, key_j = pair_key
         C = self.C[pair_key]
-        n_new = joint_pop(s_pop[key_i], s_pop[key_j])
+        n_new = _joint_pop(s_pop[key_i], s_pop[key_j])
         within = np.nan_to_num(_cov.get(pair_key, 0.0)) * n_new
 
         _, C[...] = combine_subsample_covariance(
@@ -1227,7 +1276,7 @@ class MomentAccumulator:
                 f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
                 f"requested in `_compute_covariance`"
             )
-        return self.C[pair_key] / joint_pop(self.pop[key_i], self.pop[key_j]) ** 2
+        return self.C[pair_key] / _joint_pop(self.pop[key_i], self.pop[key_j]) ** 2
 
     def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.

@@ -648,7 +648,7 @@ class TestJointPop:
     )
     def test_cosampled(self, pop_x, pop_y, expected):
         """Equal (broadcast) populations are returned regardless of order."""
-        assert_equal(maicos.lib.util.joint_pop(pop_x, pop_y), expected)
+        assert_equal(maicos.lib.util._joint_pop(pop_x, pop_y), expected)
 
     @pytest.mark.parametrize(
         ("pop_x", "pop_y"),
@@ -661,4 +661,4 @@ class TestJointPop:
     def test_not_cosampled_raises(self, pop_x, pop_y):
         """Differing or non-broadcastable populations raise."""
         with pytest.raises(ValueError, match="different populations|broadcast"):
-            maicos.lib.util.joint_pop(np.array(pop_x), np.array(pop_y))
+            maicos.lib.util._joint_pop(np.array(pop_x), np.array(pop_y))
