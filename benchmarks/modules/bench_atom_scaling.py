@@ -16,8 +16,11 @@ trajectory being too short, which is expected here and muted so that it does not
 the benchmark output.
 """
 
+import os
 import warnings
 from typing import ClassVar
+
+from asv_runner.benchmarks.mark import skip_benchmark_if
 
 from benchmarks.synthetic import make_universe
 from maicos import (
@@ -70,6 +73,7 @@ class _AtomScaling:
             warnings.simplefilter("ignore")
             self.analysis.run()
 
+    @skip_benchmark_if("ASV_RUN_SLOW" not in os.environ)
     def time_single_frame(self, _module, _n_atoms):
         """Time one call of the per-frame kernel."""
         self.analysis._single_frame()
