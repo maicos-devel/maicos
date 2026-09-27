@@ -4,6 +4,11 @@ on:
   pull_request:
     # Check all PR
   workflow_dispatch:  # Allow manual trigger
+    inputs:
+      slow:
+        description: "Also run the slow atom-count scaling sweeps"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -23,6 +28,9 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Enable the slow benchmarks
+        if: inputs.slow
+        run: echo "ASV_RUN_SLOW=1" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: |
