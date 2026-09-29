@@ -14,6 +14,8 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Fix overestimated error of ``eps_r`` in ``DielectricCylinder`` by including the
+  covariances between the radial observables (#588)
 - Add ``MomentAccumulator`` backend and add covariance calculation between observables
   for correlated errors (#594)
 - Add more module benchmarks and synthetic scaling tests (#595)
