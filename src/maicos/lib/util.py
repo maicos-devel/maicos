@@ -1093,9 +1093,7 @@ class MomentAccumulator:
         self.pop = Results()  # count of samples across frames
         self.M2 = Results()  # sum of squared deviations from the mean
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
-        # Canonical pair keys whose co-moment is tracked in ``C``; a set so that
-        # duplicate requests are merged.
-        self._requested_cov_pairs = set(requested_pairs)
+        self._requested_cov_pairs = set(requested_pairs)  # pair keys tracked in C
         self._keys = []  # observable keys, in first-seen order
 
     def _sanitize(self, obs, _pop, _var):
