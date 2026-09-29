@@ -536,16 +536,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
             # Seed the running statistics from the first frame. The backend owns
-            # the means/sems/M2/pop/sums/C containers; expose them on the analysis
+            # the means/sems/sums/pop/M2/C containers; expose them on the analysis
             # for the modules and checkpointing. Covariance and error propagation
             # are reached through `self.moments.cov`/`self.moments.propagate_error`.
             self.moments = MomentAccumulator(self._covariance_pair_keys)
             self.moments.register(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means
             self.sems = self.moments.sems
-            self.M2 = self.moments.M2
-            self.pop = self.moments.pop
             self.sums = self.moments.sums
+            self.pop = self.moments.pop
+            self.M2 = self.moments.M2
             self.C = self.moments.C
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
@@ -681,7 +681,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             :attr:`results` to a stable format.
 
         Persists all statistical accumulators (``means``, ``sems``, ``sums``,
-        ``pop``, ``M2``), the ``results`` and ``_obs`` containers, per-frame
+        ``pop``, ``M2``, ``C``), the ``results`` and ``_obs`` containers, per-frame
         arrays (``timeseries``, ``frames``, ``times``), metadata, the associated
         Universe and the analysed atomgroup. Restore the analysis with :meth:`load`.
 

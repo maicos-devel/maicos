@@ -1014,6 +1014,7 @@ _COMPATIBLE_TYPES = (
     float,
     int,
     list,
+    tuple,
     np.float32,
     np.float64,
     np.int32,
@@ -1037,9 +1038,9 @@ class MomentAccumulator:
 
     - ``means``: mean of each observable
     - ``sems``: standard error of the mean
-    - ``M2``: sum of squared deviations from the mean
-    - ``pop``: number of samples
     - ``sums``: sum of the samples
+    - ``pop``: number of samples
+    - ``M2``: sum of squared deviations from the mean
     - ``C``: co-moment of each requested pair, keyed by
       :func:`~maicos.lib.util.make_pair_key`
 
@@ -1088,13 +1089,14 @@ class MomentAccumulator:
         # updated in place; the buffers' identities never change afterwards.
         self.means = Results()  # mean of the observables across frames
         self.sems = Results()  # standard error of the mean across frames
-        self.M2 = Results()  # sum of squared deviations from the mean
-        self.pop = Results()  # count of samples across frames
         self.sums = Results()  # sum of the observables across frames
+        self.pop = Results()  # count of samples across frames
+        self.M2 = Results()  # sum of squared deviations from the mean
         self.C = Results()  # off-diagonal co-moments, keyed (i, j)
+        # Canonical pair keys whose co-moment is tracked in ``C``; a set so that
+        # duplicate requests are merged.
         self._requested_cov_pairs = set(requested_pairs)
         self._keys = []  # observable keys, in first-seen order
-        self._pairs = []  # covariance pairs actually tracked
 
     def _sanitize(self, obs, _pop, _var):
         """Return per-frame observable / population / variance arrays.
@@ -1158,7 +1160,7 @@ class MomentAccumulator:
             for key in pair_key:
                 if key not in s_obs:
                     raise KeyError(
-                        f"requested covariance pair {set(pair_key)} references "
+                        f"requested covariance pair {pair_key} references "
                         f"unknown observable {key!r}; available: {list(s_obs)}"
                     )
             try:
@@ -1166,7 +1168,7 @@ class MomentAccumulator:
                 pop = _joint_pop(s_pop[key_i], s_pop[key_j])
             except ValueError as err:
                 raise ValueError(
-                    f"requested covariance pair {set(pair_key)} is invalid: the "
+                    f"requested covariance pair {pair_key} is invalid: the "
                     f"observables must broadcast against each other (shapes "
                     f"{s_obs[key_i].shape} and {s_obs[key_j].shape}) and be "
                     f"co-sampled (same population)"
@@ -1176,7 +1178,6 @@ class MomentAccumulator:
             cov = np.asarray(_cov.get(pair_key, 0.0), dtype=float)
             seed = np.where(np.isnan(cov), 0.0, cov) * pop
             self.C[pair_key] = np.broadcast_to(seed, shape).astype(float).copy()
-            self._pairs.append(pair_key)
 
     def update(self, obs, _pop, _var, _cov):
         """Welford merge of the current frame into all running statistics.
@@ -1199,7 +1200,7 @@ class MomentAccumulator:
 
         """
         s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
-        for pair_key in self._pairs:  # before the means move
+        for pair_key in self.C:  # before the means move
             self._merge_cov(pair_key, s_obs, s_pop, _cov)
         for key in self._keys:
             self._merge_var(key, s_obs, s_pop, s_var)

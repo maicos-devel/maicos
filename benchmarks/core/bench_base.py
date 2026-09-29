@@ -100,6 +100,15 @@ class CovarianceSeries(AnalysisBase):
     Each frame writes ``n_obs`` observables of shape ``(n_bins,)``, so the base
     class tracks ``n_obs * (n_obs - 1) / 2`` off-diagonal co-moment pairs. This
     is the workload that exercises the per-frame covariance update.
+
+    Parameters
+    ----------
+    atomgroup : MDAnalysis.core.groups.AtomGroup
+        Dummy atomgroup to satisfy the class.
+    n_obs : int
+        Number of observables written per frame, named o{i}.
+    n_bins : int
+        Length of each observable array.
     """
 
     def __init__(self, atomgroup, n_obs, n_bins):
