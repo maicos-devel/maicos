@@ -313,9 +313,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     """
 
     #: Observable pairs to accumulate the off-diagonal covariance.
-    #: Each entry names two observable keys, e.g. for
-    #: :class:`~maicos.DielectricCylinder` these are
-    #: ``[{"mM_r", "m_r"}, {"mM_r", "M_r"}]``.
+    #: Each entry names two observable keys, e.g. ``[{"x", "y"}, {"x", "z"}]``.
     _compute_covariance: ClassVar[list[set[str]]] = []
 
     if TYPE_CHECKING:  # pragma: no cover
