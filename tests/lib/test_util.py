@@ -632,3 +632,33 @@ class TestCheckFileExtension:
         with pytest.warns(UserWarning, match=r"\.npz"):
             result = check_file_extension("foo.txt", ".npz")
         assert result == "foo.txt.npz"
+
+
+class TestJointPop:
+    """Tests for the shared population of two co-sampled observables."""
+
+    @pytest.mark.parametrize(
+        ("pop_x", "pop_y", "expected"),
+        [
+            (1, 1, 1),
+            (np.ones(3, dtype=int), 1, np.ones(3, dtype=int)),
+            (1, np.ones(3, dtype=int), np.ones(3, dtype=int)),
+            (np.array([2, 3, 4]), np.array([2, 3, 4]), np.array([2, 3, 4])),
+        ],
+    )
+    def test_cosampled(self, pop_x, pop_y, expected):
+        """Equal (broadcast) populations are returned regardless of order."""
+        assert_equal(maicos.lib.util._joint_pop(pop_x, pop_y), expected)
+
+    @pytest.mark.parametrize(
+        ("pop_x", "pop_y"),
+        [
+            ([1], [2, 3, 4]),
+            ([2, 3, 4], [1]),
+            ([1, 2], [1, 2, 3]),
+        ],
+    )
+    def test_not_cosampled_raises(self, pop_x, pop_y):
+        """Differing or non-broadcastable populations raise."""
+        with pytest.raises(ValueError, match="different populations|broadcast"):
+            maicos.lib.util._joint_pop(np.array(pop_x), np.array(pop_y))
