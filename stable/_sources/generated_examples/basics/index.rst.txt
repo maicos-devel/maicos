@@ -1,0 +1,86 @@
+
+
+.. _sphx_glr_generated_examples_basics:
+
+.. _userdoc-how-to-basics:
+
+Basics
+------
+
+Basic examples to run MAICoS. These examples assume that you are already familiar with
+the basic concepts as introduced in the
+:ref:`userdoc-basic-usage` example.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="What is the chemical potential? -------------------------------">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_chemical-potential_thumb.svg
+    :alt:
+
+  :doc:`/generated_examples/basics/chemical-potential`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Ideal component of the chemical potential</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Basic usage -----------">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_pair-distribution-functions_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/basics/pair-distribution-functions`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Pair distribution functions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The requirements to follow the tutorial are the same than for the basic example.">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_advanced-usage_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/basics/advanced-usage`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Advanced usage</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /generated_examples/basics/chemical-potential
+   /generated_examples/basics/pair-distribution-functions
+   /generated_examples/basics/advanced-usage
+

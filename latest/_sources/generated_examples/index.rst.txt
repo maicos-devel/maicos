@@ -1,0 +1,221 @@
+:orphan:
+
+.. _userdoc-how-to:
+
+How-to guides
+=============
+
+Like a cooking recipe, How-to guides help you solve key problems and use cases. If you
+are a total MAICoS beginner, you should start with the :ref:`userdoc-basic-usage`
+section. Otherwise this section consists of introductory examples and examples
+demonstrating specific features of MAICoS' using its Python API.
+
+For running the examples install maicos with the ``examples`` optional dependencies.
+
+.. code-block:: bash
+
+    pip install maicos[examples]
+
+Example are split into :ref:`userdoc-how-to-basics` and
+:ref:`userdoc-how-to-dielectrics`.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+Basics
+------
+
+Basic examples to run MAICoS. These examples assume that you are already familiar with
+the basic concepts as introduced in the
+:ref:`userdoc-basic-usage` example.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="What is the chemical potential? -------------------------------">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_chemical-potential_thumb.svg
+    :alt:
+
+  :doc:`/generated_examples/basics/chemical-potential`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Ideal component of the chemical potential</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Basic usage -----------">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_pair-distribution-functions_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/basics/pair-distribution-functions`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Pair distribution functions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The requirements to follow the tutorial are the same than for the basic example.">
+
+.. only:: html
+
+  .. image:: /generated_examples/basics/images/thumb/sphx_glr_advanced-usage_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/basics/advanced-usage`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Advanced usage</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+Dielectrics
+-----------
+
+This section contains examples demonstrating how to calculate and analyze dielectric
+properties using MAICoS. These tutorials cover different aspects of dielectric
+analysis in molecular dynamics simulations.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In the following example, we will show how to calculate the dielectric profiles as described in dielectric-explanations.">
+
+.. only:: html
+
+  .. image:: /generated_examples/dielectrics/images/thumb/sphx_glr_dielectric-profiles_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/dielectrics/dielectric-profiles`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Dielectric profile calculation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to calculate dielectric profiles using the applied field method, where an applied electric field simulation is used to compute dielectric profiles for planar geometries.">
+
+.. only:: html
+
+  .. image:: /generated_examples/dielectrics/images/thumb/sphx_glr_dielectric-profile-applied_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/dielectrics/dielectric-profile-applied`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Dielectric Profile Calculations from Applied Field</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to construct the Dielectric Dividing Surface and the corresponding box model for a confined water system. It starts from precomputed relative permittivity profiles, extracts a bulk dielectric constant from the center of the pore, and then estimates the effective-medium response as outlined in the explanations on dielectric-explanations.">
+
+.. only:: html
+
+  .. image:: /generated_examples/dielectrics/images/thumb/sphx_glr_dielectric-effective-medium_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/dielectrics/dielectric-effective-medium`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Dielectric Dividing Surface & Box model</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+   :includehidden:
+
+
+   /generated_examples/basics/index.rst
+   /generated_examples/dielectrics/index.rst
+
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
+
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download all examples in Python source code: generated_examples_python.zip </generated_examples/generated_examples_python.zip>`
+
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download all examples in Jupyter notebooks: generated_examples_jupyter.zip </generated_examples/generated_examples_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

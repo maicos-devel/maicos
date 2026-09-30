@@ -1,0 +1,68 @@
+
+
+.. _sphx_glr_generated_examples_dielectrics:
+
+.. _userdoc-how-to-dielectrics:
+
+Dielectrics
+-----------
+
+This section contains examples demonstrating how to calculate and analyze dielectric
+properties using MAICoS. These tutorials cover different aspects of dielectric
+analysis in molecular dynamics simulations.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In the following example, we will show how to calculate the dielectric profiles as described in dielectric-explanations.">
+
+.. only:: html
+
+  .. image:: /generated_examples/dielectrics/images/thumb/sphx_glr_dielectric-profiles_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/dielectrics/dielectric-profiles`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Dielectric profile calculation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to calculate dielectric profiles using the applied field method, where an applied electric field simulation is used to compute dielectric profiles for planar geometries.">
+
+.. only:: html
+
+  .. image:: /generated_examples/dielectrics/images/thumb/sphx_glr_dielectric-profile-applied_thumb.png
+    :alt:
+
+  :doc:`/generated_examples/dielectrics/dielectric-profile-applied`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Dielectric Profile Calculations from Applied Field</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /generated_examples/dielectrics/dielectric-profiles
+   /generated_examples/dielectrics/dielectric-profile-applied
+
