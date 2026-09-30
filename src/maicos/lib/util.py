@@ -57,7 +57,7 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
 
-def check_file_extension(filename: str, extension: str) -> str:
+def check_file_extension(filename: str | Path, extension: str) -> str:
     """Ensure ``filename`` ends with ``extension``, appending it with a warning.
 
     If ``filename`` does not end with ``extension``, the extension is appended
@@ -65,7 +65,7 @@ def check_file_extension(filename: str, extension: str) -> str:
 
     Parameters
     ----------
-    filename : str
+    filename : str or pathlib.Path
         Name of the file to be checked.
     extension : str
         Expected file extension, including the leading dot (e.g. ``".dat"``).
@@ -73,9 +73,9 @@ def check_file_extension(filename: str, extension: str) -> str:
     Returns
     -------
     str
-        ``filename`` unchanged if it already ends with ``extension``, otherwise
-        ``filename`` with ``extension`` appended.
+        ``filename`` as a string, with ``extension`` appended if necessary.
     """
+    filename = str(filename)
     if not filename.endswith(extension):
         warnings.warn(
             f"The file name should have a {extension!r} file extension. The user "
@@ -199,9 +199,9 @@ self : object
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
     ``"fragments"``).""",
-    "OUTPUT_PARAMETER": """output : str
+    "OUTPUT_PARAMETER": """output : str or pathlib.Path
     Output filename.""",
-    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str
+    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str or pathlib.Path
     Prefix for output files.""",
     "SYM_PARAMETER": """sym : bool
     Symmetrize the profile. Only works in combination with ``refgroup``.""",
@@ -871,7 +871,7 @@ def get_module_input_str(module_obj):
         sig.args.remove("self")
         strings = []
         for param in sig.args:
-            if isinstance(module_obj._locals[param], str):
+            if isinstance(module_obj._locals[param], str | Path):
                 string = f"{param}='{module_obj._locals[param]}'"
             elif (
                 param == "atomgroup"
@@ -890,7 +890,7 @@ def get_module_input_str(module_obj):
             [
                 (
                     f"{param}='{module_obj._run_locals[param]}'"
-                    if isinstance(module_obj._run_locals[param], str)
+                    if isinstance(module_obj._run_locals[param], str | Path)
                     else f"{param}={module_obj._run_locals[param]}"
                 )
                 for param in sig.args

@@ -6,6 +6,7 @@
 """Module for computing planar velocity profiles."""
 
 import logging
+from pathlib import Path
 
 import MDAnalysis as mda
 
@@ -67,7 +68,7 @@ class VelocityPlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "velocity.dat",
+        output: str | Path = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

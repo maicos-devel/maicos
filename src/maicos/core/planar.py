@@ -7,6 +7,7 @@
 
 import logging
 from collections.abc import Callable
+from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
@@ -218,7 +219,7 @@ class ProfilePlanarBase(PlanarBase, ProfileBase):  # type: ignore
         sym_odd: bool,
         grouping: str,
         bin_method: str,
-        output: str,
+        output: str | Path,
         weighting_function: Callable,
         weighting_function_kwargs: None | dict,
         normalization: str,
