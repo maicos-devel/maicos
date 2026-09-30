@@ -14,6 +14,8 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Add support for parallel analysis via MDAnalysis split-apply-combine backends
+  (``serial``/``multiprocessing``/``dask``) (#517)
 - Add more module benchmarks and synthetic scaling tests (#595)
 - Add note to the getting started section about symlinks for Windows devs (#592)
 - Fix ruff lint errors and remove non-executable shebang lines from module headers (#602)

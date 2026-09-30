@@ -81,6 +81,8 @@ class FileModuleInput(AnalysisBase):
 class SingularSeries(AnalysisBase):
     """Class creating a time series with one observable per frame."""
 
+    _analysis_algorithm_is_parallelizable = True
+
     def __init__(self, atomgroup):
         super().__init__(
             atomgroup=atomgroup,
@@ -92,11 +94,23 @@ class SingularSeries(AnalysisBase):
             concfreq=0,
         )
 
+        n_frames = 101
+        x = np.linspace(0, 1, n_frames)
+        self.series = np.sin(x)
+
     def _prepare(self):
-        self.series = np.random.rand(self.n_frames)
+        pass
 
     def _single_frame(self):
-        self._obs.observable = self.series[self._frame_index]
+        self._obs.observable = self.series[self.frames[self._frame_index]]
+
+    @classmethod
+    def get_supported_backends(cls):
+        """Backends supported by this test analysis class."""
+        return (
+            "serial",
+            "dask",
+        )
 
 
 class MultipleSeries(AnalysisBase):
@@ -391,6 +405,19 @@ class Test_AnalysisBase:
             rtol=1e-5,
         )
 
+    def test_parallel_run(self, ag):
+        """Test the parallel runner."""
+        ana = SingularSeries(atomgroup=ag)
+        ana.run(backend="dask", n_workers=4)
+        assert_allclose(
+            ana.means.observable, np.mean(ana.series[: ana.n_frames]), rtol=1e-5
+        )
+        assert_allclose(
+            ana.sems.observable,
+            np.std(ana.series[: ana.n_frames]) / np.sqrt(ana.n_frames),
+            rtol=1e-5,
+        )
+
     def test_output_message(self, ag, monkeypatch, tmp_path):
         """Test the output message of modules."""
         monkeypatch.chdir(tmp_path)
@@ -398,8 +425,10 @@ class Test_AnalysisBase:
         data = np.random.rand(100, 2)
         ana = Output(ag)
         ana._index = 1
+        ana.n_frames = 1
         sub_ana = SubOutput(ag)
         sub_ana._index = 1
+        sub_ana.n_frames = 1
 
         # Simple check if a single message gets written to the output file
         ana.savetxt("foo.dat", data, columns=["First", "Second"])
@@ -458,7 +487,7 @@ class Test_AnalysisBase:
         with Path("test_default.dat").open() as f:
             assert (
                 ".run(start=None, stop=None, step=None, frames=None, verbose=None, "
-                "progressbar_kwargs=None)" in f.read()
+                "n_workers=None, n_parts=None, backend=None)" in f.read()
             )
 
         # Test if the set test_input parameter is written correctly
@@ -474,7 +503,7 @@ class Test_AnalysisBase:
         with Path("test_run.dat").open() as f:
             assert (
                 ".run(start=5, stop=7, step=2, frames=None, verbose=True, "
-                "progressbar_kwargs=None)" in f.read()
+                "n_workers=None, n_parts=None, backend=None)" in f.read()
             )
 
     def test_savetxt_warns_on_missing_extension(self, ag, monkeypatch, tmp_path):
@@ -482,6 +511,7 @@ class Test_AnalysisBase:
         monkeypatch.chdir(tmp_path)
         ana = Output(ag)
         ana._index = 1
+        ana.n_frames = 1
         with pytest.warns(UserWarning, match=r"\.dat"):
             ana.savetxt("missing_ext", np.random.rand(10, 2))
         assert Path("missing_ext.dat").exists()
@@ -1142,6 +1172,7 @@ class Test_ProfileBase:
         profile.results.dprofile = np.zeros(10)
         profile.run = lambda x: x
         profile._index = 0
+        profile.n_frames = 0
 
         profile.save()
         assert Path(params["output"]).exists()
@@ -1157,6 +1188,7 @@ class Test_ProfileBase:
         profile.results.dprofile = np.random.random(10)
         profile.run = lambda x: x
         profile._index = 0
+        profile.n_frames = 0
 
         profile.save()
         res_dens = np.loadtxt(profile.output)
