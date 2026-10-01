@@ -523,19 +523,14 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         self.timeseries[current_frame_index] = self._single_frame()
 
-        # This try/except block is used because it will fail only once and is
-        # therefore not a performance issue like a if statement would be.
-        # Only the lookup is guarded, so an error raised inside `update` propagates
-        # instead of silently re-seeding the statistics.
+        # The lookup fails only once, so try/except is cheaper than an if statement.
+        # `update` runs outside the guard so that its errors propagate.
         try:
             moments = self.moments
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
-            # Seed the running statistics from the first frame. The backend owns
-            # the means/sems/sums/pop/M2/C containers; expose them on the analysis
-            # for the modules and checkpointing. Covariance and error propagation
-            # are reached through `self.moments.cov`/`self.moments.propagate_error`.
+            # Seed from the first frame and expose the accumulator's containers.
             self.moments = MomentAccumulator(self._covariance_pair_keys)
             self.moments.register(self._obs, self._pop, self._var, self._cov)
             self.means = self.moments.means

@@ -98,8 +98,7 @@ class CovarianceSeries(AnalysisBase):
     """Emits ``n_obs`` co-sampled array observables to drive covariance accumulation.
 
     Each frame writes ``n_obs`` observables of shape ``(n_bins,)``, so the base
-    class tracks ``n_obs * (n_obs - 1) / 2`` off-diagonal co-moment pairs. This
-    is the workload that exercises the per-frame covariance update.
+    class tracks ``n_obs * (n_obs - 1) / 2`` off-diagonal co-moment pairs.
 
     Parameters
     ----------
@@ -114,7 +113,6 @@ class CovarianceSeries(AnalysisBase):
     def __init__(self, atomgroup, n_obs, n_bins):
         self._n_obs = n_obs
         self._n_bins = n_bins
-        # Request every pair so the full N*(N-1)/2 accumulation is benchmarked.
         keys = [f"o{i}" for i in range(n_obs)]
         self._compute_covariance = [
             {a, b} for k, a in enumerate(keys) for b in keys[k + 1 :]

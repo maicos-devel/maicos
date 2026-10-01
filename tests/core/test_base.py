@@ -178,7 +178,7 @@ class CorrelatedSeries(AnalysisBase):
     """Class emitting several correlated observables per frame.
 
     The observables are correlated with each other within a frame, but not across
-    frames. There is no time correlation between frames.
+    frames.
 
     Observables (one sample per frame):
     - ``x``     : scalar, drawn at random
@@ -228,7 +228,7 @@ class WeightedSeries(AnalysisBase):
 
     ``single`` (shape (3,), one sample per frame) and ``weighted`` (shape (3,)
     with a per-bin sample count) broadcast in shape but are *not* co-sampled, so
-    requesting their covariance must raise KeyError.
+    requesting their covariance must raise ValueError.
     """
 
     _compute_covariance: ClassVar[list[set[str]]] = [{"single", "weighted"}]
@@ -261,8 +261,7 @@ class MultiSampleSeries(AnalysisBase):
     (some frames empty) and reports the per-frame mean, within-frame variance,
     within-frame covariance, and population. The streamed co-moment must equal
     the batch co-moment over all individual samples. With ``n_bins == 1`` the
-    observables are scalars (fallback path); otherwise they are arrays of shape
-    ``(n_bins,)`` (vectorized block path).
+    observables are scalars; otherwise they are arrays of shape ``(n_bins,)``.
     """
 
     _compute_covariance: ClassVar[list[set[str]]] = [{"x", "y"}]
@@ -1834,7 +1833,7 @@ class Test_Covariance:
             assert_allclose(restored.C[key], ana.moments.C[key])
 
     def test_multisample_array_matches_batch(self, ag):
-        """Multi-sample array observables (block path) match the batch co-moment."""
+        """Multi-sample array observables match the batch co-moment."""
         ana = MultiSampleSeries(ag, n_bins=4, seed=0)
         ana.run()
         streamed = ana.moments.C[make_pair_key("x", "y")]
@@ -1842,7 +1841,7 @@ class Test_Covariance:
         assert_allclose(streamed, ana.batch_comoment(), rtol=1e-9)
 
     def test_multisample_scalar_matches_batch(self, ag):
-        """Multi-sample scalar observables (fallback path) match the batch co-moment."""
+        """Multi-sample scalar observables match the batch co-moment."""
         ana = MultiSampleSeries(ag, n_bins=1, seed=3)
         ana.run()
         streamed = ana.moments.C[make_pair_key("x", "y")]

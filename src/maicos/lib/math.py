@@ -636,13 +636,10 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
 def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
     r"""Combine the co-moment of two datasets of arbitrary size.
 
-    Streaming merge of the co-moment :math:`C = \sum (x - \bar x)(y - \bar y)` of
-    two datasets, generalizing :func:`combine_subsample_variance` to a pair of
-    variables. Setting ``x is y`` (and ``C = M``) recovers that function exactly.
-    Inputs are combined element-wise and broadcast against each other, so the
-    element-wise covariance of array-valued observables is the natural result.
-    Empty merges (``n_AB == 0``) contribute zero rather than a NaN, so a bin that
-    is intermittently empty does not poison the running co-moment.
+    Generalizes :func:`combine_subsample_variance` to the co-moment
+    :math:`C = \sum (x - \bar x)(y - \bar y)` of a pair of variables. Inputs are
+    combined element-wise and broadcast against each other. Empty merges
+    (``n_AB == 0``) contribute zero instead of NaN.
 
     See `<https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online>`_.
 

@@ -982,23 +982,8 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
 def _joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
     """Shared sample count of two co-sampled observables.
 
-    A covariance is only defined for co-sampled observables, i.e. when the
-    populations agree element-wise after broadcasting.
-
-    Parameters
-    ----------
-    pop_x, pop_y : numpy.ndarray
-        Population (sample count) of the two observables.
-
-    Returns
-    -------
-    numpy.ndarray
-        The (broadcast) number of samples shared by both observables.
-
-    Raises
-    ------
-    ValueError
-        If the populations do not broadcast or differ.
+    Raises a ``ValueError`` if the populations do not broadcast or differ, since a
+    covariance is only defined for co-sampled observables.
     """
     b_x, b_y = np.broadcast_arrays(pop_x, pop_y)
     if not np.array_equal(b_x, b_y):
@@ -1084,9 +1069,6 @@ class MomentAccumulator:
     """
 
     def __init__(self, requested_pairs=()):
-        # Running containers, owned by the accumulator and exposed by the
-        # analysis. Each value is an array seeded by :meth:`register` and
-        # updated in place; the buffers' identities never change afterwards.
         self.means = Results()  # mean of the observables across frames
         self.sems = Results()  # standard error of the mean across frames
         self.sums = Results()  # sum of the observables across frames
@@ -1100,9 +1082,8 @@ class MomentAccumulator:
         """Return per-frame observable / population / variance arrays.
 
         Lists and scalars become float arrays (scalars stay 0-d), and a missing
-        population / variance defaults to a single sample with undefined
-        within-frame spread. The input ``Results`` containers are not mutated, so
-        a module's raw observables stay visible on the analysis for ``_conclude``.
+        population / variance defaults to a single sample with zero within-frame
+        variance. The input ``Results`` containers are not mutated.
         """
         s_obs, s_pop, s_var = {}, {}, {}
         for key in obs:
@@ -1137,9 +1118,7 @@ class MomentAccumulator:
         """
         s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
         for key in s_obs:
-            # Own writable buffers, kept as (0-d for scalars) arrays so the
-            # in-place merge can write through them. Arithmetic on 0-d arrays
-            # collapses to an immutable numpy scalar, so wrap each result.
+            # np.array keeps scalars as writable 0-d arrays for the in-place merge.
             self.means[key] = np.array(s_obs[key], dtype=float)
             self.pop[key] = np.array(s_pop[key])
             self.M2[key] = np.array(s_var[key] * s_pop[key], dtype=float)
@@ -1202,7 +1181,7 @@ class MomentAccumulator:
 
         """
         s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
-        for pair_key in self.C:  # before the means move
+        for pair_key in self.C:
             self._merge_cov(pair_key, s_obs, s_pop, _cov)
         for key in self._keys:
             self._merge_var(key, s_obs, s_pop, s_var)
@@ -1221,13 +1200,8 @@ class MomentAccumulator:
     def _merge_cov(self, pair_key, s_obs, s_pop, _cov):
         """Merge the current frame into one pair's running co-moment.
 
-        The per-key inputs may have different shapes (e.g. a scalar paired with a
-        profile); numpy's arithmetic in :func:`combine_subsample_covariance`
-        broadcasts them, and the running co-moment ``C`` anchors the pair's result
-        shape, so no explicit broadcasting is needed here.
-
-        Single-sample observables (population=1, no within-frame
-        variance) are a special case of the same merge.
+        Inputs of different shapes (e.g. a scalar paired with a profile) broadcast
+        against the running co-moment ``C``.
         """
         key_i, key_j = pair_key
         C = self.C[pair_key]
