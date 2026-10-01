@@ -525,11 +525,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         # This try/except block is used because it will fail only once and is
         # therefore not a performance issue like a if statement would be.
+        # Only the lookup is guarded, so an error raised inside `update` propagates
+        # instead of silently re-seeding the statistics.
         try:
-            # Fail fast if the backend is not initialised yet.
-            self.moments  # noqa B018
-            self.moments.update(self._obs, self._pop, self._var, self._cov)
-
+            moments = self.moments
         except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
@@ -545,6 +544,8 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             self.pop = self.moments.pop
             self.M2 = self.moments.M2
             self.C = self.moments.C
+        else:
+            moments.update(self._obs, self._pop, self._var, self._cov)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
