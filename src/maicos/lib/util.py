@@ -1278,7 +1278,9 @@ class MomentAccumulator:
                 f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
                 f"requested in `_compute_covariance`"
             )
-        return self.C[pair_key] / _joint_pop(self.pop[key_i], self.pop[key_j]) ** 2
+        pop = _joint_pop(self.pop[key_i], self.pop[key_j])
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return self.C[pair_key] / pop**2
 
     def propagate_error(self, grads: dict) -> np.ndarray:
         r"""Propagate observable errors through an estimator.
