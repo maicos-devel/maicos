@@ -23,7 +23,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
-from maicos.lib.util import _joint_pop, make_pair_key
+from maicos.lib.util import MomentAccumulator, _joint_pop, make_pair_key
 
 sys.path.append(str(Path(__file__).parents[1]))
 
@@ -812,6 +812,16 @@ class Test_AnalysisBase:
         error_msg = "Observable 'observable' has an incompatible type."
         with pytest.raises(TypeError, match=error_msg):
             class_obj.run(stop=2)
+
+    def test_accumulator_error_propagates(self, ag, monkeypatch):
+        """An AttributeError raised while merging a frame is not swallowed."""
+
+        def broken_update(*_args):
+            raise AttributeError("broken update")
+
+        monkeypatch.setattr(MomentAccumulator, "update", broken_update)
+        with pytest.raises(AttributeError, match="broken update"):
+            SingularSeries(ag).run(stop=2)
 
     def test_banner(self, ag, caplog):
         """Test whether AnalysisBase prints the MAICoS banner."""

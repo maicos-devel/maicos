@@ -14,12 +14,18 @@ from unittest.mock import patch
 import MDAnalysis as mda
 import numpy as np
 import pytest
+from MDAnalysis.analysis.base import Results
 from MDAnalysisTests.core.util import UnWrapUniverse
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
-from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
+from maicos.lib.util import (
+    MomentAccumulator,
+    check_file_extension,
+    make_pair_key,
+    triclinic_to_orthorhombic,
+)
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT
@@ -662,3 +668,84 @@ class TestJointPop:
         """Differing or non-broadcastable populations raise."""
         with pytest.raises(ValueError, match="different populations|broadcast"):
             maicos.lib.util._joint_pop(np.array(pop_x), np.array(pop_y))
+
+
+class TestMomentAccumulator:
+    """Tests for the streaming statistics backend."""
+
+    @pytest.fixture
+    def acc(self):
+        """Two correlated profiles whose last bin is empty in every frame."""
+        rng = np.random.default_rng(0)
+        acc = MomentAccumulator({make_pair_key("x", "y")})
+        pop = np.array([1, 1, 0])
+        var = np.zeros(3)
+        for i in range(200):
+            x = rng.normal(size=3)
+            y = x + 0.01 * rng.normal(size=3)
+            x[2] = y[2] = np.nan
+            frame = (
+                Results(x=x, y=y),
+                Results(x=pop, y=pop),
+                Results(x=var, y=var),
+                Results(),
+            )
+            if i == 0:
+                acc.register(*frame)
+            else:
+                acc.update(*frame)
+        return acc
+
+    def test_propagate_error_keeps_covariance_with_empty_bin(self, acc):
+        """An empty bin does not discard the covariance of the other bins."""
+        uncorrelated = np.sqrt(acc.sems.x**2 + acc.sems.y**2)
+        expected = np.sqrt(acc.sems.x**2 + acc.sems.y**2 - 2 * acc.cov("x", "y"))
+
+        error = acc.propagate_error({"x": 1.0, "y": -1.0})
+
+        assert_allclose(error[:2], expected[:2])
+        assert np.all(error[:2] < 0.1 * uncorrelated[:2])
+        assert np.isnan(error[2])
+
+    def test_propagate_error_negative_variance_per_element(self, acc):
+        """Only elements with a negative variance use the uncorrelated estimate."""
+        grads = {"x": 1.0, "y": -1.0}
+        correlated = acc.propagate_error(grads)
+        uncorrelated = np.sqrt(acc.sems.x**2 + acc.sems.y**2)
+
+        # Inflate the co-moment of the first bin so that its variance is negative.
+        acc.C[make_pair_key("x", "y")][0] *= 10
+        error = acc.propagate_error(grads)
+
+        assert_allclose(error[0], uncorrelated[0])
+        assert_allclose(error[1], correlated[1])
+
+    def test_cov_empty_bin(self, acc):
+        """The covariance of an empty bin is NaN and raises no warning."""
+        cov = acc.cov("x", "y")
+
+        assert np.all(np.isfinite(cov[:2]))
+        assert np.isnan(cov[2])
+
+    def test_sums_bin_empty_in_first_frame(self):
+        """A bin that is empty in the first frame accumulates later samples."""
+        acc = MomentAccumulator()
+        frames = [
+            ([np.nan, 1.0], [0, 1]),
+            ([2.0, np.nan], [1, 0]),
+            ([2.0, 3.0], [1, 1]),
+        ]
+        for i, (obs, pop) in enumerate(frames):
+            frame = (
+                Results(x=np.array(obs)),
+                Results(x=np.array(pop)),
+                Results(x=np.zeros(2)),
+                Results(),
+            )
+            if i == 0:
+                acc.register(*frame)
+            else:
+                acc.update(*frame)
+
+        assert_allclose(acc.sums.x, [4.0, 4.0])
+        assert_allclose(acc.means.x, [2.0, 2.0])
