@@ -1147,7 +1147,11 @@ class MomentAccumulator:
                 self.sems[key] = np.array(
                     np.sqrt(self.M2[key] / self.pop[key] ** 2), dtype=float
                 )
-            self.sums[key] = np.array(self.means[key] * self.pop[key], dtype=float)
+            # Empty (NaN) entries contribute nothing, as in :meth:`_merge_var`.
+            obs = s_obs[key]
+            self.sums[key] = np.array(
+                np.where(np.isnan(obs), 0.0, obs) * s_pop[key], dtype=float
+            )
             self._keys.append(key)
         self._build_pairs(s_obs, s_pop, _cov)
 
