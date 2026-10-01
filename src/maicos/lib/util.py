@@ -1316,20 +1316,16 @@ class MomentAccumulator:
 
         """
         keys = list(grads)
-        var = 0.0
+        var_cross = 0.0
         for key_i, key_j in combinations(keys, 2):
             cov_ij = self.cov(key_i, key_j)
-            var = var + 2 * grads[key_i] * grads[key_j] * cov_ij
+            var_cross = var_cross + 2 * grads[key_i] * grads[key_j] * cov_ij
 
+        var_diag = 0.0
         for key in keys:
-            var = var + grads[key] ** 2 * self.sems[key] ** 2
+            var_diag = var_diag + grads[key] ** 2 * self.sems[key] ** 2
 
-        with np.errstate(invalid="ignore"):
-            result = np.sqrt(var)
-        if np.any(np.isnan(result)):
-            # Variance went negative, fall back to the uncorrelated estimate.
-            var = 0.0
-            for key in keys:
-                var = var + grads[key] ** 2 * self.sems[key] ** 2
-            result = np.sqrt(var)
-        return result
+        # Where the variance went negative, fall back to the uncorrelated
+        # estimate. Undefined (NaN) elements, e.g. empty bins, stay NaN.
+        var = var_diag + var_cross
+        return np.sqrt(np.where(var < 0, var_diag, var))
