@@ -82,7 +82,9 @@ def density_weights(atomgroup: mda.AtomGroup, grouping: str, dens: str) -> np.nd
         else:
             weights = atomgroup.total_charge(compound=grouping)
     elif dens == "electron":
-        weights = np.array([_resolve_electron_count(el) for el in atomgroup.elements])
+        weights = np.array(
+            [_resolve_electron_count(el) for el in atomgroup.elements], dtype=float
+        )
         if grouping != "atoms":
             weights = atomgroup.accumulate(weights, compound=grouping)
     else:
