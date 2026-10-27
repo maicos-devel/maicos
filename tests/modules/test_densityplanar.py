@@ -95,7 +95,9 @@ class TestDensityPlanar(ReferenceAtomGroups):
     """Tests for the DensityPlanar class."""
 
     @pytest.mark.parametrize(
-        ("dens_type", "mean"), [("mass", 0.588), ("number", 0.097), ("charge", 0)]
+        ("dens_type", "mean"),
+        # water carries 10 electrons per 18 u: 0.588 u/Å³ -> 0.327 e/Å³
+        [("mass", 0.588), ("number", 0.097), ("charge", 0), ("electron", 0.327)],
     )
     @pytest.mark.parametrize("dim", [0, 1, 2])
     def test_dens(self, ag, dens_type, mean, dim):
