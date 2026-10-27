@@ -304,17 +304,25 @@ class TestDielectricCylinder:
         res_r = np.loadtxt(f"{eps.output_prefix}_r.dat")
         assert_allclose(eps.results["eps_r"], res_r[:, 1], rtol=1e-2)
 
-    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
-        """Tests output name."""
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    @pytest.mark.parametrize("location", ["current", "relative", "absolute"])
+    def test_output_name(
+        self, ag_single_frame, monkeypatch, tmp_path, filename_type, location
+    ):
+        """Tests output name, including prefixes pointing into subdirectories."""
         monkeypatch.chdir(tmp_path)
+        directory = Path() if location == "current" else Path("results")
+        if location == "absolute":
+            directory = tmp_path / directory
+        directory.mkdir(exist_ok=True)
 
-        eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
+        eps = DielectricCylinder(
+            ag_single_frame, output_prefix=filename_type(directory / "foo")
+        )
         eps.run()
         eps.save()
-        with Path("foo_z.dat").open():
-            pass
-        with Path("foo_r.dat").open():
-            pass
+        for file in ["foo_z.dat", "foo_r.dat", "foo_phi.dat"]:
+            assert (directory / file).exists()
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""

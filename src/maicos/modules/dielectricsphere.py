@@ -174,6 +174,4 @@ class DielectricSphere(SphereBase):
 
         columns = ["positions [Å]", "eps_rad - 1", "eps_rad error"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_rad.dat"), outdata_rad, columns=columns
-        )
+        self.savetxt(f"{self.output_prefix}_rad.dat", outdata_rad, columns=columns)

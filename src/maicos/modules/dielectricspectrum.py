@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Module for computing dielectric spectra for bulk systems."""
 
+from pathlib import Path
+
 import MDAnalysis as mda
 
 
@@ -25,6 +27,6 @@ class DielectricSpectrum:
         pack: bool = True,  # noqa
         jitter: float = 0.0,  # noqa
         concfreq: int = 0,  # noqa
-        output_prefix: str = "",  # noqa
+        output_prefix: str | Path = "",  # noqa
     ) -> None:
         raise ValueError(self.__doc__)

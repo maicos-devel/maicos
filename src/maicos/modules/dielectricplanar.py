@@ -350,7 +350,7 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_perp.dat"),
+            f"{self.output_prefix}_perp.dat",
             outdata_perp,
             columns=columns,
         )
@@ -371,6 +371,4 @@ class DielectricPlanar(PlanarBase):
             ]
         ).T
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_par.dat"), outdata_par, columns=columns
-        )
+        self.savetxt(f"{self.output_prefix}_par.dat", outdata_par, columns=columns)

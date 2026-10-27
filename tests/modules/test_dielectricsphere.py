@@ -152,15 +152,23 @@ class TestDielectricSphere:
         assert_allclose(eps.results["eps_rad"], res_rad[:, 1], rtol=1e-2)
 
     @pytest.mark.parametrize("filename_type", [str, Path])
-    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path, filename_type):
-        """Tests output name."""
+    @pytest.mark.parametrize("location", ["current", "relative", "absolute"])
+    def test_output_name(
+        self, ag_single_frame, monkeypatch, tmp_path, filename_type, location
+    ):
+        """Tests output name, including prefixes pointing into subdirectories."""
         monkeypatch.chdir(tmp_path)
+        directory = Path() if location == "current" else Path("results")
+        if location == "absolute":
+            directory = tmp_path / directory
+        directory.mkdir(exist_ok=True)
 
-        eps = DielectricSphere(ag_single_frame, output_prefix=filename_type("foo"))
+        eps = DielectricSphere(
+            ag_single_frame, output_prefix=filename_type(directory / "foo")
+        )
         eps.run()
         eps.save()
-        with Path("foo_rad.dat").open():
-            pass
+        assert (directory / "foo_rad.dat").exists()
 
     @pytest.mark.parametrize(
         ("rmin", "rmax", "result"),

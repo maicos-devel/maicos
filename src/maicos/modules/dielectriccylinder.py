@@ -443,22 +443,16 @@ class DielectricCylinder(CylinderBase):
 
         columns += ["ε_z - 1", "Δε_z"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_z.dat"), outdata_z, columns=columns
-        )
+        self.savetxt(f"{self.output_prefix}_z.dat", outdata_z, columns=columns)
 
         columns = ["positions [Å]"]
 
         columns += ["ε^-1_r - 1", "Δε^-1_r"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_r.dat"), outdata_r, columns=columns
-        )
+        self.savetxt(f"{self.output_prefix}_r.dat", outdata_r, columns=columns)
 
         columns = ["positions [Å]"]
 
         columns += ["ε_phi - 1", "Δε_phi"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
-        )
+        self.savetxt(f"{self.output_prefix}_phi.dat", outdata_phi, columns=columns)
