@@ -10,7 +10,7 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
 
 import MDAnalysis as mda
 import MDAnalysis.analysis.base
@@ -20,8 +20,11 @@ from MDAnalysis.lib.log import ProgressBar
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from .. import __version__
-from ..lib.math import center_cluster, combine_subsample_variance
+from ..lib.math import (
+    center_cluster,
+)
 from ..lib.util import (
+    MomentAccumulator,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -29,6 +32,7 @@ from ..lib.util import (
     get_cli_input,
     get_module_input_str,
     maicos_banner,
+    make_pair_key,
     render_docs,
     triclinic_to_orthorhombic,
 )
@@ -308,6 +312,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     """
 
+    #: Observable pairs to accumulate the off-diagonal covariance.
+    #: Each entry names two observable keys, e.g. ``[{"x", "y"}, {"x", "z"}]``.
+    _compute_covariance: ClassVar[list[set[str]]] = []
+
     if TYPE_CHECKING:  # pragma: no cover
         # Type annotations for attributes set dynamically in _call_single_frame.
         means: Results
@@ -315,9 +323,12 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         sums: Results
         pop: Results
         M2: Results
+        C: Results
         _obs: Results
         _pop: Results
         _var: Results
+        _cov: Results
+        moments: MomentAccumulator
 
     def __init__(
         self,
@@ -343,6 +354,9 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self.pack = pack
         self.jitter = jitter
         self.concfreq = concfreq
+        self._covariance_pair_keys = {
+            make_pair_key(*pair) for pair in self._compute_covariance
+        }
         if wrap_compound not in [
             "atoms",
             "group",
@@ -462,16 +476,6 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
     def _call_single_frame(self, ts, current_frame_index) -> None:
         """Base method wrapping all single_frame logic into a single call."""
-        compatible_types = [
-            np.ndarray,
-            float,
-            int,
-            list,
-            np.float32,
-            np.float64,
-            np.int32,
-            np.int64,
-        ]
         self._frame_index = current_frame_index
         self._index = self._frame_index + 1
 
@@ -515,72 +519,28 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         self._obs = Results()  # observable (or mean of the samples)
         self._var = Results()  # variance of the samples
         self._pop = Results()  # count of samples
+        self._cov = Results()  # within-frame covariance of the samples
 
         self.timeseries[current_frame_index] = self._single_frame()
 
-        # This try/except block is used because it will fail only once and is
-        # therefore not a performance issue like a if statement would be.
+        # The lookup fails only once, so try/except is cheaper than an if statement.
+        # `update` runs outside the guard so that its errors propagate.
         try:
-            # Fail fast if the means and sems are not defined yet.
-            self.means  # noqa B018
-            self.sems  # noqa B018
-
-            # Take the data from the current frame and update the means and sems
-            for key in self._obs:
-                # Sanitize the data type of the observable
-                if isinstance(self._obs[key], list):
-                    self._obs[key] = np.array(self._obs[key])
-                if key not in self._pop:
-                    # Observable is a single sample, so _pop is 1 and _var is 0
-                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
-                    self._var[key] = np.zeros(np.shape(self._obs[key]), dtype=float)
-
-                self.pop[key], self.means[key], self.M2[key] = (
-                    combine_subsample_variance(
-                        self._pop[key],
-                        self.pop[key],
-                        self._obs[key],
-                        self.means[key],
-                        self._var[key] * self._pop[key],
-                        self.M2[key],
-                    )
-                )
-
-                self.sems[key] = np.sqrt(self.M2[key] / self.pop[key] ** 2)
-                self.sums[key] += self._obs[key] * self._pop[key]
-
-        except AttributeError as err:
+            moments = self.moments
+        except AttributeError:
             with logging_redirect_tqdm():
                 logger.debug("Initializing error estimation.")
-            # the means and sems are not yet defined. We initialize the means with
-            # the data from the first frame and set the sems to zero (with the
-            # correct shape).
-            self.sums = Results()  # sum of the observables across frames
-            self.means = Results()  # mean of the observables across frames
-            self.sems = Results()  # standard error of the mean across frames
-            self.pop = Results()  # count of samples across frames
-            self.M2 = Results()  # second moment of the samples across frames
-
-            for key in self._obs:
-                if not isinstance(self._obs[key], tuple(compatible_types)):
-                    raise TypeError(f"Obervable {key} has uncompatible type.") from err
-                if isinstance(self._obs[key], list):
-                    self._obs[key] = np.array(self._obs[key])
-                if key not in self._pop:
-                    self._pop[key] = np.ones(np.shape(self._obs[key]), dtype=int)
-                    self._var[key] = np.empty(np.shape(self._obs[key]), dtype=float)
-                    self._var[key].fill(np.nan)
-
-                if isinstance(self._obs[key], np.ndarray):
-                    self.means[key] = np.astype(self._obs[key], float)
-                else:
-                    self.means[key] = float(self._obs[key])
-                with np.errstate(divide="ignore", invalid="ignore"):
-                    self.sems[key] = np.sqrt(self._var[key] / self._pop[key])
-
-                self.M2[key] = self._var[key] * self._pop[key]
-                self.pop[key] = self._pop[key]
-                self.sums[key] = self._obs[key] * self._pop[key]
+            # Seed from the first frame and expose the accumulator's containers.
+            self.moments = MomentAccumulator(self._covariance_pair_keys)
+            self.moments.register(self._obs, self._pop, self._var, self._cov)
+            self.means = self.moments.means
+            self.sems = self.moments.sems
+            self.sums = self.moments.sums
+            self.pop = self.moments.pop
+            self.M2 = self.moments.M2
+            self.C = self.moments.C
+        else:
+            moments.update(self._obs, self._pop, self._var, self._cov)
 
         if self.concfreq and self._index % self.concfreq == 0 and self._frame_index > 0:
             self._conclude()
@@ -686,11 +646,21 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         fname = check_file_extension(fname, ".dat")
         np.savetxt(fname, X, header=header, fmt="% .14e ", encoding="utf8")
 
-    _CHECKPOINT_CONTAINERS = ("results", "_obs", "means", "sems", "sums", "pop", "M2")
+    _CHECKPOINT_CONTAINERS = (
+        "results",
+        "_obs",
+        "means",
+        "sems",
+        "sums",
+        "pop",
+        "M2",
+        "C",
+    )
     _CHECKPOINT_ARRAYS = ("timeseries", "frames", "times")
     _CHECKPOINT_META = ("_frame_index", "_index", "corrtime")
 
     _CHECKPOINT_SEP = ":::"
+    _CHECKPOINT_PAIR_SEP = "|||"
 
     def dump(self, filename: str) -> None:
         """Save analysis state to an ``.npz`` file.
@@ -705,7 +675,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             :attr:`results` to a stable format.
 
         Persists all statistical accumulators (``means``, ``sems``, ``sums``,
-        ``pop``, ``M2``), the ``results`` and ``_obs`` containers, per-frame
+        ``pop``, ``M2``, ``C``), the ``results`` and ``_obs`` containers, per-frame
         arrays (``timeseries``, ``frames``, ``times``), metadata, the associated
         Universe and the analysed atomgroup. Restore the analysis with :meth:`load`.
 
@@ -721,7 +691,13 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if container is None:
                 continue
             for key in container:
-                data[f"{name}{sep}{key}"] = np.asarray(container[key])
+                if isinstance(key, tuple):
+                    # Pair keys (e.g. the covariance container) are flattened to
+                    # a string and reconstructed in `load`.
+                    key_str = self._CHECKPOINT_PAIR_SEP.join(key)
+                else:
+                    key_str = key
+                data[f"{name}{sep}{key_str}"] = np.asarray(container[key])
 
         for name in self._CHECKPOINT_ARRAYS:
             arr = getattr(self, name, None)
@@ -811,8 +787,11 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             if prefix in cls._CHECKPOINT_CONTAINERS:
                 if prefix not in containers:
                     containers[prefix] = Results()
+                # Reconstruct pair (tuple) keys flattened by `dump`.
+                pair_sep = cls._CHECKPOINT_PAIR_SEP
+                out_key = tuple(key.split(pair_sep)) if pair_sep in key else key
                 # Convert 0-d arrays back to Python scalars
-                containers[prefix][key] = arr.item() if arr.ndim == 0 else arr
+                containers[prefix][out_key] = arr.item() if arr.ndim == 0 else arr
 
             elif prefix == "_array":
                 setattr(instance, key, arr)
