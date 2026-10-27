@@ -13,7 +13,7 @@ from .tables import electron_count
 from .util import Unit_vector, render_docs
 
 
-def _resolve_electron_count(element: str) -> float:
+def _resolve_electron_count(element: str) -> int:
     if element == "CH1":
         return _resolve_electron_count("C") + _resolve_electron_count("H")
     if element == "CH2":
