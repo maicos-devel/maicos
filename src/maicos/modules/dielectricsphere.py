@@ -158,7 +158,7 @@ class DielectricSphere(SphereBase):
             + self.means.m_r**2 * self.sems.M_r**2
         )
 
-        self.results.eps_rad = 1 - (
+        self.results.eps_rad = -(
             4 * np.pi * self.results.bin_pos**2 * self._pref * cov_rad
         )
         self.results.deps_rad = (
