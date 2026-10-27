@@ -14,6 +14,7 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Add explanation page on box models (#583)
 - Fix type annotation of electron count in ``lib.weights`` (#609)
 - Make ``DielectricSphere`` output consistent with the documentation (#610) 
 - Fix electron density profiles failing on integer electron weights (#608)

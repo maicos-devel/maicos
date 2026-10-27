@@ -316,6 +316,9 @@ As has been detailed in refs. :footcite:p:`locheUniversalNonuniversalAspects2020
 it is recommended to determine the offsets relative to the Gibbs dividing surface.
 See especially ref. :footcite:p:`stark_static_2026` for a detailed discussion of
 the universality of this procedure for various water models.
+The Gibbs construction itself, and how the dielectric dividing surface compares to
+the other effective interface positions used in MAICoS, are discussed in
+:ref:`box-models`.
 
 References
 ----------
