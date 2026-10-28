@@ -58,6 +58,7 @@ class DiporderCylinder(ProfileCylinderBase):
         concfreq: int = 0,
         output: PathLike = "diporder_cylinder.dat",
     ) -> None:
+        self._locals = locals()
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_cylinder(

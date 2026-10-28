@@ -53,6 +53,7 @@ class DiporderSphere(ProfileSphereBase):
         concfreq: int = 0,
         output: PathLike = "diporder_sphere.dat",
     ) -> None:
+        self._locals = locals()
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_sphere(
