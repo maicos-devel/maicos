@@ -15,7 +15,7 @@ Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 - Lint ``CHANGELOG.rst``, ``AUTHORS.rst`` and ``CONTRIBUTING.rst`` with sphinx-lint
-  and fix existing markup errors (#XXX)
+  and fix existing markup errors (#611)
 - Fix ``PDFCylinder`` writing to wrong directory when ``output`` contains a directory
   (#603)
 - Accept path-like objects as filenames (#603)
