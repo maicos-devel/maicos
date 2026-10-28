@@ -591,7 +591,7 @@ class Test_AnalysisBase:
         )
         assert_allclose(np.loadtxt("foo.dat"), data)
 
-        with Path("foo.dat").open() as f:
+        with Path(tmp_path / "foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
 
         # More elaborate check to find out if output messages of subclasses
