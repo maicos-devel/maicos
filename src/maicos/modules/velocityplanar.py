@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import velocity_weights
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class VelocityPlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "velocity.dat",
+        output: PathLike = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

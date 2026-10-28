@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import density_weights
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class DensityCylinder(ProfileCylinderBase):
         pack: bool = True,
         concfreq: int = 0,
         jitter: float = 0.0,
-        output: str = "density.dat",
+        output: PathLike = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

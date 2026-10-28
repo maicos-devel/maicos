@@ -6,6 +6,7 @@
 """Module for computing planar dielectric profiles."""
 
 import logging
+import os
 
 import MDAnalysis as mda
 import numpy as np
@@ -13,7 +14,13 @@ import scipy.constants
 
 from ..core import PlanarBase
 from ..lib.math import symmetrize
-from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
+from ..lib.util import (
+    PathLike,
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +108,7 @@ class DielectricPlanar(PlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str = "eps",
+        output_prefix: PathLike = "eps",
     ) -> None:
         self._locals = locals()
         wrap_compound = get_compound(atomgroup)
@@ -332,6 +339,7 @@ class DielectricPlanar(PlanarBase):
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
+        prefix = os.fspath(self.output_prefix)
         columns = ["position [Å]"]
         columns.append("ε^-1_⟂ - 1")
         columns.append("Δε^-1_⟂")
@@ -349,7 +357,7 @@ class DielectricPlanar(PlanarBase):
         ).T
 
         self.savetxt(
-            "{}{}".format(self.output_prefix, "_perp.dat"),
+            f"{prefix}_perp.dat",
             outdata_perp,
             columns=columns,
         )
@@ -370,6 +378,4 @@ class DielectricPlanar(PlanarBase):
             ]
         ).T
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_par.dat"), outdata_par, columns=columns
-        )
+        self.savetxt(f"{prefix}_par.dat", outdata_par, columns=columns)

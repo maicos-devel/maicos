@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose, assert_equal
 import maicos
 from maicos.core import ProfileSphereBase, SphereBase
 from maicos.lib.math import transform_sphere
+from maicos.lib.util import get_module_input_str
 from maicos.lib.weights import density_weights
 
 sys.path.append(str(Path(__file__).parents[1]))
@@ -337,6 +338,12 @@ class TestSphereBaseChilds:
 
         assert ana_obj.rmin == pb_obj.rmin
         assert ana_obj.rmax == pb_obj.rmax
+
+    @pytest.mark.parametrize("Member", members)
+    def test_module_input(self, Member, ag_single_frame):
+        """Test that the module input is recorded for the output header."""
+        ana_obj = Member(ag_single_frame, unwrap=False).run()
+        assert "*args" not in get_module_input_str(ana_obj)
 
 
 class TestProfileSphereBase:

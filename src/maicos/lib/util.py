@@ -8,13 +8,14 @@
 import functools
 import inspect
 import logging
+import os
 import re
 import sys
 import warnings
 from collections.abc import Callable
 from itertools import combinations
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, TypeAlias
 
 import MDAnalysis as mda
 import numpy as np
@@ -29,6 +30,9 @@ from maicos.lib.math import (
 )
 
 logger = logging.getLogger(__name__)
+
+#: Type for arguments accepting a file system path.
+PathLike: TypeAlias = str | os.PathLike[str]
 
 
 def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
@@ -63,7 +67,7 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
 
-def check_file_extension(filename: str, extension: str) -> str:
+def check_file_extension(filename: PathLike, extension: str) -> str:
     """Ensure ``filename`` ends with ``extension``, appending it with a warning.
 
     If ``filename`` does not end with ``extension``, the extension is appended
@@ -71,7 +75,7 @@ def check_file_extension(filename: str, extension: str) -> str:
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         Name of the file to be checked.
     extension : str
         Expected file extension, including the leading dot (e.g. ``".dat"``).
@@ -79,9 +83,9 @@ def check_file_extension(filename: str, extension: str) -> str:
     Returns
     -------
     str
-        ``filename`` unchanged if it already ends with ``extension``, otherwise
-        ``filename`` with ``extension`` appended.
+        ``filename`` as a string, with ``extension`` appended if necessary.
     """
+    filename = os.fspath(filename)
     if not filename.endswith(extension):
         warnings.warn(
             f"The file name should have a {extension!r} file extension. The user "
@@ -205,9 +209,9 @@ self : object
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
     ``"fragments"``).""",
-    "OUTPUT_PARAMETER": """output : str
+    "OUTPUT_PARAMETER": """output : str or os.PathLike
     Output filename.""",
-    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str
+    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str or os.PathLike
     Prefix for output files.""",
     "SYM_PARAMETER": """sym : bool
     Symmetrize the profile. Only works in combination with ``refgroup``.""",
@@ -877,8 +881,8 @@ def get_module_input_str(module_obj):
         sig.args.remove("self")
         strings = []
         for param in sig.args:
-            if isinstance(module_obj._locals[param], str):
-                string = f"{param}='{module_obj._locals[param]}'"
+            if isinstance(module_obj._locals[param], str | os.PathLike):
+                string = f"{param}={os.fspath(module_obj._locals[param])!r}"
             elif (
                 param == "atomgroup"
                 or param == "refgroup"
@@ -895,8 +899,8 @@ def get_module_input_str(module_obj):
         run_signature = ", ".join(
             [
                 (
-                    f"{param}='{module_obj._run_locals[param]}'"
-                    if isinstance(module_obj._run_locals[param], str)
+                    f"{param}={os.fspath(module_obj._run_locals[param])!r}"
+                    if isinstance(module_obj._run_locals[param], str | os.PathLike)
                     else f"{param}={module_obj._run_locals[param]}"
                 )
                 for param in sig.args

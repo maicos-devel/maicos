@@ -6,6 +6,7 @@
 """Module for computing cylindrical dielectric profiles."""
 
 import logging
+import os
 from typing import ClassVar
 
 import MDAnalysis as mda
@@ -13,7 +14,13 @@ import numpy as np
 import scipy.constants
 
 from ..core import CylinderBase
-from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
+from ..lib.util import (
+    PathLike,
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +108,7 @@ class DielectricCylinder(CylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str = "eps_cyl",
+        output_prefix: PathLike = "eps_cyl",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -415,6 +422,7 @@ class DielectricCylinder(CylinderBase):
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
+        prefix = os.fspath(self.output_prefix)
         outdata_z = np.array(
             [
                 self.results.bin_pos,
@@ -442,22 +450,16 @@ class DielectricCylinder(CylinderBase):
 
         columns += ["ε_z - 1", "Δε_z"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_z.dat"), outdata_z, columns=columns
-        )
+        self.savetxt(f"{prefix}_z.dat", outdata_z, columns=columns)
 
         columns = ["positions [Å]"]
 
         columns += ["ε^-1_r - 1", "Δε^-1_r"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_r.dat"), outdata_r, columns=columns
-        )
+        self.savetxt(f"{prefix}_r.dat", outdata_r, columns=columns)
 
         columns = ["positions [Å]"]
 
         columns += ["ε_phi - 1", "Δε_phi"]
 
-        self.savetxt(
-            "{}{}".format(self.output_prefix, "_phi.dat"), outdata_phi, columns=columns
-        )
+        self.savetxt(f"{prefix}_phi.dat", outdata_phi, columns=columns)

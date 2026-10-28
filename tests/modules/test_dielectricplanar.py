@@ -246,17 +246,25 @@ class TestDielectricPlanar:
         res_par = np.loadtxt(f"{eps.output_prefix}_par.dat")
         assert_allclose(eps.results.eps_par, res_par[:, 1])
 
-    def test_output_name(self, ag_two_frames, monkeypatch, tmp_path):
-        """Test output name."""
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    @pytest.mark.parametrize("location", ["current", "relative", "absolute"])
+    def test_output_name(
+        self, ag_two_frames, monkeypatch, tmp_path, filename_type, location
+    ):
+        """Test output name, including prefixes pointing into subdirectories."""
         monkeypatch.chdir(tmp_path)
+        directory = Path() if location == "current" else Path("results")
+        if location == "absolute":
+            directory = tmp_path / directory
+        directory.mkdir(exist_ok=True)
 
-        eps = DielectricPlanar(ag_two_frames, output_prefix="foo")
+        eps = DielectricPlanar(
+            ag_two_frames, output_prefix=filename_type(directory / "foo")
+        )
         eps.run()
         eps.save()
-        with Path("foo_perp.dat").open():
-            pass
-        with Path("foo_par.dat").open():
-            pass
+        for file in ["foo_perp.dat", "foo_par.dat"]:
+            assert (directory / file).exists()
 
     def test_sym(self, ag_two_frames):
         """Test for symmetric case."""

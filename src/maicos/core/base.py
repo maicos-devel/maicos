@@ -7,6 +7,7 @@
 
 import logging
 import numbers
+import os
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -25,6 +26,7 @@ from ..lib.math import (
 )
 from ..lib.util import (
     MomentAccumulator,
+    PathLike,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -215,7 +217,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     >>> import numpy as np
 
     >>> from maicos.core import AnalysisBase
-    >>> from maicos.lib.util import render_docs
+    >>> from maicos.lib.util import PathLike, render_docs
 
     >>> logger = logging.getLogger(__name__)
 
@@ -235,7 +237,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         atomgroup: mda.AtomGroup,
     ...         concfreq: int = 0,
     ...         temperature: float = 300,
-    ...         output: str = "outfile.dat",
+    ...         output: PathLike = "outfile.dat",
     ...     ):
     ...         super().__init__(
     ...             atomgroup=atomgroup,
@@ -289,7 +291,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         self.savetxt(
     ...             self.output,
     ...             np.array([self.results.volume]),
-    ...             columns="volume / Å³",
+    ...             columns=["volume / Å³"],
     ...         )
 
 
@@ -585,7 +587,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         )
 
     def savetxt(
-        self, fname: str, X: np.ndarray, columns: list[str] | None = None
+        self, fname: PathLike, X: np.ndarray, columns: list[str] | None = None
     ) -> None:
         """Save to text.
 
@@ -605,9 +607,16 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
           - number of frames that were analyzed
           - atomgroup that was analyzed
           - output messages from modules and base classes (if they exist)
+
+        Parameters
+        ----------
+        fname : str or os.PathLike
+            Name of the output file. A ``.dat`` extension is appended if missing.
+        X : numpy.ndarray
+            Data to be saved.
+        columns : list of str, optional
+            Column names written to the last line of the header.
         """
-        # This method breaks if fname is a Path object. We therefore convert it to a str
-        fname = str(fname)
         # Get the required information first
         current_time = datetime.now(tz=UTC).strftime("%a, %b %d %Y at %H:%M:%S ")
         module_name = self.__class__.__name__
@@ -663,7 +672,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     _CHECKPOINT_SEP = ":::"
     _CHECKPOINT_PAIR_SEP = "|||"
 
-    def dump(self, filename: str) -> None:
+    def dump(self, filename: PathLike) -> None:
         """Save analysis state to an ``.npz`` file.
 
         .. warning::
@@ -682,7 +691,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str
+        filename : str or os.PathLike
             Path to the output ``.npz`` file.
         """
         sep = self._CHECKPOINT_SEP
@@ -720,7 +729,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         np.savez(filename, **data)
 
     @classmethod
-    def load(cls, filename: str) -> Self:
+    def load(cls, filename: PathLike) -> Self:
         """Restore an analysis instance from a file created by :meth:`dump`.
 
         Returns a new instance of ``cls`` with all statistical accumulators,
@@ -732,7 +741,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str
+        filename : str or os.PathLike
             Path to the ``.npz`` file written by :meth:`dump`.
 
         Returns
@@ -745,15 +754,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         if "_maicos_version" not in npz.files:
             raise ValueError(
-                f"{filename!r} is missing a MAICoS version tag. It was either "
-                "not produced by `dump` or written by an incompatible "
+                f"{os.fspath(filename)!r} is missing a MAICoS version tag. It was "
+                "either not produced by `dump` or written by an incompatible "
                 "version."
             )
         dump_version = str(npz["_maicos_version"])
         if dump_version != __version__:
             raise ValueError(
-                f"{filename!r} was written by MAICoS v{dump_version} but the "
-                f"installed version is v{__version__}. `dump`/`load` is "
+                f"{os.fspath(filename)!r} was written by MAICoS v{dump_version} but "
+                f"the installed version is v{__version__}. `dump`/`load` is "
                 f"version-locked; re-run the analysis with the current "
                 f"version or install v{dump_version} to load this file."
             )
@@ -1003,7 +1012,7 @@ class ProfileBase:
         atomgroup: mda.AtomGroup,
         grouping: str,
         bin_method: str,
-        output: str,
+        output: PathLike,
         weighting_function: Callable,
         weighting_function_kwargs: None | dict,
         normalization: str,
