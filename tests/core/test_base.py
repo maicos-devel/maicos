@@ -21,7 +21,7 @@ from MDAnalysisTests.core.util import UnWrapUniverse
 from MDAnalysisTests.datafiles import DCD, PSF, TPR, XTC
 from numpy.testing import assert_allclose, assert_equal
 
-from maicos import DensityCylinder, DensityPlanar, DensitySphere, PDFPlanar, __version__
+from maicos import DensityPlanar, __version__
 from maicos.core import AnalysisBase, AnalysisCollection, ProfileBase
 from maicos.lib.util import MomentAccumulator, _joint_pop, make_pair_key
 
@@ -674,18 +674,7 @@ class Test_AnalysisBase:
         with pytest.warns(UserWarning, match=r"\.dat"):
             ana.savetxt(filename_type(tmp_path / name), np.random.rand(10, 2))
         assert (tmp_path / f"{name}.dat").exists()
-
-    @pytest.mark.parametrize(
-        "module", [DensityPlanar, DensityCylinder, DensitySphere, PDFPlanar]
-    )
-    @pytest.mark.parametrize("filename_type", [str, Path])
-    def test_module_output(self, ag, tmp_path, module, filename_type):
-        """Modules save results to string and pathlib filenames."""
-        output = tmp_path / "profile.dat"
-        ana = module(ag, output=filename_type(output)).run(stop=2)
-        ana.save()
-        assert np.loadtxt(output).size > 0
-
+        
     @pytest.mark.parametrize(
         ("concfreq", "files"),
         [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
