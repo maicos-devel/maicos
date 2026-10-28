@@ -577,7 +577,6 @@ class Test_AnalysisBase:
     @pytest.mark.parametrize("filename_type", [str, Path])
     def test_output_message(self, ag, monkeypatch, tmp_path, filename_type):
         """Test the output message of modules."""
-        monkeypatch.chdir(tmp_path)
 
         data = np.random.rand(100, 2)
         ana = Output(ag)
