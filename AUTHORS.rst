@@ -15,14 +15,16 @@ Contributors
 ------------
 
 - Adyant Agrawal
-- Anirban Dutta
 - Maximilian Becker
 - Shane Carlson
+- Anirban Dutta
 - Kira Fischer
 - Federico Grasselli
 - `Simon Gravelle`_
 - Francis Jose
 - Julian Kappler
+- Lucas Kleindienst
+- Leo Legrand
 - Marc Sauter
 - Laura Scalfi
 - Julius Schulz

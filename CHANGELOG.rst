@@ -58,8 +58,7 @@ Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 v0.12 (2026/01/23)
 ------------------
-Philip Loche, Kira Fischer, Francis Jose, Philipp Staerk, Henrik Stooß, Damien Toquer,
-Francis Jose
+Philip Loche, Kira Fischer, Francis Jose, Philipp Stärk, Henrik Stooß, Damien Toquer
 
 - Internal restructure API documentation sources into *core* and *lib* sections (#548)
 - Update copyright year to 2026 (#549)
@@ -202,7 +201,7 @@ Adyant Agrawal
 
 v0.8 (2024/02/05)
 -----------------
-Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Staerk, Adyant Agrawal,
+Simon Gravelle, Philip Loche, Marc Sauter, Henrik Stooß, Philipp Stärk, Adyant Agrawal,
 Kira Fischer
 
 - Skip test for custom modules in case the import is not working (!294)
@@ -314,7 +313,7 @@ Henrik Stooß
 v0.7 (2022/12/27)
 -----------------
 Philip Loche, Simon Gravelle, Marc Sauter, Henrik Stooß, Kira Fischer, Alexander
-Schlaich, Philipp Staerk
+Schlaich, Philipp Stärk
 
 - Make sure citation are only printed once (!260)
 - Added MacOS pipeline, fixed wheels (!218)
@@ -473,7 +472,7 @@ Philip Loche
 v0.4 (2021/12/13)
 -----------------
 
-Philip Loche, Simon Gravelle, Philipp Staerk, Henrik Stooß, Srihas Velpuri, Maximilian
+Philip Loche, Simon Gravelle, Philipp Stärk, Henrik Stooß, Srihas Velpuri, Maximilian
 Becker
 
 - Restructure docs and build docs for develop and release version
