@@ -6,12 +6,11 @@
 r"""Module for computing planar dipolar order parameters."""
 
 import logging
-from pathlib import Path
 
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
-from ..lib.util import render_docs, unit_vectors_planar
+from ..lib.util import PathLike, render_docs, unit_vectors_planar
 from ..lib.weights import diporder_weights
 
 logger = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ class DiporderPlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str | Path = "diporder_planar.dat",
+        output: PathLike = "diporder_planar.dat",
     ) -> None:
         self._locals = locals()
 

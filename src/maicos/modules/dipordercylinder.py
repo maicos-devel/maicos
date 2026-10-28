@@ -6,12 +6,11 @@
 r"""Module for computing cylindrical dipolar order parameters."""
 
 import logging
-from pathlib import Path
 
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
-from ..lib.util import render_docs, unit_vectors_cylinder
+from ..lib.util import PathLike, render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
 
 logger = logging.getLogger(__name__)
@@ -57,7 +56,7 @@ class DiporderCylinder(ProfileCylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str | Path = "diporder_cylinder.dat",
+        output: PathLike = "diporder_cylinder.dat",
     ) -> None:
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):

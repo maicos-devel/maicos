@@ -10,7 +10,6 @@ import numbers
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Self
 
 import MDAnalysis as mda
@@ -26,6 +25,7 @@ from ..lib.math import (
 )
 from ..lib.util import (
     MomentAccumulator,
+    PathLike,
     atomgroup_header,
     check_file_extension,
     correlation_analysis,
@@ -586,7 +586,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         )
 
     def savetxt(
-        self, fname: str | Path, X: np.ndarray, columns: list[str] | None = None
+        self, fname: PathLike, X: np.ndarray, columns: list[str] | None = None
     ) -> None:
         """Save to text.
 
@@ -662,7 +662,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     _CHECKPOINT_SEP = ":::"
     _CHECKPOINT_PAIR_SEP = "|||"
 
-    def dump(self, filename: str | Path) -> None:
+    def dump(self, filename: PathLike) -> None:
         """Save analysis state to an ``.npz`` file.
 
         .. warning::
@@ -681,7 +681,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str or pathlib.Path
+        filename : str or os.PathLike
             Path to the output ``.npz`` file.
         """
         sep = self._CHECKPOINT_SEP
@@ -719,7 +719,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         np.savez(filename, **data)
 
     @classmethod
-    def load(cls, filename: str | Path) -> Self:
+    def load(cls, filename: PathLike) -> Self:
         """Restore an analysis instance from a file created by :meth:`dump`.
 
         Returns a new instance of ``cls`` with all statistical accumulators,
@@ -731,7 +731,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         Parameters
         ----------
-        filename : str or pathlib.Path
+        filename : str or os.PathLike
             Path to the ``.npz`` file written by :meth:`dump`.
 
         Returns
@@ -1002,7 +1002,7 @@ class ProfileBase:
         atomgroup: mda.AtomGroup,
         grouping: str,
         bin_method: str,
-        output: str | Path,
+        output: PathLike,
         weighting_function: Callable,
         weighting_function_kwargs: None | dict,
         normalization: str,

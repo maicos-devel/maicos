@@ -7,13 +7,12 @@
 
 import logging
 from collections.abc import Callable
-from pathlib import Path
 
 import MDAnalysis as mda
 import numpy as np
 
 from ..lib.math import transform_cylinder
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from .base import ProfileBase
 from .planar import PlanarBase
 
@@ -179,7 +178,7 @@ class ProfileCylinderBase(CylinderBase, ProfileBase):  # type: ignore
         rmax: None | float,
         grouping: str,
         bin_method: str,
-        output: str | Path,
+        output: PathLike,
         weighting_function: Callable,
         weighting_function_kwargs: None | dict,
         normalization: str,

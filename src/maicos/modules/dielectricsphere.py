@@ -6,14 +6,20 @@
 """Module for calculating spherical dielectric profiles."""
 
 import logging
-from pathlib import Path
+import os
 
 import MDAnalysis as mda
 import numpy as np
 import scipy.constants
 
 from ..core import SphereBase
-from ..lib.util import charge_neutral, citation_reminder, get_compound, render_docs
+from ..lib.util import (
+    PathLike,
+    charge_neutral,
+    citation_reminder,
+    get_compound,
+    render_docs,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +74,7 @@ class DielectricSphere(SphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output_prefix: str | Path = "eps_sph",
+        output_prefix: PathLike = "eps_sph",
     ) -> None:
         self._locals = locals()
         self.comp = get_compound(atomgroup)
@@ -168,10 +174,11 @@ class DielectricSphere(SphereBase):
     @render_docs
     def save(self) -> None:
         """${SAVE_METHOD_PREFIX_DESCRIPTION}"""  # noqa: D415
+        prefix = os.fspath(self.output_prefix)
         outdata_rad = np.array(
             [self.results.bin_pos, self.results.eps_rad, self.results.deps_rad]
         ).T
 
         columns = ["positions [Å]", "eps_rad - 1", "eps_rad error"]
 
-        self.savetxt(f"{self.output_prefix}_rad.dat", outdata_rad, columns=columns)
+        self.savetxt(f"{prefix}_rad.dat", outdata_rad, columns=columns)

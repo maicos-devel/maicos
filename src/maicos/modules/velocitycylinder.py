@@ -6,12 +6,11 @@
 """Module for computing cylindrical velocity profiles."""
 
 import logging
-from pathlib import Path
 
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import velocity_weights
 
 logger = logging.getLogger(__name__)
@@ -64,7 +63,7 @@ class VelocityCylinder(ProfileCylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str | Path = "velocity.dat",
+        output: PathLike = "velocity.dat",
     ) -> None:
         self._locals = locals()
         if vdim not in [0, 1, 2]:

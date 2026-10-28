@@ -6,12 +6,11 @@
 """Module for computing planar density profiles."""
 
 import logging
-from pathlib import Path
 
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import density_weights
 
 logger = logging.getLogger(__name__)
@@ -60,7 +59,7 @@ class DensityPlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str | Path = "density.dat",
+        output: PathLike = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(

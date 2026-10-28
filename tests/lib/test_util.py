@@ -215,7 +215,7 @@ def test_get_module_input_str(ag):
     ana.run()
     module_input = maicos.lib.util.get_module_input_str(ana)
 
-    assert f"test_input='{Path('results') / 'foo.dat'}'" in module_input
+    assert f"test_input={str(Path('results') / 'foo.dat')!r}" in module_input
 
     ana.run(step=2, stop=7, start=5, verbose=True)
     module_input = maicos.lib.util.get_module_input_str(ana)

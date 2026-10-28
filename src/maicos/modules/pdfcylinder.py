@@ -14,7 +14,7 @@ from MDAnalysis.lib.distances import capped_distance
 
 from ..core import CylinderBase
 from ..lib.math import transform_cylinder
-from ..lib.util import get_center, get_compound, render_docs
+from ..lib.util import PathLike, get_center, get_compound, render_docs
 
 logger = logging.getLogger(__name__)
 
@@ -113,8 +113,9 @@ class PDFCylinder(CylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str | Path = "pdf.dat",
+        output: PathLike = "pdf.dat",
     ) -> None:
+        self._locals = locals()
         self.comp_1 = get_compound(g1)
         super().__init__(
             atomgroup=g1,
