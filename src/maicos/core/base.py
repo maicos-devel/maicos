@@ -7,6 +7,7 @@
 
 import logging
 import numbers
+import os
 import warnings
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -216,7 +217,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     >>> import numpy as np
 
     >>> from maicos.core import AnalysisBase
-    >>> from maicos.lib.util import render_docs
+    >>> from maicos.lib.util import PathLike, render_docs
 
     >>> logger = logging.getLogger(__name__)
 
@@ -236,7 +237,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         atomgroup: mda.AtomGroup,
     ...         concfreq: int = 0,
     ...         temperature: float = 300,
-    ...         output: str = "outfile.dat",
+    ...         output: PathLike = "outfile.dat",
     ...     ):
     ...         super().__init__(
     ...             atomgroup=atomgroup,
@@ -290,7 +291,7 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
     ...         self.savetxt(
     ...             self.output,
     ...             np.array([self.results.volume]),
-    ...             columns="volume / Å³",
+    ...             columns=["volume / Å³"],
     ...         )
 
 
@@ -606,6 +607,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
           - number of frames that were analyzed
           - atomgroup that was analyzed
           - output messages from modules and base classes (if they exist)
+
+        Parameters
+        ----------
+        fname : str or os.PathLike
+            Name of the output file. A ``.dat`` extension is appended if missing.
+        X : numpy.ndarray
+            Data to be saved.
+        columns : list of str, optional
+            Column names written to the last line of the header.
         """
         # Get the required information first
         current_time = datetime.now(tz=UTC).strftime("%a, %b %d %Y at %H:%M:%S ")
@@ -744,15 +754,15 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
 
         if "_maicos_version" not in npz.files:
             raise ValueError(
-                f"{str(filename)!r} is missing a MAICoS version tag. It was either "
-                "not produced by `dump` or written by an incompatible "
+                f"{os.fspath(filename)!r} is missing a MAICoS version tag. It was "
+                "either not produced by `dump` or written by an incompatible "
                 "version."
             )
         dump_version = str(npz["_maicos_version"])
         if dump_version != __version__:
             raise ValueError(
-                f"{str(filename)!r} was written by MAICoS v{dump_version} but the "
-                f"installed version is v{__version__}. `dump`/`load` is "
+                f"{os.fspath(filename)!r} was written by MAICoS v{dump_version} but "
+                f"the installed version is v{__version__}. `dump`/`load` is "
                 f"version-locked; re-run the analysis with the current "
                 f"version or install v{dump_version} to load this file."
             )

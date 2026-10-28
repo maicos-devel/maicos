@@ -31,6 +31,9 @@ from maicos.lib.math import (
 
 logger = logging.getLogger(__name__)
 
+#: Type for arguments accepting a file system path.
+PathLike: TypeAlias = str | os.PathLike[str]
+
 
 def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     """Convert triclinic box dimensions to an orthorhombic bounding box.
@@ -62,9 +65,6 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     zz = np.sqrt(c**2 - xz**2 - yz**2)
 
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
-
-
-PathLike: TypeAlias = str | os.PathLike[str]
 
 
 def check_file_extension(filename: PathLike, extension: str) -> str:
