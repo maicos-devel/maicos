@@ -222,3 +222,15 @@ class TestPDFPlanar:
         assert output_path.exists()
         data = np.loadtxt(output_path)
         assert data.shape[0] == len(pdfplanar.results.bins)
+
+
+    @pytest.mark.parametrize(
+        "module", [DensityPlanar, DensityCylinder, DensitySphere, PDFPlanar]
+    )
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_module_output(self, ag, tmp_path, module, filename_type):
+        """Modules save results to string and pathlib filenames."""
+        output = tmp_path / "profile.dat"
+        ana = module(ag, output=filename_type(output)).run(stop=2)
+        ana.save()
+        assert np.loadtxt(output).size > 0
