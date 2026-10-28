@@ -81,7 +81,7 @@ def check_file_extension(filename: str | Path, extension: str) -> str:
     str
         ``filename`` as a string, with ``extension`` appended if necessary.
     """
-    filename = str(filename)
+    filename = os.fspath(filename)
     if not filename.endswith(extension):
         warnings.warn(
             f"The file name should have a {extension!r} file extension. The user "
