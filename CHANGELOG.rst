@@ -15,7 +15,7 @@ Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
 - Fixed ``PDFCylinder`` writing to wrong directory when ``output`` contains a directory (#603)
-- Accept ``pathlib.Path`` objects as filenames (#603)
+- Accept path-like objects as filenames (#603)
 - Fix type annotation of electron count in ``lib.weights`` (#609)
 - Make ``DielectricSphere`` output consistent with the documentation (#610) 
 - Fix electron density profiles failing on integer electron weights (#608)
