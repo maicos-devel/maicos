@@ -9,8 +9,8 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
-Unreleased
-----------
+v0.13 (2026/10/29)
+------------------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
@@ -23,7 +23,7 @@ Lucas Kleindienst, Philipp Stärk, Leo Legrand
 - Make ``DielectricSphere`` output consistent with the documentation (#610)
 - Fix electron density profiles failing on integer electron weights (#608)
 - Fix overestimated error of ``eps_r`` in ``DielectricCylinder`` by including the
-  covariances between the radial observables (#588)
+  covariances between the radial observables (#604)
 - Add ``MomentAccumulator`` backend and add covariance calculation between observables
   for correlated errors (#594)
 - Add more module benchmarks and synthetic scaling tests (#595)
@@ -39,7 +39,7 @@ Lucas Kleindienst, Philipp Stärk, Leo Legrand
   analysis states (#565)
 - Add benchmarks to the CI workflow (#557)
 - Add example for effective-medium dielectric analysis (#584)
-- Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#567)
+- Add GitHub Copilot instructions ``.github/copilot-instructions.md`` (#582)
 - Add azimuthal component to ``DielectricCylinder`` (#543)
 - Increase coverage (#573)
 - Fix timestep preservation in ``AnalysisCollection`` (#570)
