@@ -575,9 +575,8 @@ class Test_AnalysisBase:
         )
 
     @pytest.mark.parametrize("filename_type", [str, Path])
-    def test_output_message(self, ag, monkeypatch, tmp_path, filename_type):
+    def test_output_message(self, ag, tmp_path, filename_type):
         """Test the output message of modules."""
-
         data = np.random.rand(100, 2)
         ana = Output(ag)
         ana._index = 1
@@ -588,7 +587,7 @@ class Test_AnalysisBase:
         ana.savetxt(
             filename_type(tmp_path / "foo.dat"), data, columns=["First", "Second"]
         )
-        assert_allclose(np.loadtxt("foo.dat"), data)
+        assert_allclose(np.loadtxt(tmp_path / "foo.dat"), data)
 
         with Path(tmp_path / "foo.dat").open() as f:
             assert ana.OUTPUT in f.read()
@@ -599,7 +598,7 @@ class Test_AnalysisBase:
             filename_type(tmp_path / "foo2.dat"), data, columns=["First", "Second"]
         )
 
-        with Path("foo2.dat").open() as f:
+        with Path(tmp_path / "foo2.dat").open() as f:
             foo = f.readlines()
 
         for i, line in enumerate(foo):
@@ -674,7 +673,7 @@ class Test_AnalysisBase:
         with pytest.warns(UserWarning, match=r"\.dat"):
             ana.savetxt(filename_type(tmp_path / name), np.random.rand(10, 2))
         assert (tmp_path / f"{name}.dat").exists()
-        
+
     @pytest.mark.parametrize(
         ("concfreq", "files"),
         [(0, []), (40, ["out_40", "out_80", "out_101"]), (100, ["out_100", "out_101"])],
