@@ -14,10 +14,13 @@ Unreleased
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
-- Fix ``PDFCylinder`` writing to wrong directory when ``output`` contains a directory (#603)
+- Lint ``CHANGELOG.rst``, ``AUTHORS.rst`` and ``CONTRIBUTING.rst`` with sphinx-lint
+  and fix existing markup errors (#XXX)
+- Fix ``PDFCylinder`` writing to wrong directory when ``output`` contains a directory
+  (#603)
 - Accept path-like objects as filenames (#603)
 - Fix type annotation of electron count in ``lib.weights`` (#609)
-- Make ``DielectricSphere`` output consistent with the documentation (#610) 
+- Make ``DielectricSphere`` output consistent with the documentation (#610)
 - Fix electron density profiles failing on integer electron weights (#608)
 - Fix overestimated error of ``eps_r`` in ``DielectricCylinder`` by including the
   covariances between the radial observables (#588)
@@ -25,7 +28,8 @@ Lucas Kleindienst, Philipp Stärk, Leo Legrand
   for correlated errors (#594)
 - Add more module benchmarks and synthetic scaling tests (#595)
 - Add note to the getting started section about symlinks for Windows devs (#592)
-- Fix ruff lint errors and remove non-executable shebang lines from module headers (#602)
+- Fix ruff lint errors and remove non-executable shebang lines from module headers
+  (#602)
 - Remove ``inplace`` parameter from :func:`maicos.lib.math.symmetrize`; the
   function now always returns a new ``float`` array without modifying the input (#596)
 - Add function and example how to use times instead of frame slices (#585)
@@ -69,8 +73,9 @@ Francis Jose
 - Update issue templates (#530)
 - Move ``DielectricSpectrum``, ``lib.math.FT``, ``lib.math.iFT`` to spectrakit package.
   (#524)
-- Move ``Saxs``, ``DiporderStructureFactor``, ``RDFDiporder``, ``lib.math.atomic_form_factor``,
-  ``lib.math.rdf_structure_factor``,  to scatterkit package. (#524)
+- Move ``Saxs``, ``DiporderStructureFactor``, ``RDFDiporder``,
+  ``lib.math.atomic_form_factor``, ``lib.math.rdf_structure_factor`` to scatterkit
+  package. (#524)
 - Remove ``KineticEnergy`` and ``DipoleAngle`` module. (#524)
 - Implement error calculation for observables with multiple samples (#494)
 - Bump minimal Python version to 3.11 and MDAnalysis to 2.10.0 (#529)
@@ -106,7 +111,7 @@ v0.11 (2025/06/25)
 Philip Loche, Henrik Stooß
 
 - Update GitHub Actions for building wheels (#503)
-- Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor`` is not
+- Raise ``ValueError`` if data for :func:`maicos.lib.math.rdf_structure_factor` is not
   equally spaced (#499)
 - Rename ``compute_form_factor`` to ``atomic_form_factor``,
   ``compute_rdf_structure_factor`` to ``rdf_structure_factor`` and
@@ -115,7 +120,7 @@ Philip Loche, Henrik Stooß
 - Fix wrong equation in ``compute_structure_factor`` documentation (#501)
 - Improve issue templates (#500)
 - Speed up electron density calculation by using a dictionary lookup (#498)
-- Introduce `sym_odd` option to `ProfilePlanarBase` to support vectorial
+- Introduce ``sym_odd`` option to ``ProfilePlanarBase`` to support vectorial
   observables (#495)
 - Base Cromer-Mann form factor on ``atomgroup.elements`` (#492)
 - Add electron density weights for density modules (#493)
@@ -206,7 +211,7 @@ Kira Fischer
 - Add RDF derivation and explain role of dz. (!278)
 - Implement 1D pair distribution function in RDFCylinder (!276)
 - Sort format and add more atomtypes to ``atomtypes.dat`` (!291)
-- Add grouping option to `DipoleAngle` module (!290)
+- Add grouping option to ``DipoleAngle`` module (!290)
 - Added Support for Python 3.12 (!289)
 - Remove suffixes ``-linux``, ``-macos``, ``-windows`` when building wheels. Platform
   will be detected automatically. (!288)
@@ -238,7 +243,7 @@ Kira Fischer
 - Fixed markup and consistency in ``correlation`` function docs (!277)
 - Add info for ``DielectricPlanar`` module for ignored combination of ``vac=True`` and
   ``is_3d=False``. (!275)
-- Add description for `tox` jobs (!275)
+- Add description for ``tox`` jobs (!275)
 - Cleanup coverage config and move to ``pyproject.toml`` (!275)
 - Changed the way number normalization works, introduced sums dict (!274)
 - Fixed typing error in RDF modules (!273)
@@ -271,7 +276,7 @@ Kira Fischer
 - Add link to developer documentation in ``CONTRIBUTING.rst`` (!244)
 - Remove Python 2.x leftover of specific ``super()`` call (!243)
 - Use Gitlab for showing coverage and unit test reports (!241)
-- Use ``black`` formatter and `88` chars/line for the code and rst files (!240)
+- Use ``black`` formatter and 88 chars/line for the code and rst files (!240)
 - Add return values for correlation analysis to all base classes (!235)
 - Added more linting for rst files (!239)
 - Bump minimum version of ``tqdm`` to 4.60 (!238)
@@ -283,8 +288,8 @@ Kira Fischer
 - More consistent molecule wrapping (!230)
 - Added missing AnalysisBase parameters to modules (!231)
 - created dark and light images and logo (!229)
-- Add explicit `stacklevel` arguments to warnings in the library (!236)
-- Switch to the `build` module (!234)
+- Add explicit ``stacklevel`` arguments to warnings in the library (!236)
+- Switch to the ``build`` module (!234)
 
 v0.7.2 (2023/01/09)
 -------------------
@@ -378,7 +383,7 @@ v0.6.1 (2022/09/26)
 -------------------
 Henrik Stooß
 
-- Fix the output of the `ChemicalPotentialPlanar` module (!173)
+- Fix the output of the ``ChemicalPotentialPlanar`` module (!173)
 
 v0.6 (2022/09/01)
 -----------------
@@ -407,7 +412,7 @@ Maximilian Becker, Kira Fischer
 - Bump minimum Python version to 3.8 (!117)
 - Use base units exclusively (!115)
 - Higher tolerance for non-neutral systems (1E-4 instead of 1E-5)
-- ``charge``neutral decorator uses ``check_compound`` now
+- ``charge_neutral`` decorator uses ``check_compound`` now
 - Add option to symmetrize profiles using ``ProfilePlanarBase`` (!116)
 - Fix ``comgroup`` parameter working only in the z direction (!116)
 - Remove ``center`` option from ``ProfileBase`` (!116)
