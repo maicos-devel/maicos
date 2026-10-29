@@ -14,6 +14,8 @@ v0.13 (2026/10/29)
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
 Lucas Kleindienst, Philipp Stärk, Leo Legrand
 
+- Require ``MDAnalysisTests>=2.10.0`` for tests, remove the ``docutils`` pin and a
+  duplicate ``setuptools`` pin from the documentation requirements (#XXX)
 - Lint ``CHANGELOG.rst``, ``AUTHORS.rst`` and ``CONTRIBUTING.rst`` with sphinx-lint
   and fix existing markup errors (#611)
 - Fix ``PDFCylinder`` writing to wrong directory when ``output`` contains a directory
