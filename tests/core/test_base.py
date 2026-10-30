@@ -1013,6 +1013,51 @@ class Test_AnalysisBase:
         # Verify that INFO messages are logged after switching back to verbose
         assert "Analysing 1 trajectory frames." in caplog.text
 
+    def test_aborted_run_keeps_trajectory_open(self, u_no_cell):
+        """Test that an aborted run does not close the trajectory."""
+        ana_obj = AnalysisBase(
+            atomgroup=u_no_cell.atoms,
+            unwrap=False,
+            pack=False,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        def abort():
+            raise ValueError("Aborted")
+
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = abort
+
+        with pytest.raises(ValueError, match="Aborted"):
+            ana_obj.run(verbose=False)
+
+        # Reading from a closed trajectory raises an OSError
+        assert u_no_cell.trajectory[1].frame == 1
+
+    def test_progressbar_total(self, ag, capsys):
+        """Test that the total of the progress bar can be set by the user."""
+        ana_obj = AnalysisBase(
+            atomgroup=ag,
+            unwrap=False,
+            pack=True,
+            refgroup=None,
+            jitter=0.0,
+            wrap_compound="atoms",
+            concfreq=0,
+        )
+
+        # Create empty methods for allowing the run method to succeed.
+        ana_obj._prepare = lambda: None
+        ana_obj._single_frame = lambda: None
+        ana_obj._conclude = lambda: None
+
+        ana_obj.run(stop=1, verbose=True, progressbar_kwargs={"total": 5})
+
+        assert "1/5" in capsys.readouterr().err
+
     def test_unwrap_atoms(self, ag, caplog):
         """Test that unwrap is always False for `wrap_compound="atoms"`."""
         with caplog.at_level(logging.DEBUG, logger="maicos.core.base"):

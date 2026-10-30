@@ -9,6 +9,12 @@ Changelog
   - keep the format consistent (88 char width, Y/M/D date format) and do not use tabs but
     use spaces for formatting
 
+Unreleased
+----------
+Henrik Stooß
+
+- Fix trajectory being closed when a run is aborted (#614)
+
 v0.13 (2026/10/29)
 ------------------
 Alexander Schlaich, Henrik Stooß, Anirban Dutta, Philip Loche, Kira Fischer,
