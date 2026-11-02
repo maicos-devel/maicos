@@ -1,5 +1,5 @@
 hypothesis
-MDAnalysisTests>=2.8.0
+MDAnalysisTests>=2.10.0
 pytest
 pytest-cov
 pytest-mock

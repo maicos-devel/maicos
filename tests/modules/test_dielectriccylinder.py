@@ -304,17 +304,25 @@ class TestDielectricCylinder:
         res_r = np.loadtxt(f"{eps.output_prefix}_r.dat")
         assert_allclose(eps.results["eps_r"], res_r[:, 1], rtol=1e-2)
 
-    def test_output_name(self, ag_single_frame, monkeypatch, tmp_path):
-        """Tests output name."""
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    @pytest.mark.parametrize("location", ["current", "relative", "absolute"])
+    def test_output_name(
+        self, ag_single_frame, monkeypatch, tmp_path, filename_type, location
+    ):
+        """Tests output name, including prefixes pointing into subdirectories."""
         monkeypatch.chdir(tmp_path)
+        directory = Path() if location == "current" else Path("results")
+        if location == "absolute":
+            directory = tmp_path / directory
+        directory.mkdir(exist_ok=True)
 
-        eps = DielectricCylinder(ag_single_frame, output_prefix="foo")
+        eps = DielectricCylinder(
+            ag_single_frame, output_prefix=filename_type(directory / "foo")
+        )
         eps.run()
         eps.save()
-        with Path("foo_z.dat").open():
-            pass
-        with Path("foo_r.dat").open():
-            pass
+        for file in ["foo_z.dat", "foo_r.dat", "foo_phi.dat"]:
+            assert (directory / file).exists()
 
     def test_singleline(self, ag):
         """Test for single line 1D case."""
@@ -363,6 +371,9 @@ class TestDielectricCylinder:
         eps.means.M_r = 0.3
         eps.sems.M_r = 0.1
 
+        for key in eps.C:
+            eps.C[key].fill(0.0)
+
         # rerun conclude function with changed values
         eps._conclude()
 
@@ -390,3 +401,38 @@ class TestDielectricCylinder:
             2 * np.pi * eps.means.L * eps._pref * eps.results.bin_pos * dcov_r_sympy
         )
         assert_allclose(deps_r_sympy, eps.results.deps_r)
+
+    def test_covariance_error_propagation(self, ag):
+        """Test error propagation via covariance."""
+        eps = DielectricCylinder(ag).run()
+
+        dcov_r_analytic = np.sqrt(
+            eps.sems.mM_r**2
+            + eps.means.m_r**2 * eps.sems.M_r**2
+            - 2 * eps.means.m_r * eps.moments.cov("mM_r", "M_r")
+            - 2 * eps.means.M_r * eps.moments.cov("mM_r", "m_r")
+            + 2 * eps.means.m_r * eps.means.M_r * eps.moments.cov("M_r", "m_r")
+            + eps.means.M_r**2 * eps.sems.m_r**2
+        )
+        deps_r_analytic = (
+            2 * np.pi * eps.means.L * eps._pref * eps.results.bin_pos * dcov_r_analytic
+        )
+
+        assert_allclose(deps_r_analytic, eps.results.deps_r)
+
+    @pytest.mark.parametrize("backend", ["multiprocessing", "dask"])
+    def test_parallel_equals_serial(self, ag, backend):
+        """Parallel backends reproduce the serial profiles and their errors."""
+        serial = DielectricCylinder(ag).run()
+        parallel = DielectricCylinder(ag).run(backend=backend, n_workers=2)
+
+        assert parallel.n_frames == serial.n_frames
+        for key in ("eps_r", "deps_r", "eps_z", "deps_z", "eps_phi", "deps_phi"):
+            assert_allclose(
+                parallel.results[key], serial.results[key], rtol=1e-10, err_msg=key
+            )
+        assert_allclose(
+            parallel.moments.cov("mM_r", "M_r"),
+            serial.moments.cov("mM_r", "M_r"),
+            rtol=1e-10,
+        )

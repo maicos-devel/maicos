@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfilePlanarBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import temperature_weights
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class TemperaturePlanar(ProfilePlanarBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "temperature.dat",
+        output: PathLike = "temperature.dat",
     ) -> None:
         self._locals = locals()
         if grouping != "atoms":

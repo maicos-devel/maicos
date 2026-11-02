@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for the utilities."""
 
+import itertools
 import sys
 import warnings
 from pathlib import Path
@@ -14,12 +15,18 @@ from unittest.mock import patch
 import MDAnalysis as mda
 import numpy as np
 import pytest
+from MDAnalysis.analysis.base import Results
 from MDAnalysisTests.core.util import UnWrapUniverse
 from numpy.testing import assert_allclose, assert_equal
 
 import maicos.lib.util
 from maicos.core.base import AnalysisBase
-from maicos.lib.util import check_file_extension, triclinic_to_orthorhombic
+from maicos.lib.util import (
+    MomentAccumulator,
+    check_file_extension,
+    make_pair_key,
+    triclinic_to_orthorhombic,
+)
 
 sys.path.append(str(Path(__file__).parents[1]))
 from data import WATER_GRO_NPT, WATER_TPR_NPT, WATER_TRR_NPT
@@ -203,6 +210,13 @@ def test_get_module_input_str(ag):
     module_input = maicos.lib.util.get_module_input_str(ana)
 
     assert "test_input='some_other_value'" in module_input
+
+    # Path values are quoted like strings
+    ana = ModuleInput(ag, test_input=Path("results") / "foo.dat")
+    ana.run()
+    module_input = maicos.lib.util.get_module_input_str(ana)
+
+    assert f"test_input={str(Path('results') / 'foo.dat')!r}" in module_input
 
     ana.run(step=2, stop=7, start=5, verbose=True)
     module_input = maicos.lib.util.get_module_input_str(ana)
@@ -551,56 +565,102 @@ class TestUnitVectors:
         assert_allclose(transform, unit_vectors)
 
 
-class TestResultsAggregator:
-    """Test the ResultsAggregator for the parallel analysis implementation."""
+class TestMomentAccumulatorMerge:
+    """Merging accumulators equals accumulating all frames in one accumulator."""
 
-    @pytest.fixture(params=[(64, 1), (64, 5)])
-    def data(self, request):
-        """Random sample data of varying shape for aggregation tests."""
-        rng = np.random.default_rng(seed=42)
-        return rng.random(request.param)
+    PAIR = make_pair_key("x", "y")
 
-    def test_means(self, data):
-        """Weighted mean over batches matches the mean of the full data."""
-        n_batches = 4
-        batch_size = 16
-        bs = batch_size
+    @pytest.fixture
+    def frames(self):
+        """Correlated multi-sample profiles, a scalar and a partly empty bin.
 
-        means = []
-        for i in range(n_batches):
-            start = i * bs
-            end = start + bs
-            means.append(np.mean(data[start:end], axis=0))
+        The last bin of ``x`` and ``y`` is empty in the first 10 frames, so the first
+        batches carry NaN means for it.
+        """
+        rng = np.random.default_rng(42)
+        frames = []
+        for i in range(50):
+            pop = rng.integers(1, 4, size=3)
+            if i < 10:
+                pop[2] = 0
+            x = rng.normal(size=3)
+            y = 2 * x + rng.normal(size=3)
+            var_x = rng.random(3)
+            var_y = rng.random(3)
+            cov = 0.5 * np.sqrt(var_x * var_y)
+            x[pop == 0] = y[pop == 0] = np.nan
+            frames.append(
+                (
+                    Results(x=x, y=y, s=rng.normal()),
+                    Results(x=pop, y=pop),
+                    Results(x=var_x, y=var_y),
+                    Results({self.PAIR: cov}),
+                )
+            )
+        return frames
 
-        batch_sizes = [batch_size] * n_batches
+    def accumulate(self, frames):
+        """Accumulate ``frames`` in a fresh accumulator."""
+        acc = MomentAccumulator({self.PAIR})
+        acc.register(*frames[0])
+        for frame in frames[1:]:
+            acc.update(*frame)
+        return acc
 
-        agg = maicos.lib.util.ResultsAggregator()
+    @pytest.mark.parametrize("splits", [[25], [7, 20], [1, 2, 10, 30, 49]])
+    def test_merge_equals_serial(self, frames, splits):
+        """Merging batch accumulators reproduces the serial statistics."""
+        serial = self.accumulate(frames)
 
-        weighted_mean = agg.weighted_mean(means, batch_sizes)
+        bounds = [0, *splits, len(frames)]
+        batches = [self.accumulate(frames[a:b]) for a, b in itertools.pairwise(bounds)]
+        merged = batches[0]
+        for other in batches[1:]:
+            merged.merge(other)
 
-        assert_allclose(weighted_mean, np.mean(data, axis=0))
+        for name in ("means", "sems", "sums", "M2"):
+            for key in ("x", "y", "s"):
+                assert_allclose(
+                    getattr(merged, name)[key],
+                    getattr(serial, name)[key],
+                    rtol=1e-12,
+                    err_msg=f"{name}.{key}",
+                )
+        for key in ("x", "y", "s"):
+            assert_equal(merged.pop[key], serial.pop[key])
+        assert_allclose(merged.C[self.PAIR], serial.C[self.PAIR], rtol=1e-12)
+        assert_allclose(merged.cov("x", "y"), serial.cov("x", "y"), rtol=1e-12)
 
-    def test_sems(self, data):
-        """Weighted SEM over batches matches the SEM of the full data."""
-        n_batches = 4
-        batch_size = 16
-        bs = batch_size
+    def test_merge_in_place(self, frames):
+        """Existing references to the containers see the merged values."""
+        acc = self.accumulate(frames[:25])
+        means_x = acc.means.x
+        acc.merge(self.accumulate(frames[25:]))
 
-        sems = []
-        means = []
-        for i in range(n_batches):
-            start = i * bs
-            end = start + bs
-            sems.append(np.std(data[start:end], axis=0) / np.sqrt(bs))
-            means.append(np.mean(data[start:end], axis=0))
+        assert acc.means.x is means_x
+        assert_allclose(means_x, self.accumulate(frames).means.x, rtol=1e-12)
 
-        batch_sizes = [batch_size] * n_batches
+    def test_merge_different_observables(self, frames):
+        """Accumulators with different observables cannot be merged."""
+        acc = self.accumulate(frames)
+        other = MomentAccumulator()
+        other.register(Results(z=1.0), Results(), Results(), Results())
 
-        agg = maicos.lib.util.ResultsAggregator()
+        with pytest.raises(ValueError, match="different observables"):
+            acc.merge(other)
 
-        weighted_sem = agg.weighted_sem(sems, means, batch_sizes)
+    def test_merge_different_pairs(self, frames):
+        """Accumulators with different covariance pairs cannot be merged."""
+        acc = self.accumulate(frames)
+        other = MomentAccumulator()
+        for frame in frames:
+            if not other.means:
+                other.register(*frame)
+            else:
+                other.update(*frame)
 
-        assert_allclose(weighted_sem, np.std(data, axis=0) / np.sqrt(64))
+        with pytest.raises(ValueError, match="different covariance pairs"):
+            acc.merge(other)
 
 
 class TestTriclinicToOrthorhombic:
@@ -664,23 +724,135 @@ def test_error_of_times_to_frames(start, stop, step, dt, mesg_error):
         maicos.lib.util.times_to_frames(start, stop, step, dt)
 
 
+@pytest.mark.parametrize("filename_type", [str, Path])
 class TestCheckFileExtension:
     """Tests for check_file_extension."""
 
-    def test_extension_present_returns_unchanged(self):
+    def test_extension_present_returns_unchanged(self, filename_type):
         """Matching extension leaves the filename untouched and warns nothing."""
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            assert check_file_extension("foo.dat", ".dat") == "foo.dat"
+            assert check_file_extension(filename_type("foo.dat"), ".dat") == "foo.dat"
 
-    def test_missing_extension_is_appended_with_warning(self):
+    def test_missing_extension_is_appended_with_warning(self, filename_type):
         """Missing extension is appended and a UserWarning is issued."""
         with pytest.warns(UserWarning, match=r"\.dat"):
-            result = check_file_extension("foo", ".dat")
+            result = check_file_extension(filename_type("foo"), ".dat")
         assert result == "foo.dat"
 
-    def test_different_extension_is_appended_with_warning(self):
+    def test_different_extension_is_appended_with_warning(self, filename_type):
         """Wrong extension still leads to appending the expected one."""
         with pytest.warns(UserWarning, match=r"\.npz"):
-            result = check_file_extension("foo.txt", ".npz")
+            result = check_file_extension(filename_type("foo.txt"), ".npz")
         assert result == "foo.txt.npz"
+
+
+class TestJointPop:
+    """Tests for the shared population of two co-sampled observables."""
+
+    @pytest.mark.parametrize(
+        ("pop_x", "pop_y", "expected"),
+        [
+            (1, 1, 1),
+            (np.ones(3, dtype=int), 1, np.ones(3, dtype=int)),
+            (1, np.ones(3, dtype=int), np.ones(3, dtype=int)),
+            (np.array([2, 3, 4]), np.array([2, 3, 4]), np.array([2, 3, 4])),
+        ],
+    )
+    def test_cosampled(self, pop_x, pop_y, expected):
+        """Equal (broadcast) populations are returned regardless of order."""
+        assert_equal(maicos.lib.util._joint_pop(pop_x, pop_y), expected)
+
+    @pytest.mark.parametrize(
+        ("pop_x", "pop_y"),
+        [
+            ([1], [2, 3, 4]),
+            ([2, 3, 4], [1]),
+            ([1, 2], [1, 2, 3]),
+        ],
+    )
+    def test_not_cosampled_raises(self, pop_x, pop_y):
+        """Differing or non-broadcastable populations raise."""
+        with pytest.raises(ValueError, match="different populations|broadcast"):
+            maicos.lib.util._joint_pop(np.array(pop_x), np.array(pop_y))
+
+
+class TestMomentAccumulator:
+    """Tests for the streaming statistics backend."""
+
+    @pytest.fixture
+    def acc(self):
+        """Two correlated profiles whose last bin is empty in every frame."""
+        rng = np.random.default_rng(0)
+        acc = MomentAccumulator({make_pair_key("x", "y")})
+        pop = np.array([1, 1, 0])
+        var = np.zeros(3)
+        for i in range(200):
+            x = rng.normal(size=3)
+            y = x + 0.01 * rng.normal(size=3)
+            x[2] = y[2] = np.nan
+            frame = (
+                Results(x=x, y=y),
+                Results(x=pop, y=pop),
+                Results(x=var, y=var),
+                Results(),
+            )
+            if i == 0:
+                acc.register(*frame)
+            else:
+                acc.update(*frame)
+        return acc
+
+    def test_propagate_error_keeps_covariance_with_empty_bin(self, acc):
+        """An empty bin does not discard the covariance of the other bins."""
+        uncorrelated = np.sqrt(acc.sems.x**2 + acc.sems.y**2)
+        expected = np.sqrt(acc.sems.x**2 + acc.sems.y**2 - 2 * acc.cov("x", "y"))
+
+        error = acc.propagate_error({"x": 1.0, "y": -1.0})
+
+        assert_allclose(error[:2], expected[:2])
+        assert np.all(error[:2] < 0.1 * uncorrelated[:2])
+        assert np.isnan(error[2])
+
+    def test_propagate_error_negative_variance_per_element(self, acc):
+        """Only elements with a negative variance use the uncorrelated estimate."""
+        grads = {"x": 1.0, "y": -1.0}
+        correlated = acc.propagate_error(grads)
+        uncorrelated = np.sqrt(acc.sems.x**2 + acc.sems.y**2)
+
+        # Inflate the co-moment of the first bin so that its variance is negative.
+        acc.C[make_pair_key("x", "y")][0] *= 10
+        error = acc.propagate_error(grads)
+
+        assert_allclose(error[0], uncorrelated[0])
+        assert_allclose(error[1], correlated[1])
+
+    def test_cov_empty_bin(self, acc):
+        """The covariance of an empty bin is NaN and raises no warning."""
+        cov = acc.cov("x", "y")
+
+        assert np.all(np.isfinite(cov[:2]))
+        assert np.isnan(cov[2])
+
+    def test_sums_bin_empty_in_first_frame(self):
+        """A bin that is empty in the first frame accumulates later samples."""
+        acc = MomentAccumulator()
+        frames = [
+            ([np.nan, 1.0], [0, 1]),
+            ([2.0, np.nan], [1, 0]),
+            ([2.0, 3.0], [1, 1]),
+        ]
+        for i, (obs, pop) in enumerate(frames):
+            frame = (
+                Results(x=np.array(obs)),
+                Results(x=np.array(pop)),
+                Results(x=np.zeros(2)),
+                Results(),
+            )
+            if i == 0:
+                acc.register(*frame)
+            else:
+                acc.update(*frame)
+
+        assert_allclose(acc.sums.x, [4.0, 4.0])
+        assert_allclose(acc.means.x, [2.0, 2.0])

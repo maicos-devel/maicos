@@ -19,6 +19,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 import maicos
 from maicos.core import CylinderBase, PlanarBase, ProfilePlanarBase
+from maicos.lib.util import get_module_input_str
 from maicos.lib.weights import density_weights
 
 logger = logging.getLogger(__name__)
@@ -370,6 +371,12 @@ class TestPlanarBaseChilds:
 
         assert ana_obj.zmin == pb_obj.zmin
         assert ana_obj.zmax == pb_obj.zmax
+
+    @pytest.mark.parametrize("Member", members)
+    def test_module_input(self, Member, ag_single_frame):
+        """Test that the module input is recorded for the output header."""
+        ana_obj = Member(ag_single_frame, unwrap=False).run()
+        assert "*args" not in get_module_input_str(ana_obj)
 
 
 class TestProfilePlanarBase:

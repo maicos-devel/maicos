@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
-from ..lib.util import render_docs, unit_vectors_sphere
+from ..lib.util import PathLike, render_docs, unit_vectors_sphere
 from ..lib.weights import diporder_weights
 
 logger = logging.getLogger(__name__)
@@ -51,8 +51,9 @@ class DiporderSphere(ProfileSphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "diporder_sphere.dat",
+        output: PathLike = "diporder_sphere.dat",
     ) -> None:
+        self._locals = locals()
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_sphere(

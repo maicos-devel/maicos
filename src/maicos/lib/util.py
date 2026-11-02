@@ -8,22 +8,31 @@
 import functools
 import inspect
 import logging
+import os
 import re
 import sys
 import warnings
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
+from itertools import combinations
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, TypeAlias
 
 import MDAnalysis as mda
 import numpy as np
 from mdacli.utils import convert_str_time, split_time_unit
-from MDAnalysis.analysis.results import Results
+from MDAnalysis.analysis.base import Results
 from scipy.signal import find_peaks
 
-from maicos.lib.math import correlation_time
+from maicos.lib.math import (
+    combine_subsample_covariance,
+    combine_subsample_variance,
+    correlation_time,
+)
 
 logger = logging.getLogger(__name__)
+
+#: Type for arguments accepting a file system path.
+PathLike: TypeAlias = str | os.PathLike[str]
 
 
 def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
@@ -58,7 +67,7 @@ def triclinic_to_orthorhombic(dimensions: np.ndarray) -> np.ndarray:
     return np.array([xx, yy, zz, 90.0, 90.0, 90.0])
 
 
-def check_file_extension(filename: str, extension: str) -> str:
+def check_file_extension(filename: PathLike, extension: str) -> str:
     """Ensure ``filename`` ends with ``extension``, appending it with a warning.
 
     If ``filename`` does not end with ``extension``, the extension is appended
@@ -66,7 +75,7 @@ def check_file_extension(filename: str, extension: str) -> str:
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         Name of the file to be checked.
     extension : str
         Expected file extension, including the leading dot (e.g. ``".dat"``).
@@ -74,9 +83,9 @@ def check_file_extension(filename: str, extension: str) -> str:
     Returns
     -------
     str
-        ``filename`` unchanged if it already ends with ``extension``, otherwise
-        ``filename`` with ``extension`` appended.
+        ``filename`` as a string, with ``extension`` appended if necessary.
     """
+    filename = os.fspath(filename)
     if not filename.endswith(extension):
         warnings.warn(
             f"The file name should have a {extension!r} file extension. The user "
@@ -216,9 +225,9 @@ self : object
     ``grouping="atoms"``) or the center of mass of the specified grouping unit (in the
     case where ``grouping="residues"``, ``"segments"``, ``"molecules"`` or
     ``"fragments"``).""",
-    "OUTPUT_PARAMETER": """output : str
+    "OUTPUT_PARAMETER": """output : str or os.PathLike
     Output filename.""",
-    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str
+    "OUTPUT_PREFIX_PARAMETER": """output_prefix : str or os.PathLike
     Prefix for output files.""",
     "SYM_PARAMETER": """sym : bool
     Symmetrize the profile. Only works in combination with ``refgroup``.""",
@@ -888,8 +897,8 @@ def get_module_input_str(module_obj):
         sig.args.remove("self")
         strings = []
         for param in sig.args:
-            if isinstance(module_obj._locals[param], str):
-                string = f"{param}='{module_obj._locals[param]}'"
+            if isinstance(module_obj._locals[param], str | os.PathLike):
+                string = f"{param}={os.fspath(module_obj._locals[param])!r}"
             elif (
                 param == "atomgroup"
                 or param == "refgroup"
@@ -906,8 +915,8 @@ def get_module_input_str(module_obj):
         run_signature = ", ".join(
             [
                 (
-                    f"{param}='{module_obj._run_locals[param]}'"
-                    if isinstance(module_obj._run_locals[param], str)
+                    f"{param}={os.fspath(module_obj._run_locals[param])!r}"
+                    if isinstance(module_obj._run_locals[param], str | os.PathLike)
                     else f"{param}={module_obj._run_locals[param]}"
                 )
                 for param in sig.args
@@ -921,140 +930,23 @@ def get_module_input_str(module_obj):
     return module_input
 
 
-class ResultsAggregator:
-    """Aggregate per-batch results from parallelized workers.
+def make_pair_key(key_i: str, key_j: str) -> tuple[str, str]:
+    """Return a canonical pair key for two observable keys.
 
-    Combines the ``means``, ``sems`` and ``sums`` computed independently on each
-    batch of frames back into the totals a serial run would have produced. Based
-    on :class:`MDAnalysis.analysis.results.ResultsGroup`.
+    The key is ordered so that ``make_pair_key(a, b) == make_pair_key(b, a)``,
+    guaranteeing deterministic lookups regardless of argument order.
+
+    Parameters
+    ----------
+    key_i, key_j : str
+        Keys of the two observables.
+
+    Returns
+    -------
+    tuple[str, str]
+        Canonical ``(smaller, larger)`` pair key.
     """
-
-    def __init__(self):
-        pass
-
-    def merge(
-        self, means: Sequence[Results], sems: Sequence[Results], batch_sizes: list[int]
-    ) -> tuple[Results, Results]:
-        """Merge the results from each batch.
-
-        Parameters
-        ----------
-        means: Sequence[Results]
-            Mean Results from each batch
-        sems: Sequence[Results]
-            Standard error of the mean Results from each batch
-        batch_sizes: list[int]
-            the number of frames in each batch
-
-        Returns
-        -------
-        Results, Results
-            total mean, total standard error of the mean
-        """
-        if len(means) == 1:
-            return means[0], sems[0]
-
-        merged_means = Results()
-        merged_sems = Results()
-
-        for key in means[0]:
-            means_of_t = [obj[key] for obj in means]
-            merged_means[key] = ResultsAggregator.weighted_mean(means_of_t, batch_sizes)
-            sems_of_t = [obj[key] for obj in sems]
-            merged_sems[key] = ResultsAggregator.weighted_sem(
-                sems_of_t, means_of_t, batch_sizes
-            )
-
-        return merged_means, merged_sems
-
-    def merge_sums(self, sums: Sequence[Results]) -> Results:
-        """Merge sums from batches by summing.
-
-        Parameters
-        ----------
-        sums: Sequence[Results]
-            Results sums from each batch
-
-        Returns
-        -------
-        Results
-            Total sum of the Results
-        """
-        if len(sums) == 1:
-            return sums[0]
-
-        merged_sums = Results()
-
-        for key in sums[0]:
-            sums_of_t = [obj[key] for obj in sums]
-            merged_sums[key] = np.sum(np.array(sums_of_t), axis=0)
-
-        return merged_sums
-
-    @staticmethod
-    def weighted_mean(means: list[np.ndarray], batch_sizes: list[int]) -> np.ndarray:
-        """Calculate the weighted mean of the batches.
-
-        Parameters
-        ----------
-        means: list[np.ndarray]
-            means of each batch
-        batch_sizes: list[int]
-            the number of frames in each batch (valid weight only when each frame
-            contributes one sample per element; see class warning)
-
-        Returns
-        -------
-        np.ndarray
-            total mean
-        """
-        means_arr = np.array(means)
-        batch_sizes_arr = np.array(batch_sizes)
-        batch_sizes_arr = ResultsAggregator._match_dims(means_arr, batch_sizes_arr)
-        return np.sum(means_arr * batch_sizes_arr, axis=0) / np.sum(batch_sizes_arr)
-
-    @staticmethod
-    def weighted_sem(
-        sems: list[np.ndarray], means: list[np.ndarray], batch_sizes: list[int]
-    ) -> np.ndarray:
-        """Calculate the weighted standard error of the mean.
-
-        Parameters
-        ----------
-        sems: list[np.ndarray]
-            standard error of the mean of each batch
-        means: list[np.ndarray]
-            mean of each batch
-        batch_sizes: list[int]
-            the number of frames in each batch (valid weight only when each frame
-            contributes one sample per element; see class warning)
-
-        Returns
-        -------
-        np.ndarray
-            total standard error of the mean
-        """
-        mean_total = ResultsAggregator.weighted_mean(means, batch_sizes)
-        means_a = np.array(means)
-
-        batch_sizes_a = np.array(batch_sizes)
-
-        sems_a = np.array(sems)
-        batch_sizes_a = ResultsAggregator._match_dims(sems_a, batch_sizes_a)
-        Ms = sems_a**2 * (batch_sizes_a) ** 2
-
-        M_tot = np.sum(Ms, axis=0) + np.sum(
-            (means_a - mean_total) ** 2 * batch_sizes_a, axis=0
-        )
-        N_tot = int(np.sum(batch_sizes_a))
-        return np.sqrt(M_tot / N_tot**2)
-
-    @staticmethod
-    def _match_dims(big_arr, small_arr) -> np.ndarray:
-        """Expand dimensions of the small array to match the big array."""
-        dims = len(big_arr.shape)
-        n_batches = small_arr.shape[0]
-        return np.reshape(small_arr, [n_batches] + [1] * (dims - 1))
+    return (key_i, key_j) if key_i <= key_j else (key_j, key_i)
 
 
 def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
@@ -1105,3 +997,405 @@ def times_to_frames(start: str, stop: str, step: str, dt: float) -> dict:
         return timedict
 
     return timedict
+
+
+def _joint_pop(pop_x: np.ndarray, pop_y: np.ndarray) -> np.ndarray:
+    """Shared sample count of two co-sampled observables.
+
+    Raises a ``ValueError`` if the populations do not broadcast or differ, since a
+    covariance is only defined for co-sampled observables.
+    """
+    b_x, b_y = np.broadcast_arrays(pop_x, pop_y)
+    if not np.array_equal(b_x, b_y):
+        raise ValueError(
+            "cannot sample the covariance of observables with different populations"
+        )
+    return b_x
+
+
+#: Observable types the accumulator knows how to merge.
+_COMPATIBLE_TYPES = (
+    np.ndarray,
+    float,
+    int,
+    list,
+    tuple,
+    np.float32,
+    np.float64,
+    np.int32,
+    np.int64,
+)
+
+
+class MomentAccumulator:
+    """Streaming mean, variance and covariance of per-frame observables.
+
+    This is the statistics backend of :class:`~maicos.core.AnalysisBase`. Each
+    frame's observables are merged into running statistics with Welford's online
+    algorithm, so no per-frame data has to be stored. Observables may be scalars
+    or arrays (e.g. profiles), in which case every element is accumulated
+    independently. A frame can report a single sample per observable or, via the
+    population / variance / covariance containers, the mean of several samples.
+
+    After the first frame is passed to :meth:`register`, every following frame is
+    merged with :meth:`update`. The running statistics are exposed as
+    :class:`~MDAnalysis.analysis.base.Results` containers keyed by observable name:
+
+    - ``means``: mean of each observable
+    - ``sems``: standard error of the mean
+    - ``sums``: sum of the samples
+    - ``pop``: number of samples
+    - ``M2``: sum of squared deviations from the mean
+    - ``C``: co-moment of each requested pair, keyed by
+      :func:`~maicos.lib.util.make_pair_key`
+
+    :meth:`cov` returns the covariance of two observable means and
+    :meth:`propagate_error` the standard error of a function of several
+    observables, including their cross-covariances.
+
+    Parameters
+    ----------
+    requested_pairs : iterable of tuple of str
+        Canonical observable pairs (see :func:`~maicos.lib.util.make_pair_key`)
+        whose off-diagonal covariance should be accumulated. The observables of
+        each pair must broadcast against each other and be co-sampled (same
+        population). Only the listed pairs are tracked. Empty (the default)
+        disables covariance entirely.
+
+    Examples
+    --------
+    Accumulate two correlated scalar observables over four frames
+
+    >>> import numpy as np
+    >>> from MDAnalysis.analysis.base import Results
+    >>> from maicos.lib.util import MomentAccumulator, make_pair_key
+    >>> acc = MomentAccumulator({make_pair_key("x", "y")})
+    >>> acc.register(Results(x=0.0, y=0.0), Results(), Results(), Results())
+    >>> for x, y in [(0.0, 1.0), (0.0, 1.0), (6.0, 6.0)]:
+    ...     acc.update(Results(x=x, y=y), Results(), Results(), Results())
+    >>> print(acc.means.x, acc.means.y)
+    1.5 2.0
+
+    Covariance of the means and the error of ``f = x - y``, which is smaller than
+    the uncorrelated estimate because ``x`` and ``y`` are positively correlated
+
+    >>> print(acc.cov("x", "y"))
+    1.5
+    >>> print(acc.propagate_error({"x": 1.0, "y": -1.0}))
+    0.25
+    >>> print(np.sqrt(acc.sems.x**2 + acc.sems.y**2))
+    1.75
+
+    """
+
+    def __init__(self, requested_pairs=()):
+        self.means = Results()  # mean of the observables across frames
+        self.sems = Results()  # standard error of the mean across frames
+        self.sums = Results()  # sum of the observables across frames
+        self.pop = Results()  # count of samples across frames
+        self.M2 = Results()  # sum of squared deviations from the mean
+        self.C = Results()  # off-diagonal co-moments, keyed (i, j)
+        self._requested_cov_pairs = set(requested_pairs)  # pair keys tracked in C
+        self._keys = []  # observable keys, in first-seen order
+
+    def _sanitize(self, obs, _pop, _var):
+        """Return per-frame observable / population / variance arrays.
+
+        Lists and scalars become float arrays (scalars stay 0-d), and a missing
+        population / variance defaults to a single sample with zero within-frame
+        variance. The input ``Results`` containers are not mutated.
+        """
+        s_obs, s_pop, s_var = {}, {}, {}
+        for key in obs:
+            value = obs[key]
+            if not isinstance(value, _COMPATIBLE_TYPES):
+                raise TypeError(f"Observable {key!r} has an incompatible type.")
+            s_obs[key] = np.asarray(value, dtype=float)
+            if key in _pop:
+                s_pop[key] = np.asarray(_pop[key])
+                s_var[key] = np.asarray(_var[key], dtype=float)
+            else:
+                s_pop[key] = np.ones(s_obs[key].shape, dtype=int)
+                s_var[key] = np.zeros(s_obs[key].shape)
+        return s_obs, s_pop, s_var
+
+    def register(self, obs, _pop, _var, _cov):
+        """Seed the running containers from the first frame's observables.
+
+        Parameters
+        ----------
+        obs : MDAnalysis.analysis.base.Results
+            The current frame's observables, keyed by observable name.
+        _pop : MDAnalysis.analysis.base.Results
+            The current frame's sample count for each observable. Missing entries
+            default to a unit population (the observable is a single sample).
+        _var : MDAnalysis.analysis.base.Results
+            The current frame's within-frame variance for each observable.
+        _cov : MDAnalysis.analysis.base.Results
+            The current frame's within-frame covariance, keyed by canonical
+            observable pair (see :func:`maicos.lib.util.make_pair_key`).
+
+        """
+        s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
+        for key in s_obs:
+            # np.array keeps scalars as writable 0-d arrays for the in-place merge.
+            self.means[key] = np.array(s_obs[key], dtype=float)
+            self.pop[key] = np.array(s_pop[key])
+            self.M2[key] = np.array(s_var[key] * s_pop[key], dtype=float)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self.sems[key] = np.array(
+                    np.sqrt(self.M2[key] / self.pop[key] ** 2), dtype=float
+                )
+            # Empty (NaN) entries contribute nothing, as in :meth:`_merge_var`.
+            obs = s_obs[key]
+            self.sums[key] = np.array(
+                np.where(np.isnan(obs), 0.0, obs) * s_pop[key], dtype=float
+            )
+            self._keys.append(key)
+        self._build_pairs(s_obs, s_pop, _cov)
+
+    def _build_pairs(self, s_obs, s_pop, _cov):
+        """Seed ``C`` for the requested pairs; raise if a pair is not co-sampled."""
+        for pair_key in self._requested_cov_pairs:
+            key_i, key_j = pair_key
+            for key in pair_key:
+                if key not in s_obs:
+                    raise KeyError(
+                        f"requested covariance pair {pair_key} references "
+                        f"unknown observable {key!r}; available: {list(s_obs)}"
+                    )
+            try:
+                shape = np.broadcast_shapes(s_obs[key_i].shape, s_obs[key_j].shape)
+                pop = _joint_pop(s_pop[key_i], s_pop[key_j])
+            except ValueError as err:
+                raise ValueError(
+                    f"requested covariance pair {pair_key} is invalid: the "
+                    f"observables must broadcast against each other (shapes "
+                    f"{s_obs[key_i].shape} and {s_obs[key_j].shape}) and be "
+                    f"co-sampled (same population)"
+                ) from err
+            # Seed with the first frame's within-frame co-moment (zero for
+            # single-sample observables, where _cov is absent).
+            cov = np.asarray(_cov.get(pair_key, 0.0), dtype=float)
+            seed = np.where(np.isnan(cov), 0.0, cov) * pop
+            self.C[pair_key] = np.broadcast_to(seed, shape).astype(float).copy()
+
+    def update(self, obs, _pop, _var, _cov):
+        """Welford merge of the current frame into all running statistics.
+
+        Covariance is merged first, while the running means still hold their
+        pre-frame values; the variance merge advances the means afterwards.
+
+        Parameters
+        ----------
+        obs : MDAnalysis.analysis.base.Results
+            The current frame's observables, keyed by observable name.
+        _pop : MDAnalysis.analysis.base.Results
+            The current frame's sample count for each observable. Missing entries
+            default to a unit population (the observable is a single sample).
+        _var : MDAnalysis.analysis.base.Results
+            The current frame's within-frame variance for each observable.
+        _cov : MDAnalysis.analysis.base.Results
+            The current frame's within-frame covariance, keyed by canonical
+            observable pair (see :func:`maicos.lib.util.make_pair_key`).
+
+        """
+        s_obs, s_pop, s_var = self._sanitize(obs, _pop, _var)
+        for pair_key in self.C:
+            self._merge_cov(pair_key, s_obs, s_pop, _cov)
+        for key in self._keys:
+            self._merge_var(key, s_obs, s_pop, s_var)
+
+    def _merge_var(self, key, s_obs, s_pop, s_var):
+        """Merge the current frame into one observable's mean / variance."""
+        mean, M2, pop = self.means[key], self.M2[key], self.pop[key]
+        pop[...], mean[...], M2[...] = combine_subsample_variance(
+            s_pop[key], pop, s_obs[key], mean, s_var[key] * s_pop[key], M2
+        )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            self.sems[key][...] = np.sqrt(M2 / pop**2)
+        obs = s_obs[key]
+        self.sums[key][...] += np.where(np.isnan(obs), 0.0, obs) * s_pop[key]
+
+    def _merge_cov(self, pair_key, s_obs, s_pop, _cov):
+        """Merge the current frame into one pair's running co-moment.
+
+        Inputs of different shapes (e.g. a scalar paired with a profile) broadcast
+        against the running co-moment ``C``.
+        """
+        key_i, key_j = pair_key
+        C = self.C[pair_key]
+        n_new = _joint_pop(s_pop[key_i], s_pop[key_j])
+        cov = np.asarray(_cov.get(pair_key, 0.0), dtype=float)
+        within = np.where(np.isnan(cov), 0.0, cov) * n_new
+
+        _, C[...] = combine_subsample_covariance(
+            n_new,
+            self.pop[key_i],
+            s_obs[key_i],
+            self.means[key_i],
+            s_obs[key_j],
+            self.means[key_j],
+            within,
+            C,
+        )
+
+    def cov(self, key_i: str, key_j: str) -> np.ndarray:
+        r"""Covariance of the means of two observables.
+
+        The element-wise covariance :math:`\mathrm{Cov}(\bar x_i, \bar x_j)` of the
+        observable means accumulated across frames. The diagonal (``key_i == key_j``)
+        equals the squared standard error of the mean, :attr:`sems`.
+
+        Parameters
+        ----------
+        key_i, key_j : str
+            Keys of the two observables.
+
+        Returns
+        -------
+        numpy.ndarray
+            Covariance of the means of ``key_i`` and ``key_j``.
+
+        Raises
+        ------
+        KeyError
+            If the off-diagonal pair was not requested in ``_compute_covariance``.
+
+        """
+        if key_i == key_j:
+            return self.sems[key_i] ** 2
+        if not self._requested_cov_pairs:
+            raise RuntimeError(
+                "Covariance tracking is disabled. List the observable pairs in the "
+                "`_compute_covariance` class attribute to use `cov`/`propagate_error`."
+            )
+        pair_key = make_pair_key(key_i, key_j)
+        if pair_key not in self.C:
+            raise KeyError(
+                f"covariance of {key_i!r} and {key_j!r} not tracked: the pair was not "
+                f"requested in `_compute_covariance`"
+            )
+        pop = _joint_pop(self.pop[key_i], self.pop[key_j])
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return self.C[pair_key] / pop**2
+
+    def propagate_error(self, grads: dict) -> np.ndarray:
+        r"""Propagate observable errors through an estimator.
+
+        Computes the standard error of an estimator :math:`f` from the full
+        covariance of the observable means,
+
+        .. math::
+
+            \sigma_f^2 = \sum_{ij}
+                \frac{\partial f}{\partial x_i}
+                \frac{\partial f}{\partial x_j}
+                \mathrm{Cov}(\bar x_i, \bar x_j),
+
+        where ``grads[key]`` provides :math:`\partial f / \partial x_{key}`. The
+        diagonal terms reproduce the independent-variable (uncorrelated) estimate;
+        the off-diagonal terms add the cross-covariance contributions.
+
+        Parameters
+        ----------
+        grads : dict
+            Mapping of observable key to the gradient of the estimator with
+            respect to that observable's mean.
+
+        Returns
+        -------
+        numpy.ndarray
+            Standard error of the estimator.
+
+        Raises
+        ------
+        KeyError
+            If two of the supplied observables have no tracked covariance (see
+            :meth:`cov`).
+
+        """
+        keys = list(grads)
+        var_cross = 0.0
+        for key_i, key_j in combinations(keys, 2):
+            cov_ij = self.cov(key_i, key_j)
+            var_cross = var_cross + 2 * grads[key_i] * grads[key_j] * cov_ij
+
+        var_diag = 0.0
+        for key in keys:
+            var_diag = var_diag + grads[key] ** 2 * self.sems[key] ** 2
+
+        # Where the variance went negative, fall back to the uncorrelated
+        # estimate. Undefined (NaN) elements, e.g. empty bins, stay NaN.
+        var = var_diag + var_cross
+        return np.sqrt(np.where(var < 0, var_diag, var))
+
+    def merge(self, other: "MomentAccumulator") -> None:
+        """Merge the statistics of another accumulator into this one in place.
+
+        Combines two accumulators filled from disjoint sets of frames (e.g. by
+        parallel workers) with the pairwise update of Chan et al. The result equals
+        accumulating all frames in a single accumulator up to rounding. Containers
+        are updated in place, so existing references to :attr:`means`,
+        :attr:`sems`, ... stay valid.
+
+        Parameters
+        ----------
+        other : MomentAccumulator
+            Accumulator holding the same observables and covariance pairs.
+
+        Raises
+        ------
+        ValueError
+            If the accumulators track different observables or covariance pairs.
+
+        Examples
+        --------
+        >>> from MDAnalysis.analysis.base import Results
+        >>> from maicos.lib.util import MomentAccumulator
+        >>> def accumulate(values):
+        ...     acc = MomentAccumulator()
+        ...     acc.register(Results(x=values[0]), Results(), Results(), Results())
+        ...     for x in values[1:]:
+        ...         acc.update(Results(x=x), Results(), Results(), Results())
+        ...     return acc
+        >>> acc = accumulate([1.0, 2.0])
+        >>> acc.merge(accumulate([3.0, 6.0]))
+        >>> print(acc.means.x, acc.pop.x, acc.sums.x)
+        3.0 4 12.0
+
+        """
+        if set(self._keys) != set(other._keys):
+            raise ValueError(
+                "cannot merge accumulators with different observables: "
+                f"{sorted(self._keys)} and {sorted(other._keys)}"
+            )
+        if set(self.C) != set(other.C):
+            raise ValueError(
+                "cannot merge accumulators with different covariance pairs: "
+                f"{sorted(self.C)} and {sorted(other.C)}"
+            )
+
+        # Covariances first, while the means still hold their pre-merge values.
+        for pair_key in self.C:
+            key_i, key_j = pair_key
+            C = self.C[pair_key]
+            _, C[...] = combine_subsample_covariance(
+                _joint_pop(other.pop[key_i], other.pop[key_j]),
+                _joint_pop(self.pop[key_i], self.pop[key_j]),
+                other.means[key_i],
+                self.means[key_i],
+                other.means[key_j],
+                self.means[key_j],
+                other.C[pair_key],
+                C,
+            )
+
+        for key in self._keys:
+            mean, M2, pop = self.means[key], self.M2[key], self.pop[key]
+            pop[...], mean[...], M2[...] = combine_subsample_variance(
+                other.pop[key], pop, other.means[key], mean, other.M2[key], M2
+            )
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self.sems[key][...] = np.sqrt(M2 / pop**2)
+            self.sums[key][...] += other.sums[key]

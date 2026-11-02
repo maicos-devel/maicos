@@ -213,12 +213,11 @@ class TestPDFPlanar:
                 grp_water, grp_water, pdf_bin_width="foo", dmin=7, dmax=10, bin_width=20
             ).run()
 
-    def test_save(self, get_universe, monkeypatch, tmp_path):
-        """Test that save() writes the output file correctly."""
-        monkeypatch.chdir(tmp_path)
-        pdfplanar = self.run_pdf(get_universe)
+    @pytest.mark.parametrize("filename_type", [str, Path])
+    def test_save(self, get_universe, tmp_path, filename_type):
+        """Test that save() writes to string and pathlib filenames."""
+        output = tmp_path / "pdf.dat"
+        pdfplanar = self.run_pdf(get_universe, output=filename_type(output))
         pdfplanar.save()
-        output_path = tmp_path / pdfplanar.output
-        assert output_path.exists()
-        data = np.loadtxt(output_path)
+        data = np.loadtxt(output)
         assert data.shape[0] == len(pdfplanar.results.bins)

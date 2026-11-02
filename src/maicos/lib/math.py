@@ -621,9 +621,63 @@ def combine_subsample_variance(n_A, n_B, mu_A, mu_B, M_A, M_B):
         Sum of squares of deviations from the mean for the combined dataset.
     """
     n_AB = n_A + n_B
-    delta = np.nan_to_num(mu_B) - np.nan_to_num(mu_A)
+    delta = np.where(np.isnan(mu_B), 0.0, mu_B) - np.where(np.isnan(mu_A), 0.0, mu_A)
     with np.errstate(divide="ignore", invalid="ignore"):
-        mu_AB = np.nan_to_num(mu_A) + delta * n_B / n_AB
-        M_AB = np.nan_to_num(M_A) + np.nan_to_num(M_B) + delta**2 * n_A * n_B / n_AB
+        mu_AB = np.where(np.isnan(mu_A), 0.0, mu_A) + delta * n_B / n_AB
+        M_AB = (
+            np.where(np.isnan(M_A), 0.0, M_A)
+            + np.where(np.isnan(M_B), 0.0, M_B)
+            + delta**2 * n_A * n_B / n_AB
+        )
 
     return n_AB, mu_AB, M_AB
+
+
+def combine_subsample_covariance(n_A, n_B, mux_A, mux_B, muy_A, muy_B, C_A, C_B):
+    r"""Combine the co-moment of two datasets of arbitrary size.
+
+    Generalizes :func:`combine_subsample_variance` to the co-moment
+    :math:`C = \sum (x - \bar x)(y - \bar y)` of a pair of variables. Inputs are
+    combined element-wise and broadcast against each other. Empty merges
+    (``n_AB == 0``) contribute zero instead of NaN.
+
+    See `<https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online>`_.
+
+    Parameters
+    ----------
+    n_A : int
+        Number of elements in dataset A.
+    n_B : int
+        Number of elements in dataset B.
+    mux_A : float
+        Mean of the first variable in dataset A.
+    mux_B : float
+        Mean of the first variable in dataset B.
+    muy_A : float
+        Mean of the second variable in dataset A.
+    muy_B : float
+        Mean of the second variable in dataset B.
+    C_A : float
+        Co-moment of dataset A.
+    C_B : float
+        Co-moment of dataset B.
+
+    Returns
+    -------
+    n_AB : int
+        Total number of elements in the combined dataset (n_A + n_B).
+    C_AB : float
+        Co-moment of the combined dataset.
+    """
+    n_AB = n_A + n_B
+    dx = np.where(np.isnan(mux_B), 0.0, mux_B) - np.where(np.isnan(mux_A), 0.0, mux_A)
+    dy = np.where(np.isnan(muy_B), 0.0, muy_B) - np.where(np.isnan(muy_A), 0.0, muy_A)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        weight = np.where(n_AB > 0, n_A * n_B / n_AB, 0.0)
+    C_AB = (
+        np.where(np.isnan(C_A), 0.0, C_A)
+        + np.where(np.isnan(C_B), 0.0, C_B)
+        + dx * dy * weight
+    )
+
+    return n_AB, C_AB

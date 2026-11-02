@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfileCylinderBase
-from ..lib.util import render_docs, unit_vectors_cylinder
+from ..lib.util import PathLike, render_docs, unit_vectors_cylinder
 from ..lib.weights import diporder_weights
 
 logger = logging.getLogger(__name__)
@@ -56,8 +56,9 @@ class DiporderCylinder(ProfileCylinderBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "diporder_cylinder.dat",
+        output: PathLike = "diporder_cylinder.dat",
     ) -> None:
+        self._locals = locals()
 
         def get_unit_vectors(atomgroup: mda.AtomGroup, grouping: str):
             return unit_vectors_cylinder(

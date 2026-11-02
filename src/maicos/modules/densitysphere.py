@@ -10,7 +10,7 @@ import logging
 import MDAnalysis as mda
 
 from ..core import ProfileSphereBase
-from ..lib.util import render_docs
+from ..lib.util import PathLike, render_docs
 from ..lib.weights import density_weights
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class DensitySphere(ProfileSphereBase):
         pack: bool = True,
         jitter: float = 0.0,
         concfreq: int = 0,
-        output: str = "density.dat",
+        output: PathLike = "density.dat",
     ) -> None:
         self._locals = locals()
         super().__init__(
