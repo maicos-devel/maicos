@@ -138,10 +138,10 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
             start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
         )
 
-        remote_objects: dict[AnalysisBase, AnalysisBase] = {}
+        remote_parts: dict[AnalysisBase, list[Results]] = {}
         for analysis_object in analysis_instances:
             worker_funcs = partial(
-                analysis_object._compute,
+                analysis_object._compute_part,
                 progressbar_kwargs=progressbar_kwargs,
                 verbose=verbose,
             )
@@ -158,31 +158,21 @@ class _Runner(MDAnalysis.analysis.base.AnalysisBase):
 
             analysis_object._call_prepare()
 
-            # get all results from workers in other processes.
-            # we need `AnalysisBase` classes
-            # since they hold `frames`, `times` and `results` attributes
-            remote_objects[analysis_object] = executor.apply(
+            # One independent snapshot (frames, times, timeseries, moments) per part.
+            remote_parts[analysis_object] = executor.apply(
                 worker_funcs, computation_groups
             )
 
         for analysis_object in analysis_instances:
-            analysis_object.frames = np.hstack(
-                [obj.frames for obj in remote_objects[analysis_object]]
-            )
-            analysis_object.times = np.hstack(
-                [obj.times for obj in remote_objects[analysis_object]]
-            )
-            analysis_object.timeseries = np.hstack(
-                [obj.timeseries for obj in remote_objects[analysis_object]]
-            )
+            parts = remote_parts[analysis_object]
+            analysis_object.frames = np.hstack([part.frames for part in parts])
+            analysis_object.times = np.hstack([part.times for part in parts])
+            analysis_object.timeseries = np.hstack([part.timeseries for part in parts])
 
-        for analysis_object in analysis_instances:
-            # Combine the statistics accumulated by the remote workers. Workers
-            # that received no frames have no accumulator and are skipped.
+            # Combine the statistics accumulated by the workers. Parts that received
+            # no frames have no accumulator and are skipped.
             remote_moments = [
-                obj.moments
-                for obj in remote_objects[analysis_object]
-                if hasattr(obj, "moments")
+                part.moments for part in parts if part.moments is not None
             ]
             if remote_moments:
                 moments = remote_moments[0]
@@ -554,6 +544,47 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
         logging.info("Finishing up")
         return self
 
+    def _compute_part(
+        self,
+        indexed_frames: np.ndarray,
+        verbose: bool | None = None,
+        *,
+        progressbar_kwargs=None,
+    ) -> Results:
+        """Run :meth:`_compute` on one part and return a snapshot of its state.
+
+        The serial backend calls this repeatedly on the *same* instance, so
+        returning ``self`` would make every part alias the state of the last one.
+        The returned arrays and accumulator are created anew by each
+        :meth:`_compute` call and thus stay independent of later parts. As a
+        side effect only this small container has to be sent back from parallel
+        workers instead of the whole analysis object.
+
+        Parameters
+        ----------
+        indexed_frames : np.ndarray
+            see :meth:`_compute`
+        verbose : bool, optional
+            see :meth:`_compute`
+        progressbar_kwargs : dict, optional
+            see :meth:`_compute`
+
+        Returns
+        -------
+        Results
+            ``frames``, ``times`` and ``timeseries`` of the part, and its
+            ``moments`` accumulator (``None`` if the part contained no frames).
+        """
+        self._compute(
+            indexed_frames, verbose=verbose, progressbar_kwargs=progressbar_kwargs
+        )
+        return Results(
+            frames=self.frames,
+            times=self.times,
+            timeseries=self.timeseries,
+            moments=getattr(self, "moments", None),
+        )
+
     def _prepare(self) -> None:
         """Set things up before the analysis loop begins."""
 
@@ -604,6 +635,10 @@ class AnalysisBase(_Runner, MDAnalysis.analysis.base.AnalysisBase):
             logger.info(f"Using {self.n_bins} bins.")
 
         self.timeseries = np.zeros(self.n_frames)
+        # Start from a fresh accumulator: it is created on the first analysed frame.
+        # A leftover one would otherwise absorb the statistics of a rerun or of the
+        # next part on the serial backend.
+        self.__dict__.pop("moments", None)
 
         logger.info(f"Analysing {self.n_frames} trajectory frames.")
 
