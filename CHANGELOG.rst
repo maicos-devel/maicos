@@ -13,7 +13,7 @@ Unreleased
 ----------
 Philip Loche
 
-- Declare ``numpy`` and ``scipy`` as explicit dependencies (#615ß)
+- Declare ``numpy`` and ``scipy`` as explicit dependencies (#615)
 
 v0.13 (2026/10/29)
 ------------------
