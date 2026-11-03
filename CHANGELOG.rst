@@ -11,8 +11,9 @@ Changelog
 
 Unreleased
 ----------
-Philip Loche
+Philip Loche, Henrik Stooß
 
+- Fix trajectory being closed when a run is aborted (#614)
 - Declare ``numpy`` and ``scipy`` as explicit dependencies (#615)
 
 v0.13 (2026/10/29)

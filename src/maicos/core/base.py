@@ -107,11 +107,14 @@ class _Runner:
         if progressbar_kwargs is None:
             progressbar_kwargs = {}
 
+        sliced_trajectory = analysis_instances[0]._sliced_trajectory
         for i, ts in enumerate(
             ProgressBar(
-                analysis_instances[0]._sliced_trajectory,
+                # Iterating through a generator is safer, because tqdm cannot close
+                # the TrajecoryReader if the run is aborted.
+                (ts for ts in sliced_trajectory),
                 verbose=verbose,
-                **progressbar_kwargs,
+                **{"total": len(sliced_trajectory), **progressbar_kwargs},
             )
         ):
             ts_original = ts.copy()

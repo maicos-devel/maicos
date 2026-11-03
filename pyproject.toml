@@ -50,7 +50,7 @@ dependencies = [
     "MDAnalysis>=2.10.0",
     "numpy",
     "scipy",
-    "tqdm<4.70",  # tqdm 4.70 changed how the iteration are handled
+    "tqdm",
 ]
 
 [project.optional-dependencies]
