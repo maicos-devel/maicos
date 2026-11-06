@@ -39,7 +39,7 @@ reported to the `project maintainers`_.
 This Code of Conduct is adapted from the `Contributor Covenant`_, version 1.1.0,
 available at https://contributor-covenant.org/version/1/1/0/
 
-.. _`project maintainers` : https://github.com/maicos-devel/maicos/blob/main/AUTHORS.rst
+.. _`project maintainers` : https://github.com/atomistic-lab/maicos/blob/main/AUTHORS.rst
 .. _`Contributor Covenant` : https://contributor-covenant.org
 
 Getting involved
@@ -52,7 +52,7 @@ your requests.
 
 .. Explicitly link LATEST documentation for developers
 .. _`developer documentation` : https://maicos-analysis.org/latest/devdoc
-.. _`GitHub` : https://github.com/maicos-devel/maicos/
+.. _`GitHub` : https://github.com/atomistic-lab/maicos/
 
 By contributing to MAICoS, you accept and agree to the following terms and conditions
 for your present and future contributions submitted to MAICoS. Except for the license
@@ -99,7 +99,7 @@ This install the package in development mode, making it importable globally and 
 you to edit the code and directly use the updated version.
 
 .. _Tox: https://tox.readthedocs.io/en/latest/
-.. _`MAICoS develop project` : https://github.com/maicos-devel/maicos
+.. _`MAICoS develop project` : https://github.com/atomistic-lab/maicos
 .. _`Developer Mode` : https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
 
 Useful developer scripts

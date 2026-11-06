@@ -13,6 +13,8 @@ Unreleased
 ----------
 Philip Loche, Henrik Stooß
 
+- Update GitHub links to the renamed ``atomistic-lab`` organization and point the
+  ``DielectricSpectrum`` removal message to the ``spectrumkit`` package (#616)
 - Fix trajectory being closed when a run is aborted (#614)
 - Declare ``numpy`` and ``scipy`` as explicit dependencies (#615)
 

@@ -9,7 +9,7 @@ example section for each module. Instead, we refer to our :ref:`userdoc-basic-us
 work with all modules. If not, feel free to raise an issue in GitHub_ or ask us on
 Discord_.
 
-.. _`GitHub`: https://github.com/maicos-devel/maicos/issues
+.. _`GitHub`: https://github.com/atomistic-lab/maicos/issues
 .. _`Discord`: https://discord.gg/mnrEQWVAed
 
 .. toctree::

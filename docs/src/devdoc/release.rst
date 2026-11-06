@@ -6,7 +6,7 @@ Release workflow
 
    - Based on the main branch create branch ``release-x.y.z`` and a PR.
    - Ensure that all `CI tests
-     <https://github.com/maicos-devel/maicos/actions>`_ pass.
+     <https://github.com/atomistic-lab/maicos/actions>`_ pass.
    - Optionally, run the tests locally to double-check.
 
 2. **Update the Changelog**
@@ -55,4 +55,4 @@ After the release
 
 Add a placeholder section titled *Unreleased* for future updates.
 
-.. _`web interface` : https://github.com/maicos-devel/maicos/releases
+.. _`web interface` : https://github.com/atomistic-lab/maicos/releases

@@ -1,7 +1,7 @@
 MAICoS
 ======
 
-.. image:: https://raw.githubusercontent.com/maicos-devel/maicos/refs/heads/main/docs/static/logo.svg
+.. image:: https://raw.githubusercontent.com/atomistic-lab/maicos/refs/heads/main/docs/static/logo.svg
    :width: 200 px
    :align: left
    :alt: MAICoS logo
@@ -29,7 +29,7 @@ features and improvements.
 
 .. _`MDAnalysis`: https://www.mdanalysis.org
 .. _`X`: https://x.com/maicos_analysis
-.. _`GitHub`: https://github.com/maicos-devel/maicos
+.. _`GitHub`: https://github.com/atomistic-lab/maicos
 .. _`Discord`: https://discord.gg/mnrEQWVAed
 
 .. inclusion-readme-intro-end
@@ -132,16 +132,16 @@ Contributors
 
 Thanks to all contributors who make **MAICoS** possible:
 
-.. image:: https://contrib.rocks/image?repo=maicos-devel/maicos
-   :target: https://github.com/maicos-devel/maicos/graphs/contributors
+.. image:: https://contrib.rocks/image?repo=atomistic-lab/maicos
+   :target: https://github.com/atomistic-lab/maicos/graphs/contributors
 
-.. |tests| image:: https://github.com/maicos-devel/maicos/workflows/Tests/badge.svg
+.. |tests| image:: https://github.com/atomistic-lab/maicos/workflows/Tests/badge.svg
    :alt: GitHub Actions Tests Job Status
-   :target: https://github.com/maicos-devel/maicos/actions?query=branch%3Amain
+   :target: https://github.com/atomistic-lab/maicos/actions?query=branch%3Amain
 
-.. |codecov| image:: https://codecov.io/gh/maicos-devel/maicos/graph/badge.svg?token=9AXPLF6CR3
+.. |codecov| image:: https://codecov.io/gh/atomistic-lab/maicos/graph/badge.svg?token=9AXPLF6CR3
    :alt: Code coverage
-   :target: https://codecov.io/gh/maicos-devel/maicos
+   :target: https://codecov.io/gh/atomistic-lab/maicos
 
 .. |docs-stable| image:: https://img.shields.io/badge/📚_Documentation-stable-success
    :alt: Documentation of stable released version
