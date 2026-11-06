@@ -25,7 +25,7 @@ def test_dielectric_spectrum_removed(ag):
     """Test that DielectricSpectrum raises ValueError since it was moved."""
     from maicos.modules.dielectricspectrum import DielectricSpectrum
 
-    with pytest.raises(ValueError, match="spectrakit"):
+    with pytest.raises(ValueError, match="spectrumkit"):
         DielectricSpectrum(ag)
 
 
